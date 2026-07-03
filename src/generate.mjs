@@ -1593,9 +1593,15 @@ ${toc.length ? `<aside class="ds-toc"><div class="ds-search"><input type="search
 <div class="ds-toast" data-toast role="status" aria-live="polite"></div>
 <div class="ds-studio" data-studio hidden>
 <div class="ds-studio-head"><strong>Theme studio</strong><button class="ds-btn" type="button" data-studio-close>Close</button></div>
-<label class="ds-studio-row">Accent <input type="color" data-studio-accent></label>
+<label class="ds-studio-row">Accent <input type="color" data-studio-token="accent" data-studio-accent></label>
+<label class="ds-studio-row">Canvas <input type="color" data-studio-token="bg"></label>
+<label class="ds-studio-row">Surface <input type="color" data-studio-token="bg-2"></label>
+<label class="ds-studio-row">Ink <input type="color" data-studio-token="ink"></label>
+<label class="ds-studio-row">Frame <input type="text" data-studio-token="frame" placeholder="1120px"></label>
 <div class="ds-studio-presets">${Object.entries(THEMES).filter(([, v]) => v.accent).map(([k, v]) => `<button class="ds-studio-sw" type="button" data-studio-preset="${esc(k)}" title="${esc(k)}" style="background:${esc(v.accent)}"></button>`).join("")}</div>
-<div class="ds-studio-actions"><button class="ds-btn ds-btn-line" type="button" data-studio-copy>Copy theme JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-reset>Reset</button></div>
+<select class="ds-studio-select" data-studio-saved><option value="">Saved presets</option></select>
+<textarea class="ds-studio-json" data-studio-json spellcheck="false"></textarea>
+<div class="ds-studio-actions"><button class="ds-btn ds-btn-line" type="button" data-studio-copy>Copy JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-import>Import JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-save>Save preset</button><button class="ds-btn ds-btn-line" type="button" data-studio-download>Download theme</button><button class="ds-btn ds-btn-line" type="button" data-studio-reset>Reset</button></div>
 </div>
 ${dataIslands}
 </body>

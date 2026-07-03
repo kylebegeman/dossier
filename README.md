@@ -160,7 +160,7 @@ The Pages build also emits a hosted gallery at `examples.html`, with every examp
 | Publishing | `catalog` and `publish` commands for static dossier sites. |
 | Workspaces | Manifest-driven multi-dossier scan, readiness index, query, and static workspace publish. |
 | Export | Export Center for source JSON, state packets, merged JSON, agent handoff packets, Markdown, DOCX, PDF through Playwright, Confluence storage XHTML, Notion Markdown, slide decks, plus React SSR/components. |
-| Presentation | Theme packs, per-document `meta.theme` tokens, and the opt-in `console-slate` skin. |
+| Presentation | Theme packs, per-document `meta.theme` tokens, Theme Studio token editing with import/exportable JSON presets, and the opt-in `console-slate` skin. |
 | Extensibility | Repo-backed packs with data-only templates, explicit-trust render plugins, and lockfile provenance. |
 | Release automation | Release evidence dossiers from git ranges, checks, changed files, gates, trust claims, and CI artifacts. |
 
@@ -370,6 +370,8 @@ You can also set presentation in the model:
 ```
 
 Cascade order is deliberate: base CSS, then the selected skin, then `meta.theme`. That means a skin can change density and component shape, while a project can still override final tokens such as `accent`, `bg`, or `frame`.
+
+The in-page Theme Studio can edit common tokens, apply built-in packs, import or download theme JSON, and save local presets. Live overrides persist per dossier in local storage, then you can copy the JSON into `meta.theme` when you want the theme to become canonical.
 
 ## Agent Workflows
 

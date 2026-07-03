@@ -99,6 +99,11 @@ test("generated runtime separates source, state, merged, and handoff exports", a
   assert.ok(html.includes('data-export-modal'), "renders the export center modal");
   assert.ok(html.includes('data-shortcuts-modal'), "renders keyboard shortcuts modal");
   assert.ok(html.includes('role="dialog" aria-modal="true" aria-label="Export Center"'), "export center has modal semantics");
+  assert.ok(html.includes('data-studio-token="bg"'), "theme studio exposes background token editing");
+  assert.ok(html.includes('data-studio-json'), "theme studio exposes theme JSON editing");
+  assert.ok(html.includes('data-studio-import'), "theme studio can import theme JSON");
+  assert.ok(html.includes('data-studio-saved'), "theme studio can load saved presets");
+  assert.ok(html.includes("ds:theme-overrides"), "theme studio persists per-dossier overrides");
   assert.ok(html.includes('data-block-editor-open'), "renders static block editor entrypoint");
   assert.ok(html.includes('data-evidence-open'), "renders evidence attachment entrypoint");
   assert.ok(html.includes('data-revision-file'), "renders revision compare input");

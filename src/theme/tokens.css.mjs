@@ -150,15 +150,20 @@ html.ds-editing .ds-btn[data-edit-toggle]{background:var(--ds-accent-tint);color
 /* theme studio */
 .ds-swatch{width:34px;padding:0;justify-content:center}
 .ds-swatch span{width:14px;height:14px;border-radius:50%;background:var(--ds-accent);box-shadow:0 0 0 1px var(--ds-line-2)}
-.ds-studio{position:fixed;right:18px;top:62px;z-index:70;width:238px;background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:14px;box-shadow:0 18px 44px rgba(20,16,40,.18);padding:14px;display:grid;gap:12px}
+.ds-studio{position:fixed;right:18px;top:62px;z-index:70;width:min(330px,calc(100vw - 28px));background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:14px;box-shadow:0 18px 44px rgba(20,16,40,.18);padding:14px;display:grid;gap:10px}
 .ds-studio[hidden]{display:none}
 .ds-studio-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}
 .ds-studio-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:560;color:var(--ds-ink-2)}
 .ds-studio-row input[type=color]{width:46px;height:28px;border:1px solid var(--ds-line-2);border-radius:7px;background:none;cursor:pointer;padding:2px}
+.ds-studio-row input[type=text],.ds-studio-select,.ds-studio-json{border:1px solid var(--ds-line-2);border-radius:8px;background:var(--ds-bg-2);color:var(--ds-ink);font:12.5px var(--ds-mono);outline:0}
+.ds-studio-row input[type=text]{width:92px;padding:6px 8px;text-align:right}
 .ds-studio-presets{display:flex;flex-wrap:wrap;gap:8px}
 .ds-studio-sw{width:26px;height:26px;border-radius:50%;border:1px solid var(--ds-line-2);cursor:pointer;padding:0;transition:transform .1s var(--ds-ease)}
 .ds-studio-sw:hover{transform:scale(1.1)}
-.ds-studio-actions{display:grid;gap:7px}
+.ds-studio-select{width:100%;padding:7px 8px;font-family:inherit}
+.ds-studio-json{width:100%;min-height:108px;resize:vertical;padding:9px;line-height:1.4}
+.ds-studio-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ds-studio-actions [data-studio-reset]{grid-column:1/-1}
 .ds-studio-actions .ds-btn-line{justify-content:center}
 mark{background:var(--ds-accent-tint);color:inherit;border-radius:3px;padding:0 2px}
 
