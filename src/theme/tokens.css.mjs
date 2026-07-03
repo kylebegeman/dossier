@@ -90,6 +90,9 @@ code{font-family:var(--ds-mono);font-size:.86em;background:var(--ds-bg-2);border
 .ds-tool-head strong{display:block;font-size:15px}
 .ds-tool-head p,.ds-tool-note{margin:4px 0 0;color:var(--ds-ink-3);font-size:12.5px}
 .ds-export-grid{display:flex;flex-wrap:wrap;gap:8px}
+.ds-export-grid .ds-btn,.ds-tool-actions .ds-btn{justify-content:center;border:1px solid var(--ds-line-2);background:var(--ds-bg);color:var(--ds-ink-2)}
+.ds-export-grid .ds-btn:not(.ds-btn-line),.ds-tool-actions .ds-btn:not(.ds-btn-line){background:var(--ds-bg-2);color:var(--ds-ink)}
+.ds-export-grid .ds-btn:hover,.ds-tool-actions .ds-btn:hover{border-color:var(--ds-line-strong);background:var(--ds-bg-3);color:var(--ds-ink)}
 .ds-export-preview-head{display:flex;align-items:center;justify-content:space-between;color:var(--ds-ink-2);font-size:12px}
 .ds-export-preview{width:100%;min-height:220px;border:1px solid var(--ds-line-2);border-radius:10px;background:var(--ds-bg-2);color:var(--ds-ink);font:12px/1.55 var(--ds-mono);padding:12px;resize:vertical}
 .ds-revision-result{min-height:96px}
