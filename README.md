@@ -149,7 +149,7 @@ The Pages build also emits a hosted gallery at `examples.html`, with every examp
 | Area | What is included |
 |---|---|
 | Self-contained output | One full HTML file, optional chrome-stripped embed HTML, one Markdown export, embedded JSON model, no view-time network. |
-| Reader UX | Sticky TOC, search, command palette, scroll progress, dark mode, section collapse, copy buttons, heading anchors, row anchors. |
+| Reader UX | Sticky TOC, search, command palette, shortcuts modal, focus-trapped overlays, scroll progress, dark mode, section collapse, copy buttons, heading anchors, row anchors. |
 | Agent usability | Embedded `#dossier-model`, agent digest, versioned packets, MCP read/write tools, starter templates. |
 | Human control | Review boards, process verdicts, release gates, patch verdicts, diff file and hunk comments. |
 | Editing | In-place text editing, `code-editor` blocks, edit packet export/import, `dossier serve` save-back. |

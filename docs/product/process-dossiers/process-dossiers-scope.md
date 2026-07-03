@@ -2,7 +2,7 @@
 title: "Process Dossiers Product Scope"
 slug: "process-dossiers-scope"
 status: "draft"
-updated: "2026-06-29"
+updated: "2026-07-03"
 ---
 # Process Dossiers: structured human-agent workflows for real work
 
@@ -206,7 +206,8 @@ Commit boundaries should map to user-visible product increments and keep rollbac
 - **M5** (done), Process MCP protocol: render, validate, read process verdicts, read release gates, record run receipts, attach patchsets, and return closeout digest.
 - **M6** (done), Live Studio hooks: save-back model editing, patch import, watcher integration, editor hooks, and source model writeback in `dossier serve`.
 - **M7** (done), Integration-loop dossiers: producer/consumer packet templates, cycle control, upstream response, integration report, and closeout examples.
-- **M8** (done), Polish and platform: catalog facets for process artifacts, accessibility, docs, examples, release readiness, and incident closeout blocks.
+- **M8** (done), Polish and platform: catalog facets for process artifacts, docs, examples, release readiness, and incident closeout blocks.
+- **M9** (done), Unified state workflow and accessibility closeout: full state packet import, state merge/diff/handoff tools, AI prompt export, shortcuts modal, focus-trapped overlays, and manual QA alignment.
 
 ### Completed milestone commits
 
@@ -218,7 +219,8 @@ Commit boundaries should map to user-visible product increments and keep rollbac
 - [x] Commit M5 process protocol blocks and MCP helpers. (@Codex)
 - [x] Commit M6 live serve save-back and patch import. (@Codex)
 - [x] Commit M7 integration-loop packet blocks and starters. (@Codex)
-- [x] Commit M8 release, incident, docs, catalog, and accessibility closeout. (@Codex)
+- [x] Commit M8 release, incident, docs, and catalog closeout. (@Codex)
+- [x] Commit M9 state workflow and accessibility closeout. (@Codex)
 
 
 ## Data Model Direction

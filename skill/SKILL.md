@@ -84,8 +84,10 @@ For programmatic / multi-agent use, `dossier mcp` exposes
 `dossier_resume_context`,
 `dossier_apply_edits`, `dossier_apply_process`, `dossier_apply_patch_review`,
 `dossier_record_run`, `dossier_record_claim`, `dossier_attach_patchset`,
-`dossier_closeout_digest`, `dossier_closeout_model`, `dossier_get_schema`,
-`dossier_get_packet_schema`, and `dossier_get_starter`.
+`dossier_read_state`, `dossier_merge_state`, `dossier_diff_state`,
+`dossier_read_handoff`, `dossier_prompt`, `dossier_closeout_digest`,
+`dossier_closeout_model`, `dossier_get_schema`, `dossier_get_packet_schema`,
+and `dossier_get_starter`.
 Block types beyond the basics, `figure`,
 `math`, `chart`, `footnotes` (with inline `[^id]`), `trust-report`, and `receipt`
 (provenance), are in
@@ -190,11 +192,12 @@ Be explicit when handing work back to an agent:
 
 ## What the reader gets (built in)
 
-Sticky TOC with scroll-spy, in-page search, command palette (Cmd/Ctrl-K), light/dark
-theme, reading progress + time, per-block copy, heading anchor links, collapsible
-sections, back-to-top, glossary tooltips, lifecycle banner, and one-click export to
-Markdown, source JSON, state packet, merged JSON, agent handoff, AI prompt, and
-agent-digest, all inlined, all offline, fully responsive.
+Sticky TOC with scroll-spy, in-page search, command palette (Cmd/Ctrl-K), shortcuts
+modal (`?`), focus-trapped overlays, light/dark theme, reading progress + time,
+per-block copy, heading anchor links, collapsible sections, back-to-top, glossary
+tooltips, lifecycle banner, and one-click export to Markdown, source JSON, state
+packet, merged JSON, agent handoff, AI prompt, and agent-digest, all inlined, all
+offline, fully responsive.
 
 ## Conventions
 

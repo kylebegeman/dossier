@@ -4,12 +4,12 @@ Use this guide before public announcements, manual dogfooding, or release verifi
 
 ## Scope
 
-This checklist covers the `0.5.x` functionality closeout:
+This checklist covers the current public functionality closeout:
 
 | Area | Must verify |
 |---|---|
 | Core rendering | Every gallery example builds to self-contained HTML and Markdown. |
-| Reader UX | TOC, search, command palette, theme toggle, copy controls, anchors, collapsed sections. |
+| Reader UX | TOC, search, command palette, shortcuts modal, theme toggle, copy controls, anchors, collapsed sections, focus-trapped overlays. |
 | Presentation | Default theme, theme pack flags, `meta.theme` overrides, and `console-slate` skin. |
 | Process workflows | `process-board`, `code-editor`, `patch-set`, `diff-view`, `verification-run`, `release-checklist`, `process-receipt`. |
 | Trust workflows | `trust-report`, `receipt`, `evidence-log`, source/claim/evidence linkage. |
@@ -26,6 +26,7 @@ Run these from the repo root:
 ```bash
 npm test
 node --check src/generate.mjs
+node --check src/runtime/runtime.mjs
 node --check src/export.mjs
 node --check src/serve.mjs
 node --check mcp/server.mjs
@@ -65,7 +66,9 @@ Verify:
 - No external network is required after opening the file.
 - Header controls are usable with keyboard and pointer.
 - Search filters visible TOC/content.
-- Command palette opens with Cmd/Ctrl-K and closes with Escape.
+- Command palette opens with Cmd/Ctrl-K, filters immediately as you type, and closes with Escape.
+- Keyboard shortcuts modal opens with `?` or Shift-/ and closes with Escape.
+- Tab and Shift-Tab stay inside the active palette or modal until it closes.
 - Theme toggle switches light/dark.
 - `examples/showcase.html` has the Console Slate skin, including wider layout, fused stat strip, and topbar polish.
 - A document built with `--theme forest --skin console-slate` keeps the skin while applying the final theme token overrides.
@@ -75,10 +78,12 @@ Verify:
 - Export Center previews source JSON, state packet, merged JSON, handoff, and AI prompt without overlapping controls at desktop or mobile width.
 - Download source JSON before making changes and confirm it matches the authored model, not browser state.
 - Make a browser state change, then download state packet and confirm `schema: "dossier.state/v1"`.
+- Import that saved state packet and confirm the visible review, process, editor, release, patch, diff, and evidence controls rehydrate before export.
 - Download merged JSON after that change and confirm the change is applied into the model.
 - Download agent handoff and confirm `schema: "dossier.handoff/v1"`.
 - Attach an evidence record and confirm it appears in the state packet and merged JSON.
 - Compare another dossier JSON revision and confirm a diff appears in Export Center.
+- Import state packet and compare revision controls are keyboard focusable.
 - Source modal opens and closes.
 - Prose blocks render paragraphs, bullet lists, and numbered lists with inline Markdown intact.
 - Stat strips show optional delta lines without resizing or clipping cards.
@@ -134,6 +139,11 @@ Run an MCP client or a direct node probe against `mcp/server.mjs`:
 - `dossier_read_diff_review` groups file and hunk verdicts.
 - `dossier_read_release` returns gate totals.
 - `dossier_read_trust` returns source and claim totals.
+- `dossier_read_state` returns unified state totals.
+- `dossier_merge_state` applies a state packet to a model without losing authored source fields.
+- `dossier_diff_state` returns structural changes caused by a state packet.
+- `dossier_read_handoff` returns `schema: "dossier.handoff/v1"`.
+- `dossier_prompt` returns the model-update prompt used by the Export Center prompt action.
 - `dossier_record_run` appends a `verification-run`.
 - `dossier_record_claim` appends or updates a `trust-report`.
 - `dossier_closeout_model` appends a `process-receipt`.

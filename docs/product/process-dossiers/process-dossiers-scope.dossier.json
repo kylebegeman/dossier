@@ -8,7 +8,7 @@
     "eyebrow": "Product direction",
     "status": "draft",
     "owner": "Kyle + Codex",
-    "updated": "2026-06-29",
+    "updated": "2026-07-03",
     "tags": ["process-dossiers", "agent-workflows", "implementation", "editor", "diff"]
   },
   "blocks": [
@@ -232,7 +232,8 @@
             { "label": "M5", "body": "Process MCP protocol: render, validate, read process verdicts, read release gates, record run receipts, attach patchsets, and return closeout digest.", "status": "done" },
             { "label": "M6", "body": "Live Studio hooks: save-back model editing, patch import, watcher integration, editor hooks, and source model writeback in `dossier serve`.", "status": "done" },
             { "label": "M7", "body": "Integration-loop dossiers: producer/consumer packet templates, cycle control, upstream response, integration report, and closeout examples.", "status": "done" },
-            { "label": "M8", "body": "Polish and platform: catalog facets for process artifacts, accessibility, docs, examples, release readiness, and incident closeout blocks.", "status": "done" }
+            { "label": "M8", "body": "Polish and platform: catalog facets for process artifacts, docs, examples, release readiness, and incident closeout blocks.", "status": "done" },
+            { "label": "M9", "body": "Unified state workflow and accessibility closeout: full state packet import, state merge/diff/handoff tools, AI prompt export, shortcuts modal, focus-trapped overlays, and manual QA alignment.", "status": "done" }
           ]
         },
         {
@@ -247,7 +248,8 @@
             { "title": "Commit M5 process protocol blocks and MCP helpers.", "owner": "Codex", "status": "done" },
             { "title": "Commit M6 live serve save-back and patch import.", "owner": "Codex", "status": "done" },
             { "title": "Commit M7 integration-loop packet blocks and starters.", "owner": "Codex", "status": "done" },
-            { "title": "Commit M8 release, incident, docs, catalog, and accessibility closeout.", "owner": "Codex", "status": "done" }
+            { "title": "Commit M8 release, incident, docs, and catalog closeout.", "owner": "Codex", "status": "done" },
+            { "title": "Commit M9 state workflow and accessibility closeout.", "owner": "Codex", "status": "done" }
           ]
         }
       ]
