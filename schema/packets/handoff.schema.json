@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kylebegeman/dossier/schema/packets/handoff.schema.json",
+  "title": "Dossier Handoff Packet",
+  "type": "object",
+  "required": ["schema", "totals"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": { "const": "dossier.handoff/v1" },
+    "slug": { "type": "string" },
+    "title": { "type": "string" },
+    "kind": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "totals": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "decisions": { "$ref": "#/$defs/count" },
+        "selectedDecisions": { "$ref": "#/$defs/count" },
+        "processItems": { "$ref": "#/$defs/count" },
+        "edits": { "$ref": "#/$defs/count" },
+        "dirtyEdits": { "$ref": "#/$defs/count" },
+        "releaseGates": { "$ref": "#/$defs/count" },
+        "unresolvedReleaseGates": { "$ref": "#/$defs/count" },
+        "patchReviews": { "$ref": "#/$defs/count" },
+        "diffFileReviews": { "$ref": "#/$defs/count" },
+        "diffHunkReviews": { "$ref": "#/$defs/count" },
+        "evidence": { "$ref": "#/$defs/count" }
+      }
+    },
+    "decisions": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "selected": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+        "noted": { "type": "array", "items": { "$ref": "#/$defs/entry" } }
+      }
+    },
+    "process": { "type": "object", "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/entry" } } },
+    "patchReview": { "type": "object", "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/entry" } } },
+    "diffReview": { "type": "object", "additionalProperties": true },
+    "edits": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "release": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "gates": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+        "unresolved": { "type": "array", "items": { "$ref": "#/$defs/entry" } }
+      }
+    },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "trustGaps": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "nextAgentInstruction": { "type": "string" }
+  },
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "entry": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" }
+      }
+    }
+  }
+}

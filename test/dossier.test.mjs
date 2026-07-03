@@ -217,7 +217,7 @@ test("patch-set and diff-view render parsed unified diffs", async () => {
 
 test("packet schemas are published for agent handoff contracts", () => {
   const packetDir = join(root, "schema", "packets");
-  const names = ["process", "edits", "verdicts", "release", "patch-review", "diff-review", "trust", "closeout"];
+  const names = ["process", "edits", "verdicts", "release", "patch-review", "diff-review", "trust", "closeout", "state", "handoff"];
   for (const name of names) {
     const schema = JSON.parse(readFileSync(join(packetDir, `${name}.schema.json`), "utf8"));
     assert.equal(schema.$schema, "https://json-schema.org/draft/2020-12/schema", name);

@@ -200,7 +200,7 @@ const TOOLS = [
   },
   {
     name: "dossier_get_packet_schema",
-    description: "Return a packet JSON Schema by name: process, edits, verdicts, release, patch-review, diff-review, trust, closeout.",
+    description: "Return a packet JSON Schema by name: process, edits, verdicts, release, patch-review, diff-review, trust, closeout, state, handoff.",
     inputSchema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] },
   },
   {
@@ -743,7 +743,7 @@ async function handle(name, args) {
   }
 
   if (name === "dossier_get_packet_schema") {
-    const allowed = new Set(["process", "edits", "verdicts", "release", "patch-review", "diff-review", "trust", "closeout"]);
+    const allowed = new Set(["process", "edits", "verdicts", "release", "patch-review", "diff-review", "trust", "closeout", "state", "handoff"]);
     const schemaName = String(args.name || "").replace(/\.schema\.json$/, "");
     if (!allowed.has(schemaName)) return fail("unknown packet schema: " + args.name);
     return text(readFileSync(join(root, `schema/packets/${schemaName}.schema.json`), "utf8"));

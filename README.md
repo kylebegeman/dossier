@@ -421,7 +421,7 @@ Core MCP tools:
 
 Packet contracts live in [`schema/packets/`](schema/packets/):
 
-`process`, `edits`, `verdicts`, `release`, `patch-review`, `diff-review`, `trust`, and `closeout`.
+`process`, `edits`, `verdicts`, `release`, `patch-review`, `diff-review`, `trust`, `closeout`, `state`, and `handoff`.
 
 ## Process Dossiers
 
