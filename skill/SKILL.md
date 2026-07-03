@@ -62,8 +62,9 @@ Other commands: `dossier validate <file>` (check without rendering), `dossier li
 [--strict]` (authoring, trust, and packet warnings), `dossier serve <file>
 --open` (live-reload preview while iterating, with the same `--theme` and `--skin`
 presentation flags as build), `dossier diff <old> <new>` (what changed),
-`dossier export <file> --format json|merged-json --state <packet.json>` (source or
-state-applied JSON), `dossier prompt <file> --state <packet.json>` (AI authoring prompt),
+`dossier export <file> --format json|merged-json|handoff|state-diff|prompt --state <packet.json>`
+(source JSON, state-applied JSON, agent handoff, structural state diff, or AI prompt),
+`dossier prompt <file> --state <packet.json>` (AI authoring prompt),
 `dossier publish <dir> --out <dir>` (build a static folder with a catalog index),
 `dossier pack add <repo-or-path>` (register reusable templates and plugins),
 `dossier init <name> --template <pack/id>` (scaffold from a pack template),
@@ -167,6 +168,8 @@ Be explicit when handing work back to an agent:
   to rebuild or publish after browser edits.
 - Agent handoff (`dossier.handoff/v1`) is a compact summary for resuming work in another
   agent or thread.
+- State diff shows the structural model changes that would result from applying the state
+  packet.
 - AI prompt export gives a model-update prompt with the current handoff summary.
 
 ## Packs, workspaces, and release evidence

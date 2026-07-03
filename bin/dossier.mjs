@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
-import { formatLintWarnings, generateFile, lintModel, mergeStateIntoModel, promptForModel, validateModel, registerBlock, esc, inlineMd, slugify } from "../src/index.mjs";
+import { buildHandoffPacket, diffStateAgainstModel, formatLintWarnings, generateFile, lintModel, mergeStateIntoModel, promptForModel, validateModel, registerBlock, esc, inlineMd, slugify } from "../src/index.mjs";
 import { addPack, listPacks, loadTrustedPackPlugins, resolveTemplateRef, trustPack } from "../src/packs.mjs";
 import {
   WORKSPACE_MANIFEST,
@@ -92,7 +92,7 @@ const USAGE = [
   "  dossier diff <old.json> <new.json>      structural diff between two versions",
   "  dossier catalog <dir>                    index a folder of dossiers (+ link graph)",
   "  dossier publish <dir> [--out <dir>]      build a static dossier site with catalog index",
-  "  dossier export <file> --format docx|md|pdf|json|merged-json  export source or state-applied output",
+  "  dossier export <file> --format docx|md|pdf|json|merged-json|handoff|state-diff|prompt  export source, state-applied, or agent packets",
   "  dossier prompt <file.dossier.json>       print an AI authoring/update prompt for this dossier",
   "  dossier pack add <repo-or-path>          register a local or Git-backed template/plugin pack",
   "  dossier pack trust <name>                allow a registered pack to load render plugins",
@@ -346,32 +346,52 @@ if (cmd === "build" && args.length) {
   try {
     const sourceModel = JSON.parse(readFileSync(f, "utf8"));
     const state = flags.state ? JSON.parse(readFileSync(flags.state, "utf8")) : null;
-    const model = state ? mergeStateIntoModel(sourceModel, state) : sourceModel;
-    const slug = (model.meta && model.meta.slug) || basename(f).replace(/\.(dossier\.)?json$/i, "");
+    const renderedModel = state ? mergeStateIntoModel(sourceModel, state) : sourceModel;
+    const slug = (sourceModel.meta && sourceModel.meta.slug) || basename(f).replace(/\.(dossier\.)?json$/i, "");
+    const requireState = () => {
+      if (!state) throw new Error(`--state <packet.json> is required for ${fmt} export`);
+      return state;
+    };
     if (fmt === "docx") {
       const { exportDocx } = await import("../src/export.mjs");
       const out = flags.out || slug + ".docx";
-      writeFileSync(out, await exportDocx(model, { baseDir: dirname(f) }));
+      writeFileSync(out, await exportDocx(renderedModel, { baseDir: dirname(f) }));
       console.log("✓ " + out);
     } else if (fmt === "md") {
       const { generate } = await import("../src/index.mjs");
-      const { md } = await generate(model, { baseDir: dirname(f) });
+      const { md } = await generate(renderedModel, { baseDir: dirname(f) });
       const out = flags.out || slug + ".md";
       writeFileSync(out, md);
       console.log("✓ " + out);
     } else if (fmt === "pdf") {
       const { generate } = await import("../src/index.mjs");
       const { exportPdf } = await import("../src/export.mjs");
-      const { html } = await generate(model, { baseDir: dirname(f) });
+      const { html } = await generate(renderedModel, { baseDir: dirname(f) });
       const out = flags.out || slug + ".pdf";
       writeFileSync(out, await exportPdf(html));
       console.log("✓ " + out);
-    } else if (fmt === "json" || fmt === "merged-json") {
-      const out = flags.out || slug + (state ? ".merged.dossier.json" : ".json");
-      writeFileSync(out, JSON.stringify(model, null, 2) + "\n");
+    } else if (fmt === "json") {
+      const out = flags.out || slug + ".json";
+      writeFileSync(out, JSON.stringify(sourceModel, null, 2) + "\n");
+      console.log("✓ " + out);
+    } else if (fmt === "merged-json") {
+      const out = flags.out || slug + ".merged.dossier.json";
+      writeFileSync(out, JSON.stringify(mergeStateIntoModel(sourceModel, requireState()), null, 2) + "\n");
+      console.log("✓ " + out);
+    } else if (fmt === "handoff") {
+      const out = flags.out || slug + ".handoff.json";
+      writeFileSync(out, JSON.stringify(buildHandoffPacket(sourceModel, requireState()), null, 2) + "\n");
+      console.log("✓ " + out);
+    } else if (fmt === "state-diff") {
+      const out = flags.out || slug + ".state-diff.json";
+      writeFileSync(out, JSON.stringify(diffStateAgainstModel(sourceModel, requireState()), null, 2) + "\n");
+      console.log("✓ " + out);
+    } else if (fmt === "prompt") {
+      const out = flags.out || slug + ".prompt.txt";
+      writeFileSync(out, promptForModel(sourceModel, state || {}) + "\n");
       console.log("✓ " + out);
     } else {
-      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json, merged-json)");
+      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json, merged-json, handoff, state-diff, prompt)");
       process.exitCode = 1;
     }
   } catch (e) {

@@ -57,6 +57,9 @@ Useful commands:
 dossier lint path/to/doc.dossier.json --strict
 dossier export path/to/doc.dossier.json --format json
 dossier export path/to/doc.dossier.json --format merged-json --state path/to/doc.state.json
+dossier export path/to/doc.dossier.json --format handoff --state path/to/doc.state.json
+dossier export path/to/doc.dossier.json --format state-diff --state path/to/doc.state.json
+dossier export path/to/doc.dossier.json --format prompt --state path/to/doc.state.json
 dossier prompt path/to/doc.dossier.json --state path/to/doc.state.json
 dossier pack add <repo-or-path>
 dossier init security-review --template engineering/security-review
@@ -80,6 +83,7 @@ Generated HTML has an Export Center with explicit artifact types:
 - Merged JSON applies the state packet back into the model for rebuilds and publishing.
 - Agent handoff (`dossier.handoff/v1`) summarizes selected decisions, dirty edits,
   release gaps, evidence, and next-agent instructions.
+- State diff summarizes structural model changes caused by a state packet.
 - AI prompt is a model-update prompt seeded from the current handoff summary.
 
 Per-block exports such as `dossier.process/v1`, `dossier.patch-review/v1`, and

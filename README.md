@@ -232,6 +232,9 @@ The CLI mirrors the same model:
 ```bash
 dossier export plan.dossier.json --format json
 dossier export plan.dossier.json --format merged-json --state plan.state.json
+dossier export plan.dossier.json --format handoff --state plan.state.json
+dossier export plan.dossier.json --format state-diff --state plan.state.json
+dossier export plan.dossier.json --format prompt --state plan.state.json
 dossier prompt plan.dossier.json --state plan.state.json
 ```
 
@@ -505,7 +508,7 @@ Every block has a copy-paste example in [`skill/references/blocks.md`](skill/ref
 | `dossier workspace query [manifest\|dir] [--kind <kind>] [--tag <tag>] [--needs process\|release\|trust\|invalid]` | Filter workspace dossiers by metadata, open work, or invalid dossier diagnostics. |
 | `dossier workspace publish [manifest\|dir] --out site` | Publish every workspace dossier plus the workspace index into one static site. |
 | `dossier release collect [--version <v>] [--since <ref>] [--checks <cmd,cmd>]` | Generate release evidence JSON, HTML, and Markdown. |
-| `dossier export <file> --format docx\|md\|pdf\|json\|merged-json [--state packet.json]` | Export to Word, Markdown, PDF, source JSON, or state-applied merged JSON. |
+| `dossier export <file> --format docx\|md\|pdf\|json\|merged-json\|handoff\|state-diff\|prompt [--state packet.json]` | Export to Word, Markdown, PDF, source JSON, state-applied JSON, agent handoff, state diff, or AI prompt. |
 | `dossier prompt <file> [--state packet.json]` | Print an AI authoring or update prompt based on a dossier and optional state packet. |
 | `dossier mcp` | Run the MCP server over stdio. |
 

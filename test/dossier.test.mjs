@@ -786,6 +786,73 @@ test("cli unknown subcommands exit nonzero", () => {
   }
 });
 
+test("cli exports state workflow artifacts with explicit semantics", () => {
+  const cli = join(root, "bin", "dossier.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "dossier-cli-export-"));
+  const modelPath = join(dir, "workflow.dossier.json");
+  const statePath = join(dir, "workflow.state.json");
+  const sourcePath = join(dir, "source.json");
+  const mergedPath = join(dir, "merged.json");
+  const handoffPath = join(dir, "handoff.json");
+  const diffPath = join(dir, "state-diff.json");
+  const promptPath = join(dir, "prompt.txt");
+  writeFileSync(
+    modelPath,
+    JSON.stringify(
+      {
+        dossierVersion: "1.0",
+        kind: "implementation",
+        meta: { title: "Workflow", slug: "workflow" },
+        blocks: [{ type: "code-editor", id: "config-editor", title: "Config", targetPath: "config.json", code: "{\"enabled\":false}\n" }],
+      },
+      null,
+      2
+    )
+  );
+  writeFileSync(
+    statePath,
+    JSON.stringify(
+      {
+        schema: "dossier.state/v1",
+        packets: {
+          edits: { "config-editor": { text: "{\"enabled\":true}\n", targetPath: "config.json", dirty: true } },
+          evidence: { "smoke": { title: "Smoke", kind: "manual", trust: "medium" } },
+        },
+      },
+      null,
+      2
+    )
+  );
+
+  let result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "json", "--state", statePath, "--out", sourcePath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(readFileSync(sourcePath, "utf8")).blocks[0].code, "{\"enabled\":false}\n", "json export remains source JSON");
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "merged-json", "--out", join(dir, "missing-state.json")], { cwd: dir, encoding: "utf8" });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /--state <packet\.json> is required/);
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "merged-json", "--state", statePath, "--out", mergedPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(readFileSync(mergedPath, "utf8")).blocks[0].code, "{\"enabled\":true}\n");
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "handoff", "--state", statePath, "--out", handoffPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  const handoff = JSON.parse(readFileSync(handoffPath, "utf8"));
+  assert.equal(handoff.schema, "dossier.handoff/v1");
+  assert.equal(handoff.totals.dirtyEdits, 1);
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "state-diff", "--state", statePath, "--out", diffPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  const diff = JSON.parse(readFileSync(diffPath, "utf8"));
+  assert.ok(diff.changed.some((entry) => entry.id === "config-editor"));
+  assert.ok(diff.added.some((entry) => entry.type === "evidence-log"));
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "prompt", "--state", statePath, "--out", promptPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readFileSync(promptPath, "utf8"), /Current handoff summary/);
+});
+
 test("example pack templates validate", () => {
   const packDir = join(examplesDir, "packs", "engineering");
   const manifest = readPackManifest(packDir);
