@@ -164,6 +164,8 @@ Be explicit when handing work back to an agent:
 - Source JSON is the authored model embedded in `#dossier-model`.
 - State packet (`dossier.state/v1`) contains browser changes: decisions, process verdicts,
   edits, release gates, patch/diff review, and evidence.
+- Export Center can import a saved state packet and rehydrate the visible controls before
+  merged JSON or handoff export.
 - Merged JSON applies a state packet back into the source model and is the right artifact
   to rebuild or publish after browser edits.
 - Agent handoff (`dossier.handoff/v1`) is a compact summary for resuming work in another

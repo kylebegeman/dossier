@@ -227,6 +227,9 @@ The browser Export Center separates four artifact types so humans and agents do 
 | Merged JSON | Source JSON with the state packet applied back into the model. | Rebuild or publish a new canonical dossier that includes browser edits. |
 | Agent handoff | A compact `dossier.handoff/v1` summary with selected decisions, dirty edits, release gaps, and next-agent guidance. | Resume work in another agent or thread. |
 
+Export Center can also import a saved state packet, applying those browser changes back to
+the visible review controls before you download merged JSON or a handoff packet.
+
 The CLI mirrors the same model:
 
 ```bash

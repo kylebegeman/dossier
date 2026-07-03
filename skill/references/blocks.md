@@ -80,6 +80,7 @@ Generated HTML has an Export Center with explicit artifact types:
 - Source JSON is the authored model embedded in `#dossier-model`.
 - State packet (`dossier.state/v1`) is browser state: decisions, process verdicts,
   edits, release gates, patch/diff review, and attached evidence.
+- Export Center can import a saved state packet and rehydrate the visible controls.
 - Merged JSON applies the state packet back into the model for rebuilds and publishing.
 - Agent handoff (`dossier.handoff/v1`) summarizes selected decisions, dirty edits,
   release gaps, evidence, and next-agent instructions.

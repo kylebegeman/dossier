@@ -106,6 +106,8 @@ test("generated runtime separates source, state, merged, and handoff exports", a
   assert.ok(html.includes("Download state packet"), "state packet export is explicit");
   assert.ok(html.includes("Download merged JSON"), "merged model export is explicit");
   assert.ok(html.includes("Download agent handoff"), "handoff export is explicit");
+  assert.ok(html.includes("Import state packet"), "full state packet import is explicit");
+  assert.ok(html.includes("function applyStatePacket"), "runtime can import a full state packet");
   assert.ok(html.includes("Copy AI prompt"), "prompt export is exposed");
   assert.ok(html.includes("Export process packet"), "process block export is labelled as a packet");
   assert.ok(html.includes("Export patch review packet"), "patch review export is labelled as a packet");
