@@ -248,7 +248,7 @@ function renderDiffView(b, ctx, nested = false) {
     `<div class="ds-diff-summary"><span>${files.length} file${files.length === 1 ? "" : "s"}</span><span class="add">+${additions}</span><span class="del">-${deletions}</span></div>` +
     (fileTabs ? `<nav class="ds-diff-files">${fileTabs}</nav>` : "") +
     `<div class="ds-diff-body">${renderedFiles || `<pre class="ds-diff-empty"><code>${esc(b.diff || "")}</code></pre>`}</div>` +
-    `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-diff-review>Export diff review JSON</button><button class="ds-btn ds-btn-line" type="button" data-import-diff-review>Import</button></div>` +
+    `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-diff-review>Export diff review packet</button><button class="ds-btn ds-btn-line" type="button" data-import-diff-review>Import</button></div>` +
     `</section>`
   );
 }
@@ -473,7 +473,7 @@ const renderers = {
         `<textarea class="ds-codeedit-area" ${attrs.join(" ")}>${esc(codeText)}</textarea>` +
         `<div class="ds-codeedit-actions"><span class="ds-codeedit-state" data-editor-state="${esc(id)}">clean</span>` +
         `<button class="ds-btn ds-btn-line" type="button" data-editor-reset="${esc(id)}">Reset</button>` +
-        `<button class="ds-btn ds-btn-line" type="button" data-export-editors>Export edits JSON</button>` +
+        `<button class="ds-btn ds-btn-line" type="button" data-export-editors>Export edits packet</button>` +
         `<button class="ds-btn ds-btn-line" type="button" data-import-editors>Import</button></div>` +
         `</div>`
     );
@@ -512,7 +512,7 @@ const renderers = {
       (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : "") +
         (b.summary ? `<p class="ds-muted">${inlineMd(b.summary, ctx)}</p>` : "") +
         `<div class="ds-patchlist">${patches}</div>` +
-        `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-patch-review>Export patch review JSON</button><button class="ds-btn ds-btn-line" type="button" data-import-patch-review>Import</button></div>`
+        `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-patch-review>Export patch review packet</button><button class="ds-btn ds-btn-line" type="button" data-import-patch-review>Import</button></div>`
     );
   },
   "diff-view"(b, ctx) {
@@ -542,7 +542,7 @@ const renderers = {
         (b.prompt ? `<p class="ds-muted">${inlineMd(b.prompt, ctx)}</p>` : "") +
         `<div class="ds-gate" data-gate="${esc(id)}"><label class="ds-process-verdict-wrap"><span>Verdict</span><select class="ds-process-verdict" data-verdict-gate="${esc(id)}" data-verdict-title="${esc(b.title || id)}">${opts}</select></label>` +
         `<label class="ds-notes"><span>Notes</span><textarea data-verdict-notes="${esc(id)}" placeholder="Decision rationale, constraints, follow-up"></textarea></label>` +
-        `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-verdicts>Export verdicts JSON</button><button class="ds-btn ds-btn-line" type="button" data-import-verdicts>Import</button></div></div>`
+        `<div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-verdicts>Export verdicts packet</button><button class="ds-btn ds-btn-line" type="button" data-import-verdicts>Import</button></div></div>`
     );
   },
   "process-receipt"(b, ctx) {
@@ -590,7 +590,7 @@ const renderers = {
         return `<li class="ds-action ds-release-gate" data-release-row="${esc(id)}"><label><input type="checkbox" data-release-gate="${esc(id)}" data-release-title="${esc(title)}" data-release-required="${g.required ? "1" : "0"}" ${checked ? "checked" : ""}><span class="ds-action-title">${inlineMd(title, ctx)}</span></label><span class="ds-action-meta">${g.required ? `<span class="ds-chip">required</span>` : ""}<span class="ds-status s-${esc(slugify(g.status || "todo"))}">${esc(g.status || "todo")}</span></span><textarea data-release-notes="${esc(id)}" placeholder="Evidence, approver, blocker">${esc(g.evidence || "")}</textarea></li>`;
       })
       .join("");
-    return wrap("release-checklist", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : "") + `<ul class="ds-actions ds-release-list">${gates}</ul><div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-release>Export release JSON</button><button class="ds-btn ds-btn-line" type="button" data-import-release>Import</button></div>`);
+    return wrap("release-checklist", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : "") + `<ul class="ds-actions ds-release-list">${gates}</ul><div class="ds-codeedit-actions"><button class="ds-btn ds-btn-line" type="button" data-export-release>Export release packet</button><button class="ds-btn ds-btn-line" type="button" data-import-release>Import</button></div>`);
   },
   "decision-log"(b, ctx) {
     return wrap("decision-log", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : "") + `<div class="ds-process-list">${renderSimpleList(b.decisions || [], "ds-process-card ds-decision", ctx)}</div>`);
@@ -735,7 +735,7 @@ const renderers = {
       `<label class="ds-review-only"><input type="checkbox" data-review-only> Selected only</label>` +
       `<button class="ds-btn ds-btn-line" type="button" data-review-expand>Expand all</button>` +
       `<span class="ds-review-count" data-review-count>0 selected</span>` +
-      `<button class="ds-btn ds-btn-line" type="button" data-export-decisions>Export JSON</button>` +
+      `<button class="ds-btn ds-btn-line" type="button" data-export-decisions>Export decisions packet</button>` +
       `<button class="ds-btn ds-btn-line" type="button" data-import-decisions>Import</button>` +
       `</div>` +
       `<div class="ds-rlist">${items}</div></section>`
@@ -790,7 +790,7 @@ const renderers = {
       `<label class="ds-review-only"><input type="checkbox" data-process-only> With verdict only</label>` +
       `<button class="ds-btn ds-btn-line" type="button" data-process-expand>Expand all</button>` +
       `<span class="ds-review-count" data-process-count>0 verdicts</span>` +
-      `<button class="ds-btn ds-btn-line" type="button" data-export-process>Export process JSON</button>` +
+      `<button class="ds-btn ds-btn-line" type="button" data-export-process>Export process packet</button>` +
       `<button class="ds-btn ds-btn-line" type="button" data-import-process>Import</button>` +
       `</div>` +
       `<div class="ds-rlist">${items}</div></section>`
@@ -1473,14 +1473,23 @@ ${dataIslands}
 <div class="ds-brand"><span class="ds-mark"></span><span class="ds-crumbs">${esc(crumbs || meta.title || "")}</span></div>
 <div class="ds-tools">
 <button class="ds-btn ds-search-btn" type="button" data-palette-open><span class="ds-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.4-3.4"></path></svg></span><span class="ds-search-label">Search</span><kbd>⌘K</kbd></button>
+<span class="ds-dirty-status" data-dirty-status hidden>state</span>
 <button class="ds-btn" type="button" data-edit-toggle title="Edit text in place">Edit</button>
+<button class="ds-btn" type="button" data-block-editor-open title="Edit block structure">Blocks</button>
+<button class="ds-btn" type="button" data-evidence-open title="Attach evidence">Evidence</button>
 <button class="ds-btn ds-swatch" type="button" data-studio-open title="Theme studio"><span></span></button>
 <button class="ds-btn" type="button" data-theme-toggle aria-label="Toggle theme">◐</button>
 <details class="ds-menu"><summary>Export</summary><div class="ds-menu-list">
+<button class="ds-btn" type="button" data-action="open-export-center">Open Export Center</button>
 <button class="ds-btn" type="button" data-action="copy-md">Copy Markdown</button>
 <button class="ds-btn" type="button" data-action="copy-digest">Copy for AI (digest)</button>
 <button class="ds-btn" type="button" data-action="download-md">Download Markdown</button>
-<button class="ds-btn" type="button" data-action="download-json">Download JSON</button>
+<button class="ds-btn" type="button" data-action="download-json">Download source JSON</button>
+<button class="ds-btn" type="button" data-action="download-state-json">Download state packet</button>
+<button class="ds-btn" type="button" data-action="download-merged-json">Download merged JSON</button>
+<button class="ds-btn" type="button" data-action="download-handoff-json">Download agent handoff</button>
+<button class="ds-btn" type="button" data-action="copy-prompt">Copy AI prompt</button>
+<button class="ds-btn" type="button" data-action="print-pdf">Print / save PDF</button>
 <button class="ds-btn" type="button" data-action="view-source">View source</button>
 </div></details>
 </div>
@@ -1498,6 +1507,9 @@ ${toc.length ? `<aside class="ds-toc"><div class="ds-search"><input type="search
 
 <div class="ds-palette" data-palette hidden><div class="ds-palette-box"><input type="text" placeholder="Jump to or run an action…" data-palette-input><div class="ds-palette-list" data-palette-list></div></div></div>
 <div class="ds-modal" data-source-modal hidden><div class="ds-modal-box"><div class="ds-modal-head"><strong>Markdown source</strong><button class="ds-btn" type="button" data-source-close>Close</button></div><textarea readonly data-source-text></textarea></div></div>
+<div class="ds-tool-modal" data-export-modal hidden><div class="ds-tool-card ds-tool-wide"><div class="ds-tool-head"><div><strong>Export Center</strong><p data-export-summary>Choose exactly what should leave this artifact.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-export-grid"><button class="ds-btn ds-btn-line" type="button" data-export-kind="source">Preview source JSON</button><button class="ds-btn ds-btn-line" type="button" data-export-kind="state">Preview state packet</button><button class="ds-btn ds-btn-line" type="button" data-export-kind="merged">Preview merged JSON</button><button class="ds-btn ds-btn-line" type="button" data-export-kind="handoff">Preview agent handoff</button><button class="ds-btn ds-btn-line" type="button" data-export-kind="prompt">Preview AI prompt</button><label class="ds-file-btn">Compare revision<input type="file" accept="application/json" data-revision-file></label></div><div class="ds-export-grid"><button class="ds-btn" type="button" data-export-download="source">Download source JSON</button><button class="ds-btn" type="button" data-export-download="state">Download state packet</button><button class="ds-btn" type="button" data-export-download="merged">Download merged JSON</button><button class="ds-btn" type="button" data-export-download="handoff">Download handoff</button><button class="ds-btn" type="button" data-export-download="prompt">Download prompt</button><button class="ds-btn ds-btn-line" type="button" data-action="print-pdf">Print / save PDF</button><button class="ds-btn ds-btn-line" type="button" data-export-copy>Copy preview</button></div><div class="ds-export-preview-head"><strong data-export-preview-title>Current state packet</strong></div><textarea class="ds-export-preview" readonly data-export-preview></textarea><textarea class="ds-export-preview ds-revision-result" readonly data-revision-result placeholder="Revision diff appears here after comparing another dossier JSON."></textarea></div></div>
+<div class="ds-tool-modal" data-block-editor-modal hidden><div class="ds-tool-card"><div class="ds-tool-head"><div><strong>Block editor</strong><p>Reorder, delete, or add top-level blocks, then download merged JSON and rebuild.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-blockedit-list" data-block-editor-list></div><div class="ds-tool-row"><select data-block-editor-type><option>prose</option><option>section</option><option>callout</option><option>table</option><option>code-editor</option><option>process-board</option><option>patch-set</option><option>verification-run</option><option>release-checklist</option></select><input type="text" data-block-editor-title placeholder="New block title"><button class="ds-btn" type="button" data-block-editor-add>Add block</button></div><p class="ds-tool-note" data-block-editor-status></p></div></div>
+<div class="ds-tool-modal" data-evidence-modal hidden><div class="ds-tool-card"><div class="ds-tool-head"><div><strong>Attach evidence</strong><p>Add source material to the state packet and merged dossier.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-field-grid"><label>Id<input type="text" data-evidence-id placeholder="auto-from-title"></label><label>Title<input type="text" data-evidence-title placeholder="Browser smoke"></label><label>Kind<input type="text" data-evidence-kind placeholder="manual"></label><label>Trust<select data-evidence-trust><option>medium</option><option>high</option><option>low</option></select></label><label class="wide">Source<input type="text" data-evidence-source placeholder="command, URL, person, file"></label><label class="wide">Body<textarea data-evidence-body placeholder="What was observed?"></textarea></label></div><div class="ds-tool-actions"><button class="ds-btn" type="button" data-evidence-add>Add evidence</button></div></div></div>
 <div class="ds-toast" data-toast role="status" aria-live="polite"></div>
 <div class="ds-studio" data-studio hidden>
 <div class="ds-studio-head"><strong>Theme studio</strong><button class="ds-btn" type="button" data-studio-close>Close</button></div>

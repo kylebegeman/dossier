@@ -80,6 +80,32 @@ code{font-family:var(--ds-mono);font-size:.86em;background:var(--ds-bg-2);border
 .ds-menu>summary:hover{border-color:var(--ds-line-strong);background:var(--ds-bg-3)}
 .ds-menu-list{position:absolute;right:0;top:42px;min-width:206px;display:grid;padding:6px;background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:12px;box-shadow:0 14px 38px rgba(20,16,40,.14);z-index:50}
 .ds-menu-list button{justify-content:flex-start;width:100%;height:36px;padding:0 11px;color:var(--ds-ink);font-weight:520}
+.ds-dirty-status{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:999px;background:var(--ds-accent-tint);color:var(--ds-accent);font-size:11.5px;font-weight:680;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ds-dirty-status[hidden]{display:none}
+.ds-tool-modal{position:fixed;inset:0;z-index:85;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(15,14,20,.38)}
+.ds-tool-modal[hidden]{display:none}
+.ds-tool-card{width:min(760px,100%);max-height:88vh;display:grid;gap:14px;overflow:auto;background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.22);padding:16px}
+.ds-tool-wide{width:min(1040px,100%)}
+.ds-tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--ds-line)}
+.ds-tool-head strong{display:block;font-size:15px}
+.ds-tool-head p,.ds-tool-note{margin:4px 0 0;color:var(--ds-ink-3);font-size:12.5px}
+.ds-export-grid{display:flex;flex-wrap:wrap;gap:8px}
+.ds-export-preview-head{display:flex;align-items:center;justify-content:space-between;color:var(--ds-ink-2);font-size:12px}
+.ds-export-preview{width:100%;min-height:220px;border:1px solid var(--ds-line-2);border-radius:10px;background:var(--ds-bg-2);color:var(--ds-ink);font:12px/1.55 var(--ds-mono);padding:12px;resize:vertical}
+.ds-revision-result{min-height:96px}
+.ds-file-btn{display:inline-flex;align-items:center;height:36px;padding:0 11px;border:1px solid var(--ds-line-2);border-radius:9px;background:var(--ds-bg);color:var(--ds-ink-2);font-size:13px;font-weight:560;cursor:pointer}
+.ds-file-btn input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.ds-blockedit-list{display:grid;gap:8px}
+.ds-blockedit-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;border:1px solid var(--ds-line-2);border-radius:10px;background:var(--ds-bg-2);padding:8px}
+.ds-blockedit-row b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.ds-blockedit-row .ds-btn{height:30px}
+.ds-tool-row{display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:8px;align-items:center}
+.ds-tool-row input,.ds-tool-row select,.ds-field-grid input,.ds-field-grid select,.ds-field-grid textarea{width:100%;border:1px solid var(--ds-line-2);border-radius:8px;background:var(--ds-bg);color:var(--ds-ink);padding:8px 9px;font:13px var(--ds-font)}
+.ds-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ds-field-grid label{display:grid;gap:5px;color:var(--ds-ink-3);font-size:12px;font-weight:650}
+.ds-field-grid .wide{grid-column:1/-1}
+.ds-field-grid textarea{min-height:110px;resize:vertical;line-height:1.45}
+.ds-tool-actions{display:flex;justify-content:flex-end}
 
 .ds-lifecycle{display:inline-flex;align-items:center;gap:9px;margin:22px 0 0;padding:6px 13px;background:var(--ds-bg-2);border:1px solid var(--ds-line);border-radius:999px;color:var(--ds-ink-2);font-size:12.5px}
 .ds-lifecycle b{display:inline-flex;align-items:center;gap:7px;color:var(--ds-ink);font-weight:600;text-transform:capitalize}
@@ -511,10 +537,19 @@ tbody tr:hover td{color:var(--ds-ink)}
 @media (max-width:720px){
   .ds-shell{width:calc(100% - 32px)}
   .ds-topbar{height:52px;gap:10px}
-  .ds-tools{gap:6px}
+  .ds-tools{gap:6px;max-width:calc(100vw - 96px);overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:2px;scrollbar-width:none}
+  .ds-tools::-webkit-scrollbar{display:none}
   .ds-search-btn{min-width:0;width:40px;padding:0;justify-content:center}
   .ds-search-btn .ds-search-label,.ds-search-btn kbd{display:none}
   .ds-btn[data-theme-toggle]{width:38px;height:38px}
+  .ds-menu-list{right:0;min-width:220px}
+  .ds-tool-modal{align-items:flex-start;padding:12px}
+  .ds-tool-card{max-height:calc(100vh - 24px);border-radius:12px;padding:14px}
+  .ds-tool-head{align-items:flex-start;gap:10px}
+  .ds-export-grid{display:grid;grid-template-columns:1fr 1fr}
+  .ds-export-grid .ds-btn,.ds-file-btn{width:100%;justify-content:center}
+  .ds-tool-row,.ds-field-grid{grid-template-columns:1fr}
+  .ds-field-grid .wide{grid-column:auto}
   .ds-hero{padding:24px 0 2px}
   .ds-lede{font-size:16.5px;margin-top:15px}
   .ds-meta{gap:20px}
@@ -551,6 +586,9 @@ tbody tr:hover td{color:var(--ds-ink)}
   .ds-ritem-head{padding:13px 14px;gap:11px}
   .ds-ritem-body{padding:0 14px}
   .ds-palette{padding-top:9vh}
+  .ds-export-grid{grid-template-columns:1fr}
+  .ds-blockedit-row{grid-template-columns:1fr 1fr 1fr}
+  .ds-blockedit-row b{grid-column:1/-1}
   .ds-flowstep{grid-template-columns:26px 1fr;gap:13px}
   .ds-flow::before{left:12px}
   .ds-flowstep::before{width:26px}
@@ -560,7 +598,7 @@ tbody tr:hover td{color:var(--ds-ink)}
 @media print{
   :root{--ds-bg:#fff;--ds-bg-2:#fff;--ds-ink:#111;--ds-ink-2:#333;--ds-ink-3:#666;--ds-line:#ddd;--ds-line-2:#ccc}
   html{font-size:11pt}
-  .ds-topbar,.ds-toc,.ds-totop,.ds-palette,.ds-modal,.ds-toast,.ds-studio,.ds-progress,.ds-skip,.ds-copy,.ds-review-bar,.ds-ritem-check,.ds-notes,.ds-toggle,.ds-code-copy,.ds-codeedit-actions,.ds-diff-files,.ds-process-verdict-wrap,.ds-release-gate textarea{display:none!important}
+  .ds-topbar,.ds-toc,.ds-totop,.ds-palette,.ds-modal,.ds-tool-modal,.ds-toast,.ds-studio,.ds-progress,.ds-skip,.ds-copy,.ds-review-bar,.ds-ritem-check,.ds-notes,.ds-toggle,.ds-code-copy,.ds-codeedit-actions,.ds-diff-files,.ds-process-verdict-wrap,.ds-release-gate textarea{display:none!important}
   .ds-layout{display:block}
   .ds-content{max-width:none}
   .ds-shell{width:100%}

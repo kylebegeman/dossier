@@ -80,6 +80,40 @@ test("generate yields a self-contained, agent-readable artifact", async () => {
   assert.ok(!embedHtml.includes('<footer class="ds-footer"'), "embed strips footer chrome");
 });
 
+test("generated runtime separates source, state, merged, and handoff exports", async () => {
+  const diff = "diff --git a/src/file.ts b/src/file.ts\n--- a/src/file.ts\n+++ b/src/file.ts\n@@ -1 +1 @@\n-old\n+new";
+  const model = {
+    dossierVersion: "1.0",
+    kind: "implementation",
+    meta: { title: "Export Workflow", slug: "export-workflow" },
+    blocks: [
+      { type: "review-board", title: "Options", candidates: [{ id: "option-one", title: "Option one", summary: "Pick this." }] },
+      { type: "process-board", title: "Work", items: [{ id: "work-one", title: "Work one" }] },
+      { type: "code-editor", id: "config-editor", title: "Config", targetPath: "config.json", code: "{}\n" },
+      { type: "patch-set", title: "Patches", patches: [{ id: "patch-one", title: "Patch one", diff }] },
+      { type: "diff-view", title: "Diff", diff },
+      { type: "release-checklist", title: "Release", gates: [{ id: "manual-qa", title: "Manual QA", required: true }] },
+    ],
+  };
+  const { html } = await generate(structuredClone(model), {});
+  assert.ok(html.includes('data-export-modal'), "renders the export center modal");
+  assert.ok(html.includes('data-block-editor-open'), "renders static block editor entrypoint");
+  assert.ok(html.includes('data-evidence-open'), "renders evidence attachment entrypoint");
+  assert.ok(html.includes('data-revision-file'), "renders revision compare input");
+  assert.ok(html.includes("dossier.state/v1"), "runtime can export state packets");
+  assert.ok(html.includes("dossier.handoff/v1"), "runtime can export agent handoff packets");
+  assert.ok(html.includes("Download source JSON"), "source model export is explicit");
+  assert.ok(html.includes("Download state packet"), "state packet export is explicit");
+  assert.ok(html.includes("Download merged JSON"), "merged model export is explicit");
+  assert.ok(html.includes("Download agent handoff"), "handoff export is explicit");
+  assert.ok(html.includes("Copy AI prompt"), "prompt export is exposed");
+  assert.ok(html.includes("Export process packet"), "process block export is labelled as a packet");
+  assert.ok(html.includes("Export patch review packet"), "patch review export is labelled as a packet");
+  assert.ok(html.includes("Export diff review packet"), "diff review export is labelled as a packet");
+  assert.ok(html.includes("Export release packet"), "release export is labelled as a packet");
+  assert.ok(!html.includes(">Download JSON</button>"), "old ambiguous JSON label is gone");
+});
+
 test("generateFile can write a chrome-stripped embed artifact", async () => {
   const dir = mkdtempSync(join(tmpdir(), "dossier-embed-"));
   const file = join(dir, "embed.dossier.json");

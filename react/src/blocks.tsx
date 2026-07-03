@@ -232,7 +232,7 @@ const CodeEditor: React.FC<{ b: B }> = ({ b }) => {
         <div className="ds-codeedit-actions">
           <span className="ds-codeedit-state" data-editor-state={id}>clean</span>
           <button className="ds-btn ds-btn-line" type="button" data-editor-reset={id}>Reset</button>
-          <button className="ds-btn ds-btn-line" type="button" data-export-editors>Export edits JSON</button>
+          <button className="ds-btn ds-btn-line" type="button" data-export-editors>Export edits packet</button>
           <button className="ds-btn ds-btn-line" type="button" data-import-editors>Import</button>
         </div>
       </div>
@@ -294,7 +294,7 @@ const DiffViewInner: React.FC<{ b: B; nested?: boolean }> = ({ b, nested = false
         }) : <pre className="ds-diff-empty"><code>{b.diff || ""}</code></pre>}
       </div>
       <div className="ds-codeedit-actions">
-        <button className="ds-btn ds-btn-line" type="button" data-export-diff-review>Export diff review JSON</button>
+        <button className="ds-btn ds-btn-line" type="button" data-export-diff-review>Export diff review packet</button>
         <button className="ds-btn ds-btn-line" type="button" data-import-diff-review>Import</button>
       </div>
     </section>
@@ -339,7 +339,7 @@ const PatchSet: React.FC<{ b: B }> = ({ b }) => (
       })}
     </div>
     <div className="ds-codeedit-actions">
-      <button className="ds-btn ds-btn-line" type="button" data-export-patch-review>Export patch review JSON</button>
+      <button className="ds-btn ds-btn-line" type="button" data-export-patch-review>Export patch review packet</button>
       <button className="ds-btn ds-btn-line" type="button" data-import-patch-review>Import</button>
     </div>
   </Wrap>
@@ -550,7 +550,7 @@ const ReviewBoard: React.FC<{ b: B }> = ({ b }) => (
       <label className="ds-review-only"><input type="checkbox" data-review-only /> Selected only</label>
       <button className="ds-btn ds-btn-line" type="button" data-review-expand>Expand all</button>
       <span className="ds-review-count" data-review-count>0 selected</span>
-      <button className="ds-btn ds-btn-line" type="button" data-export-decisions>Export JSON</button>
+      <button className="ds-btn ds-btn-line" type="button" data-export-decisions>Export decisions packet</button>
       <button className="ds-btn ds-btn-line" type="button" data-import-decisions>Import</button>
     </div>
     <div className="ds-rlist">
@@ -629,7 +629,7 @@ const ProcessBoard: React.FC<{ b: B }> = ({ b }) => (
       <label className="ds-review-only"><input type="checkbox" data-process-only /> With verdict only</label>
       <button className="ds-btn ds-btn-line" type="button" data-process-expand>Expand all</button>
       <span className="ds-review-count" data-process-count>0 verdicts</span>
-      <button className="ds-btn ds-btn-line" type="button" data-export-process>Export process JSON</button>
+      <button className="ds-btn ds-btn-line" type="button" data-export-process>Export process packet</button>
       <button className="ds-btn ds-btn-line" type="button" data-import-process>Import</button>
     </div>
     <div className="ds-rlist">
@@ -759,7 +759,7 @@ const VerdictGate: React.FC<{ b: B }> = ({ b }) => {
       <div className="ds-gate" data-gate={id}>
         <label className="ds-process-verdict-wrap"><span>Verdict</span><select className="ds-process-verdict" data-verdict-gate={id} data-verdict-title={b.title || id} defaultValue={b.verdict || "undecided"}>{options.map((v: string) => <option value={v} key={v}>{v}</option>)}</select></label>
         <label className="ds-notes"><span>Notes</span><textarea data-verdict-notes={id} placeholder="Decision rationale, constraints, follow-up" /></label>
-        <div className="ds-codeedit-actions"><button className="ds-btn ds-btn-line" type="button" data-export-verdicts>Export verdicts JSON</button><button className="ds-btn ds-btn-line" type="button" data-import-verdicts>Import</button></div>
+        <div className="ds-codeedit-actions"><button className="ds-btn ds-btn-line" type="button" data-export-verdicts>Export verdicts packet</button><button className="ds-btn ds-btn-line" type="button" data-import-verdicts>Import</button></div>
       </div>
     </Wrap>
   );
@@ -853,7 +853,7 @@ const ReleaseChecklist: React.FC<{ b: B }> = ({ b }) => (
         );
       })}
     </ul>
-    <div className="ds-codeedit-actions"><button className="ds-btn ds-btn-line" type="button" data-export-release>Export release JSON</button><button className="ds-btn ds-btn-line" type="button" data-import-release>Import</button></div>
+    <div className="ds-codeedit-actions"><button className="ds-btn ds-btn-line" type="button" data-export-release>Export release packet</button><button className="ds-btn ds-btn-line" type="button" data-import-release>Import</button></div>
   </Wrap>
 );
 
