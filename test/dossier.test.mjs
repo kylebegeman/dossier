@@ -97,9 +97,14 @@ test("generated runtime separates source, state, merged, and handoff exports", a
   };
   const { html } = await generate(structuredClone(model), {});
   assert.ok(html.includes('data-export-modal'), "renders the export center modal");
+  assert.ok(html.includes('data-shortcuts-modal'), "renders keyboard shortcuts modal");
+  assert.ok(html.includes('role="dialog" aria-modal="true" aria-label="Export Center"'), "export center has modal semantics");
   assert.ok(html.includes('data-block-editor-open'), "renders static block editor entrypoint");
   assert.ok(html.includes('data-evidence-open'), "renders evidence attachment entrypoint");
   assert.ok(html.includes('data-revision-file'), "renders revision compare input");
+  assert.ok(html.includes('role="button" tabindex="0">Import state packet'), "state import control is keyboard focusable");
+  assert.ok(html.includes("function trapFocus"), "runtime traps focus in overlays");
+  assert.ok(html.includes("function closeTopLayer"), "runtime closes the active overlay");
   assert.ok(html.includes("dossier.state/v1"), "runtime can export state packets");
   assert.ok(html.includes("dossier.handoff/v1"), "runtime can export agent handoff packets");
   assert.ok(html.includes("Download source JSON"), "source model export is explicit");
