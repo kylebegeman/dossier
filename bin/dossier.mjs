@@ -92,7 +92,7 @@ const USAGE = [
   "  dossier diff <old.json> <new.json>      structural diff between two versions",
   "  dossier catalog <dir>                    index a folder of dossiers (+ link graph)",
   "  dossier publish <dir> [--out <dir>]      build a static dossier site with catalog index",
-  "  dossier export <file> --format docx|md|pdf|json  export source or --state-merged output",
+  "  dossier export <file> --format docx|md|pdf|json|merged-json  export source or state-applied output",
   "  dossier prompt <file.dossier.json>       print an AI authoring/update prompt for this dossier",
   "  dossier pack add <repo-or-path>          register a local or Git-backed template/plugin pack",
   "  dossier pack trust <name>                allow a registered pack to load render plugins",
@@ -371,7 +371,7 @@ if (cmd === "build" && args.length) {
       writeFileSync(out, JSON.stringify(model, null, 2) + "\n");
       console.log("✓ " + out);
     } else {
-      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json)");
+      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json, merged-json)");
       process.exitCode = 1;
     }
   } catch (e) {

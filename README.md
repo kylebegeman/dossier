@@ -159,7 +159,7 @@ The Pages build also emits a hosted gallery at `examples.html`, with every examp
 | Trust | Structured source records, per-claim status and confidence, source/evidence links, MCP trust readback. |
 | Publishing | `catalog` and `publish` commands for static dossier sites. |
 | Workspaces | Manifest-driven multi-dossier scan, readiness index, query, and static workspace publish. |
-| Export | HTML, Markdown, DOCX, PDF through Playwright, plus React SSR/components. |
+| Export | Export Center for source JSON, state packets, merged JSON, agent handoff packets, Markdown, DOCX, PDF through Playwright, plus React SSR/components. |
 | Presentation | Theme packs, per-document `meta.theme` tokens, and the opt-in `console-slate` skin. |
 | Extensibility | Repo-backed packs with data-only templates, explicit-trust render plugins, and lockfile provenance. |
 | Release automation | Release evidence dossiers from git ranges, checks, changed files, gates, trust claims, and CI artifacts. |
@@ -215,6 +215,25 @@ The generated HTML includes:
 - `#dossier-digest`: a compact agent-readable digest.
 - Inlined CSS and runtime JavaScript.
 - No external assets or remote scripts.
+
+### Stateful Exports
+
+The browser Export Center separates four artifact types so humans and agents do not have to guess what "JSON" means:
+
+| Export | Meaning | Use it for |
+|---|---|---|
+| Source JSON | The authored model embedded in `#dossier-model`. | Preserve or inspect the original input. |
+| State packet | Human changes captured in the browser: decisions, process verdicts, edits, release gates, patch and diff review, and evidence. | Hand current review state to an agent without rewriting the whole model. |
+| Merged JSON | Source JSON with the state packet applied back into the model. | Rebuild or publish a new canonical dossier that includes browser edits. |
+| Agent handoff | A compact `dossier.handoff/v1` summary with selected decisions, dirty edits, release gaps, and next-agent guidance. | Resume work in another agent or thread. |
+
+The CLI mirrors the same model:
+
+```bash
+dossier export plan.dossier.json --format json
+dossier export plan.dossier.json --format merged-json --state plan.state.json
+dossier prompt plan.dossier.json --state plan.state.json
+```
 
 ### Embedding
 
@@ -472,6 +491,7 @@ Every block has a copy-paste example in [`skill/references/blocks.md`](skill/ref
 | `dossier build <file> [--watch] [--plugin a,b] [--pack name] [--theme <pack>] [--skin console-slate] [--embed]` | Validate and render to `<slug>.html` plus `<slug>.md`; `--pack` loads trusted pack plugins, `--embed` also writes `<slug>.embed.html`. |
 | `dossier serve <file> [--open] [--port] [--theme <pack>] [--skin console-slate]` | Build, serve, live reload, and enable save-back tools with the same presentation flags as `build`. |
 | `dossier validate <file>` | Validate a model without rendering. |
+| `dossier lint <file> [--strict]` | Warn about authoring, trust, and packet quality issues; `--strict` exits nonzero on warnings. |
 | `dossier diff <old> <new>` | Structural diff between two dossier models. |
 | `dossier catalog <dir>` | Build an index model for a folder of dossiers. |
 | `dossier publish <dir> --out site [--theme <pack>] [--skin console-slate] [--embed]` | Build every dossier plus an `index.html` catalog into a static site; `--embed` writes sibling embed files. |
@@ -484,7 +504,8 @@ Every block has a copy-paste example in [`skill/references/blocks.md`](skill/ref
 | `dossier workspace query [manifest\|dir] [--kind <kind>] [--tag <tag>] [--needs process\|release\|trust\|invalid]` | Filter workspace dossiers by metadata, open work, or invalid dossier diagnostics. |
 | `dossier workspace publish [manifest\|dir] --out site` | Publish every workspace dossier plus the workspace index into one static site. |
 | `dossier release collect [--version <v>] [--since <ref>] [--checks <cmd,cmd>]` | Generate release evidence JSON, HTML, and Markdown. |
-| `dossier export <file> --format docx\|md\|pdf` | Export to Word, Markdown, or PDF. |
+| `dossier export <file> --format docx\|md\|pdf\|json\|merged-json [--state packet.json]` | Export to Word, Markdown, PDF, source JSON, or state-applied merged JSON. |
+| `dossier prompt <file> [--state packet.json]` | Print an AI authoring or update prompt based on a dossier and optional state packet. |
 | `dossier mcp` | Run the MCP server over stdio. |
 
 ## React

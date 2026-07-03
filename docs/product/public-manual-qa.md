@@ -15,7 +15,7 @@ This checklist covers the `0.5.x` functionality closeout:
 | Trust workflows | `trust-report`, `receipt`, `evidence-log`, source/claim/evidence linkage. |
 | Agent access | MCP render, validate, read packets, apply packets, record run, record claim, closeout. |
 | Live authoring | `dossier serve`, live reload, editor save-back, model editor save-back, patch import validation. |
-| Export | Markdown, DOCX, PDF when Playwright is installed. |
+| Export | Export Center, source JSON, state packets, merged JSON, handoff packets, Markdown, DOCX, PDF when Playwright is installed. |
 | React parity | React SSR/typecheck and native rendering for built-in blocks. |
 | Publishing | `catalog`, `publish`, and optional `.embed.html` static site output. |
 
@@ -71,7 +71,14 @@ Verify:
 - A document built with `--theme forest --skin console-slate` keeps the skin while applying the final theme token overrides.
 - `examples/showcase.embed.html` loads without topbar, TOC, footer, source modal, command palette, or theme studio, while block controls and packet exports still work.
 - Copy buttons copy block text.
-- Export menu can copy Markdown, digest, and JSON.
+- Export menu can copy Markdown and digest, open Export Center, download source JSON, state packet, merged JSON, and agent handoff, copy an AI prompt, and open print/PDF.
+- Export Center previews source JSON, state packet, merged JSON, handoff, and AI prompt without overlapping controls at desktop or mobile width.
+- Download source JSON before making changes and confirm it matches the authored model, not browser state.
+- Make a browser state change, then download state packet and confirm `schema: "dossier.state/v1"`.
+- Download merged JSON after that change and confirm the change is applied into the model.
+- Download agent handoff and confirm `schema: "dossier.handoff/v1"`.
+- Attach an evidence record and confirm it appears in the state packet and merged JSON.
+- Compare another dossier JSON revision and confirm a diff appears in Export Center.
 - Source modal opens and closes.
 - Prose blocks render paragraphs, bullet lists, and numbered lists with inline Markdown intact.
 - Stat strips show optional delta lines without resizing or clipping cards.
@@ -86,13 +93,13 @@ Verify:
 In `examples/showcase.html`:
 
 - Change at least one `process-board` verdict and note.
-- Export process JSON and confirm `schema: "dossier.process/v1"`.
+- Export process packet and confirm `schema: "dossier.process/v1"`.
 - Change a patch verdict and notes.
-- Export patch review JSON and confirm `schema: "dossier.patch-review/v1"`.
+- Export patch review packet and confirm `schema: "dossier.patch-review/v1"`.
 - Add a file-level and hunk-level diff review.
-- Export diff review JSON and confirm files and hunks are present.
+- Export diff review packet and confirm files and hunks are present.
 - Check a release gate and add evidence notes.
-- Export release JSON and confirm required gate state is present.
+- Export release packet and confirm required gate state is present.
 
 ## Live Serve Smoke
 

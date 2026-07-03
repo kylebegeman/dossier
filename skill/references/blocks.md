@@ -54,6 +54,10 @@ Workspace manifest:
 
 Useful commands:
 ```bash
+dossier lint path/to/doc.dossier.json --strict
+dossier export path/to/doc.dossier.json --format json
+dossier export path/to/doc.dossier.json --format merged-json --state path/to/doc.state.json
+dossier prompt path/to/doc.dossier.json --state path/to/doc.state.json
 dossier pack add <repo-or-path>
 dossier init security-review --template engineering/security-review
 dossier pack trust engineering
@@ -65,6 +69,22 @@ dossier release collect --version 0.6.0 --since v0.5.5 --checks "npm test,npm pa
 ```
 Templates are data-only. Pack plugins execute JavaScript at build time and should be
 loaded only after an explicit trust decision.
+
+## export semantics
+
+Generated HTML has an Export Center with explicit artifact types:
+
+- Source JSON is the authored model embedded in `#dossier-model`.
+- State packet (`dossier.state/v1`) is browser state: decisions, process verdicts,
+  edits, release gates, patch/diff review, and attached evidence.
+- Merged JSON applies the state packet back into the model for rebuilds and publishing.
+- Agent handoff (`dossier.handoff/v1`) summarizes selected decisions, dirty edits,
+  release gaps, evidence, and next-agent instructions.
+- AI prompt is a model-update prompt seeded from the current handoff summary.
+
+Per-block exports such as `dossier.process/v1`, `dossier.patch-review/v1`, and
+`dossier.release/v1` remain useful for scoped review loops. Use Export Center when the
+next agent needs the full browser state or a merged model.
 
 ## hero, page opener (use one, first)
 ```json
@@ -274,7 +294,7 @@ Pair with footnote citations (`[^id]`) for grounded, auditable documents.
 ## review-board, interactive triage / decision surface
 Each candidate is an expandable row: collapsed shows title/summary/chips/status/select;
 expanded shows the full reference (`body` markdown and/or nested `blocks`) + a notes
-field. Reader filters, searches, ticks decisions, writes notes, exports a decisions JSON
+field. Reader filters, searches, ticks decisions, writes notes, exports a decisions packet
 (and can re-import). Rows also render stable `ITEM-###` scan anchors plus
 `data-candidate` ids, so humans can link to a row and agents can target the same
 nested item id. Load as much reference detail per candidate as you want.
@@ -289,12 +309,12 @@ nested item id. Load as much reference detail per candidate as you want.
       "details": { "Shortcut": "Cmd/Ctrl-K" },
       "badges": ["nav"] } ] }
 ```
-`candidate.id` must be kebab-case (it keys the exported decisions JSON).
+`candidate.id` must be kebab-case (it keys the exported decisions packet).
 
 ## process-board, interactive work / implementation surface
 Each item is an expandable work row with owner, priority, status, files, verification,
 risks, evidence, full reference detail, a verdict dropdown, and notes. Reader verdicts
-persist locally and export as a process JSON packet:
+persist locally and export as a process packet:
 `{ "schema": "dossier.process/v1", "slug": "...", "process": { "id": { "verdict": "approve", "notes": "...", "title": "..." } } }`.
 Rows render stable `ITEM-###` scan anchors plus `data-process-item` ids. Use stable
 kebab-case ids because verdict, note, and process packets key off those ids. Agents
@@ -313,7 +333,7 @@ should read that packet with `dossier_read_process`.
       "details": { "Compatibility": "Keep the public session API stable." },
       "badges": ["auth"] } ] }
 ```
-`item.id` must be kebab-case (it keys the exported process JSON).
+`item.id` must be kebab-case (it keys the exported process packet).
 
 ## verification-run, commands and outcomes
 Use for tests, builds, smoke checks, repro commands, or CI evidence. Agents can append a

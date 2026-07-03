@@ -58,9 +58,12 @@ document: `dossier init <name>` writes `<name>.dossier.json` from the starter.
 The generator validates and lints; malformed JSON fails loudly. Re-run after edits, the
 HTML stays in sync with the JSON (round-trip).
 
-Other commands: `dossier validate <file>` (check without rendering), `dossier serve <file>
+Other commands: `dossier validate <file>` (check without rendering), `dossier lint <file>
+[--strict]` (authoring, trust, and packet warnings), `dossier serve <file>
 --open` (live-reload preview while iterating, with the same `--theme` and `--skin`
 presentation flags as build), `dossier diff <old> <new>` (what changed),
+`dossier export <file> --format json|merged-json --state <packet.json>` (source or
+state-applied JSON), `dossier prompt <file> --state <packet.json>` (AI authoring prompt),
 `dossier publish <dir> --out <dir>` (build a static folder with a catalog index),
 `dossier pack add <repo-or-path>` (register reusable templates and plugins),
 `dossier init <name> --template <pack/id>` (scaffold from a pack template),
@@ -127,9 +130,10 @@ For "here are N options, decide which to implement," use one `review-board` bloc
 candidate is an expandable row: scannable collapsed (title, summary, chips, status,
 select checkbox), expanding to its full reference (`body` markdown and/or nested
 `blocks`, load as much technical detail as you want) plus a notes field. The reader
-filters/searches, ticks decisions, writes notes, and **exports a decisions JSON** (and
-can re-import). Pair the rich reference in the model with the exported decisions to
-implement. See `references/blocks.md` → `review-board`.
+filters/searches, ticks decisions, writes notes, and **exports a decisions packet** (and
+can re-import). Use Export Center when an agent needs the whole browser state, merged
+JSON, or handoff packet. Pair the rich reference in the model with the exported packet
+to implement. See `references/blocks.md` -> `review-board`.
 
 ## Process dossier starters
 
@@ -152,6 +156,19 @@ and can import patches into a new `patch-set` block. MCP
 tools can read human state and append run, claim, or patch evidence without scraping the
 HTML.
 
+## Export semantics
+
+Be explicit when handing work back to an agent:
+
+- Source JSON is the authored model embedded in `#dossier-model`.
+- State packet (`dossier.state/v1`) contains browser changes: decisions, process verdicts,
+  edits, release gates, patch/diff review, and evidence.
+- Merged JSON applies a state packet back into the source model and is the right artifact
+  to rebuild or publish after browser edits.
+- Agent handoff (`dossier.handoff/v1`) is a compact summary for resuming work in another
+  agent or thread.
+- AI prompt export gives a model-update prompt with the current handoff summary.
+
 ## Packs, workspaces, and release evidence
 
 - Use a pack when the user wants reusable templates or domain-specific block renderers.
@@ -171,7 +188,8 @@ HTML.
 Sticky TOC with scroll-spy, in-page search, command palette (Cmd/Ctrl-K), light/dark
 theme, reading progress + time, per-block copy, heading anchor links, collapsible
 sections, back-to-top, glossary tooltips, lifecycle banner, and one-click export to
-Markdown / JSON / agent-digest, all inlined, all offline, fully responsive.
+Markdown, source JSON, state packet, merged JSON, agent handoff, AI prompt, and
+agent-digest, all inlined, all offline, fully responsive.
 
 ## Conventions
 
