@@ -290,7 +290,7 @@ A provenance layer ties claims to source ids and verification evidence for agent
   - Notes: Agents can read this with `dossier_read_trust`.
 - **The feature set is ready for public manual QA.** (partial), confidence: medium
   - Sources: manual-qa
-  - Evidence: release-checklist
+  - Evidence: build-log
   - Notes: Manual QA still needs a human browser pass before broad announcement.
 
 ## Apply gate

@@ -584,7 +584,7 @@
               "status": "partial",
               "confidence": "medium",
               "sources": ["manual-qa"],
-              "evidence": ["release-checklist"],
+              "evidence": ["build-log"],
               "notes": "Manual QA still needs a human browser pass before broad announcement."
             }
           ]
@@ -724,7 +724,7 @@
       "items": [
         {
           "id": "island",
-          "text": "Reference a note inline with `[^id]`; it links here and back."
+          "text": "Reference a note inline with a bracketed caret id; it links here and back."
         }
       ]
     }
