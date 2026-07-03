@@ -7,7 +7,16 @@ import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { generate, validateModel, slugify } from "../src/index.mjs";
+import {
+  buildHandoffPacket,
+  diffStateAgainstModel,
+  generate,
+  mergeStateIntoModel,
+  normalizeStatePacket,
+  promptForModel,
+  validateModel,
+  slugify,
+} from "../src/index.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = dirname(here);
@@ -108,6 +117,72 @@ const TOOLS = [
     name: "dossier_read_trust",
     description: "Read trust-report blocks from a model or a dossier.trust/v1 packet, returning source and claim provenance for agent handoff.",
     inputSchema: { type: "object", properties: { model: { type: "object" }, trust: { type: "object" }, path: { type: "string" } } },
+  },
+  {
+    name: "dossier_read_state",
+    description: "Normalize and summarize a dossier.state/v1 packet exported from the artifact Export Center.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        state: { type: "object", description: "The exported dossier.state/v1 packet." },
+        path: { type: "string", description: "Alternatively, a path to a .state.json file." },
+      },
+    },
+  },
+  {
+    name: "dossier_merge_state",
+    description: "Apply a dossier.state/v1 packet to a model. Returns the merged model inline unless `outPath` is provided.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        model: { type: "object" },
+        path: { type: "string", description: "Path to the source .dossier.json model." },
+        state: { type: "object" },
+        statePath: { type: "string", description: "Path to a .state.json packet." },
+        outPath: { type: "string", description: "Optional path to write the merged JSON model." },
+      },
+    },
+  },
+  {
+    name: "dossier_diff_state",
+    description: "Return the structural diff that would result from applying a dossier.state/v1 packet to a model.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        model: { type: "object" },
+        path: { type: "string", description: "Path to the source .dossier.json model." },
+        state: { type: "object" },
+        statePath: { type: "string", description: "Path to a .state.json packet." },
+      },
+    },
+  },
+  {
+    name: "dossier_read_handoff",
+    description: "Build or summarize a dossier.handoff/v1 packet for an agent continuing from exported state.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        handoff: { type: "object", description: "Existing dossier.handoff/v1 packet to summarize." },
+        handoffPath: { type: "string", description: "Path to an existing .handoff.json packet." },
+        model: { type: "object" },
+        path: { type: "string", description: "Path to the source .dossier.json model when building a handoff." },
+        state: { type: "object" },
+        statePath: { type: "string", description: "Path to a .state.json packet when building a handoff." },
+      },
+    },
+  },
+  {
+    name: "dossier_prompt",
+    description: "Generate an AI authoring/update prompt from a model and optional dossier.state/v1 packet.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        model: { type: "object" },
+        path: { type: "string", description: "Path to the source .dossier.json model." },
+        state: { type: "object" },
+        statePath: { type: "string", description: "Path to a .state.json packet." },
+      },
+    },
   },
   {
     name: "dossier_resume_context",
@@ -333,6 +408,63 @@ function summarizeModel(model) {
     releaseGates,
     receipts,
     trustReports,
+  };
+}
+
+function objectCount(map) {
+  return Object.keys(map || {}).length;
+}
+
+function loadStatePacket(args, { allowPath = false } = {}) {
+  if (args.state) return args.state;
+  if (args.statePath) return JSON.parse(readFileSync(args.statePath, "utf8"));
+  if (allowPath && args.path) return JSON.parse(readFileSync(args.path, "utf8"));
+  return null;
+}
+
+function summarizeStatePacket(packet) {
+  const state = normalizeStatePacket(packet || {});
+  const packets = state.packets;
+  const releaseGates = Object.values(packets.release || {});
+  const edits = Object.values(packets.edits || {});
+  return {
+    schema: state.schema,
+    slug: state.slug,
+    updatedAt: state.updatedAt,
+    totals: {
+      actions: objectCount(packets.actions),
+      completedActions: Object.values(packets.actions || {}).filter(Boolean).length,
+      decisions: objectCount(packets.decisions),
+      selectedDecisions: Object.values(packets.decisions || {}).filter((entry) => entry && entry.selected).length,
+      processItems: objectCount(packets.process),
+      edits: objectCount(packets.edits),
+      dirtyEdits: edits.filter((entry) => entry && entry.dirty !== false).length,
+      verdicts: objectCount(packets.verdicts),
+      releaseGates: releaseGates.length,
+      unresolvedReleaseGates: releaseGates.filter((gate) => gate && gate.required && !gate.done).length,
+      patchReviews: objectCount(packets.patchReview),
+      diffFileReviews: objectCount(packets.diffReview && packets.diffReview.files),
+      diffHunkReviews: objectCount(packets.diffReview && packets.diffReview.hunks),
+      evidence: objectCount(packets.evidence),
+    },
+    packets,
+  };
+}
+
+function summarizeHandoffPacket(packet) {
+  const handoff = packet && typeof packet === "object" ? packet : {};
+  return {
+    schema: handoff.schema || "dossier.handoff/v1",
+    slug: handoff.slug || "",
+    title: handoff.title || "",
+    kind: handoff.kind || "dossier",
+    generatedAt: handoff.generatedAt || "",
+    totals: handoff.totals || {},
+    nextAgentInstruction: handoff.nextAgentInstruction || "",
+    dirtyEdits: Array.isArray(handoff.edits) ? handoff.edits.filter((entry) => entry && entry.dirty !== false) : [],
+    unresolvedReleaseGates: handoff.release && Array.isArray(handoff.release.unresolved) ? handoff.release.unresolved : [],
+    trustGaps: Array.isArray(handoff.trustGaps) ? handoff.trustGaps : [],
+    handoff,
   };
 }
 
@@ -576,6 +708,46 @@ async function handle(name, args) {
     if (!packet) return fail("provide `model`, `trust`, or `path`");
     if (packet.blocks) return text(summarizeTrustReports(trustReportsFromModel(packet), packet.meta && packet.meta.slug));
     return text(summarizeTrustReports(normalizeTrustPacket(packet), packet.slug));
+  }
+
+  if (name === "dossier_read_state") {
+    const packet = loadStatePacket(args, { allowPath: true });
+    if (!packet) return fail("provide `state` or `path`");
+    return text(summarizeStatePacket(packet));
+  }
+
+  if (name === "dossier_merge_state") {
+    const { model } = loadModel(args);
+    if (!model) return fail("provide `model` or `path`");
+    const state = loadStatePacket(args);
+    if (!state) return fail("provide `state` or `statePath`");
+    const merged = mergeStateIntoModel(model, state);
+    assertValidModel(merged);
+    const diff = diffStateAgainstModel(model, state);
+    if (args.outPath) writeFileSync(args.outPath, JSON.stringify(merged, null, 2) + "\n");
+    return text({ ok: true, path: args.outPath || null, diff, model: args.outPath ? undefined : merged });
+  }
+
+  if (name === "dossier_diff_state") {
+    const { model } = loadModel(args);
+    if (!model) return fail("provide `model` or `path`");
+    const state = loadStatePacket(args);
+    if (!state) return fail("provide `state` or `statePath`");
+    return text(diffStateAgainstModel(model, state));
+  }
+
+  if (name === "dossier_read_handoff") {
+    const handoff = args.handoff || (args.handoffPath ? JSON.parse(readFileSync(args.handoffPath, "utf8")) : null);
+    if (handoff) return text(summarizeHandoffPacket(handoff));
+    const { model } = loadModel(args);
+    if (!model) return fail("provide `handoff`, `handoffPath`, `model`, or `path`");
+    return text(summarizeHandoffPacket(buildHandoffPacket(model, loadStatePacket(args) || {})));
+  }
+
+  if (name === "dossier_prompt") {
+    const { model } = loadModel(args);
+    if (!model) return fail("provide `model` or `path`");
+    return text(promptForModel(model, loadStatePacket(args) || {}));
   }
 
   if (name === "dossier_resume_context") {

@@ -520,6 +520,81 @@ test("state packets merge into models and produce agent handoff prompts", () => 
   assert.match(promptForModel(model, state), /stable kebab-case ids/);
 });
 
+test("mcp state workflow tools read merge diff handoff and prompt packets", async () => {
+  const { handleTool } = await import("../mcp/server.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "dossier-mcp-state-"));
+  const modelPath = join(dir, "stateful.dossier.json");
+  const statePath = join(dir, "stateful.state.json");
+  const mergedPath = join(dir, "stateful.merged.json");
+  const handoffPath = join(dir, "stateful.handoff.json");
+  const model = {
+    dossierVersion: "1.0",
+    kind: "implementation",
+    meta: { title: "Stateful MCP", slug: "stateful-mcp" },
+    blocks: [
+      { type: "review-board", title: "Options", candidates: [{ id: "ship-it", title: "Ship it", summary: "Ready." }] },
+      { type: "process-board", title: "Work", items: [{ id: "fix-export", title: "Fix export", summary: "Make exports clear." }] },
+      { type: "code-editor", id: "config-editor", title: "Config", targetPath: "config.json", code: "{\"enabled\":false}\n" },
+      { type: "release-checklist", title: "Release", gates: [{ id: "manual-qa", title: "Manual QA", required: true, status: "todo" }] },
+      { type: "patch-set", title: "Patches", patches: [{ id: "export-patch", title: "Export patch", status: "proposed" }] },
+    ],
+  };
+  const state = {
+    schema: "dossier.state/v1",
+    slug: "stateful-mcp",
+    updatedAt: "2026-07-03T00:00:00.000Z",
+    packets: {
+      decisions: { "ship-it": { selected: true, notes: "Do this first." } },
+      process: { "fix-export": { verdict: "approve", notes: "Keep labels explicit." } },
+      edits: { "config-editor": { text: "{\"enabled\":true}\n", targetPath: "config.json", dirty: true } },
+      release: { "manual-qa": { done: false, required: true, notes: "Needs browser smoke." } },
+      patchReview: { "export-patch": { verdict: "approve", notes: "Apply." } },
+      evidence: { "browser-smoke": { title: "Browser smoke", kind: "manual", trust: "medium", body: "Export center inspected." } },
+    },
+  };
+  writeFileSync(modelPath, JSON.stringify(model, null, 2) + "\n");
+  writeFileSync(statePath, JSON.stringify(state, null, 2) + "\n");
+
+  let res = await handleTool("dossier_read_state", { path: statePath });
+  let body = JSON.parse(res.content[0].text);
+  assert.equal(body.schema, "dossier.state/v1");
+  assert.equal(body.totals.selectedDecisions, 1);
+  assert.equal(body.totals.dirtyEdits, 1);
+  assert.equal(body.totals.unresolvedReleaseGates, 1);
+
+  res = await handleTool("dossier_merge_state", { path: modelPath, statePath });
+  body = JSON.parse(res.content[0].text);
+  assert.equal(body.model.blocks[0].candidates[0].selected, true);
+  assert.equal(body.model.blocks[2].code, "{\"enabled\":true}\n");
+  assert.ok(body.diff.changed.some((entry) => entry.id === "config-editor"));
+  assert.equal(JSON.parse(readFileSync(modelPath, "utf8")).blocks[2].code, "{\"enabled\":false}\n", "merge without outPath does not overwrite source");
+
+  res = await handleTool("dossier_merge_state", { path: modelPath, statePath, outPath: mergedPath });
+  body = JSON.parse(res.content[0].text);
+  assert.equal(body.path, mergedPath);
+  assert.equal(JSON.parse(readFileSync(mergedPath, "utf8")).blocks[2].code, "{\"enabled\":true}\n");
+
+  res = await handleTool("dossier_diff_state", { path: modelPath, statePath });
+  body = JSON.parse(res.content[0].text);
+  assert.ok(body.changed.some((entry) => entry.id === "config-editor"));
+  assert.ok(body.added.some((entry) => entry.type === "evidence-log"));
+
+  res = await handleTool("dossier_read_handoff", { path: modelPath, statePath });
+  body = JSON.parse(res.content[0].text);
+  assert.equal(body.schema, "dossier.handoff/v1");
+  assert.equal(body.totals.selectedDecisions, 1);
+  assert.equal(body.unresolvedReleaseGates.length, 1);
+  writeFileSync(handoffPath, JSON.stringify(body.handoff, null, 2) + "\n");
+  res = await handleTool("dossier_read_handoff", { handoffPath });
+  body = JSON.parse(res.content[0].text);
+  assert.equal(body.handoff.schema, "dossier.handoff/v1");
+
+  res = await handleTool("dossier_prompt", { path: modelPath, statePath });
+  assert.match(res.content[0].text, /Keep export semantics clear/);
+  const handoffSchema = await handleTool("dossier_get_packet_schema", { name: "handoff.schema.json" });
+  assert.ok(handoffSchema.content[0].text.includes("dossier.handoff/v1"));
+});
+
 test("lint warns about agent handoff quality issues", () => {
   const result = lintModel({
     dossierVersion: "1.0",

@@ -415,6 +415,7 @@ Core MCP tools:
 | Read human state | `dossier_read_decisions`, `dossier_read_process`, `dossier_read_edits`, `dossier_read_verdicts`, `dossier_read_release` |
 | Review packets | `dossier_read_patch_review`, `dossier_read_diff_review` |
 | Trust and provenance | `dossier_read_trust`, `dossier_record_claim` |
+| State workflow | `dossier_read_state`, `dossier_merge_state`, `dossier_diff_state`, `dossier_read_handoff`, `dossier_prompt` |
 | Update models | `dossier_apply_edits`, `dossier_apply_process`, `dossier_apply_patch_review`, `dossier_record_run`, `dossier_attach_patchset` |
 | Closeout | `dossier_resume_context`, `dossier_closeout_digest`, `dossier_closeout_model` |
 | Packet schemas | `dossier_get_packet_schema` |
