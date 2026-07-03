@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
-import { generateFile, validateModel, registerBlock, esc, inlineMd, slugify } from "../src/index.mjs";
+import { formatLintWarnings, generateFile, lintModel, mergeStateIntoModel, promptForModel, validateModel, registerBlock, esc, inlineMd, slugify } from "../src/index.mjs";
 import { addPack, listPacks, loadTrustedPackPlugins, resolveTemplateRef, trustPack } from "../src/packs.mjs";
 import {
   WORKSPACE_MANIFEST,
@@ -43,6 +43,7 @@ const VALUE_FLAGS = new Set([
   "since",
   "checks",
   "updated",
+  "state",
 ]);
 const flags = {};
 const args = [];
@@ -87,10 +88,12 @@ const USAGE = [
   "  dossier build <file.dossier.json> ...    validate + render to <slug>.html (+ .md)",
   "  dossier serve <file.dossier.json>        build + live-reload dev server (--open, --port)",
   "  dossier validate <file.dossier.json> ... check a model without rendering",
+  "  dossier lint <file.dossier.json> ...     warn about authoring, trust, and packet quality issues",
   "  dossier diff <old.json> <new.json>      structural diff between two versions",
   "  dossier catalog <dir>                    index a folder of dossiers (+ link graph)",
   "  dossier publish <dir> [--out <dir>]      build a static dossier site with catalog index",
-  "  dossier export <file> --format docx|md|pdf  export to Word, Markdown, or PDF",
+  "  dossier export <file> --format docx|md|pdf|json  export source or --state-merged output",
+  "  dossier prompt <file.dossier.json>       print an AI authoring/update prompt for this dossier",
   "  dossier pack add <repo-or-path>          register a local or Git-backed template/plugin pack",
   "  dossier pack trust <name>                allow a registered pack to load render plugins",
   "  dossier pack list                        list registered packs from dossier.lock.json",
@@ -103,7 +106,7 @@ const USAGE = [
   "  dossier mcp                              run the MCP server (stdio) for agents",
   "",
   "Starters (--kind): " + STARTERS.join(", "),
-  "Flags: --theme <pack>, --skin console-slate, --embed (write <slug>.embed.html), --no-validate (build without validating), --pack <name>, --template <pack/id>",
+  "Flags: --theme <pack>, --skin console-slate, --embed (write <slug>.embed.html), --no-validate (build without validating), --strict (fail on lint warnings), --state <packet.json>, --pack <name>, --template <pack/id>",
 ].join("\n");
 
 async function loadPacksFromFlag() {
@@ -136,9 +139,10 @@ if (cmd === "build" && args.length) {
   }
   for (const f of args) {
     try {
-      const r = await generateFile(f, { validate: flags["no-validate"] ? false : true, theme: flags.theme, skin: flags.skin, embed: !!flags.embed });
+      const r = await generateFile(f, { validate: flags["no-validate"] ? false : true, strict: !!flags.strict, theme: flags.theme, skin: flags.skin, embed: !!flags.embed });
       console.log("✓ " + r.htmlPath);
       if (r.embedPath) console.log("  embed: " + r.embedPath);
+      if (r.lint && r.lint.length) console.warn("  lint:\n  - " + r.lint.map((w) => `${w.path}: ${w.message}`).join("\n  - "));
     } catch (e) {
       console.error("✗ " + f + ":\n  " + e.message.replace(/\n/g, "\n  "));
       process.exitCode = 1;
@@ -153,9 +157,10 @@ if (cmd === "build" && args.length) {
         clearTimeout(t);
         t = setTimeout(async () => {
           try {
-            const r = await generateFile(f, { validate: flags["no-validate"] ? false : true, theme: flags.theme, skin: flags.skin, embed: !!flags.embed });
+            const r = await generateFile(f, { validate: flags["no-validate"] ? false : true, strict: !!flags.strict, theme: flags.theme, skin: flags.skin, embed: !!flags.embed });
             console.log("↻ " + r.htmlPath);
             if (r.embedPath) console.log("  embed: " + r.embedPath);
+            if (r.lint && r.lint.length) console.warn("  lint:\n  - " + r.lint.map((w) => `${w.path}: ${w.message}`).join("\n  - "));
           } catch (e) {
             console.error("✗ " + e.message.replace(/\n/g, "\n  "));
           }
@@ -178,6 +183,21 @@ if (cmd === "build" && args.length) {
       else {
         console.error("✗ " + f + ":\n  - " + errors.join("\n  - "));
         process.exitCode = 1;
+      }
+    } catch (e) {
+      console.error("✗ " + f + ": " + e.message);
+      process.exitCode = 1;
+    }
+  }
+} else if (cmd === "lint" && args.length) {
+  for (const f of args) {
+    try {
+      const model = JSON.parse(readFileSync(f, "utf8"));
+      const { warnings } = lintModel(model);
+      if (!warnings.length) console.log("✓ " + f + " has no lint warnings");
+      else {
+        console.warn("⚠ " + f + ":\n  - " + formatLintWarnings(warnings).replace(/\n/g, "\n  - "));
+        if (flags.strict) process.exitCode = 1;
       }
     } catch (e) {
       console.error("✗ " + f + ": " + e.message);
@@ -324,7 +344,9 @@ if (cmd === "build" && args.length) {
   const f = args[0];
   const fmt = String(flags.format || "docx").toLowerCase();
   try {
-    const model = JSON.parse(readFileSync(f, "utf8"));
+    const sourceModel = JSON.parse(readFileSync(f, "utf8"));
+    const state = flags.state ? JSON.parse(readFileSync(flags.state, "utf8")) : null;
+    const model = state ? mergeStateIntoModel(sourceModel, state) : sourceModel;
     const slug = (model.meta && model.meta.slug) || basename(f).replace(/\.(dossier\.)?json$/i, "");
     if (fmt === "docx") {
       const { exportDocx } = await import("../src/export.mjs");
@@ -344,10 +366,23 @@ if (cmd === "build" && args.length) {
       const out = flags.out || slug + ".pdf";
       writeFileSync(out, await exportPdf(html));
       console.log("✓ " + out);
+    } else if (fmt === "json" || fmt === "merged-json") {
+      const out = flags.out || slug + (state ? ".merged.dossier.json" : ".json");
+      writeFileSync(out, JSON.stringify(model, null, 2) + "\n");
+      console.log("✓ " + out);
     } else {
-      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf)");
+      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json)");
       process.exitCode = 1;
     }
+  } catch (e) {
+    console.error("✗ " + e.message);
+    process.exitCode = 1;
+  }
+} else if (cmd === "prompt" && args.length) {
+  try {
+    const model = JSON.parse(readFileSync(args[0], "utf8"));
+    const state = flags.state ? JSON.parse(readFileSync(flags.state, "utf8")) : {};
+    console.log(promptForModel(model, state));
   } catch (e) {
     console.error("✗ " + e.message);
     process.exitCode = 1;

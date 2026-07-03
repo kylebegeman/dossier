@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFil
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
-import { esc, generate, generateFile, inlineMd, parseUnifiedDiff, registerBlock, slugify, validateModel } from "../src/index.mjs";
+import { buildHandoffPacket, esc, generate, generateFile, inlineMd, lintModel, mergeStateIntoModel, parseUnifiedDiff, promptForModel, registerBlock, slugify, validateModel } from "../src/index.mjs";
 import { diffModels } from "../src/diff.mjs";
 import { addPack, listPacks, loadTrustedPackPlugins, readPackManifest, resolveTemplateRef, trustPack } from "../src/packs.mjs";
 import { collectReleaseEvidence, writeReleaseEvidence } from "../src/release.mjs";
@@ -447,6 +447,64 @@ test("mcp apply and closeout tools update models with packet state", async () =>
   assert.equal(model.blocks.at(-1).type, "process-receipt");
 });
 
+test("state packets merge into models and produce agent handoff prompts", () => {
+  const model = {
+    dossierVersion: "1.0",
+    kind: "implementation",
+    meta: { title: "Stateful", slug: "stateful" },
+    blocks: [
+      { type: "review-board", title: "Options", candidates: [{ id: "ship-it", title: "Ship it", summary: "Ready." }] },
+      { type: "process-board", title: "Work", items: [{ id: "fix-export", title: "Fix export", summary: "Make exports clear." }] },
+      { type: "code-editor", id: "config-editor", title: "Config", targetPath: "config.json", code: "{\"enabled\":false}" },
+      { type: "release-checklist", title: "Release", gates: [{ id: "manual-qa", title: "Manual QA", required: true, status: "todo" }] },
+      { type: "patch-set", title: "Patches", patches: [{ id: "export-patch", title: "Export patch", status: "proposed" }] },
+    ],
+  };
+  const state = {
+    schema: "dossier.state/v1",
+    updatedAt: "2026-07-03T00:00:00.000Z",
+    packets: {
+      decisions: { "ship-it": { selected: true, notes: "Do this first." } },
+      process: { "fix-export": { verdict: "approve", notes: "Keep labels explicit." } },
+      edits: { "config-editor": { text: "{\"enabled\":true}", targetPath: "config.json", dirty: true } },
+      release: { "manual-qa": { done: true, notes: "Passed browser smoke." } },
+      patchReview: { "export-patch": { verdict: "approve", notes: "Apply." } },
+      evidence: { "browser-smoke": { title: "Browser smoke", kind: "manual", trust: "medium", body: "Export center inspected." } },
+    },
+  };
+  const merged = mergeStateIntoModel(model, state);
+  assert.equal(merged.blocks[0].candidates[0].selected, true);
+  assert.equal(merged.blocks[1].items[0].verdict, "approve");
+  assert.equal(merged.blocks[2].code, "{\"enabled\":true}");
+  assert.equal(merged.blocks[3].gates[0].status, "done");
+  assert.equal(merged.blocks[4].patches[0].status, "accepted");
+  assert.equal(merged.blocks[5].type, "evidence-log");
+  const handoff = buildHandoffPacket(model, state);
+  assert.equal(handoff.schema, "dossier.handoff/v1");
+  assert.equal(handoff.totals.selectedDecisions, 1);
+  assert.equal(handoff.totals.dirtyEdits, 1);
+  assert.match(promptForModel(model, state), /stable kebab-case ids/);
+});
+
+test("lint warns about agent handoff quality issues", () => {
+  const result = lintModel({
+    dossierVersion: "1.0",
+    meta: { title: "Lint" },
+    blocks: [
+      { type: "code-editor", title: "Missing target", code: "x" },
+      { type: "trust-report", title: "Trust", sources: [{ id: "source-one", label: "Source" }], claims: [{ id: "claim-one", claim: "Claim", sources: ["missing-source"], evidence: ["missing-evidence"] }] },
+      { type: "release-checklist", title: "Release", gates: [{ id: "gate-one", title: "Gate", required: true, status: "done" }] },
+      { type: "prose", markdown: "Missing footnote[^src]." },
+    ],
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.warnings.some((warning) => /targetPath/.test(warning.message)));
+  assert.ok(result.warnings.some((warning) => /missing source/.test(warning.message)));
+  assert.ok(result.warnings.some((warning) => /missing evidence/.test(warning.message)));
+  assert.ok(result.warnings.some((warning) => /release gate/.test(warning.message)));
+  assert.ok(result.warnings.some((warning) => /footnote reference/.test(warning.message)));
+});
+
 test("serve exposes validated save-back and patch import endpoints", async () => {
   const { serve } = await import("../src/serve.mjs");
   const dir = mkdtempSync(join(tmpdir(), "dossier-serve-"));
@@ -471,13 +529,19 @@ test("serve exposes validated save-back and patch import endpoints", async () =>
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Untitled editor", text: "const a = 2;\n" }),
     });
+    assert.equal(res.status, 403, "write endpoints reject missing save tokens");
+    res = await fetch(live.url + "/__save-editor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Dossier-Token": live.saveToken },
+      body: JSON.stringify({ title: "Untitled editor", text: "const a = 2;\n" }),
+    });
     assert.equal(res.ok, true, await res.text());
     let model = JSON.parse(readFileSync(file, "utf8"));
     assert.equal(model.blocks[0].code, "const a = 2;\n");
 
     res = await fetch(live.url + "/__append-patchset", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Dossier-Token": live.saveToken },
       body: JSON.stringify({ type: "patch-set", title: "Empty", patches: [] }),
     });
     assert.equal(res.status, 400);
@@ -486,7 +550,7 @@ test("serve exposes validated save-back and patch import endpoints", async () =>
 
     res = await fetch(live.url + "/__append-patchset", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Dossier-Token": live.saveToken },
       body: JSON.stringify({ type: "patch-set", title: "Imported", patches: [{ id: "patch-one", title: "Patch one" }] }),
     });
     assert.equal(res.ok, true, await res.text());
@@ -495,7 +559,7 @@ test("serve exposes validated save-back and patch import endpoints", async () =>
 
     res = await fetch(live.url + "/__save-model", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Dossier-Token": live.saveToken },
       body: JSON.stringify({
         model: {
           dossierVersion: "1.0",

@@ -36,12 +36,13 @@ export const LIVE = `<style>
 .ds-live-json textarea{width:100%;height:100%;min-height:420px;border:0;padding:14px 16px;background:var(--ds-bg);color:var(--ds-ink);font:12.5px/1.55 var(--ds-mono);resize:none}
 .ds-live-status{padding:8px 12px;border-top:1px solid var(--ds-line);color:var(--ds-ink-3);font-size:12px}
 @media(max-width:760px){.ds-live-body{grid-template-columns:1fr}.ds-live-blocks{border-right:0;border-bottom:1px solid var(--ds-line);max-height:260px}.ds-live-model{padding:10px}}
-</style><script type="importmap">${CODEMIRROR_IMPORT_MAP}</script><script type="module" src="${CODEMIRROR_BOOTSTRAP_PATH}"></script><script>
-try{new EventSource('/__reload').onmessage=function(){location.reload()}}catch(e){}
+	</style><script type="importmap">${CODEMIRROR_IMPORT_MAP}</script><script type="module" src="${CODEMIRROR_BOOTSTRAP_PATH}"></script><script>
+	window.__DOSSIER_SAVE_TOKEN__="__DOSSIER_SAVE_TOKEN__";
+	try{new EventSource('/__reload').onmessage=function(){location.reload()}}catch(e){}
 (function(){
   function $(s,r){return (r||document).querySelector(s)}
   function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function post(url,payload){return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t||"request failed")});return r.json();});}
+	  function post(url,payload){return fetch(url,{method:"POST",headers:{"Content-Type":"application/json","X-Dossier-Token":window.__DOSSIER_SAVE_TOKEN__||""},body:JSON.stringify(payload)}).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t||"request failed")});return r.json();});}
   function toast(msg){var t=$("[data-toast]");if(!t)return; t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},1800);}
   function btn(label,cls){var b=document.createElement("button");b.className=cls||"ds-btn ds-btn-line";b.type="button";b.textContent=label;return b;}
   function editorHost(ta){return ta&&ta.closest("[data-host-editor]");}

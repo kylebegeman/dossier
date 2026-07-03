@@ -3,8 +3,11 @@ import { dirname, join, basename } from "node:path";
 import { generate } from "./generate.mjs";
 import { validateModel } from "./validate.mjs";
 import { applyPresentationOptions } from "./presentation.mjs";
+import { lintModel } from "./lint.mjs";
 
 export { generate, validateModel };
+export { formatLintWarnings, lintModel } from "./lint.mjs";
+export { HANDOFF_SCHEMA, STATE_SCHEMA, buildHandoffPacket, diffStateAgainstModel, mergeStateIntoModel, normalizeStatePacket, promptForModel } from "./state.mjs";
 export { publishDir } from "./publish.mjs";
 export {
   PACK_CACHE_DIR,
@@ -48,6 +51,12 @@ export async function generateFile(path, opts = {}) {
     }
   }
   const dir = dirname(path);
+  const lint = opts.lint === false ? { warnings: [] } : lintModel(model);
+  if (opts.strict && lint.warnings.length) {
+    const err = new Error("dossier lint warnings:\n  - " + lint.warnings.map((w) => `${w.path}: ${w.message}`).join("\n  - "));
+    err.lint = lint.warnings;
+    throw err;
+  }
   const { html, embedHtml, md } = await generate(model, { baseDir: dir });
   const slug = (model.meta && model.meta.slug) || basename(path).replace(/\.(dossier\.)?json$/i, "");
   const htmlPath = join(dir, slug + ".html");
@@ -56,5 +65,5 @@ export async function generateFile(path, opts = {}) {
   writeFileSync(htmlPath, html);
   if (opts.embed) writeFileSync(embedPath, embedHtml);
   writeFileSync(mdPath, md);
-  return { htmlPath, embedPath: opts.embed ? embedPath : null, mdPath, slug };
+  return { htmlPath, embedPath: opts.embed ? embedPath : null, mdPath, slug, lint: lint.warnings };
 }

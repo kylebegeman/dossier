@@ -3,6 +3,7 @@
 
 import { createServer } from "node:http";
 import { watch, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { generateFile, validateModel } from "./index.mjs";
 import { LIVE } from "./live-runtime.mjs";
 import { CODEMIRROR_BOOTSTRAP, CODEMIRROR_BOOTSTRAP_PATH, codeMirrorModuleSource, codeMirrorSpecForPath } from "./live-codemirror.mjs";
@@ -95,6 +96,7 @@ function openUrl(url) {
 export async function serve(file, opts = {}) {
   const port = opts.port === undefined || opts.port === null ? 4321 : Number(opts.port);
   let htmlPath = null;
+  const saveToken = randomBytes(16).toString("hex");
 
   async function rebuild() {
     try {
@@ -113,6 +115,12 @@ export async function serve(file, opts = {}) {
   }
 
   const clients = new Set();
+  function requireSaveToken(req, res) {
+    if (req.headers["x-dossier-token"] === saveToken) return true;
+    res.writeHead(403, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: false, error: "invalid dossier save token" }));
+    return false;
+  }
   const server = createServer(async (req, res) => {
     const url = new URL(req.url || "/", "http://localhost");
     if (req.url === "/__reload") {
@@ -139,6 +147,7 @@ export async function serve(file, opts = {}) {
       return;
     }
     if (req.method === "POST" && req.url === "/__save-editor") {
+      if (!requireSaveToken(req, res)) return;
       try {
         saveEditorToModel(file, await readBody(req));
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -150,6 +159,7 @@ export async function serve(file, opts = {}) {
       return;
     }
     if (req.method === "POST" && req.url === "/__append-patchset") {
+      if (!requireSaveToken(req, res)) return;
       try {
         appendPatchSet(file, await readBody(req));
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -161,6 +171,7 @@ export async function serve(file, opts = {}) {
       return;
     }
     if (req.method === "POST" && req.url === "/__save-model") {
+      if (!requireSaveToken(req, res)) return;
       try {
         saveModel(file, await readBody(req));
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -172,7 +183,8 @@ export async function serve(file, opts = {}) {
       return;
     }
     try {
-      const html = readFileSync(htmlPath, "utf8").replace("</body>", () => LIVE + "</body>");
+      const liveRuntime = LIVE.replace(/__DOSSIER_SAVE_TOKEN__/g, saveToken);
+      const html = readFileSync(htmlPath, "utf8").replace("</body>", () => liveRuntime + "</body>");
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(html);
     } catch {
@@ -212,6 +224,7 @@ export async function serve(file, opts = {}) {
   });
   return {
     url,
+    saveToken,
     server,
     watcher,
     close() {
