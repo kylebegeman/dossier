@@ -127,7 +127,7 @@ next agent needs the full browser state or a merged model.
 ## stat-strip, KPI figures
 ```json
 { "type": "stat-strip", "stats": [
-  { "value": "42", "label": "Block types", "delta": { "value": "+5", "label": "this release", "tone": "up" } },
+  { "value": "43", "label": "Block types", "delta": { "value": "+1", "label": "citation block", "tone": "up" } },
   { "value": "0", "label": "Runtime deps", "delta": "view-time" } ] }
 ```
 `delta` is optional. It can be a string or `{ "value": "...", "label": "...", "tone": "up|down|positive|negative|good|bad|warn|neutral" }`.
@@ -222,6 +222,14 @@ Agents should read that packet with `dossier_read_diff_review`.
 ```json
 { "type": "references", "items": [ { "label": "Source", "url": "https://…", "signal": "Why it matters", "use": "How to use it" } ] }
 ```
+
+## citations, numbered bibliography; `[@id]` in any text field links to them
+```json
+{ "type": "citations", "items": [
+  { "id": "src", "title": "Source title", "authors": ["Author"], "year": "2026", "source": "Publisher", "url": "https://example.com", "accessed": "2026-07-03", "note": "Why this source matters." }
+] }
+```
+Reference a citation inline with `[@src]`. Place the `citations` block near the end.
 
 ## decision-matrix, static options × criteria
 ```json

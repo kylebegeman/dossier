@@ -32,6 +32,10 @@ function inlineMd(s, ctx) {
     const fn = ctx.footnotes && ctx.footnotes.get(id);
     return fn ? `<sup class="ds-fnref"><a id="fnref-${esc(id)}" href="#fn-${esc(id)}">${fn.num}</a></sup>` : m;
   });
+  t = t.replace(/\[@([a-z0-9-]+)\]/g, (m, id) => {
+    const cite = ctx.citations && ctx.citations.get(id);
+    return cite ? `<sup class="ds-citeref"><a href="#cite-${esc(id)}" title="${esc(cite.title || cite.source || id)}">[${cite.num}]</a></sup>` : m;
+  });
   t = t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2">$1</a>');
   t = t.replace(/\[\[([^\]]+)\]\]/g, (_, ref) => {
     const key = ref.trim().toLowerCase();
@@ -350,6 +354,31 @@ function renderTrustReport(b, ctx) {
       sourceTable +
       `<div class="ds-process-list ds-trust-claims">${claimCards}</div>`
   );
+}
+
+const citationAuthors = (item) => {
+  const authors = item.authors || item.author;
+  return Array.isArray(authors) ? authors.filter(Boolean).join(", ") : String(authors || "");
+};
+
+const citationSource = (item) => item.source || item.publisher || item.journal || item.site || "";
+
+function citationParts(item) {
+  return [
+    citationAuthors(item),
+    item.year || item.date || "",
+    citationSource(item),
+    item.accessed ? `accessed ${item.accessed}` : "",
+  ].filter(Boolean);
+}
+
+function citationLabel(item) {
+  const title = item.title || item.label || item.id || "Untitled source";
+  const parts = citationParts(item);
+  return [citationAuthors(item), item.year ? `(${item.year})` : "", title, citationSource(item), item.url || ""]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 }
 
 // ---- block renderers -------------------------------------------------------
@@ -811,6 +840,27 @@ const renderers = {
       .join("");
     return wrap("footnotes", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : `<h3 id="${esc(b.id)}">Notes</h3>`) + `<ol class="ds-footnotes">${items}</ol>`);
   },
+  citations(b, ctx) {
+    const items = (b.items || [])
+      .map((it, index) => {
+        const id = it.id || slugify(it.title || "citation");
+        const cite = ctx.citations && ctx.citations.get(id);
+        const num = cite ? cite.num : index + 1;
+        const title = it.title || it.label || id;
+        const linkedTitle = it.url ? `<a href="${esc(safeUrl(it.url))}">${esc(title)}</a>` : `<span>${esc(title)}</span>`;
+        const meta = citationParts(it);
+        const quote = it.quote ? `<blockquote>${inlineMd(it.quote, ctx)}</blockquote>` : "";
+        const note = it.note || it.notes ? `<p>${inlineMd(it.note || it.notes, ctx)}</p>` : "";
+        return (
+          `<li id="cite-${esc(id)}" value="${num}">` +
+          `<div class="ds-cite-main">${linkedTitle}</div>` +
+          (meta.length ? `<div class="ds-cite-meta">${meta.map(esc).join(" · ")}</div>` : "") +
+          `${quote}${note}</li>`
+        );
+      })
+      .join("");
+    return wrap("citations", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : `<h3 id="${esc(b.id)}">Citations</h3>`) + `<ol class="ds-citations">${items}</ol>`);
+  },
   chart(b) {
     return wrap("chart", b.id, (b.title ? `<h3 id="${esc(b.id)}">${esc(b.title)}</h3>` : "") + `<div class="ds-chart">${chartSvg(b)}</div>`);
   },
@@ -906,6 +956,15 @@ function blockMd(b) {
   } else if (t === "glossary") {
     lines.push(`### ${b.title || "Glossary"}`, "");
     (b.terms || []).forEach((tt) => lines.push(`- **${tt.term}**: ${tt.definition}`));
+  } else if (t === "citations") {
+    lines.push(`### ${b.title || "Citations"}`, "");
+    (b.items || []).forEach((it, i) => {
+      const title = it.url ? `[${it.title || it.label || it.id}](${it.url})` : it.title || it.label || it.id || "Untitled source";
+      const meta = citationParts(it).join("; ");
+      lines.push(`${i + 1}. ${title}${meta ? `. ${meta}` : ""}`);
+      if (it.quote) lines.push(`   > ${it.quote}`);
+      if (it.note || it.notes) lines.push(`   ${it.note || it.notes}`);
+    });
   } else if (t === "diagram") {
     if (b.title) lines.push(`### ${b.title}`, "");
     lines.push("```" + (b.format || "dot"), b.spec, "```");
@@ -1107,6 +1166,24 @@ function collectFootnotes(blocks, map) {
   visit(blocks);
 }
 
+function collectCitations(blocks, map) {
+  let n = map.size;
+  const visit = (arr) =>
+    (arr || []).forEach((b) => {
+      if (b.type === "citations")
+        (b.items || []).forEach((it) => {
+          if (it.id && !map.has(it.id)) map.set(it.id, { num: ++n, ...it });
+        });
+      if (b.blocks) visit(b.blocks);
+      if (b.left) visit(b.left);
+      if (b.right) visit(b.right);
+      if (b.tabs) b.tabs.forEach((t) => visit(t.blocks));
+      if (b.candidates) b.candidates.forEach((c) => c.blocks && visit(c.blocks));
+      if (b.items) b.items.forEach((it) => it.blocks && visit(it.blocks));
+    });
+  visit(blocks);
+}
+
 // ---- charts: data -> inline SVG (hand-rolled, no dependency) ----------------
 
 const fmtNum = (v) => (Math.abs(v) >= 1000 ? v.toLocaleString("en-US") : String(v));
@@ -1179,6 +1256,7 @@ function buildToc(blocks) {
     "upstream-response",
     "release-checklist",
     "decision-log",
+    "citations",
   ]);
   (blocks || []).forEach((b) => {
     if (b.type === "hero") toc.push({ id: b.id, label: b.title, level: 1 });
@@ -1367,9 +1445,10 @@ export async function generate(model, opts = {}) {
   stripBuildFields(model);
   await enrich(model, opts.baseDir);
   const meta = model.meta || {};
-  const ctx = { seq: 0, glossary: new Map(), footnotes: new Map(), baseUrl: meta.baseUrl || "" };
+  const ctx = { seq: 0, glossary: new Map(), footnotes: new Map(), citations: new Map(), baseUrl: meta.baseUrl || "" };
   collectGlossary(model.blocks, ctx.glossary);
   collectFootnotes(model.blocks, ctx.footnotes);
+  collectCitations(model.blocks, ctx.citations);
   // assign ids up front so TOC + render agree
   assignIds(model.blocks);
 
@@ -1533,5 +1612,5 @@ function knownBlockTypes() {
 }
 
 // Helpers reused by the React port (single source of truth).
-export { esc, slugify, inlineMd, richTextHtml, toMarkdown, agentDigest, collectGlossary, collectFootnotes, buildToc, assignIds, enrich, stripBuildFields, renderBlock, registerBlock, knownBlockTypes, chartSvg };
+export { esc, slugify, inlineMd, richTextHtml, toMarkdown, agentDigest, collectGlossary, collectFootnotes, collectCitations, buildToc, assignIds, enrich, stripBuildFields, renderBlock, registerBlock, knownBlockTypes, chartSvg };
 // renderShell is exported at its definition (above).

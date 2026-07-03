@@ -38,7 +38,7 @@ export { THEMES } from "./themes.mjs";
 export { SKINS, resolveSkin, skinNames } from "./skins.mjs";
 export { exportConfluenceStorage, exportDocx, exportNotionMarkdown, exportPdf, exportSlidesHtml } from "./export.mjs";
 // Plugin authoring surface.
-export { registerBlock, esc, inlineMd, richTextHtml, slugify, chartSvg, knownBlockTypes, parseUnifiedDiff } from "./generate.mjs";
+export { registerBlock, esc, inlineMd, richTextHtml, slugify, chartSvg, knownBlockTypes, parseUnifiedDiff, collectCitations } from "./generate.mjs";
 
 export async function generateFile(path, opts = {}) {
   const model = JSON.parse(readFileSync(path, "utf8"));

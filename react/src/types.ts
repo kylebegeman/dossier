@@ -34,7 +34,7 @@ export type BlockType =
   | "code-editor" | "patch-set" | "diff-view" | "verification-run" | "evidence-log"
   | "trust-report" | "verdict-gate" | "process-receipt" | "finding-list" | "comment-thread"
   | "cycle-board" | "integration-report" | "upstream-response" | "release-checklist"
-  | "decision-log" | "figure" | "math" | "chart" | "footnotes" | "receipt";
+  | "decision-log" | "figure" | "math" | "chart" | "footnotes" | "citations" | "receipt";
 
 // A block is discriminated by `type`; variant fields are loosely typed for the dispatcher.
 // `_hl` / `_svg` are populated by the build-time enrichment pass.

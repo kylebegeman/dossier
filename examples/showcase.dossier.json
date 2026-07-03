@@ -29,9 +29,9 @@
       "type": "hero",
       "eyebrow": "Live demo",
       "title": "One JSON file becomes this",
-      "lede": "Everything below, navigation, search, theme, code, diagrams, charts, math, and an interactive review board, lives in **one self-contained HTML file** with no external assets. The page is a projection of the JSON your AI wrote.",
+      "lede": "Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in **one self-contained HTML file** with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].",
       "pills": [
-        "42 block types",
+        "43 block types",
         "Self-contained",
         "Agent-readable",
         "Light + dark"
@@ -61,9 +61,9 @@
       "type": "stat-strip",
       "stats": [
         {
-          "value": "42",
+          "value": "43",
           "label": "Block types",
-          "delta": { "value": "+5", "label": "process blocks", "tone": "up" }
+          "delta": { "value": "+1", "label": "citation block", "tone": "up" }
         },
         {
           "value": "0",
@@ -725,6 +725,22 @@
         {
           "id": "island",
           "text": "Reference a note inline with a bracketed caret id; it links here and back."
+        }
+      ]
+    },
+    {
+      "type": "citations",
+      "title": "Citations",
+      "items": [
+        {
+          "id": "dossier-readme",
+          "title": "Dossier README",
+          "authors": ["Kyle Begeman"],
+          "year": "2026",
+          "source": "GitHub",
+          "url": "https://github.com/kylebegeman/dossier",
+          "accessed": "2026-07-03",
+          "note": "Canonical feature and workflow overview for the Dossier project."
         }
       ]
     }

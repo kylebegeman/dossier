@@ -37,7 +37,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "node bin/dossier.mjs build examples/*.json",
+    "build": "node bin/dossier.mjs build examples/*.dossier.json",
     "example": "node bin/dossier.mjs build examples/sample.dossier.json",
     "test": "node --test",
     "serve": "node bin/dossier.mjs serve",

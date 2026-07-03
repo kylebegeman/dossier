@@ -6,11 +6,11 @@ updated: "2026-06-29"
 ---
 # One JSON file becomes this
 
-Everything below, navigation, search, theme, code, diagrams, charts, math, and an interactive review board, lives in **one self-contained HTML file** with no external assets. The page is a projection of the JSON your AI wrote.
+Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in **one self-contained HTML file** with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].
 
 > **Use the full-page toolbar.** In the full HTML artifact, **Edit** changes text in place, the color swatch restyles live in the **Theme Studio**, and **Export** gives you Markdown, JSON, or the agent digest. From the CLI, `dossier export` also writes **Word** (charts and diagrams embedded as images) or **PDF**.
 
-**42** Block types (+5 process blocks) · **0** Runtime deps (view-time network free) · **2** Renderers (Node + React) (same model) · **100%** Self-contained (HTML + source)
+**43** Block types (+1 citation block) · **0** Runtime deps (view-time network free) · **2** Renderers (Node + React) (same model) · **100%** Self-contained (HTML + source)
 
 ### For humans
 
@@ -361,3 +361,8 @@ Attach the verification run to the work item before closeout.
 
 - **island**: The embedded `#dossier-model` JSON that is the source of truth for the page.
 
+
+### Citations
+
+1. [Dossier README](https://github.com/kylebegeman/dossier). Kyle Begeman; 2026; GitHub; accessed 2026-07-03
+   Canonical feature and workflow overview for the Dossier project.

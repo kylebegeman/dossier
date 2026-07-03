@@ -102,6 +102,15 @@ function childBlocks(block) {
   return out;
 }
 
+const citationAuthors = (item) => {
+  const authors = item.authors || item.author;
+  return Array.isArray(authors) ? authors.filter(Boolean).join(", ") : String(authors || "");
+};
+
+const citationSource = (item) => item.source || item.publisher || item.journal || item.site || "";
+const citationParts = (item) =>
+  [citationAuthors(item), item.year || item.date || "", citationSource(item), item.accessed ? `accessed ${item.accessed}` : ""].filter(Boolean);
+
 function blockToConfluence(block, depth = 1) {
   const titleTag = "h" + Math.min(Math.max(depth, 1), 6);
   const out = [];
@@ -212,6 +221,17 @@ function blockToConfluence(block, depth = 1) {
       break;
     case "footnotes":
       out.push(`<${titleTag}>${html(block.title || "Notes")}</${titleTag}><ol>${(block.items || []).map((item) => `<li id="fn-${html(item.id)}">${portableInlineHtml(item.text)}</li>`).join("")}</ol>`);
+      break;
+    case "citations":
+      out.push(`<${titleTag}>${html(block.title || "Citations")}</${titleTag}><ol>${(block.items || [])
+        .map((item) => {
+          const title = item.url ? `<a href="${html(safeHref(item.url))}">${html(item.title || item.label || item.id || "Untitled source")}</a>` : html(item.title || item.label || item.id || "Untitled source");
+          const meta = citationParts(item).map(html).join(" · ");
+          const note = item.note || item.notes ? `<p>${portableInlineHtml(item.note || item.notes)}</p>` : "";
+          const quote = item.quote ? `<blockquote>${portableInlineHtml(item.quote)}</blockquote>` : "";
+          return `<li id="cite-${html(item.id || "")}"><p>${title}${meta ? `<br /><em>${meta}</em>` : ""}</p>${quote}${note}</li>`;
+        })
+        .join("")}</ol>`);
       break;
     case "glossary":
       out.push(`<${titleTag}>${html(block.title || "Glossary")}</${titleTag}><ul>${(block.terms || []).map((term) => `<li><strong>${html(term.term)}</strong>: ${portableInlineHtml(term.definition)}</li>`).join("")}</ul>`);
@@ -343,6 +363,16 @@ function blockToNotion(block, depth = 1) {
     case "footnotes":
       if (block.title) out.push(`${h} ${plain(block.title)}`, "");
       (block.items || []).forEach((item) => out.push(`[^${item.id}]: ${portableMarkdown(item.text)}`));
+      break;
+    case "citations":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.items || []).forEach((item, index) => {
+        const title = item.url ? `[${plain(item.title || item.label || item.id || "Untitled source")}](${item.url})` : plain(item.title || item.label || item.id || "Untitled source");
+        const meta = citationParts(item).join("; ");
+        out.push(`${index + 1}. ${title}${meta ? `. ${meta}` : ""}`);
+        if (item.quote) out.push(`   > ${portableMarkdown(item.quote)}`);
+        if (item.note || item.notes) out.push(`   ${portableMarkdown(item.note || item.notes)}`);
+      });
       break;
     case "glossary":
       out.push(`${h} ${plain(block.title || "Glossary")}`, "");
@@ -752,6 +782,15 @@ async function block(b, out, ctx) {
     case "footnotes":
       out.push(H(b.title || "Notes", HeadingLevel.HEADING_3));
       (b.items || []).forEach((it, i) => out.push(P((i + 1) + ". " + plain(it.text))));
+      break;
+    case "citations":
+      out.push(H(b.title || "Citations", HeadingLevel.HEADING_3));
+      (b.items || []).forEach((it, i) => {
+        const label = [plain(it.title || it.label || it.id || "Untitled source"), ...citationParts(it).map(plain), it.url || ""].filter(Boolean).join(". ");
+        out.push(P((i + 1) + ". " + label));
+        if (it.quote) out.push(P("Quote: " + plain(it.quote), { run: { italics: true } }));
+        if (it.note || it.notes) out.push(P(plain(it.note || it.notes)));
+      });
       break;
     case "receipt":
       out.push(H(b.title || "Generation receipt", HeadingLevel.HEADING_3));

@@ -299,6 +299,51 @@ test("portable exports target Confluence, Notion, and slides", async () => {
   assert.ok(slides.includes("&lt;script&gt;alert(1)&lt;/script&gt;"), "slides export keeps hostile code inert");
 });
 
+test("citations render, lint, validate, and export consistently", async () => {
+  const model = {
+    dossierVersion: "1.0",
+    kind: "research",
+    meta: { title: "Cited Research", slug: "cited-research" },
+    blocks: [
+      { type: "prose", heading: "Claim", markdown: "Use explicit citations for durable claims [@owasp]." },
+      {
+        type: "citations",
+        title: "Sources",
+        items: [
+          {
+            id: "owasp",
+            title: "OWASP Top 10",
+            authors: ["OWASP Foundation"],
+            year: "2025",
+            source: "OWASP",
+            url: "https://owasp.org/www-project-top-ten/",
+            accessed: "2026-07-03",
+            note: "Use for security risk framing.",
+          },
+        ],
+      },
+    ],
+  };
+
+  assert.deepEqual(validateModel(model).errors, []);
+  assert.deepEqual(lintModel(model).warnings, []);
+  const { html, md } = await generate(structuredClone(model), {});
+  assert.ok(html.includes('class="ds-citeref"'), "inline citation reference renders");
+  assert.ok(html.includes('href="#cite-owasp"'), "inline citation links to bibliography entry");
+  assert.ok(html.includes('id="cite-owasp"'), "citation entry has a stable anchor");
+  assert.ok(md.includes("### Sources"), "Markdown includes citations block");
+  assert.ok(md.includes("[OWASP Top 10](https://owasp.org/www-project-top-ten/)"), "Markdown preserves citation URL");
+
+  const missing = lintModel({ dossierVersion: "1.0", meta: { title: "Missing" }, blocks: [{ type: "prose", markdown: "Missing [@source]." }] });
+  assert.ok(missing.warnings.some((warning) => /citation reference "source"/.test(warning.message)));
+
+  const { exportConfluenceStorage, exportNotionMarkdown } = await import("../src/export.mjs");
+  const confluence = await exportConfluenceStorage(structuredClone(model), {});
+  assert.ok(confluence.includes('id="cite-owasp"'), "Confluence export preserves citation anchors");
+  const notion = await exportNotionMarkdown(structuredClone(model), {});
+  assert.ok(notion.includes("OWASP Top 10"), "Notion export includes citation entries");
+});
+
 test("process closeout blocks render and export agent-readable packet hooks", async () => {
   const model = {
     dossierVersion: "1.0",
@@ -650,7 +695,7 @@ test("lint warns about agent handoff quality issues", () => {
       { type: "code-editor", title: "Missing target", code: "x" },
       { type: "trust-report", title: "Trust", sources: [{ id: "source-one", label: "Source" }], claims: [{ id: "claim-one", claim: "Claim", sources: ["missing-source"], evidence: ["missing-evidence"] }] },
       { type: "release-checklist", title: "Release", gates: [{ id: "gate-one", title: "Gate", required: true, status: "done" }] },
-      { type: "prose", markdown: "Missing footnote[^src]." },
+      { type: "prose", markdown: "Missing footnote[^src] and citation [@source]." },
     ],
   });
   assert.equal(result.ok, false);
@@ -659,6 +704,7 @@ test("lint warns about agent handoff quality issues", () => {
   assert.ok(result.warnings.some((warning) => /missing evidence/.test(warning.message)));
   assert.ok(result.warnings.some((warning) => /release gate/.test(warning.message)));
   assert.ok(result.warnings.some((warning) => /footnote reference/.test(warning.message)));
+  assert.ok(result.warnings.some((warning) => /citation reference/.test(warning.message)));
 });
 
 test("serve exposes validated save-back and patch import endpoints", async () => {

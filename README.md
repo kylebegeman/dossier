@@ -10,7 +10,7 @@
 [![Output](https://img.shields.io/badge/output-single%20HTML%20file-7048e8.svg)](#how-dossier-works)
 [![Runtime](https://img.shields.io/badge/viewer%20runtime-zero%20external%20assets-c81e4a.svg)](#how-dossier-works)
 [![Agent Ready](https://img.shields.io/badge/agent%20ready-MCP%20%2B%20packets-0f7a52.svg)](#agent-workflows)
-[![Blocks](https://img.shields.io/badge/built--in%20blocks-42-9a5b00.svg)](#block-catalog)
+[![Blocks](https://img.shields.io/badge/built--in%20blocks-43-9a5b00.svg)](#block-catalog)
 [![Packs](https://img.shields.io/badge/packs-templates%20%2B%20trusted%20plugins-0f7a52.svg)](#packs-templates-and-plugins)
 [![Workspaces](https://img.shields.io/badge/workspaces-multi--dossier%20status-7048e8.svg)](#workspaces)
 [![Homebrew](https://img.shields.io/badge/homebrew-kylebegeman%2Ftap-0f7a52.svg)](https://github.com/kylebegeman/homebrew-tap)
@@ -132,7 +132,7 @@ npm run site
 
 | Example | Source | What it showcases | Use it when |
 |---|---|---|---|
-| [Block showcase](examples/showcase.html) | [`examples/showcase.dossier.json`](examples/showcase.dossier.json) | All 42 blocks, Console Slate skin, reader controls, export packets, process blocks, trust reports. | You want to inspect the full product surface. |
+| [Block showcase](examples/showcase.html) | [`examples/showcase.dossier.json`](examples/showcase.dossier.json) | All 43 blocks, Console Slate skin, reader controls, export packets, process blocks, trust reports. | You want to inspect the full product surface. |
 | [System overview](examples/dossier-overview.html) | [`examples/sample.dossier.json`](examples/sample.dossier.json) | Compact overview, hero, stats, flow, tables, and core export behavior. | You want the smallest useful starting point. |
 | [Product launch](examples/product-launch.html) | [`examples/product-launch.dossier.json`](examples/product-launch.dossier.json) | Product microsite, hero media, FAQ, launch claims, and polished public copy. | You need a product page, feature brief, or launch note. |
 | [Research brief](examples/research-brief.html) | [`examples/research-brief.dossier.json`](examples/research-brief.dossier.json) | Decision matrix, assumptions, references, and source-backed trust ledger. | You need research synthesis or competitive analysis. |
@@ -478,13 +478,13 @@ The generated static HTML still keeps the dependency-free textarea fallback, so 
 
 ## Block Catalog
 
-42 built-in block types, plus plugins:
+43 built-in block types, plus plugins:
 
 | Group | Blocks |
 |---|---|
 | Structure | `hero`, `section`, `two-col`, `tabs`, `prose` with paragraphs, bullets, and numbered lists |
 | At a glance | `summary-cards`, `stat-strip` with deltas, `flow`, `timeline`, `callout` |
-| Reference | `table`, `code`, `code-editor`, `patch-set`, `diff-view`, `diagram`, `references`, `faq`, `glossary` |
+| Reference | `table`, `code`, `code-editor`, `patch-set`, `diff-view`, `diagram`, `references`, `citations`, `faq`, `glossary` |
 | Media and data | `figure`, `math`, `chart` with static labels, `footnotes` |
 | Decisions | `decision-matrix`, `risk-register`, `assumptions`, `action-items`, `review-board`, `verdict-gate`, `decision-log` |
 | Process | `process-board` with row anchors, `verification-run`, `evidence-log`, `process-receipt`, `finding-list`, `comment-thread`, `cycle-board`, `integration-report`, `upstream-response`, `release-checklist` |

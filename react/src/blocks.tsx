@@ -10,7 +10,7 @@ export function registerComponent(type: string, Component: React.FC<{ b: any }>)
 import type { Block as B, PatchItem as PatchItemModel, ProcessItem as ProcessItemModel, ReviewCandidate } from "./types.js";
 
 // Render context (glossary + baseUrl) for inline-markdown resolution. Set once per render.
-let CTX: any = { glossary: new Map<string, string>(), baseUrl: "" };
+let CTX: any = { glossary: new Map<string, string>(), footnotes: new Map<string, any>(), citations: new Map<string, any>(), baseUrl: "" };
 export function setCtx(ctx: any) {
   CTX = ctx;
 }
@@ -28,6 +28,13 @@ const safeUrl = (u?: string) => {
   const s = String(u || "").trim();
   return /^(javascript|data|vbscript):/i.test(s.replace(/[\s\x00-\x1f]+/g, "")) ? "#" : s;
 };
+const citationAuthors = (item: any) => {
+  const authors = item.authors || item.author;
+  return Array.isArray(authors) ? authors.filter(Boolean).join(", ") : String(authors || "");
+};
+const citationSource = (item: any) => item.source || item.publisher || item.journal || item.site || "";
+const citationParts = (item: any) =>
+  [citationAuthors(item), item.year || item.date || "", citationSource(item), item.accessed ? `accessed ${item.accessed}` : ""].filter(Boolean);
 
 const CopyIcon = (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -906,6 +913,27 @@ const Footnotes: React.FC<{ b: B }> = ({ b }) => (
   </Wrap>
 );
 
+const Citations: React.FC<{ b: B }> = ({ b }) => (
+  <Wrap type="citations" id={b.id}>
+    <h3 id={b.id}>{b.title || "Citations"}</h3>
+    <ol className="ds-citations">
+      {(b.items || []).map((it: any, i: number) => {
+        const id = it.id || slugify(it.title || "citation");
+        const cite = CTX.citations && CTX.citations.get(id);
+        const title = it.title || it.label || id;
+        return (
+          <li id={`cite-${id}`} value={cite ? cite.num : i + 1} key={i}>
+            <div className="ds-cite-main">{it.url ? <a href={safeUrl(it.url)}>{title}</a> : <span>{title}</span>}</div>
+            {citationParts(it).length > 0 && <div className="ds-cite-meta">{citationParts(it).join(" · ")}</div>}
+            {it.quote && <blockquote dangerouslySetInnerHTML={md(it.quote)} />}
+            {(it.note || it.notes) && <p dangerouslySetInnerHTML={md(it.note || it.notes)} />}
+          </li>
+        );
+      })}
+    </ol>
+  </Wrap>
+);
+
 const Chart: React.FC<{ b: B }> = ({ b }) => (
   <Wrap type="chart" id={b.id}>
     {b.title && <h3 id={b.id}>{b.title}</h3>}
@@ -985,6 +1013,7 @@ export const Block: React.FC<{ b: B }> = ({ b }) => {
     case "figure": return <Figure b={b} />;
     case "math": return <Math b={b} />;
     case "footnotes": return <Footnotes b={b} />;
+    case "citations": return <Citations b={b} />;
     case "chart": return <Chart b={b} />;
     case "receipt": return <Receipt b={b} />;
     default: {

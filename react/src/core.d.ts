@@ -8,6 +8,7 @@ declare module "*/generate.mjs" {
   export const agentDigest: (model: any) => string;
   export const collectGlossary: (blocks: any[], map: Map<string, string>) => void;
   export const collectFootnotes: (blocks: any[], map: Map<string, { num: number; text: string }>) => void;
+  export const collectCitations: (blocks: any[], map: Map<string, any>) => void;
   export const buildToc: (blocks: any[]) => { id: string; label: string; level: number }[];
   export const assignIds: (blocks: any[]) => void;
   export const enrich: (model: any, baseDir?: string) => Promise<void>;

@@ -47,6 +47,7 @@ const REQUIRED = {
   figure: ["src"],
   math: ["tex"],
   footnotes: ["items"],
+  citations: ["items"],
   chart: ["data"],
   receipt: [],
 };
@@ -68,6 +69,7 @@ const ID_COLLECTIONS = {
   "release-checklist": ["gates"],
   "decision-log": ["decisions"],
   footnotes: ["items"],
+  citations: ["items"],
 };
 
 function validateNestedIds(b, p, errors) {

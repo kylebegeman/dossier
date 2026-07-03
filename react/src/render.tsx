@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { enrich, assignIds, collectGlossary, collectFootnotes, buildToc, toMarkdown, agentDigest, renderShell, stripBuildFields } from "../../src/generate.mjs";
+import { enrich, assignIds, collectGlossary, collectFootnotes, collectCitations, buildToc, toMarkdown, agentDigest, renderShell, stripBuildFields } from "../../src/generate.mjs";
 import { applyPresentationOptions } from "../../src/presentation.mjs";
 import { Block, setCtx } from "./blocks";
 import type { DossierModel } from "./types";
@@ -19,7 +19,9 @@ export async function renderDossier(model: DossierModel, opts: { baseDir?: strin
   collectGlossary(model.blocks, glossary);
   const footnotes = new Map<string, { num: number; text: string }>();
   collectFootnotes(model.blocks, footnotes);
-  setCtx({ glossary, footnotes, baseUrl: meta.baseUrl || "" });
+  const citations = new Map<string, any>();
+  collectCitations(model.blocks, citations);
+  setCtx({ glossary, footnotes, citations, baseUrl: meta.baseUrl || "" });
 
   const body = renderToStaticMarkup(
     <>{model.blocks.map((b, i) => <Block b={b} key={b.id || i} />)}</>

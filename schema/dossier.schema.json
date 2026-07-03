@@ -412,6 +412,9 @@
           "$ref": "#/$defs/blocks/footnotes"
         },
         {
+          "$ref": "#/$defs/blocks/citations"
+        },
+        {
           "$ref": "#/$defs/blocks/chart"
         },
         {
@@ -1956,6 +1959,89 @@
                   "pattern": "^[a-z0-9-]+$"
                 },
                 "text": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "citations": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/blockBase"
+          }
+        ],
+        "required": [
+          "type",
+          "items"
+        ],
+        "properties": {
+          "type": {
+            "const": "citations"
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "authors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "author": {
+                  "type": "string"
+                },
+                "year": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "publisher": {
+                  "type": "string"
+                },
+                "journal": {
+                  "type": "string"
+                },
+                "site": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "accessed": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "notes": {
                   "type": "string"
                 }
               }
