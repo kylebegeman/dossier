@@ -36,6 +36,7 @@ export {
 export { RELEASE_DIR, collectReleaseEvidence, writeReleaseEvidence } from "./release.mjs";
 export { THEMES } from "./themes.mjs";
 export { SKINS, resolveSkin, skinNames } from "./skins.mjs";
+export { exportConfluenceStorage, exportDocx, exportNotionMarkdown, exportPdf, exportSlidesHtml } from "./export.mjs";
 // Plugin authoring surface.
 export { registerBlock, esc, inlineMd, richTextHtml, slugify, chartSvg, knownBlockTypes, parseUnifiedDiff } from "./generate.mjs";
 

@@ -159,7 +159,7 @@ The Pages build also emits a hosted gallery at `examples.html`, with every examp
 | Trust | Structured source records, per-claim status and confidence, source/evidence links, MCP trust readback. |
 | Publishing | `catalog` and `publish` commands for static dossier sites. |
 | Workspaces | Manifest-driven multi-dossier scan, readiness index, query, and static workspace publish. |
-| Export | Export Center for source JSON, state packets, merged JSON, agent handoff packets, Markdown, DOCX, PDF through Playwright, plus React SSR/components. |
+| Export | Export Center for source JSON, state packets, merged JSON, agent handoff packets, Markdown, DOCX, PDF through Playwright, Confluence storage XHTML, Notion Markdown, slide decks, plus React SSR/components. |
 | Presentation | Theme packs, per-document `meta.theme` tokens, and the opt-in `console-slate` skin. |
 | Extensibility | Repo-backed packs with data-only templates, explicit-trust render plugins, and lockfile provenance. |
 | Release automation | Release evidence dossiers from git ranges, checks, changed files, gates, trust claims, and CI artifacts. |
@@ -238,6 +238,9 @@ dossier export plan.dossier.json --format merged-json --state plan.state.json
 dossier export plan.dossier.json --format handoff --state plan.state.json
 dossier export plan.dossier.json --format state-diff --state plan.state.json
 dossier export plan.dossier.json --format prompt --state plan.state.json
+dossier export plan.dossier.json --format confluence --state plan.state.json
+dossier export plan.dossier.json --format notion --state plan.state.json
+dossier export plan.dossier.json --format slides --state plan.state.json
 dossier prompt plan.dossier.json --state plan.state.json
 ```
 
@@ -511,7 +514,7 @@ Every block has a copy-paste example in [`skill/references/blocks.md`](skill/ref
 | `dossier workspace query [manifest\|dir] [--kind <kind>] [--tag <tag>] [--needs process\|release\|trust\|invalid]` | Filter workspace dossiers by metadata, open work, or invalid dossier diagnostics. |
 | `dossier workspace publish [manifest\|dir] --out site` | Publish every workspace dossier plus the workspace index into one static site. |
 | `dossier release collect [--version <v>] [--since <ref>] [--checks <cmd,cmd>]` | Generate release evidence JSON, HTML, and Markdown. |
-| `dossier export <file> --format docx\|md\|pdf\|json\|merged-json\|handoff\|state-diff\|prompt [--state packet.json]` | Export to Word, Markdown, PDF, source JSON, state-applied JSON, agent handoff, state diff, or AI prompt. |
+| `dossier export <file> --format docx\|md\|pdf\|confluence\|notion\|slides\|json\|merged-json\|handoff\|state-diff\|prompt [--state packet.json]` | Export to Word, Markdown, PDF, Confluence storage XHTML, Notion Markdown, slide deck HTML, source JSON, state-applied JSON, agent handoff, state diff, or AI prompt. |
 | `dossier prompt <file> [--state packet.json]` | Print an AI authoring or update prompt based on a dossier and optional state packet. |
 | `dossier mcp` | Run the MCP server over stdio. |
 

@@ -92,7 +92,7 @@ const USAGE = [
   "  dossier diff <old.json> <new.json>      structural diff between two versions",
   "  dossier catalog <dir>                    index a folder of dossiers (+ link graph)",
   "  dossier publish <dir> [--out <dir>]      build a static dossier site with catalog index",
-  "  dossier export <file> --format docx|md|pdf|json|merged-json|handoff|state-diff|prompt  export source, state-applied, or agent packets",
+  "  dossier export <file> --format docx|md|pdf|confluence|notion|slides|json|merged-json|handoff|state-diff|prompt  export source, state-applied, or agent packets",
   "  dossier prompt <file.dossier.json>       print an AI authoring/update prompt for this dossier",
   "  dossier pack add <repo-or-path>          register a local or Git-backed template/plugin pack",
   "  dossier pack trust <name>                allow a registered pack to load render plugins",
@@ -370,6 +370,21 @@ if (cmd === "build" && args.length) {
       const out = flags.out || slug + ".pdf";
       writeFileSync(out, await exportPdf(html));
       console.log("✓ " + out);
+    } else if (fmt === "confluence") {
+      const { exportConfluenceStorage } = await import("../src/export.mjs");
+      const out = flags.out || slug + ".confluence.xhtml";
+      writeFileSync(out, await exportConfluenceStorage(renderedModel, { baseDir: dirname(f) }));
+      console.log("✓ " + out);
+    } else if (fmt === "notion") {
+      const { exportNotionMarkdown } = await import("../src/export.mjs");
+      const out = flags.out || slug + ".notion.md";
+      writeFileSync(out, await exportNotionMarkdown(renderedModel, { baseDir: dirname(f) }));
+      console.log("✓ " + out);
+    } else if (fmt === "slides") {
+      const { exportSlidesHtml } = await import("../src/export.mjs");
+      const out = flags.out || slug + ".slides.html";
+      writeFileSync(out, await exportSlidesHtml(renderedModel, { baseDir: dirname(f) }));
+      console.log("✓ " + out);
     } else if (fmt === "json") {
       const out = flags.out || slug + ".json";
       writeFileSync(out, JSON.stringify(sourceModel, null, 2) + "\n");
@@ -391,7 +406,7 @@ if (cmd === "build" && args.length) {
       writeFileSync(out, promptForModel(sourceModel, state || {}) + "\n");
       console.log("✓ " + out);
     } else {
-      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, json, merged-json, handoff, state-diff, prompt)");
+      console.error("✗ unknown format: " + fmt + " (supported: docx, md, pdf, confluence, notion, slides, json, merged-json, handoff, state-diff, prompt)");
       process.exitCode = 1;
     }
   } catch (e) {

@@ -30,8 +30,431 @@ const plain = (s) =>
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\[\^[a-z0-9-]+\]/g, "")
+    .replace(/\[@[a-z0-9-]+\]/g, "")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/\[\[([^\]]+)\]\]/g, "$1");
+
+const html = (s) =>
+  String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const safeHref = (s) => (/^(javascript|data|vbscript):/i.test(String(s || "").trim().replace(/[\s\x00-\x1f]+/g, "")) ? "#" : String(s || ""));
+
+function portableInlineHtml(s) {
+  return html(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[\^([a-z0-9-]+)\]/g, (_, id) => `<sup>[${html(id)}]</sup>`)
+    .replace(/\[@([a-z0-9-]+)\]/g, (_, id) => `<sup>[@${html(id)}]</sup>`)
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, (_, label, href) => `<a href="${html(safeHref(href))}">${label}</a>`)
+    .replace(/\[\[([^\]]+)\]\]/g, "$1");
+}
+
+function paragraphHtml(markdown) {
+  return String(markdown || "")
+    .trim()
+    .split(/\n{2,}/)
+    .filter(Boolean)
+    .map((part) => `<p>${portableInlineHtml(part.replace(/\n/g, " "))}</p>`)
+    .join("\n");
+}
+
+function tableHtml(columns = [], rows = []) {
+  if (!columns.length) return "";
+  const head = `<tr>${columns.map((c) => `<th>${portableInlineHtml(c)}</th>`).join("")}</tr>`;
+  const body = rows.map((row) => `<tr>${(Array.isArray(row) ? row : []).map((cell) => `<td>${portableInlineHtml(cell)}</td>`).join("")}</tr>`).join("");
+  return `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+
+function codeMacro(code, language = "") {
+  const lang = language ? `<ac:parameter ac:name="language">${html(language)}</ac:parameter>` : "";
+  return `<ac:structured-macro ac:name="code">${lang}<ac:plain-text-body><![CDATA[${String(code || "").replace(/\]\]>/g, "]]]]><![CDATA[>")}]]></ac:plain-text-body></ac:structured-macro>`;
+}
+
+const mdCell = (s) => String(plain(s)).replace(/\|/g, "\\|").replace(/\n/g, " ");
+function mdTable(columns = [], rows = []) {
+  if (!columns.length) return "";
+  return [
+    `| ${columns.map(mdCell).join(" | ")} |`,
+    `| ${columns.map(() => "---").join(" | ")} |`,
+    ...(rows || []).map((row) => `| ${(Array.isArray(row) ? row : []).map(mdCell).join(" | ")} |`),
+  ].join("\n");
+}
+
+function portableMarkdown(s) {
+  return String(s || "")
+    .replace(/\[\[([^\]]+)\]\]/g, "$1")
+    .replace(/\[\^([a-z0-9-]+)\]/g, "[^$1]")
+    .replace(/\[@([a-z0-9-]+)\]/g, "[@$1]");
+}
+
+function childBlocks(block) {
+  const out = [];
+  if (block.blocks) out.push(...block.blocks);
+  if (block.left) out.push(...block.left);
+  if (block.right) out.push(...block.right);
+  if (block.tabs) block.tabs.forEach((tab) => out.push(...(tab.blocks || [])));
+  if (block.candidates) block.candidates.forEach((item) => out.push(...(item.blocks || [])));
+  if (block.items) block.items.forEach((item) => out.push(...(item.blocks || [])));
+  return out;
+}
+
+function blockToConfluence(block, depth = 1) {
+  const titleTag = "h" + Math.min(Math.max(depth, 1), 6);
+  const out = [];
+  switch (block.type) {
+    case "hero":
+      out.push(`<h1>${html(block.title || "Dossier")}</h1>`);
+      if (block.lede) out.push(paragraphHtml(block.lede));
+      break;
+    case "section":
+      out.push(`<${titleTag}>${html(block.title || "Section")}</${titleTag}>`);
+      if (block.subtitle) out.push(paragraphHtml(block.subtitle));
+      (block.blocks || []).forEach((child) => out.push(blockToConfluence(child, depth + 1)));
+      break;
+    case "prose":
+      if (block.heading) out.push(`<${titleTag}>${html(block.heading)}</${titleTag}>`);
+      out.push(paragraphHtml(block.markdown));
+      break;
+    case "callout":
+      out.push(`<ac:structured-macro ac:name="info"><ac:rich-text-body>${block.title ? `<p><strong>${html(block.title)}</strong></p>` : ""}${paragraphHtml(block.body)}</ac:rich-text-body></ac:structured-macro>`);
+      break;
+    case "code":
+    case "code-editor":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(codeMacro(block.code, block.lang));
+      break;
+    case "table":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(tableHtml(block.columns, block.rows));
+      break;
+    case "references":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(tableHtml(["Source", "Signal", "Use"], (block.items || []).map((r) => [r.url ? `[${r.label}](${r.url})` : r.label, r.signal || "", r.use || ""])));
+      break;
+    case "decision-matrix":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(tableHtml(["Option", ...(block.criteria || [])], (block.options || []).map((o) => [o.name, ...(o.scores || [])])));
+      break;
+    case "risk-register":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(tableHtml(["Risk", "Likelihood", "Impact", "Mitigation"], (block.risks || []).map((r) => [r.risk, r.likelihood || "", r.impact || "", r.mitigation || ""])));
+      break;
+    case "summary-cards":
+      (block.cards || []).forEach((card) => out.push(`<${titleTag}>${html(card.title)}</${titleTag}>${paragraphHtml(card.body)}`));
+      break;
+    case "stat-strip":
+      out.push(`<ul>${(block.stats || []).map((s) => `<li><strong>${html(s.value)}</strong> ${html(s.label)}</li>`).join("")}</ul>`);
+      break;
+    case "flow":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(`<ol>${(block.steps || []).map((step) => `<li><strong>${html(step.title)}</strong>: ${portableInlineHtml(step.body)}</li>`).join("")}</ol>`);
+      break;
+    case "timeline":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(`<ul>${(block.phases || []).map((phase) => `<li><strong>${html(phase.label)}</strong>${phase.status ? ` (${html(phase.status)})` : ""}: ${portableInlineHtml(phase.body)}</li>`).join("")}</ul>`);
+      break;
+    case "action-items":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(`<ul>${(block.items || []).map((item) => `<li>${item.status === "done" ? "[x]" : "[ ]"} ${portableInlineHtml(item.title)}${item.owner ? ` (@${html(item.owner)})` : ""}</li>`).join("")}</ul>`);
+      break;
+    case "review-board":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      (block.candidates || []).forEach((item) => {
+        out.push(`<h${Math.min(depth + 1, 6)}>${html(item.title || item.id || "Item")}${item.status ? ` (${html(item.status)})` : ""}</h${Math.min(depth + 1, 6)}>`);
+        if (item.summary) out.push(paragraphHtml(item.summary));
+        if (item.body) out.push(paragraphHtml(item.body));
+        (item.blocks || []).forEach((child) => out.push(blockToConfluence(child, depth + 2)));
+      });
+      break;
+    case "process-board":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      (block.items || []).forEach((item) => {
+        out.push(`<h${Math.min(depth + 1, 6)}>${html(item.title || item.id || "Work item")}${item.status ? ` (${html(item.status)})` : ""}</h${Math.min(depth + 1, 6)}>`);
+        if (item.summary) out.push(paragraphHtml(item.summary));
+        out.push(tableHtml(["Field", "Value"], [["Owner", item.owner || ""], ["Priority", item.priority || ""], ["Verdict", item.verdict || ""], ["Files", (item.files || []).join(", ")], ["Verification", (item.verification || []).join(", ")]]));
+        if (item.body) out.push(paragraphHtml(item.body));
+        (item.blocks || []).forEach((child) => out.push(blockToConfluence(child, depth + 2)));
+      });
+      break;
+    case "patch-set":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      (block.patches || []).forEach((patch) => {
+        out.push(`<h${Math.min(depth + 1, 6)}>${html(patch.title || patch.id || "Patch")}</h${Math.min(depth + 1, 6)}>`);
+        if (patch.summary) out.push(paragraphHtml(patch.summary));
+        if (patch.diff) out.push(codeMacro(patch.diff, "diff"));
+      });
+      break;
+    case "diff-view":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(codeMacro(block.diff, "diff"));
+      break;
+    case "verification-run":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      (block.runs || []).forEach((run) => out.push(`<p><strong>${html(run.title || run.id || "Run")}</strong>${run.status ? ` (${html(run.status)})` : ""}</p>${run.command ? codeMacro(run.command, "bash") : ""}${run.actual ? paragraphHtml("Actual: " + run.actual) : ""}`));
+      break;
+    case "trust-report":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      if (block.summary) out.push(paragraphHtml(block.summary));
+      if (block.sources?.length) out.push(tableHtml(["Source", "Kind", "Trust", "Summary"], block.sources.map((s) => [s.label || s.id || "", s.kind || "", s.trust || "", s.summary || s.url || ""])));
+      if (block.claims?.length) out.push(tableHtml(["Claim", "Status", "Confidence", "Sources", "Evidence"], block.claims.map((c) => [c.claim || c.title || c.id || "", c.status || "", c.confidence || "", (c.sources || []).join(", "), (c.evidence || []).join(", ")])));
+      break;
+    case "figure":
+      if (block.src) out.push(`<p><img src="${html(safeHref(block._src || block.src))}" alt="${html(block.alt || block.caption || "")}" /></p>`);
+      if (block.caption) out.push(`<p><em>${portableInlineHtml(block.caption)}</em></p>`);
+      break;
+    case "chart":
+      if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+      out.push(chartSvg(block));
+      break;
+    case "footnotes":
+      out.push(`<${titleTag}>${html(block.title || "Notes")}</${titleTag}><ol>${(block.items || []).map((item) => `<li id="fn-${html(item.id)}">${portableInlineHtml(item.text)}</li>`).join("")}</ol>`);
+      break;
+    case "glossary":
+      out.push(`<${titleTag}>${html(block.title || "Glossary")}</${titleTag}><ul>${(block.terms || []).map((term) => `<li><strong>${html(term.term)}</strong>: ${portableInlineHtml(term.definition)}</li>`).join("")}</ul>`);
+      break;
+    default:
+      childBlocks(block).forEach((child) => out.push(blockToConfluence(child, depth)));
+      if (!childBlocks(block).length && (block.title || block.summary || block.body)) {
+        if (block.title) out.push(`<${titleTag}>${html(block.title)}</${titleTag}>`);
+        if (block.summary || block.body) out.push(paragraphHtml(block.summary || block.body));
+      }
+  }
+  return out.filter(Boolean).join("\n");
+}
+
+function blockToNotion(block, depth = 1) {
+  const h = "#".repeat(Math.min(Math.max(depth, 1), 3));
+  const out = [];
+  switch (block.type) {
+    case "hero":
+      out.push(`# ${plain(block.title || "Dossier")}`);
+      if (block.lede) out.push("", portableMarkdown(block.lede));
+      break;
+    case "section":
+      out.push(`${h} ${plain(block.title || "Section")}`);
+      if (block.subtitle) out.push("", portableMarkdown(block.subtitle));
+      (block.blocks || []).forEach((child) => out.push("", blockToNotion(child, depth + 1)));
+      break;
+    case "prose":
+      if (block.heading) out.push(`${h} ${plain(block.heading)}`, "");
+      out.push(portableMarkdown(block.markdown));
+      break;
+    case "callout":
+      out.push(`> ${block.title ? `**${plain(block.title)}** ` : ""}${portableMarkdown(block.body)}`);
+      break;
+    case "code":
+    case "code-editor":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push("```" + (block.lang || ""), block.code || "", "```");
+      break;
+    case "table":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push(mdTable(block.columns, block.rows));
+      break;
+    case "references":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push(mdTable(["Source", "Signal", "Use"], (block.items || []).map((r) => [r.url ? `[${r.label}](${r.url})` : r.label, r.signal || "", r.use || ""])));
+      break;
+    case "decision-matrix":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push(mdTable(["Option", ...(block.criteria || [])], (block.options || []).map((o) => [o.name, ...(o.scores || [])])));
+      break;
+    case "risk-register":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push(mdTable(["Risk", "Likelihood", "Impact", "Mitigation"], (block.risks || []).map((r) => [r.risk, r.likelihood || "", r.impact || "", r.mitigation || ""])));
+      break;
+    case "summary-cards":
+      (block.cards || []).forEach((card) => out.push(`### ${plain(card.title)}`, "", portableMarkdown(card.body)));
+      break;
+    case "flow":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.steps || []).forEach((step, index) => out.push(`${index + 1}. **${plain(step.title)}:** ${portableMarkdown(step.body)}`));
+      break;
+    case "timeline":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.phases || []).forEach((phase) => out.push(`- **${plain(phase.label)}**${phase.status ? ` (${phase.status})` : ""}: ${portableMarkdown(phase.body)}`));
+      break;
+    case "action-items":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.items || []).forEach((item) => out.push(`- [${item.status === "done" ? "x" : " "}] ${portableMarkdown(item.title)}${item.owner ? ` (@${item.owner})` : ""}`));
+      break;
+    case "review-board":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.candidates || []).forEach((item) => {
+        out.push(`### ${plain(item.title || item.id || "Item")}${item.status ? ` (${item.status})` : ""}`, "");
+        if (item.summary) out.push(portableMarkdown(item.summary), "");
+        if (item.body) out.push(portableMarkdown(item.body), "");
+        (item.blocks || []).forEach((child) => out.push(blockToNotion(child, depth + 1), ""));
+      });
+      break;
+    case "process-board":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.items || []).forEach((item) => {
+        out.push(`### ${plain(item.title || item.id || "Work item")}${item.status ? ` (${item.status})` : ""}`, "");
+        if (item.summary) out.push(portableMarkdown(item.summary), "");
+        if (item.owner) out.push(`- **Owner:** ${item.owner}`);
+        if (item.priority) out.push(`- **Priority:** ${item.priority}`);
+        if (item.verdict) out.push(`- **Verdict:** ${item.verdict}`);
+        if (item.files?.length) out.push(`- **Files:** ${item.files.join(", ")}`);
+        if (item.verification?.length) out.push(`- **Verification:** ${item.verification.join(", ")}`);
+        if (item.body) out.push("", portableMarkdown(item.body));
+        (item.blocks || []).forEach((child) => out.push("", blockToNotion(child, depth + 1)));
+      });
+      break;
+    case "patch-set":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.patches || []).forEach((patch) => {
+        out.push(`### ${plain(patch.title || patch.id || "Patch")}`, "");
+        if (patch.summary) out.push(portableMarkdown(patch.summary), "");
+        if (patch.diff) out.push("```diff", patch.diff, "```", "");
+      });
+      break;
+    case "diff-view":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push("```diff", block.diff || "", "```");
+      break;
+    case "verification-run":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.runs || []).forEach((run) => {
+        out.push(`### ${plain(run.title || run.id || "Run")}${run.status ? ` (${run.status})` : ""}`, "");
+        if (run.command) out.push("```sh", run.command, "```");
+        if (run.expected) out.push(`- **Expected:** ${portableMarkdown(run.expected)}`);
+        if (run.actual) out.push(`- **Actual:** ${portableMarkdown(run.actual)}`);
+      });
+      break;
+    case "trust-report":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      if (block.summary) out.push(portableMarkdown(block.summary), "");
+      if (block.sources?.length) out.push("### Sources", "", mdTable(["Source", "Kind", "Trust", "Summary"], block.sources.map((s) => [s.label || s.id || "", s.kind || "", s.trust || "", s.summary || s.url || ""])), "");
+      if (block.claims?.length) out.push("### Claims", "", mdTable(["Claim", "Status", "Confidence", "Sources", "Evidence"], block.claims.map((c) => [c.claim || c.title || c.id || "", c.status || "", c.confidence || "", (c.sources || []).join(", "), (c.evidence || []).join(", ")])));
+      break;
+    case "figure":
+      if (block.src) out.push(`![${plain(block.alt || block.caption || "figure")}](${block.src})`);
+      if (block.caption) out.push("", `_${portableMarkdown(block.caption)}_`);
+      break;
+    case "chart":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      out.push(mdTable(["Label", "Value"], (block.data || []).map((item) => [item.label, item.value])));
+      break;
+    case "footnotes":
+      if (block.title) out.push(`${h} ${plain(block.title)}`, "");
+      (block.items || []).forEach((item) => out.push(`[^${item.id}]: ${portableMarkdown(item.text)}`));
+      break;
+    case "glossary":
+      out.push(`${h} ${plain(block.title || "Glossary")}`, "");
+      (block.terms || []).forEach((term) => out.push(`- **${plain(term.term)}:** ${portableMarkdown(term.definition)}`));
+      break;
+    default:
+      if (block.title) out.push(`${h} ${plain(block.title)}`);
+      if (block.summary || block.body) out.push("", portableMarkdown(block.summary || block.body));
+      childBlocks(block).forEach((child) => out.push("", blockToNotion(child, depth + 1)));
+  }
+  return out.filter((line) => line !== undefined && line !== null).join("\n");
+}
+
+function slideCodeMacrosToHtml(body) {
+  const open = /<ac:structured-macro\b(?=[^>]*\bac:name="code")[^>]*>/g;
+  const plainOpen = "<ac:plain-text-body><![CDATA[";
+  const plainClose = "]]></ac:plain-text-body>";
+  const macroClose = "</ac:structured-macro>";
+  let out = "";
+  let cursor = 0;
+  let match;
+  while ((match = open.exec(body))) {
+    const macroEnd = body.indexOf(macroClose, open.lastIndex);
+    if (macroEnd < 0) break;
+    const macro = body.slice(match.index, macroEnd + macroClose.length);
+    const textStart = macro.indexOf(plainOpen);
+    const textEnd = macro.lastIndexOf(plainClose);
+    if (textStart < 0 || textEnd < textStart) {
+      open.lastIndex = macroEnd + macroClose.length;
+      continue;
+    }
+    const code = macro.slice(textStart + plainOpen.length, textEnd).replace(/\]\]\]\]><!\[CDATA\[>/g, "]]>");
+    out += body.slice(cursor, match.index) + `<pre><code>${html(code)}</code></pre>`;
+    cursor = macroEnd + macroClose.length;
+    open.lastIndex = cursor;
+  }
+  return out + body.slice(cursor);
+}
+
+function slideBody(block) {
+  const body = slideCodeMacrosToHtml(blockToConfluence(block, 2))
+    .replace(/<ac:[^>]+>/g, "")
+    .replace(/<\/ac:[^>]+>/g, "");
+  return body || paragraphHtml(block.summary || block.body || "");
+}
+
+export async function exportConfluenceStorage(model, opts = {}) {
+  await enrich(model, opts.baseDir);
+  const title = model.meta?.title || "Dossier";
+  const body = (model.blocks || []).map((block) => blockToConfluence(block, block.type === "hero" ? 1 : 2)).join("\n");
+  return [`<!-- Dossier Confluence storage export: ${html(title)} -->`, body].join("\n").trim() + "\n";
+}
+
+export async function exportNotionMarkdown(model, opts = {}) {
+  await enrich(model, opts.baseDir);
+  const meta = model.meta || {};
+  const lines = [`# ${plain(meta.title || "Dossier")}`];
+  if (meta.status || meta.updated || meta.owner) {
+    lines.push("", [meta.status && `Status: ${meta.status}`, meta.updated && `Updated: ${meta.updated}`, meta.owner && `Owner: ${meta.owner}`].filter(Boolean).join(" | "));
+  }
+  (model.blocks || []).forEach((block) => lines.push("", blockToNotion(block, block.type === "hero" ? 1 : 2)));
+  return lines.join("\n").replace(/\n{4,}/g, "\n\n\n").trim() + "\n";
+}
+
+export async function exportSlidesHtml(model, opts = {}) {
+  await enrich(model, opts.baseDir);
+  const meta = model.meta || {};
+  const title = meta.title || "Dossier";
+  const blocks = model.blocks || [];
+  const slides = blocks.length ? blocks : [{ type: "hero", title, lede: "" }];
+  const slideHtml = slides
+    .map((block, index) => {
+      const heading = block.title || block.heading || (block.type === "hero" ? title : block.type || "Slide");
+      return `<section class="slide" data-slide="${index}"><div class="slide-kicker">${html(block.type || "dossier")}</div><h1>${html(heading)}</h1><div class="slide-body">${slideBody(block)}</div><footer>${index + 1} / ${slides.length}</footer></section>`;
+    })
+    .join("\n");
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${html(title)} slides</title>
+<style>
+:root{color-scheme:light dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111217;color:#f7f4ee}
+body{margin:0;background:#111217;color:#f7f4ee}
+.deck{min-height:100vh}
+.slide{box-sizing:border-box;min-height:100vh;padding:7vh 8vw;display:none;grid-template-rows:auto auto 1fr auto;gap:22px;background:radial-gradient(circle at 86% 12%,rgba(112,72,232,.22),transparent 32%),#111217}
+.slide.active{display:grid}
+.slide-kicker{text-transform:uppercase;letter-spacing:.12em;color:#f0b6c4;font-size:13px;font-weight:750}
+h1{font-size:clamp(42px,7vw,96px);line-height:.94;margin:0;letter-spacing:0}
+.slide-body{font-size:clamp(18px,2.2vw,29px);line-height:1.42;max-width:1100px;color:#e8e2ef}
+.slide-body h1,.slide-body h2,.slide-body h3{font-size:1.25em;margin:.7em 0 .35em}
+.slide-body table{border-collapse:collapse;width:100%;font-size:.72em}
+.slide-body th,.slide-body td{border:1px solid rgba(255,255,255,.2);padding:.45em .6em;text-align:left}
+.slide-body pre{white-space:pre-wrap;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:18px;font-size:.62em;overflow:auto}
+.slide-body img,.slide-body svg{max-width:100%;max-height:48vh}
+footer{color:#a9a1b8;font-size:14px}
+.controls{position:fixed;right:18px;bottom:18px;display:flex;gap:8px}
+.controls button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 11px;font:inherit}
+@media print{body{background:#fff;color:#111}.slide{display:grid;min-height:100vh;break-after:page;background:#fff;color:#111}.slide-body{color:#222}.controls{display:none}}
+</style>
+</head>
+<body>
+<main class="deck">${slideHtml}</main>
+<nav class="controls" aria-label="Slide controls"><button type="button" data-prev>Previous</button><button type="button" data-next>Next</button></nav>
+<script>
+(function(){var slides=[].slice.call(document.querySelectorAll(".slide")),i=0;function show(n){i=Math.max(0,Math.min(slides.length-1,n));slides.forEach(function(s,x){s.classList.toggle("active",x===i);});}document.querySelector("[data-prev]").onclick=function(){show(i-1)};document.querySelector("[data-next]").onclick=function(){show(i+1)};document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" "){show(i+1);e.preventDefault();}else if(e.key==="ArrowLeft"){show(i-1);e.preventDefault();}});show(0);})();
+</script>
+</body>
+</html>
+`;
+}
 
 const P = (text, opts = {}) => new Paragraph({ children: [new TextRun({ text: plain(text), ...(opts.run || {}) })], ...(opts.para || {}) });
 const H = (text, heading) => new Paragraph({ text: plain(text), heading });

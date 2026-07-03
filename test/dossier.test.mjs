@@ -259,6 +259,46 @@ test("code-editor renders editable text hooks and edit packet export", async () 
   assert.ok(md.includes("```json"), "exports editor content to Markdown");
 });
 
+test("portable exports target Confluence, Notion, and slides", async () => {
+  const { exportConfluenceStorage, exportNotionMarkdown, exportSlidesHtml } = await import("../src/export.mjs");
+  const model = {
+    dossierVersion: "1.0",
+    kind: "plan",
+    meta: { title: "Portable Export", slug: "portable-export", status: "draft" },
+    blocks: [
+      { type: "hero", title: "Portable Export", lede: "Share a state-applied dossier across common workspaces." },
+      {
+        type: "section",
+        title: "Plan",
+        blocks: [
+          { type: "prose", heading: "Scope", markdown: "Publish **stable** exports with a [reference](https://example.com)." },
+          { type: "table", title: "Matrix", columns: ["Target", "Status"], rows: [["Confluence", "ready"], ["Notion", "ready"]] },
+          { type: "code-editor", id: "config-editor", title: "Config", lang: "json", code: "{\"enabled\":true}\n" },
+          { type: "code", title: "Unsafe sample", lang: "html", code: "<script>alert(1)</script>\n" },
+        ],
+      },
+    ],
+  };
+
+  const confluence = await exportConfluenceStorage(structuredClone(model), {});
+  assert.ok(confluence.includes("Dossier Confluence storage export"), "Confluence export identifies its source");
+  assert.ok(confluence.includes('<ac:structured-macro ac:name="code"'), "Confluence export maps code to a code macro");
+  assert.ok(confluence.includes("<table>"), "Confluence export preserves tables");
+  assert.ok(confluence.includes('href="https://example.com"'), "Confluence export keeps safe links");
+
+  const notion = await exportNotionMarkdown(structuredClone(model), {});
+  assert.ok(notion.includes("# Portable Export"), "Notion export has a document title");
+  assert.ok(notion.includes("| Target | Status |"), "Notion export preserves tables");
+  assert.ok(notion.includes("```json"), "Notion export preserves code fences");
+
+  const slides = await exportSlidesHtml(structuredClone(model), {});
+  assert.ok(slides.includes('<section class="slide"'), "slides export creates slide sections");
+  assert.ok(slides.includes("data-next"), "slides export includes navigation controls");
+  assert.ok(slides.includes("Portable Export"), "slides export includes document content");
+  assert.ok(!slides.includes("<script>alert(1)</script>"), "slides export escapes code text");
+  assert.ok(slides.includes("&lt;script&gt;alert(1)&lt;/script&gt;"), "slides export keeps hostile code inert");
+});
+
 test("process closeout blocks render and export agent-readable packet hooks", async () => {
   const model = {
     dossierVersion: "1.0",
@@ -803,6 +843,9 @@ test("cli exports state workflow artifacts with explicit semantics", () => {
   const handoffPath = join(dir, "handoff.json");
   const diffPath = join(dir, "state-diff.json");
   const promptPath = join(dir, "prompt.txt");
+  const confluencePath = join(dir, "workflow.confluence.xhtml");
+  const notionPath = join(dir, "workflow.notion.md");
+  const slidesPath = join(dir, "workflow.slides.html");
   writeFileSync(
     modelPath,
     JSON.stringify(
@@ -858,6 +901,18 @@ test("cli exports state workflow artifacts with explicit semantics", () => {
   result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "prompt", "--state", statePath, "--out", promptPath], { cwd: dir, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   assert.match(readFileSync(promptPath, "utf8"), /Current handoff summary/);
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "confluence", "--state", statePath, "--out", confluencePath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(readFileSync(confluencePath, "utf8").includes("{\"enabled\":true}"), "Confluence export uses the state-applied model");
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "notion", "--state", statePath, "--out", notionPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(readFileSync(notionPath, "utf8").includes("{\"enabled\":true}"), "Notion export uses the state-applied model");
+
+  result = spawnSync(process.execPath, [cli, "export", modelPath, "--format", "slides", "--state", statePath, "--out", slidesPath], { cwd: dir, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(readFileSync(slidesPath, "utf8").includes("{&quot;enabled&quot;:true}"), "slides export uses the state-applied model");
 });
 
 test("example pack templates validate", () => {
