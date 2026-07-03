@@ -6,6 +6,29 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, Ta
 import { chartSvg, enrich, parseUnifiedDiff } from "./generate.mjs";
 
 // Print the already-rendered, self-contained HTML to a PDF buffer via Playwright.
+export function pdfPrintOptions(opts = {}) {
+  const title = html(opts.title || "Dossier");
+  const headerFooter = opts.headerFooter !== false;
+  return {
+    format: opts.size || "A4",
+    printBackground: true,
+    preferCSSPageSize: true,
+    displayHeaderFooter: headerFooter,
+    headerTemplate: headerFooter
+      ? `<div style="box-sizing:border-box;width:100%;padding:0 14mm;font:9px system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>`
+      : "<div></div>",
+    footerTemplate: headerFooter
+      ? `<div style="box-sizing:border-box;width:100%;padding:0 14mm;font:9px system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#666;display:flex;justify-content:space-between"><span>Generated with Dossier</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`
+      : "<div></div>",
+    margin: {
+      top: opts.margin?.top || "20mm",
+      bottom: opts.margin?.bottom || "18mm",
+      left: opts.margin?.left || "14mm",
+      right: opts.margin?.right || "14mm",
+    },
+  };
+}
+
 export async function exportPdf(html, opts = {}) {
   const { withBrowser } = await import("./headless.mjs");
   return withBrowser(async (browser) => {
@@ -14,11 +37,7 @@ export async function exportPdf(html, opts = {}) {
     try {
       await page.setContent(html, { waitUntil: "load" });
       await page.emulateMedia({ media: "print" });
-      return await page.pdf({
-        format: opts.size || "A4",
-        printBackground: true,
-        margin: { top: "16mm", bottom: "16mm", left: "14mm", right: "14mm" },
-      });
+      return await page.pdf(pdfPrintOptions(opts));
     } finally {
       await page.close();
     }

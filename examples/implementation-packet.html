@@ -622,19 +622,32 @@ tbody tr:hover td{color:var(--ds-ink)}
 
 /* print / PDF */
 @media print{
+  @page{size:A4;margin:20mm 14mm 18mm}
   :root{--ds-bg:#fff;--ds-bg-2:#fff;--ds-ink:#111;--ds-ink-2:#333;--ds-ink-3:#666;--ds-line:#ddd;--ds-line-2:#ccc}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html{font-size:11pt}
+  body{background:#fff!important;color:#111!important}
   .ds-topbar,.ds-toc,.ds-totop,.ds-palette,.ds-modal,.ds-tool-modal,.ds-toast,.ds-studio,.ds-progress,.ds-skip,.ds-copy,.ds-review-bar,.ds-ritem-check,.ds-notes,.ds-toggle,.ds-code-copy,.ds-codeedit-actions,.ds-diff-files,.ds-process-verdict-wrap,.ds-release-gate textarea{display:none!important}
   .ds-layout{display:block}
   .ds-content{max-width:none}
-  .ds-shell{width:100%}
+  .ds-shell{width:100%;background:#fff;box-shadow:none}
   .ds-section[data-collapsed="1"] .ds-section-body{display:grid!important}
   .ds-ritem-wrap{grid-template-rows:1fr!important}
-  .ds-section,.ds-block,.ds-ritem,.ds-card,.ds-stat,.ds-chart,.ds-figure,.ds-codeedit,.ds-patch,.ds-diff-file,.ds-hunk,table,pre{break-inside:avoid}
+  .ds-section,.ds-block,.ds-hero,.ds-ritem,.ds-card,.ds-stat,.ds-chart,.ds-figure,.ds-codeedit,.ds-patch,.ds-diff-file,.ds-hunk,table,pre{break-inside:avoid-page;box-shadow:none}
+  .ds-section,.ds-block{border-color:#ddd}
+  .ds-block{margin-block:12pt}
+  .ds-hero{padding-top:0}
   .ds-reveal{opacity:1!important;transform:none!important}
-  h1,h2,h3,h4{break-after:avoid}
+  h1,h2,h3,h4{break-after:avoid;orphans:3;widows:3}
+  p,li,blockquote{orphans:3;widows:3}
+  pre,.ds-diff-line{white-space:pre-wrap;overflow:visible}
+  .ds-tablewrap{overflow:visible}
+  table{width:100%;page-break-inside:auto}
+  tr{break-inside:avoid-page}
+  img,svg,.ds-chart-svg{max-width:100%!important;height:auto}
   a{color:inherit;text-decoration:none}
-  .ds-reveal{opacity:1!important;transform:none!important}
+  .ds-content a[href^="http"]::after{content:" (" attr(href) ")";font-size:.86em;color:#666;overflow-wrap:anywhere}
+  .ds-content .ds-citeref a::after,.ds-content .ds-fnref a::after{content:""}
 }
 </style>
 </head>

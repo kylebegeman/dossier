@@ -1010,6 +1010,26 @@ test("presentation options layer base CSS, skin CSS, and document theme override
   assert.equal(island.meta.theme.accent, "#123456");
 });
 
+test("print CSS and PDF options preserve document polish", async () => {
+  const { html } = await generate({
+    dossierVersion: "1.0",
+    meta: { title: "Printable", slug: "printable" },
+    blocks: [{ type: "prose", markdown: "A linked source [docs](https://example.com/docs)." }],
+  });
+  const style = html.match(/<style>([\s\S]*?)<\/style>/)[1];
+  assert.ok(style.includes("@page{size:A4;margin:20mm 14mm 18mm}"), "print CSS declares PDF page margins");
+  assert.ok(style.includes("break-inside:avoid-page"), "print CSS avoids awkward page breaks");
+  assert.ok(style.includes('.ds-content a[href^="http"]::after'), "print CSS reveals link destinations");
+
+  const { pdfPrintOptions } = await import("../src/export.mjs");
+  const opts = pdfPrintOptions({ title: "Printable <Plan>" });
+  assert.equal(opts.displayHeaderFooter, true);
+  assert.equal(opts.preferCSSPageSize, true);
+  assert.equal(opts.margin.top, "20mm");
+  assert.ok(opts.headerTemplate.includes("Printable &lt;Plan&gt;"), "PDF header title is escaped");
+  assert.ok(opts.footerTemplate.includes("pageNumber"), "PDF footer includes page numbering");
+});
+
 test("author-supplied _svg/_math fields are dropped (no raw HTML injection)", async () => {
   const { html } = await generate({
     dossierVersion: "1.0",

@@ -368,7 +368,7 @@ if (cmd === "build" && args.length) {
       const { exportPdf } = await import("../src/export.mjs");
       const { html } = await generate(renderedModel, { baseDir: dirname(f) });
       const out = flags.out || slug + ".pdf";
-      writeFileSync(out, await exportPdf(html));
+      writeFileSync(out, await exportPdf(html, { title: renderedModel.meta?.title || sourceModel.meta?.title || slug }));
       console.log("✓ " + out);
     } else if (fmt === "confluence") {
       const { exportConfluenceStorage } = await import("../src/export.mjs");

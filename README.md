@@ -593,7 +593,7 @@ npx playwright install chromium
 | Feature | Without Playwright | With Playwright |
 |---|---|---|
 | Mermaid diagrams | Render as source text with an install hint. | Render to static SVG at build time. |
-| PDF export | Prints an install hint. | Exports a print-styled PDF. |
+| PDF export | Prints an install hint. | Exports a print-styled PDF with title headers, page numbers, and print-safe layout rules. |
 
 ## Release Status
 
