@@ -1,0 +1,634 @@
+{
+  "dossierVersion": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Release 0.6.7 Evidence",
+    "slug": "release-0-6-7",
+    "eyebrow": "Release evidence",
+    "status": "ready",
+    "owner": "release automation",
+    "updated": "2026-07-04T00:56:11.000Z",
+    "tags": [
+      "release",
+      "evidence",
+      "automation"
+    ]
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Release evidence",
+      "title": "Release 0.6.7",
+      "lede": "Evidence collected for changes from v0.6.6 to 0c5919b.",
+      "pills": [
+        "master",
+        "17 commits",
+        "50 files",
+        "clean tree"
+      ]
+    },
+    {
+      "type": "stat-strip",
+      "stats": [
+        {
+          "value": "0.6.7",
+          "label": "Version"
+        },
+        {
+          "value": "17",
+          "label": "Commits"
+        },
+        {
+          "value": "50",
+          "label": "Changed files"
+        },
+        {
+          "value": "7",
+          "label": "Checks"
+        },
+        {
+          "value": "0",
+          "label": "Dirty entries"
+        }
+      ]
+    },
+    {
+      "type": "release-checklist",
+      "title": "Release gates",
+      "gates": [
+        {
+          "id": "version-resolved",
+          "title": "Package version resolved",
+          "status": "passed",
+          "required": true,
+          "evidence": "0.6.7"
+        },
+        {
+          "id": "git-head-resolved",
+          "title": "Git HEAD resolved",
+          "status": "passed",
+          "required": true,
+          "evidence": "0c5919bb1d329fdbb576880003a49fd1ce49e44c"
+        },
+        {
+          "id": "working-tree-clean",
+          "title": "Working tree clean before evidence write",
+          "status": "passed",
+          "required": true,
+          "evidence": "No git status entries before writing release evidence."
+        },
+        {
+          "id": "commits-collected",
+          "title": "Release commits collected",
+          "status": "passed",
+          "required": true,
+          "evidence": "17 commit(s) from v0.6.6..HEAD"
+        },
+        {
+          "id": "verification-recorded",
+          "title": "Verification commands recorded",
+          "status": "passed",
+          "required": true,
+          "evidence": "npm test, node bin/dossier.mjs validate examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json, node bin/dossier.mjs build examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json docs/scratchpad/design-lab.dossier.json docs/scratchpad/feature-brainstorm.dossier.json, npm run site, cd react && npm run typecheck, npm pack --dry-run --json, npm publish --dry-run --access public"
+        },
+        {
+          "id": "package-dry-run",
+          "title": "npm package dry run recorded",
+          "status": "passed",
+          "required": false,
+          "evidence": "npm pack command listed in verification checks."
+        }
+      ]
+    },
+    {
+      "type": "verification-run",
+      "title": "Verification evidence",
+      "summary": "Commands that completed before this evidence dossier was collected.",
+      "runs": [
+        {
+          "id": "npm-test",
+          "title": "npm test",
+          "command": "npm test",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "node-bin-dossier-mjs-validate-examples-dossier-json-docs-product",
+          "title": "node bin/dossier.mjs validate examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json",
+          "command": "node bin/dossier.mjs validate examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "node-bin-dossier-mjs-build-examples-dossier-json-docs-product-pr",
+          "title": "node bin/dossier.mjs build examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json docs/scratchpad/design-lab.dossier.json docs/scratchpad/feature-brainstorm.dossier.json",
+          "command": "node bin/dossier.mjs build examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json docs/scratchpad/design-lab.dossier.json docs/scratchpad/feature-brainstorm.dossier.json",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "npm-run-site",
+          "title": "npm run site",
+          "command": "npm run site",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "cd-react-npm-run-typecheck",
+          "title": "cd react && npm run typecheck",
+          "command": "cd react && npm run typecheck",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "npm-pack-dry-run-json",
+          "title": "npm pack --dry-run --json",
+          "command": "npm pack --dry-run --json",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        },
+        {
+          "id": "npm-publish-dry-run-access-public",
+          "title": "npm publish --dry-run --access public",
+          "command": "npm publish --dry-run --access public",
+          "status": "passed",
+          "expected": "Command completes before release evidence collection.",
+          "actual": "Completed before this release dossier was generated.",
+          "artifacts": []
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Commits",
+      "columns": [
+        "Commit",
+        "Summary"
+      ],
+      "rows": [
+        [
+          "0c5919b",
+          "Prepare 0.6.7 release"
+        ],
+        [
+          "c575247",
+          "Deepen Theme Studio presets"
+        ],
+        [
+          "c077308",
+          "Polish print and PDF output"
+        ],
+        [
+          "9c15e04",
+          "Add first-class citation blocks"
+        ],
+        [
+          "dc143e1",
+          "Add workspace-friendly export formats"
+        ],
+        [
+          "688b6ac",
+          "Refresh example artifacts for state workflow"
+        ],
+        [
+          "8333506",
+          "Declare live editor module dependencies"
+        ],
+        [
+          "5c5566e",
+          "Align docs with state workflow"
+        ],
+        [
+          "4535316",
+          "Improve overlay accessibility"
+        ],
+        [
+          "652fc61",
+          "Add full state packet import"
+        ],
+        [
+          "62cd829",
+          "Add CLI state workflow exports"
+        ],
+        [
+          "71ea6df",
+          "Add MCP state workflow tools"
+        ],
+        [
+          "56aafa2",
+          "Publish state handoff schemas"
+        ],
+        [
+          "4300961",
+          "Polish export center controls"
+        ],
+        [
+          "1694944",
+          "Document stateful export workflow"
+        ],
+        [
+          "b22bc1c",
+          "Add artifact export center"
+        ],
+        [
+          "eec6047",
+          "Add state contracts and linting"
+        ]
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Changed files",
+      "columns": [
+        "File",
+        "Status"
+      ],
+      "rows": [
+        [
+          "README.md",
+          "changed"
+        ],
+        [
+          "bin/dossier.mjs",
+          "changed"
+        ],
+        [
+          "docs/product/process-dossiers/process-dossiers-scope.dossier.json",
+          "changed"
+        ],
+        [
+          "docs/product/process-dossiers/process-dossiers-scope.html",
+          "changed"
+        ],
+        [
+          "docs/product/process-dossiers/process-dossiers-scope.md",
+          "changed"
+        ],
+        [
+          "docs/product/public-manual-qa.md",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-0.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-1.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-2.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-3.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-4.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-5.html",
+          "changed"
+        ],
+        [
+          "docs/releases/release-0-6-6.html",
+          "changed"
+        ],
+        [
+          "docs/scratchpad/design-lab.html",
+          "changed"
+        ],
+        [
+          "docs/scratchpad/design-lab.slate.html",
+          "changed"
+        ],
+        [
+          "docs/scratchpad/dossier-feature-brainstorm.html",
+          "changed"
+        ],
+        [
+          "docs/scratchpad/dossier-feature-brainstorm.md",
+          "changed"
+        ],
+        [
+          "examples/dossier-overview.html",
+          "changed"
+        ],
+        [
+          "examples/engineering-release.html",
+          "changed"
+        ],
+        [
+          "examples/implementation-packet.html",
+          "changed"
+        ],
+        [
+          "examples/incident-response.html",
+          "changed"
+        ],
+        [
+          "examples/product-launch.html",
+          "changed"
+        ],
+        [
+          "examples/research-brief.html",
+          "changed"
+        ],
+        [
+          "examples/showcase.dossier.json",
+          "changed"
+        ],
+        [
+          "examples/showcase.html",
+          "changed"
+        ],
+        [
+          "examples/showcase.md",
+          "changed"
+        ],
+        [
+          "examples/workspace-index.html",
+          "changed"
+        ],
+        [
+          "mcp/server.mjs",
+          "changed"
+        ],
+        [
+          "package-lock.json",
+          "changed"
+        ],
+        [
+          "package.json",
+          "changed"
+        ],
+        [
+          "react/src/blocks.tsx",
+          "changed"
+        ],
+        [
+          "react/src/core.d.ts",
+          "changed"
+        ],
+        [
+          "react/src/render.tsx",
+          "changed"
+        ],
+        [
+          "react/src/types.ts",
+          "changed"
+        ],
+        [
+          "schema/dossier.schema.json",
+          "changed"
+        ],
+        [
+          "schema/packets/handoff.schema.json",
+          "changed"
+        ],
+        [
+          "schema/packets/state.schema.json",
+          "changed"
+        ],
+        [
+          "skill/SKILL.md",
+          "changed"
+        ],
+        [
+          "skill/references/blocks.md",
+          "changed"
+        ],
+        [
+          "src/export.mjs",
+          "changed"
+        ],
+        [
+          "src/generate.mjs",
+          "changed"
+        ],
+        [
+          "src/index.mjs",
+          "changed"
+        ],
+        [
+          "src/lint.mjs",
+          "changed"
+        ],
+        [
+          "src/live-runtime.mjs",
+          "changed"
+        ],
+        [
+          "src/runtime/runtime.mjs",
+          "changed"
+        ],
+        [
+          "src/serve.mjs",
+          "changed"
+        ],
+        [
+          "src/state.mjs",
+          "changed"
+        ],
+        [
+          "src/theme/tokens.css.mjs",
+          "changed"
+        ],
+        [
+          "src/validate.mjs",
+          "changed"
+        ],
+        [
+          "test/dossier.test.mjs",
+          "changed"
+        ]
+      ]
+    },
+    {
+      "type": "evidence-log",
+      "title": "Collected provenance",
+      "items": [
+        {
+          "id": "git-head",
+          "title": "Git HEAD",
+          "kind": "command",
+          "source": "git rev-parse HEAD",
+          "trust": "high",
+          "body": "0c5919bb1d329fdbb576880003a49fd1ce49e44c"
+        },
+        {
+          "id": "git-range",
+          "title": "Release range",
+          "kind": "command",
+          "source": "git",
+          "trust": "high",
+          "body": "v0.6.6..HEAD"
+        },
+        {
+          "id": "git-status",
+          "title": "Working tree status",
+          "kind": "command",
+          "source": "git status --short",
+          "trust": "high",
+          "body": "Clean before evidence write."
+        }
+      ]
+    },
+    {
+      "type": "trust-report",
+      "title": "Release trust report",
+      "summary": "Claims downstream agents can consume before continuing a release.",
+      "sources": [
+        {
+          "id": "source-git-head",
+          "label": "Git HEAD",
+          "kind": "command",
+          "trust": "high",
+          "summary": "0c5919bb1d329fdbb576880003a49fd1ce49e44c"
+        },
+        {
+          "id": "source-git-status",
+          "label": "Git status",
+          "kind": "command",
+          "trust": "high",
+          "summary": "Clean"
+        },
+        {
+          "id": "source-verification",
+          "label": "Verification commands",
+          "kind": "command",
+          "trust": "high",
+          "summary": "npm test, node bin/dossier.mjs validate examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json, node bin/dossier.mjs build examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json docs/scratchpad/design-lab.dossier.json docs/scratchpad/feature-brainstorm.dossier.json, npm run site, cd react && npm run typecheck, npm pack --dry-run --json, npm publish --dry-run --access public"
+        }
+      ],
+      "claims": [
+        {
+          "id": "claim-head-collected",
+          "claim": "Release evidence was collected from 0c5919b.",
+          "status": "verified",
+          "confidence": "high",
+          "sources": [
+            "source-git-head"
+          ],
+          "evidence": [
+            "git-head"
+          ]
+        },
+        {
+          "id": "claim-tree-clean",
+          "claim": "The working tree was clean before writing release evidence.",
+          "status": "verified",
+          "confidence": "high",
+          "sources": [
+            "source-git-status"
+          ],
+          "evidence": [
+            "git-status"
+          ]
+        },
+        {
+          "id": "claim-checks-passed",
+          "claim": "Verification commands completed before evidence collection.",
+          "status": "verified",
+          "confidence": "high",
+          "sources": [
+            "source-verification"
+          ],
+          "evidence": [
+            "npm-test",
+            "node-bin-dossier-mjs-validate-examples-dossier-json-docs-product",
+            "node-bin-dossier-mjs-build-examples-dossier-json-docs-product-pr",
+            "npm-run-site",
+            "cd-react-npm-run-typecheck",
+            "npm-pack-dry-run-json",
+            "npm-publish-dry-run-access-public"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "process-receipt",
+      "title": "Release evidence receipt",
+      "outcome": "ready-for-publish",
+      "owner": "release automation",
+      "date": "2026-07-04T00:56:11.000Z",
+      "changedFiles": [
+        "README.md",
+        "bin/dossier.mjs",
+        "docs/product/process-dossiers/process-dossiers-scope.dossier.json",
+        "docs/product/process-dossiers/process-dossiers-scope.html",
+        "docs/product/process-dossiers/process-dossiers-scope.md",
+        "docs/product/public-manual-qa.md",
+        "docs/releases/release-0-6-0.html",
+        "docs/releases/release-0-6-1.html",
+        "docs/releases/release-0-6-2.html",
+        "docs/releases/release-0-6-3.html",
+        "docs/releases/release-0-6-4.html",
+        "docs/releases/release-0-6-5.html",
+        "docs/releases/release-0-6-6.html",
+        "docs/scratchpad/design-lab.html",
+        "docs/scratchpad/design-lab.slate.html",
+        "docs/scratchpad/dossier-feature-brainstorm.html",
+        "docs/scratchpad/dossier-feature-brainstorm.md",
+        "examples/dossier-overview.html",
+        "examples/engineering-release.html",
+        "examples/implementation-packet.html",
+        "examples/incident-response.html",
+        "examples/product-launch.html",
+        "examples/research-brief.html",
+        "examples/showcase.dossier.json",
+        "examples/showcase.html",
+        "examples/showcase.md",
+        "examples/workspace-index.html",
+        "mcp/server.mjs",
+        "package-lock.json",
+        "package.json",
+        "react/src/blocks.tsx",
+        "react/src/core.d.ts",
+        "react/src/render.tsx",
+        "react/src/types.ts",
+        "schema/dossier.schema.json",
+        "schema/packets/handoff.schema.json",
+        "schema/packets/state.schema.json",
+        "skill/SKILL.md",
+        "skill/references/blocks.md",
+        "src/export.mjs",
+        "src/generate.mjs",
+        "src/index.mjs",
+        "src/lint.mjs",
+        "src/live-runtime.mjs",
+        "src/runtime/runtime.mjs",
+        "src/serve.mjs",
+        "src/state.mjs",
+        "src/theme/tokens.css.mjs",
+        "src/validate.mjs",
+        "test/dossier.test.mjs"
+      ],
+      "commands": [
+        "npm test",
+        "node bin/dossier.mjs validate examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json",
+        "node bin/dossier.mjs build examples/*.dossier.json docs/product/process-dossiers/process-dossiers-scope.dossier.json docs/releases/*.dossier.json docs/scratchpad/design-lab.dossier.json docs/scratchpad/feature-brainstorm.dossier.json",
+        "npm run site",
+        "cd react && npm run typecheck",
+        "npm pack --dry-run --json",
+        "npm publish --dry-run --access public"
+      ],
+      "risks": [],
+      "followUps": []
+    }
+  ]
+}
