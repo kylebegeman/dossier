@@ -277,31 +277,45 @@ test("portable exports target Confluence, Notion, and slides", async () => {
         title: "Plan",
         blocks: [
           { type: "prose", heading: "Scope", markdown: "Publish **stable** exports with a [reference](https://example.com)." },
+          { type: "references", items: [{ label: "Unsafe", url: "javascript:alert(1)", signal: "bad", use: "none" }] },
           { type: "table", title: "Matrix", columns: ["Target", "Status"], rows: [["Confluence", "ready"], ["Notion", "ready"]] },
+          { type: "figure", src: "javascript:alert(1)", caption: "Unsafe figure" },
+          { type: "figure", src: "data:image/png;base64,abcd", caption: "Inline figure" },
+          { type: "figure", src: "https://example.com/figure.png", alt: "Remote figure" },
           { type: "code-editor", id: "config-editor", title: "Config", lang: "json", code: "{\"enabled\":true}\n" },
           { type: "code", title: "Unsafe sample", lang: "html", code: "<script>alert(1)</script>\n" },
+          { type: "citations", items: [{ id: "unsafe-cite", title: "Unsafe cite", url: "javascript:alert(1)" }] },
         ],
       },
     ],
   };
 
-  const confluence = await exportConfluenceStorage(structuredClone(model), {});
+  const sourceSnapshot = JSON.stringify(model);
+  const confluence = await exportConfluenceStorage(model, {});
   assert.ok(confluence.includes("Dossier Confluence storage export"), "Confluence export identifies its source");
   assert.ok(confluence.includes('<ac:structured-macro ac:name="code"'), "Confluence export maps code to a code macro");
   assert.ok(confluence.includes("<table>"), "Confluence export preserves tables");
   assert.ok(confluence.includes('href="https://example.com"'), "Confluence export keeps safe links");
+  assert.ok(confluence.includes('src="data:image/png;base64,abcd"'), "Confluence export preserves safe embedded images");
+  assert.ok(!confluence.includes('src="javascript:'), "Confluence export blocks unsafe image URLs");
 
-  const notion = await exportNotionMarkdown(structuredClone(model), {});
+  const notion = await exportNotionMarkdown(model, {});
   assert.ok(notion.includes("# Portable Export"), "Notion export has a document title");
   assert.ok(notion.includes("| Target | Status |"), "Notion export preserves tables");
   assert.ok(notion.includes("```json"), "Notion export preserves code fences");
+  assert.ok(notion.includes("![Remote figure](https://example.com/figure.png)"), "Notion export preserves remote image references");
+  assert.ok(!notion.includes("data:image"), "Notion export omits embedded data-image payloads");
+  assert.ok(!notion.includes("javascript:alert"), "Notion export neutralizes unsafe markdown URLs");
 
-  const slides = await exportSlidesHtml(structuredClone(model), {});
+  const slides = await exportSlidesHtml(model, {});
   assert.ok(slides.includes('<section class="slide"'), "slides export creates slide sections");
   assert.ok(slides.includes("data-next"), "slides export includes navigation controls");
   assert.ok(slides.includes("Portable Export"), "slides export includes document content");
   assert.ok(!slides.includes("<script>alert(1)</script>"), "slides export escapes code text");
   assert.ok(slides.includes("&lt;script&gt;alert(1)&lt;/script&gt;"), "slides export keeps hostile code inert");
+  assert.ok(slides.includes('src="data:image/png;base64,abcd"'), "slides export preserves safe embedded images");
+  assert.ok(!slides.includes('src="javascript:'), "slides export blocks unsafe image URLs");
+  assert.equal(JSON.stringify(model), sourceSnapshot, "portable exports do not mutate the source model");
 });
 
 test("citations render, lint, validate, and export consistently", async () => {
@@ -323,7 +337,7 @@ test("citations render, lint, validate, and export consistently", async () => {
             source: "OWASP",
             url: "https://owasp.org/www-project-top-ten/",
             accessed: "2026-07-03",
-            note: "Use for security risk framing.",
+            note: "Use for security risk framing. Treat [@internal] as source-note text, not a missing citation.",
           },
         ],
       },
@@ -979,18 +993,25 @@ test("example pack templates validate", () => {
 test("renderer sanitizes hostile input (href schemes, theme vars, ragged rows)", async () => {
   const { html } = await generate({
     dossierVersion: "1.0",
-    meta: { title: "X", theme: { accent: "red;} body{display:none}", "ev<il": "x" } },
+    meta: { title: "X", theme: { accent: "red;} body{display:none}", "ev<il": "x", constructor: "x" } },
     blocks: [
       { type: "references", items: [{ label: "bad", url: "javascript:alert(1)" }, { label: "ok", url: "https://example.com" }] },
+      { type: "figure", src: "javascript:alert(1)", caption: "Hostile image scheme" },
+      { type: "figure", src: "data:text/html,<script>alert(1)</script>", caption: "Hostile data URI" },
+      { type: "figure", src: "data:image/png;base64,abcd", caption: "Allowed data image" },
       { type: "table", columns: ["A"], rows: [["fine"], "notarow", null] },
     ],
   });
   const style = html.match(/<style>([\s\S]*?)<\/style>/)[1];
   const themeDecl = [...style.matchAll(/:root\{([^}]*)\}/g)].map((m) => m[1]).find((decl) => decl.includes("--ds-accent: red"));
   assert.ok(!/href="javascript:/.test(html), "javascript: href is neutralized");
+  assert.ok(!/src="javascript:/.test(html), "javascript: image src is neutralized");
+  assert.ok(!/src="data:text\/html/.test(html), "non-image data URI is neutralized");
+  assert.ok(html.includes('src="data:image/png;base64,abcd"'), "image data URI passes through");
   assert.ok(html.includes('href="https://example.com"'), "safe href passes through");
   assert.ok(themeDecl, "the sanitized document theme declaration is present");
   assert.ok(!themeDecl.includes("{") && !themeDecl.includes("<"), "theme value cannot break out of its CSS declaration");
+  assert.ok(!style.includes("--ds-constructor"), "dangerous theme token names are ignored");
   assert.ok(html.includes("<td>fine</td>"), "valid row renders; non-array rows do not crash");
 });
 
@@ -1053,9 +1074,12 @@ test("markdown frontmatter survives titles with colons and newlines", async () =
 
 test("export to docx produces a valid Word document", async () => {
   const { exportDocx } = await import("../src/export.mjs");
-  const buf = await exportDocx({ meta: { title: "X" }, blocks: [{ type: "hero", title: "H" }, { type: "prose", markdown: "hi" }, { type: "table", columns: ["A"], rows: [["1"]] }] });
+  const model = { meta: { title: "X" }, blocks: [{ type: "hero", title: "H" }, { type: "prose", markdown: "hi" }, { type: "table", columns: ["A"], rows: [["1"]] }] };
+  const sourceSnapshot = JSON.stringify(model);
+  const buf = await exportDocx(model);
   assert.ok(Buffer.isBuffer(buf) && buf.length > 0, "returns a buffer");
   assert.equal(buf.slice(0, 2).toString(), "PK", "is a zip (docx) file");
+  assert.equal(JSON.stringify(model), sourceSnapshot, "DOCX export does not mutate the source model");
 });
 
 test("docx export embeds chart and figure as images", async () => {

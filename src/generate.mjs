@@ -22,6 +22,21 @@ const safeUrl = (u) => {
   return /^(javascript|data|vbscript):/i.test(s.replace(/[\s\x00-\x1f]+/g, "")) ? "#" : s;
 };
 
+const safeImageSrc = (u) => {
+  const s = String(u == null ? "" : u).trim();
+  const compact = s.replace(/[\s\x00-\x1f]+/g, "");
+  if (/^(javascript|vbscript):/i.test(compact)) return "#";
+  if (/^data:/i.test(compact) && !/^data:image\/(?:png|jpe?g|gif|webp|avif|svg\+xml)[;,]/i.test(compact)) return "#";
+  return s;
+};
+
+const cleanThemeTokenName = (key) => {
+  const name = String(key == null ? "" : key).toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return name && name !== "__proto__" && name !== "prototype" && name !== "constructor" ? name : "";
+};
+
+const cleanThemeTokenValue = (value) => String(value == null ? "" : value).replace(/[<>{};]/g, "").trim();
+
 // Minimal inline Markdown: **bold**, `code`, [text](url), [[slug]] cross-links,
 // and [[Term]] glossary tooltips (resolved against the collected glossary map).
 function inlineMd(s, ctx) {
@@ -370,15 +385,6 @@ function citationParts(item) {
     citationSource(item),
     item.accessed ? `accessed ${item.accessed}` : "",
   ].filter(Boolean);
-}
-
-function citationLabel(item) {
-  const title = item.title || item.label || item.id || "Untitled source";
-  const parts = citationParts(item);
-  return [citationAuthors(item), item.year ? `(${item.year})` : "", title, citationSource(item), item.url || ""]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
 }
 
 // ---- block renderers -------------------------------------------------------
@@ -827,7 +833,7 @@ const renderers = {
   },
   figure(b, ctx) {
     const src = b._src || b.src || "";
-    const img = src ? `<img src="${esc(src)}" alt="${esc(b.alt || b.caption || "")}" loading="lazy">` : "";
+    const img = src ? `<img src="${esc(safeImageSrc(src))}" alt="${esc(b.alt || b.caption || "")}" loading="lazy">` : "";
     const cap = b.caption ? `<figcaption>${inlineMd(b.caption, ctx)}</figcaption>` : "";
     return wrap("figure", b.id, `<figure class="ds-figure">${img}${cap}</figure>`);
   },
@@ -1475,7 +1481,12 @@ export function renderShell(model, { body, toc, md, digest, generator = "dossier
 
   // Sanitize so a theme value cannot break out of the declaration or the <style> block.
   const themeVars = Object.entries(meta.theme || {})
-    .map(([k, v]) => `--ds-${String(k).replace(/[^a-z0-9-]/gi, "")}: ${String(v).replace(/[<>{};]/g, "")};`)
+    .map(([k, v]) => {
+      const key = cleanThemeTokenName(k);
+      const value = cleanThemeTokenValue(v);
+      return key && value ? `--ds-${key}: ${value};` : "";
+    })
+    .filter(Boolean)
     .join("");
   const themeCss = themeVars ? `:root{${themeVars}}[data-theme="dark"]{${themeVars}}` : "";
   const skinCss = skin ? `\n/* skin:${String(meta.skin).replace(/[^a-z0-9-]/gi, "")} */\n${skin.css}` : "";
@@ -1591,7 +1602,7 @@ ${toc.length ? `<aside class="ds-toc"><div class="ds-search"><input type="search
 <div class="ds-tool-modal" data-block-editor-modal hidden><div class="ds-tool-card" role="dialog" aria-modal="true" aria-label="Block editor"><div class="ds-tool-head"><div><strong>Block editor</strong><p>Reorder, delete, or add top-level blocks, then download merged JSON and rebuild.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-blockedit-list" data-block-editor-list></div><div class="ds-tool-row"><select data-block-editor-type><option>prose</option><option>section</option><option>callout</option><option>table</option><option>code-editor</option><option>process-board</option><option>patch-set</option><option>verification-run</option><option>release-checklist</option></select><input type="text" data-block-editor-title placeholder="New block title"><button class="ds-btn" type="button" data-block-editor-add>Add block</button></div><p class="ds-tool-note" data-block-editor-status></p></div></div>
 <div class="ds-tool-modal" data-evidence-modal hidden><div class="ds-tool-card" role="dialog" aria-modal="true" aria-label="Attach evidence"><div class="ds-tool-head"><div><strong>Attach evidence</strong><p>Add source material to the state packet and merged dossier.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-field-grid"><label>Id<input type="text" data-evidence-id placeholder="auto-from-title"></label><label>Title<input type="text" data-evidence-title placeholder="Browser smoke"></label><label>Kind<input type="text" data-evidence-kind placeholder="manual"></label><label>Trust<select data-evidence-trust><option>medium</option><option>high</option><option>low</option></select></label><label class="wide">Source<input type="text" data-evidence-source placeholder="command, URL, person, file"></label><label class="wide">Body<textarea data-evidence-body placeholder="What was observed?"></textarea></label></div><div class="ds-tool-actions"><button class="ds-btn" type="button" data-evidence-add>Add evidence</button></div></div></div>
 <div class="ds-toast" data-toast role="status" aria-live="polite"></div>
-<div class="ds-studio" data-studio hidden>
+<div class="ds-studio" data-studio hidden role="dialog" aria-label="Theme studio">
 <div class="ds-studio-head"><strong>Theme studio</strong><button class="ds-btn" type="button" data-studio-close>Close</button></div>
 <label class="ds-studio-row">Accent <input type="color" data-studio-token="accent" data-studio-accent></label>
 <label class="ds-studio-row">Canvas <input type="color" data-studio-token="bg"></label>
@@ -1618,5 +1629,5 @@ function knownBlockTypes() {
 }
 
 // Helpers reused by the React port (single source of truth).
-export { esc, slugify, inlineMd, richTextHtml, toMarkdown, agentDigest, collectGlossary, collectFootnotes, collectCitations, buildToc, assignIds, enrich, stripBuildFields, renderBlock, registerBlock, knownBlockTypes, chartSvg };
+export { esc, slugify, inlineMd, richTextHtml, toMarkdown, agentDigest, collectGlossary, collectFootnotes, collectCitations, buildToc, assignIds, enrich, stripBuildFields, renderBlock, registerBlock, knownBlockTypes, chartSvg, safeImageSrc };
 // renderShell is exported at its definition (above).

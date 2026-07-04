@@ -3,7 +3,7 @@
 // through a headless browser).
 
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, ImageRun } from "docx";
-import { chartSvg, enrich, parseUnifiedDiff } from "./generate.mjs";
+import { chartSvg, enrich, parseUnifiedDiff, safeImageSrc, stripBuildFields } from "./generate.mjs";
 
 // Print the already-rendered, self-contained HTML to a PDF buffer via Playwright.
 export function pdfPrintOptions(opts = {}) {
@@ -53,6 +53,18 @@ const plain = (s) =>
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/\[\[([^\]]+)\]\]/g, "$1");
 
+function cloneModel(model) {
+  if (typeof structuredClone === "function") return structuredClone(model || {});
+  return JSON.parse(JSON.stringify(model || {}));
+}
+
+async function prepareExportModel(model, baseDir) {
+  const next = cloneModel(model);
+  stripBuildFields(next);
+  await enrich(next, baseDir);
+  return next;
+}
+
 const html = (s) =>
   String(s == null ? "" : s)
     .replace(/&/g, "&amp;")
@@ -61,6 +73,17 @@ const html = (s) =>
     .replace(/"/g, "&quot;");
 
 const safeHref = (s) => (/^(javascript|data|vbscript):/i.test(String(s || "").trim().replace(/[\s\x00-\x1f]+/g, "")) ? "#" : String(s || ""));
+
+function portableImageSrc(src, opts = {}) {
+  const safe = safeImageSrc(src);
+  if (!safe || safe === "#") return "";
+  if (opts.dataImage === false && /^data:/i.test(safe.replace(/[\s\x00-\x1f]+/g, ""))) return "";
+  return safe;
+}
+
+function notionImageSrc(src) {
+  return portableImageSrc(src, { dataImage: false });
+}
 
 function portableInlineHtml(s) {
   return html(s)
@@ -231,7 +254,10 @@ function blockToConfluence(block, depth = 1) {
       if (block.claims?.length) out.push(tableHtml(["Claim", "Status", "Confidence", "Sources", "Evidence"], block.claims.map((c) => [c.claim || c.title || c.id || "", c.status || "", c.confidence || "", (c.sources || []).join(", "), (c.evidence || []).join(", ")])));
       break;
     case "figure":
-      if (block.src) out.push(`<p><img src="${html(safeHref(block._src || block.src))}" alt="${html(block.alt || block.caption || "")}" /></p>`);
+      {
+        const src = portableImageSrc(block._src || block.src);
+        if (src) out.push(`<p><img src="${html(src)}" alt="${html(block.alt || block.caption || "")}" /></p>`);
+      }
       if (block.caption) out.push(`<p><em>${portableInlineHtml(block.caption)}</em></p>`);
       break;
     case "chart":
@@ -296,7 +322,7 @@ function blockToNotion(block, depth = 1) {
       break;
     case "references":
       if (block.title) out.push(`${h} ${plain(block.title)}`, "");
-      out.push(mdTable(["Source", "Signal", "Use"], (block.items || []).map((r) => [r.url ? `[${r.label}](${r.url})` : r.label, r.signal || "", r.use || ""])));
+      out.push(mdTable(["Source", "Signal", "Use"], (block.items || []).map((r) => [r.url ? `[${plain(r.label || r.url)}](${safeHref(r.url)})` : r.label, r.signal || "", r.use || ""])));
       break;
     case "decision-matrix":
       if (block.title) out.push(`${h} ${plain(block.title)}`, "");
@@ -372,7 +398,10 @@ function blockToNotion(block, depth = 1) {
       if (block.claims?.length) out.push("### Claims", "", mdTable(["Claim", "Status", "Confidence", "Sources", "Evidence"], block.claims.map((c) => [c.claim || c.title || c.id || "", c.status || "", c.confidence || "", (c.sources || []).join(", "), (c.evidence || []).join(", ")])));
       break;
     case "figure":
-      if (block.src) out.push(`![${plain(block.alt || block.caption || "figure")}](${block.src})`);
+      {
+        const src = notionImageSrc(block.src);
+        if (src) out.push(`![${plain(block.alt || block.caption || "figure")}](${src})`);
+      }
       if (block.caption) out.push("", `_${portableMarkdown(block.caption)}_`);
       break;
     case "chart":
@@ -386,7 +415,7 @@ function blockToNotion(block, depth = 1) {
     case "citations":
       if (block.title) out.push(`${h} ${plain(block.title)}`, "");
       (block.items || []).forEach((item, index) => {
-        const title = item.url ? `[${plain(item.title || item.label || item.id || "Untitled source")}](${item.url})` : plain(item.title || item.label || item.id || "Untitled source");
+        const title = item.url ? `[${plain(item.title || item.label || item.id || "Untitled source")}](${safeHref(item.url)})` : plain(item.title || item.label || item.id || "Untitled source");
         const meta = citationParts(item).join("; ");
         out.push(`${index + 1}. ${title}${meta ? `. ${meta}` : ""}`);
         if (item.quote) out.push(`   > ${portableMarkdown(item.quote)}`);
@@ -439,14 +468,14 @@ function slideBody(block) {
 }
 
 export async function exportConfluenceStorage(model, opts = {}) {
-  await enrich(model, opts.baseDir);
+  model = await prepareExportModel(model, opts.baseDir);
   const title = model.meta?.title || "Dossier";
   const body = (model.blocks || []).map((block) => blockToConfluence(block, block.type === "hero" ? 1 : 2)).join("\n");
   return [`<!-- Dossier Confluence storage export: ${html(title)} -->`, body].join("\n").trim() + "\n";
 }
 
 export async function exportNotionMarkdown(model, opts = {}) {
-  await enrich(model, opts.baseDir);
+  model = await prepareExportModel(model, opts.baseDir);
   const meta = model.meta || {};
   const lines = [`# ${plain(meta.title || "Dossier")}`];
   if (meta.status || meta.updated || meta.owner) {
@@ -457,7 +486,7 @@ export async function exportNotionMarkdown(model, opts = {}) {
 }
 
 export async function exportSlidesHtml(model, opts = {}) {
-  await enrich(model, opts.baseDir);
+  model = await prepareExportModel(model, opts.baseDir);
   const meta = model.meta || {};
   const title = meta.title || "Dossier";
   const blocks = model.blocks || [];
@@ -845,7 +874,7 @@ async function block(b, out, ctx) {
 }
 
 export async function exportDocx(model, opts = {}) {
-  await enrich(model, opts.baseDir); // populates figure _src and diagram _svg
+  model = await prepareExportModel(model, opts.baseDir);
   const ctx = { baseDir: opts.baseDir, accent: (model.meta && model.meta.theme && model.meta.theme.accent) || "#c81e4a" };
   const out = [];
   for (const b of model.blocks || []) await block(b, out, ctx);

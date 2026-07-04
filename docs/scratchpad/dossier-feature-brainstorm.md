@@ -1,8 +1,8 @@
 ---
-title: Dossier, feature & improvement brainstorm
-slug: dossier-feature-brainstorm
-status: review
-updated: 2026-06-26
+title: "Dossier, feature & improvement brainstorm"
+slug: "dossier-feature-brainstorm"
+status: "review"
+updated: "2026-06-26"
 ---
 # Where Dossier goes next
 

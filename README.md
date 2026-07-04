@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-c81e4a.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-c81e4a.svg)](#requirements)
-[![Version](https://img.shields.io/badge/version-0.6.6-7048e8.svg)](#release-status)
+[![Version](https://img.shields.io/badge/version-0.6.7-7048e8.svg)](#release-status)
 [![Output](https://img.shields.io/badge/output-single%20HTML%20file-7048e8.svg)](#how-dossier-works)
 [![Runtime](https://img.shields.io/badge/viewer%20runtime-zero%20external%20assets-c81e4a.svg)](#how-dossier-works)
 [![Agent Ready](https://img.shields.io/badge/agent%20ready-MCP%20%2B%20packets-0f7a52.svg)](#agent-workflows)
@@ -77,16 +77,16 @@ If your Homebrew setup requires explicit third-party trust, trust only this form
 brew trust --formula kylebegeman/tap/dossier
 ```
 
-The npm package target is `@kylebegeman/dossier`. Once the first npm registry publish is complete, install it with:
+The npm package target is `@kylebegeman/dossier`:
 
 ```bash
 npm install -g @kylebegeman/dossier
 ```
 
-Until the registry publish is available, install the tagged GitHub release through npm:
+You can also install the tagged GitHub release through npm:
 
 ```bash
-npm install -g github:kylebegeman/dossier#v0.6.6
+npm install -g github:kylebegeman/dossier#v0.6.7
 ```
 
 Create and build a document:
@@ -229,6 +229,12 @@ The browser Export Center separates four artifact types so humans and agents do 
 
 Export Center can also import a saved state packet, applying those browser changes back to
 the visible review controls before you download merged JSON or a handoff packet.
+
+Portable exports keep media behavior target-specific. Confluence storage and slide HTML
+preserve safe `data:image` payloads and regular image URLs so visual artifacts stay
+self-contained. Notion Markdown keeps remote or relative image references, but omits
+embedded data-image payloads because they are large and do not travel well in Markdown.
+Unsafe URL schemes are blocked in every target.
 
 The CLI mirrors the same model:
 
@@ -603,6 +609,7 @@ Current patch train:
 
 | Version | Focus |
 |---|---|
+| `0.6.7` | Audit hardening for Theme Studio, portable exports, citation linting, generated docs, and media export policy. |
 | `0.6.6` | Canonical Kyle Begeman GitHub, Pages, Homebrew, npm, schema, and agent install metadata. |
 | `0.6.5` | Correct package-manager URLs: Kyle Begeman npm scope with the existing GitHub repo and Homebrew tap owner. |
 | `0.6.4` | Kyle Begeman brand migration for npm scopes, public copy, examples, and agent docs. |

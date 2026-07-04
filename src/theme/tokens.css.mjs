@@ -572,6 +572,7 @@ tbody tr:hover td{color:var(--ds-ink)}
   .ds-menu-list{right:0;min-width:220px}
   .ds-tool-modal{align-items:flex-start;padding:12px}
   .ds-tool-card{max-height:calc(100vh - 24px);border-radius:12px;padding:14px}
+  .ds-studio{right:12px;top:58px;max-height:calc(100vh - 76px);overflow:auto}
   .ds-tool-head{align-items:flex-start;gap:10px}
   .ds-export-grid{display:grid;grid-template-columns:1fr 1fr}
   .ds-export-grid .ds-btn,.ds-file-btn{width:100%;justify-content:center}

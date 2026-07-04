@@ -1,5 +1,5 @@
 import React from "react";
-import { inlineMd, slugify, richTextHtml, chartSvg, renderBlock, knownBlockTypes, parseUnifiedDiff } from "../../src/generate.mjs";
+import { inlineMd, slugify, richTextHtml, chartSvg, renderBlock, knownBlockTypes, parseUnifiedDiff, safeImageSrc } from "../../src/generate.mjs";
 
 // React-side plugin registry, register a component for a custom block type so it renders
 // natively in the React port (parity with the Node generator's registerBlock).
@@ -883,7 +883,7 @@ const Figure: React.FC<{ b: B }> = ({ b }) => {
   return (
     <Wrap type="figure" id={b.id}>
       <figure className="ds-figure">
-        {src && <img src={src} alt={b.alt || b.caption || ""} loading="lazy" />}
+        {src && <img src={safeImageSrc(src)} alt={b.alt || b.caption || ""} loading="lazy" />}
         {b.caption && <figcaption dangerouslySetInnerHTML={md(b.caption)} />}
       </figure>
     </Wrap>

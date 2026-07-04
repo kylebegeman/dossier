@@ -15,6 +15,7 @@ declare module "*/generate.mjs" {
   export const stripBuildFields: (model: any) => any;
   export const renderBlock: (b: any, ctx: any) => string;
   export const chartSvg: (b: any) => string;
+  export const safeImageSrc: (s: any) => string;
   export const parseUnifiedDiff: (diff: string, label?: string) => any[];
   export const registerBlock: (type: string, fn: (b: any, ctx: any) => string) => void;
   export const knownBlockTypes: () => string[];

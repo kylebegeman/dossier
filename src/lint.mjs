@@ -30,6 +30,7 @@ export function lintModel(model, opts = {}) {
   const blockIds = new Set();
   const footnoteDefs = new Set();
   const citationDefs = new Set();
+  const citationDefinitionPrefixes = [];
   const trustEvidence = collectEvidenceIds(model);
   const knownSlugs = new Set(opts.knownSlugs || []);
   if (model.meta && model.meta.slug) knownSlugs.add(model.meta.slug);
@@ -40,7 +41,12 @@ export function lintModel(model, opts = {}) {
       if (!block || typeof block !== "object") return;
       if (block.id) blockIds.add(block.id);
       if (block.type === "footnotes") (block.items || []).forEach((item) => item.id && footnoteDefs.add(item.id));
-      if (block.type === "citations") (block.items || []).forEach((item) => item.id && citationDefs.add(item.id));
+      if (block.type === "citations") {
+        (block.items || []).forEach((item, itemIndex) => {
+          if (item.id) citationDefs.add(item.id);
+          citationDefinitionPrefixes.push(`$.${path}.items[${itemIndex}]`);
+        });
+      }
       if (block.type === "code-editor" && !block.targetPath && !block.filename) {
         push(warnings, path, "code-editor should include targetPath or filename so edits can be applied safely");
       }
@@ -77,12 +83,16 @@ export function lintModel(model, opts = {}) {
   };
   visit(model.blocks || []);
 
+  const isCitationDefinitionPath = (path) => citationDefinitionPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}.`));
+
   for (const [path, text] of stringFields(model)) {
     for (const match of text.matchAll(/\[\^([a-z0-9-]+)\]/g)) {
       if (!footnoteDefs.has(match[1])) push(warnings, path, `footnote reference "${match[1]}" has no footnotes item`);
     }
-    for (const match of text.matchAll(/\[@([a-z0-9-]+)\]/g)) {
-      if (!citationDefs.has(match[1])) push(warnings, path, `citation reference "${match[1]}" has no citations item`);
+    if (!isCitationDefinitionPath(path)) {
+      for (const match of text.matchAll(/\[@([a-z0-9-]+)\]/g)) {
+        if (!citationDefs.has(match[1])) push(warnings, path, `citation reference "${match[1]}" has no citations item`);
+      }
     }
     for (const match of text.matchAll(/\[\[([^\]]+)\]\]/g)) {
       const ref = match[1].trim();

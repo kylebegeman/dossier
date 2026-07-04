@@ -153,15 +153,20 @@ html.ds-editing .ds-btn[data-edit-toggle]{background:var(--ds-accent-tint);color
 /* theme studio */
 .ds-swatch{width:34px;padding:0;justify-content:center}
 .ds-swatch span{width:14px;height:14px;border-radius:50%;background:var(--ds-accent);box-shadow:0 0 0 1px var(--ds-line-2)}
-.ds-studio{position:fixed;right:18px;top:62px;z-index:70;width:238px;background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:14px;box-shadow:0 18px 44px rgba(20,16,40,.18);padding:14px;display:grid;gap:12px}
+.ds-studio{position:fixed;right:18px;top:62px;z-index:70;width:min(330px,calc(100vw - 28px));background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:14px;box-shadow:0 18px 44px rgba(20,16,40,.18);padding:14px;display:grid;gap:10px}
 .ds-studio[hidden]{display:none}
 .ds-studio-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}
 .ds-studio-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:560;color:var(--ds-ink-2)}
 .ds-studio-row input[type=color]{width:46px;height:28px;border:1px solid var(--ds-line-2);border-radius:7px;background:none;cursor:pointer;padding:2px}
+.ds-studio-row input[type=text],.ds-studio-select,.ds-studio-json{border:1px solid var(--ds-line-2);border-radius:8px;background:var(--ds-bg-2);color:var(--ds-ink);font:12.5px var(--ds-mono);outline:0}
+.ds-studio-row input[type=text]{width:92px;padding:6px 8px;text-align:right}
 .ds-studio-presets{display:flex;flex-wrap:wrap;gap:8px}
 .ds-studio-sw{width:26px;height:26px;border-radius:50%;border:1px solid var(--ds-line-2);cursor:pointer;padding:0;transition:transform .1s var(--ds-ease)}
 .ds-studio-sw:hover{transform:scale(1.1)}
-.ds-studio-actions{display:grid;gap:7px}
+.ds-studio-select{width:100%;padding:7px 8px;font-family:inherit}
+.ds-studio-json{width:100%;min-height:108px;resize:vertical;padding:9px;line-height:1.4}
+.ds-studio-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ds-studio-actions [data-studio-reset]{grid-column:1/-1}
 .ds-studio-actions .ds-btn-line{justify-content:center}
 mark{background:var(--ds-accent-tint);color:inherit;border-radius:3px;padding:0 2px}
 
@@ -366,9 +371,17 @@ pre code{background:transparent;border:0;padding:0;font-size:inherit}
 /* footnotes */
 .ds-fnref{font-size:.72em;line-height:0}
 .ds-fnref a{padding:0 1px}
+.ds-citeref{font-size:.72em;line-height:0}
+.ds-citeref a{padding:0 2px;text-decoration:none}
 .ds-footnotes{margin:0;padding-left:22px;color:var(--ds-ink-2);font-size:14.5px}
 .ds-footnotes li{margin:6px 0}
 .ds-footnotes li:target{background:var(--ds-accent-tint);border-radius:6px}
+.ds-citations{margin:0;padding-left:24px;color:var(--ds-ink-2);font-size:14.5px}
+.ds-citations li{margin:10px 0;padding-left:4px}
+.ds-citations li:target{background:var(--ds-accent-tint);border-radius:6px}
+.ds-cite-main{font-weight:750;color:var(--ds-ink)}
+.ds-cite-meta{margin-top:2px;color:var(--ds-ink-3);font-size:13px}
+.ds-citations blockquote{margin:8px 0 0;padding:6px 10px;border-left:2px solid var(--ds-line-strong);background:var(--ds-bg-2);border-radius:6px}
 .ds-fnback{margin-left:4px;text-decoration:none}
 
 /* charts (inline SVG) */
@@ -562,6 +575,7 @@ tbody tr:hover td{color:var(--ds-ink)}
   .ds-menu-list{right:0;min-width:220px}
   .ds-tool-modal{align-items:flex-start;padding:12px}
   .ds-tool-card{max-height:calc(100vh - 24px);border-radius:12px;padding:14px}
+  .ds-studio{right:12px;top:58px;max-height:calc(100vh - 76px);overflow:auto}
   .ds-tool-head{align-items:flex-start;gap:10px}
   .ds-export-grid{display:grid;grid-template-columns:1fr 1fr}
   .ds-export-grid .ds-btn,.ds-file-btn{width:100%;justify-content:center}
@@ -614,19 +628,32 @@ tbody tr:hover td{color:var(--ds-ink)}
 
 /* print / PDF */
 @media print{
+  @page{size:A4;margin:20mm 14mm 18mm}
   :root{--ds-bg:#fff;--ds-bg-2:#fff;--ds-ink:#111;--ds-ink-2:#333;--ds-ink-3:#666;--ds-line:#ddd;--ds-line-2:#ccc}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html{font-size:11pt}
+  body{background:#fff!important;color:#111!important}
   .ds-topbar,.ds-toc,.ds-totop,.ds-palette,.ds-modal,.ds-tool-modal,.ds-toast,.ds-studio,.ds-progress,.ds-skip,.ds-copy,.ds-review-bar,.ds-ritem-check,.ds-notes,.ds-toggle,.ds-code-copy,.ds-codeedit-actions,.ds-diff-files,.ds-process-verdict-wrap,.ds-release-gate textarea{display:none!important}
   .ds-layout{display:block}
   .ds-content{max-width:none}
-  .ds-shell{width:100%}
+  .ds-shell{width:100%;background:#fff;box-shadow:none}
   .ds-section[data-collapsed="1"] .ds-section-body{display:grid!important}
   .ds-ritem-wrap{grid-template-rows:1fr!important}
-  .ds-section,.ds-block,.ds-ritem,.ds-card,.ds-stat,.ds-chart,.ds-figure,.ds-codeedit,.ds-patch,.ds-diff-file,.ds-hunk,table,pre{break-inside:avoid}
+  .ds-section,.ds-block,.ds-hero,.ds-ritem,.ds-card,.ds-stat,.ds-chart,.ds-figure,.ds-codeedit,.ds-patch,.ds-diff-file,.ds-hunk,table,pre{break-inside:avoid-page;box-shadow:none}
+  .ds-section,.ds-block{border-color:#ddd}
+  .ds-block{margin-block:12pt}
+  .ds-hero{padding-top:0}
   .ds-reveal{opacity:1!important;transform:none!important}
-  h1,h2,h3,h4{break-after:avoid}
+  h1,h2,h3,h4{break-after:avoid;orphans:3;widows:3}
+  p,li,blockquote{orphans:3;widows:3}
+  pre,.ds-diff-line{white-space:pre-wrap;overflow:visible}
+  .ds-tablewrap{overflow:visible}
+  table{width:100%;page-break-inside:auto}
+  tr{break-inside:avoid-page}
+  img,svg,.ds-chart-svg{max-width:100%!important;height:auto}
   a{color:inherit;text-decoration:none}
-  .ds-reveal{opacity:1!important;transform:none!important}
+  .ds-content a[href^="http"]::after{content:" (" attr(href) ")";font-size:.86em;color:#666;overflow-wrap:anywhere}
+  .ds-content .ds-citeref a::after,.ds-content .ds-fnref a::after{content:""}
 }
 </style>
 </head>
@@ -716,11 +743,17 @@ tbody tr:hover td{color:var(--ds-ink)}
 <div class="ds-tool-modal" data-block-editor-modal hidden><div class="ds-tool-card" role="dialog" aria-modal="true" aria-label="Block editor"><div class="ds-tool-head"><div><strong>Block editor</strong><p>Reorder, delete, or add top-level blocks, then download merged JSON and rebuild.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-blockedit-list" data-block-editor-list></div><div class="ds-tool-row"><select data-block-editor-type><option>prose</option><option>section</option><option>callout</option><option>table</option><option>code-editor</option><option>process-board</option><option>patch-set</option><option>verification-run</option><option>release-checklist</option></select><input type="text" data-block-editor-title placeholder="New block title"><button class="ds-btn" type="button" data-block-editor-add>Add block</button></div><p class="ds-tool-note" data-block-editor-status></p></div></div>
 <div class="ds-tool-modal" data-evidence-modal hidden><div class="ds-tool-card" role="dialog" aria-modal="true" aria-label="Attach evidence"><div class="ds-tool-head"><div><strong>Attach evidence</strong><p>Add source material to the state packet and merged dossier.</p></div><button class="ds-btn ds-btn-line" type="button" data-tool-close>Close</button></div><div class="ds-field-grid"><label>Id<input type="text" data-evidence-id placeholder="auto-from-title"></label><label>Title<input type="text" data-evidence-title placeholder="Browser smoke"></label><label>Kind<input type="text" data-evidence-kind placeholder="manual"></label><label>Trust<select data-evidence-trust><option>medium</option><option>high</option><option>low</option></select></label><label class="wide">Source<input type="text" data-evidence-source placeholder="command, URL, person, file"></label><label class="wide">Body<textarea data-evidence-body placeholder="What was observed?"></textarea></label></div><div class="ds-tool-actions"><button class="ds-btn" type="button" data-evidence-add>Add evidence</button></div></div></div>
 <div class="ds-toast" data-toast role="status" aria-live="polite"></div>
-<div class="ds-studio" data-studio hidden>
+<div class="ds-studio" data-studio hidden role="dialog" aria-label="Theme studio">
 <div class="ds-studio-head"><strong>Theme studio</strong><button class="ds-btn" type="button" data-studio-close>Close</button></div>
-<label class="ds-studio-row">Accent <input type="color" data-studio-accent></label>
+<label class="ds-studio-row">Accent <input type="color" data-studio-token="accent" data-studio-accent></label>
+<label class="ds-studio-row">Canvas <input type="color" data-studio-token="bg"></label>
+<label class="ds-studio-row">Surface <input type="color" data-studio-token="bg-2"></label>
+<label class="ds-studio-row">Ink <input type="color" data-studio-token="ink"></label>
+<label class="ds-studio-row">Frame <input type="text" data-studio-token="frame" placeholder="1120px"></label>
 <div class="ds-studio-presets"><button class="ds-studio-sw" type="button" data-studio-preset="berry" title="berry" style="background:#c81e4a"></button><button class="ds-studio-sw" type="button" data-studio-preset="slate" title="slate" style="background:#4f5b6b"></button><button class="ds-studio-sw" type="button" data-studio-preset="forest" title="forest" style="background:#2f7d55"></button><button class="ds-studio-sw" type="button" data-studio-preset="ocean" title="ocean" style="background:#1f7a98"></button><button class="ds-studio-sw" type="button" data-studio-preset="midnight" title="midnight" style="background:#5b6ef5"></button><button class="ds-studio-sw" type="button" data-studio-preset="amber" title="amber" style="background:#c2790c"></button><button class="ds-studio-sw" type="button" data-studio-preset="plum" title="plum" style="background:#8a3ffc"></button></div>
-<div class="ds-studio-actions"><button class="ds-btn ds-btn-line" type="button" data-studio-copy>Copy theme JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-reset>Reset</button></div>
+<select class="ds-studio-select" data-studio-saved><option value="">Saved presets</option></select>
+<textarea class="ds-studio-json" data-studio-json spellcheck="false"></textarea>
+<div class="ds-studio-actions"><button class="ds-btn ds-btn-line" type="button" data-studio-copy>Copy JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-import>Import JSON</button><button class="ds-btn ds-btn-line" type="button" data-studio-save>Save preset</button><button class="ds-btn ds-btn-line" type="button" data-studio-download>Download theme</button><button class="ds-btn ds-btn-line" type="button" data-studio-reset>Reset</button></div>
 </div>
 <script type="application/json" id="ds-themes">{"default":{},"berry":{"accent":"#c81e4a","accent-2":"#a8183d","accent-tint":"rgba(200,30,74,.08)"},"slate":{"accent":"#4f5b6b","accent-2":"#3a4452","accent-tint":"rgba(79,91,107,.1)"},"forest":{"accent":"#2f7d55","accent-2":"#246342","accent-tint":"rgba(47,125,85,.1)"},"ocean":{"accent":"#1f7a98","accent-2":"#185f76","accent-tint":"rgba(31,122,152,.1)"},"midnight":{"accent":"#5b6ef5","accent-2":"#4654d4","accent-tint":"rgba(91,110,245,.12)"},"amber":{"accent":"#c2790c","accent-2":"#a06409","accent-tint":"rgba(194,121,12,.12)"},"plum":{"accent":"#8a3ffc","accent-2":"#722fd1","accent-tint":"rgba(138,63,252,.1)"}}</script>
 
@@ -1091,7 +1124,7 @@ SUMMARY: Dossier should evolve from an artifact for planning and review into a g
   function focusableIn(root){return $$(focusableSel,root).filter(function(el){return !el.closest("[hidden]")&&el.tabIndex!==-1;});}
   function showLayer(m,focusEl){if(!m)return;m.__lastFocus=document.activeElement;m.hidden=false;var f=focusEl||focusableIn(m)[0];if(f&&f.focus)f.focus();}
   function hideLayer(m){if(!m||m.hidden)return;m.hidden=true;var f=m.__lastFocus;if(f&&document.contains(f)&&f.focus)f.focus();}
-  function topLayer(){var open=$$(".ds-palette:not([hidden]),.ds-modal:not([hidden]),.ds-tool-modal:not([hidden])");return open.length?open[open.length-1]:null;}
+  function topLayer(){var open=$$(".ds-palette:not([hidden]),.ds-modal:not([hidden]),.ds-tool-modal:not([hidden]),.ds-studio:not([hidden])");return open.length?open[open.length-1]:null;}
   function closeTopLayer(){var m=topLayer();if(!m)return false;hideLayer(m);return true;}
   function trapFocus(e){if(e.key!=="Tab")return;var m=topLayer();if(!m)return;var list=focusableIn(m);if(!list.length){e.preventDefault();return;}var first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault();}else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault();}}
   document.addEventListener("keydown",trapFocus,true);
@@ -1265,22 +1298,41 @@ SUMMARY: Dossier should evolve from an artifact for planning and review into a g
     __editBtn.addEventListener("click",function(){__editing=!__editing;document.documentElement.classList.toggle("ds-editing",__editing);__editFields.forEach(function(el){el.contentEditable=__editing?"true":"false";});__editBtn.textContent=__editing?"Done":"Edit";if(__editing&&!__hinted){__hinted=true;toast("Edit text in place, then Export Center -> Download merged JSON to save");}});
   }
 
-  // theme studio: live token tweaks (applied as inline CSS vars) + brand-pack presets + copy
+  // theme studio: live token tweaks, JSON import/export, local presets, and per-dossier persistence
   var __studio=$("[data-studio]"),__studioBtn=$("[data-studio-open]");
   if(__studio&&__studioBtn){
     var __themes={};try{__themes=JSON.parse(($("#ds-themes")||{}).textContent||"{}");}catch(e){}
-    var __ov={},__accIn=$("[data-studio-accent]");
+    var __themeStore="ds:theme-overrides:"+slug,__presetStore="ds:theme-presets";
+    var __ov=Object.create(null),__accIn=$("[data-studio-accent]"),__json=$("[data-studio-json]"),__saved=$("[data-studio-saved]"),__tokenInputs=$$("[data-studio-token]");
     function __h2(c){c=String(c||"").replace("#","");if(!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c))return [0,0,0];if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)];}
     function __darken(hex,amt){return "#"+__h2(hex).map(function(v){return ("0"+Math.max(0,Math.round(v*(1-amt))).toString(16)).slice(-2);}).join("");}
     function __rgba(hex,a){var r=__h2(hex);return "rgba("+r[0]+","+r[1]+","+r[2]+","+a+")";}
-    function __set(name,val){document.documentElement.style.setProperty("--ds-"+name,val);__ov[name]=val;}
-    function __setAccent(hex){__set("accent",hex);__set("accent-2",__darken(hex,0.16));__set("accent-tint",__rgba(hex,0.1));if(__accIn)__accIn.value=hex;}
-    if(__accIn){__accIn.addEventListener("input",function(){__setAccent(__accIn.value);});var cur=getComputedStyle(document.documentElement).getPropertyValue("--ds-accent").trim();if(/^#/.test(cur))__accIn.value=cur;}
-    $$("[data-studio-preset]").forEach(function(b){b.addEventListener("click",function(){var t=__themes[b.getAttribute("data-studio-preset")]||{};Object.keys(t).forEach(function(k){__set(k,t[k]);});if(t.accent&&__accIn)__accIn.value=t.accent;});});
+    function __hex(v){v=String(v||"").trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v)){return "#"+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];}var m=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(v);return m?"#"+[m[1],m[2],m[3]].map(function(x){return ("0"+Math.max(0,Math.min(255,parseInt(x,10)||0)).toString(16)).slice(-2);}).join(""):"";}
+    function __cleanTheme(t){var out=Object.create(null);Object.keys(t||{}).forEach(function(k){var key=String(k).toLowerCase().replace(/[^a-z0-9-]/g,""),val=String(t[k]).replace(/[<>{};]/g,"").trim();if(!key||key==="__proto__"||key==="prototype"||key==="constructor"||!val)return;out[key]=val;});return out;}
+    function __persist(){try{localStorage.setItem(__themeStore,JSON.stringify(__ov));}catch(e){}}
+    function __syncJson(){if(__json)__json.value=JSON.stringify(__ov,null,2);}
+    function __syncInputs(){var cs=getComputedStyle(document.documentElement);__tokenInputs.forEach(function(inp){var key=inp.getAttribute("data-studio-token"),val=__ov[key]||cs.getPropertyValue("--ds-"+key).trim();if(inp.type==="color"){var hx=__hex(val);if(hx)inp.value=hx;}else inp.value=val||"";});}
+    function __sync(persist){__syncInputs();__syncJson();if(persist!==false)__persist();}
+    function __set(name,val,persist){var c=__cleanTheme((function(){var o=Object.create(null);o[name]=val;return o;})());if(!c[name])return;document.documentElement.style.setProperty("--ds-"+name,c[name]);__ov[name]=c[name];__sync(persist);}
+    function __setAccent(hex,persist){var h=__hex(hex);if(!h)return;document.documentElement.style.setProperty("--ds-accent",h);document.documentElement.style.setProperty("--ds-accent-2",__darken(h,0.16));document.documentElement.style.setProperty("--ds-accent-tint",__rgba(h,0.1));__ov.accent=h;__ov["accent-2"]=__darken(h,0.16);__ov["accent-tint"]=__rgba(h,0.1);__sync(persist);}
+    function __clear(removeStore){Object.keys(__ov).forEach(function(k){document.documentElement.style.removeProperty("--ds-"+k);});__ov=Object.create(null);if(removeStore!==false){try{localStorage.removeItem(__themeStore);}catch(e){}}__sync(false);}
+    function __applyTheme(t,persist){var clean=__cleanTheme(t);__clear(false);if(clean.accent){__setAccent(clean.accent,false);delete clean.accent;}Object.keys(clean).forEach(function(k){__set(k,clean[k],false);});__sync(persist);}
+    function __loadPresets(){var out=Object.create(null);try{var raw=JSON.parse(localStorage.getItem(__presetStore)||"{}");Object.keys(raw||{}).forEach(function(k){var val=raw[k];if(val&&typeof val==="object"&&!Array.isArray(val))out[k]=__cleanTheme(val);});}catch(e){}return out;}
+    function __savePresets(p){try{localStorage.setItem(__presetStore,JSON.stringify(p));}catch(e){}}
+    function __escOpt(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+    function __renderSaved(){if(!__saved)return;var presets=__loadPresets();__saved.innerHTML='<option value="">Saved presets</option>'+Object.keys(presets).sort().map(function(k){return '<option value="'+__escOpt(k)+'">'+__escOpt(k)+"</option>";}).join("");}
+    __tokenInputs.forEach(function(inp){inp.addEventListener("input",function(){var key=inp.getAttribute("data-studio-token");if(key==="accent")__setAccent(inp.value);else __set(key,inp.value);});});
+    try{var saved=JSON.parse(localStorage.getItem(__themeStore)||"{}");if(Object.keys(saved).length)__applyTheme(saved,false);}catch(e){}
+    $$("[data-studio-preset]").forEach(function(b){b.addEventListener("click",function(){var t=__themes[b.getAttribute("data-studio-preset")]||{};__applyTheme(t);});});
+    if(__saved)__saved.addEventListener("change",function(){var presets=__loadPresets(),name=__saved.value;if(name&&presets[name])__applyTheme(presets[name]);});
     var __c=$("[data-studio-copy]");if(__c)__c.addEventListener("click",function(){copy(JSON.stringify(__ov,null,2),"Theme JSON copied, paste into meta.theme");});
-    var __r=$("[data-studio-reset]");if(__r)__r.addEventListener("click",function(){Object.keys(__ov).forEach(function(k){document.documentElement.style.removeProperty("--ds-"+k);});__ov={};});
-    __studioBtn.addEventListener("click",function(){__studio.hidden=!__studio.hidden;});
-    var __sc=$("[data-studio-close]");if(__sc)__sc.addEventListener("click",function(){__studio.hidden=true;});
+    var __i=$("[data-studio-import]");if(__i)__i.addEventListener("click",function(){try{__applyTheme(JSON.parse((__json&&__json.value)||"{}"));toast("Theme JSON imported");}catch(e){toast("Theme JSON is invalid");}});
+    var __s=$("[data-studio-save]");if(__s)__s.addEventListener("click",function(){var name=prompt("Theme preset name");if(!name)return;var presets=__loadPresets();presets[name]=clone(__ov);__savePresets(presets);__renderSaved();if(__saved)__saved.value=name;toast("Theme preset saved");});
+    var __d=$("[data-studio-download]");if(__d)__d.addEventListener("click",function(){download(slug+".theme.json",JSON.stringify(__ov,null,2),"application/json");});
+    var __r=$("[data-studio-reset]");if(__r)__r.addEventListener("click",function(){__clear();toast("Theme reset");});
+    __renderSaved();__sync(false);
+    __studioBtn.addEventListener("click",function(){if(__studio.hidden){__renderSaved();__syncInputs();showLayer(__studio,__accIn||__json);}else hideLayer(__studio);});
+    var __sc=$("[data-studio-close]");if(__sc)__sc.addEventListener("click",function(){hideLayer(__studio);});
   }
   updateDirtyStatus();
 })();
