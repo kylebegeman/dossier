@@ -7,7 +7,21 @@
     "kicker": "Implementation packet",
     "lede": "This example shows the process Dossier shape for coding work: work items, editable snippets, patch proposals, diff review, verification receipts, trust claims, and closeout.",
     "updated": "2026-06-29",
-    "status": "review"
+    "status": "review",
+    "facts": [
+      {
+        "label": "packet schemas",
+        "value": "edits + process + trust"
+      },
+      {
+        "label": "human input",
+        "value": "verdicts + notes"
+      },
+      {
+        "label": "agent readback",
+        "value": "MCP tools"
+      }
+    ]
   },
   "sections": [
     {
@@ -24,18 +38,6 @@
             {
               "label": "Highlights",
               "text": "Work items · Patch review · Diff review · MCP packets"
-            },
-            {
-              "label": "Packet schemas",
-              "text": "edits + process + trust"
-            },
-            {
-              "label": "Human input",
-              "text": "verdicts + notes"
-            },
-            {
-              "label": "Agent readback",
-              "text": "MCP tools"
             }
           ]
         },
@@ -58,25 +60,31 @@
       "id": "work-plan",
       "title": "Work plan",
       "board": {
-        "layout": "articles",
+        "summary": true,
         "items": [
           {
             "id": "filter-state",
             "title": "Persist selected filter",
             "summary": "Save the active search filter in the URL query so refresh and share links preserve state.",
+            "status": "planned",
             "effort": "S",
+            "owner": "agent",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** proposed\n\n**Category** Frontend\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"
+                "label": "What changes",
+                "markdown": "Save the active search filter in the URL query so refresh and share links preserve state."
               },
               {
-                "label": "Files",
-                "markdown": "- `src/search/filter-state.ts`\n- `src/search/SearchPanel.tsx`"
+                "label": "Touches",
+                "markdown": "`src/search/filter-state.ts`, `src/search/SearchPanel.tsx`"
               },
               {
-                "label": "Verification",
-                "markdown": "- npm test\n- npx tsc --noEmit"
+                "label": "Done when",
+                "markdown": "- npm test\n- npx tsc -\\-noEmit"
+              },
+              {
+                "label": "Note",
+                "markdown": "**Category** Frontend · **Priority** P1 · **Impact** Medium"
               }
             ]
           },
@@ -84,15 +92,25 @@
             "id": "empty-state",
             "title": "Improve empty results state",
             "summary": "Show the active filter and a clear reset action when no results match.",
+            "status": "planned",
             "effort": "S",
+            "owner": "agent",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** proposed\n\n**Category** UX\n\n**Owner** agent\n\n**Priority** P2\n\n**Impact** Medium"
+                "label": "What changes",
+                "markdown": "Show the active filter and a clear reset action when no results match."
               },
               {
-                "label": "Files",
-                "markdown": "- `src/search/SearchResults.tsx`"
+                "label": "Touches",
+                "markdown": "`src/search/SearchResults.tsx`"
+              },
+              {
+                "label": "Done when",
+                "markdown": "Not stated in the 0.6 document."
+              },
+              {
+                "label": "Note",
+                "markdown": "**Category** UX · **Priority** P2 · **Impact** Medium"
               }
             ]
           }
@@ -143,7 +161,7 @@
               },
               {
                 "label": "Verification",
-                "markdown": "- npm test\n- npx tsc --noEmit"
+                "markdown": "- npm test\n- npx tsc -\\-noEmit"
               },
               {
                 "label": "Work items",

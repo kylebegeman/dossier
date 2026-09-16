@@ -184,7 +184,7 @@ func TestBuildLegacyDocument(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`<title>Release 0.6.7 Evidence</title>`, `id="release-gates"`, `<details class="row" id="npm-test">`, `<dt>Status</dt>`} {
+	for _, want := range []string{`<title>Release 0.6.7 Evidence</title>`, `id="release-gates"`, `<details class="item" id="npm-test" data-item="npm-test"`, `<dt>How checked</dt>`, `<b>0.6.7</b> <span>version</span>`} {
 		if !strings.Contains(string(html), want) {
 			t.Errorf("legacy artifact lacks %q", want)
 		}
@@ -312,7 +312,13 @@ func TestUpgradeWritesOnlyStrictModels(t *testing.T) {
 	}
 	release := copyLegacy("release-0-6-7.dossier.json")
 	showcase := copyLegacy("showcase.dossier.json")
-	showcaseBefore, _ := os.ReadFile(showcase)
+	// A verdict gate whose option is also a release verdict cannot become the
+	// document's choice, so this 0.6 document does not fit its kind.
+	clash := filepath.Join(dir, "clash.dossier.json")
+	clashDoc := `{"dossierVersion":"1.0","kind":"release","meta":{"title":"Clash","slug":"clash"},"blocks":[{"type":"verdict-gate","prompt":"Ship?","options":["waive","hold"]},{"type":"prose","markdown":"x"}]}`
+	if err := os.WriteFile(clash, []byte(clashDoc), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	modern := copyExample(t)
 	before, err := os.ReadFile(modern)
 	if err != nil {
@@ -337,12 +343,20 @@ func TestUpgradeWritesOnlyStrictModels(t *testing.T) {
 		t.Error("a 0.7 model must be left untouched")
 	}
 
-	// A 0.6 document that does not fit its kind yet is reported, not written.
-	env, code = run(t, "upgrade", showcase)
-	if code != 2 || env.Outcome != OutcomeFindings || len(env.Findings) == 0 {
+	// The showcase uses every 0.6 block and still lands strictly on brief.
+	if env, code := run(t, "upgrade", showcase); code != 0 {
+		t.Errorf("the showcase upgrades strictly: %d %+v", code, env.Findings)
+	}
+	if env, code := run(t, "validate", showcase); code != 0 || len(env.Warnings) > 0 && strings.Contains(env.Warnings[0].Message, "0.6") {
+		t.Errorf("the upgraded showcase is a 0.7 model: %+v", env)
+	}
+
+	// A 0.6 document that does not fit its kind is reported, not written.
+	env, code = run(t, "upgrade", clash)
+	if code != 2 || env.Outcome != OutcomeFindings || !strings.Contains(findingText(env), `"waive" is also a verdict of the release kind`) {
 		t.Errorf("an upgrade that would not validate must be findings: %d %+v", code, env)
 	}
-	if after, _ := os.ReadFile(showcase); string(after) != string(showcaseBefore) {
+	if after, _ := os.ReadFile(clash); string(after) != clashDoc {
 		t.Error("a refused upgrade must not touch the source")
 	}
 }

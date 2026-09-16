@@ -7,7 +7,21 @@
     "kicker": "Research packet",
     "lede": "Use Dossier for research synthesis, competitive scans, vendor comparisons, or decision support. The important part is not just prose, it is claims tied to sources, assumptions, and next verification steps.",
     "updated": "2026-06-29",
-    "status": "review"
+    "status": "review",
+    "facts": [
+      {
+        "label": "confidence",
+        "value": "Medium"
+      },
+      {
+        "label": "sources",
+        "value": "4"
+      },
+      {
+        "label": "next step",
+        "value": "Verify pricing"
+      }
+    ]
   },
   "sections": [
     {
@@ -24,18 +38,6 @@
             {
               "label": "Highlights",
               "text": "Research · Decision support · Claims · Sources"
-            },
-            {
-              "label": "Confidence",
-              "text": "Medium"
-            },
-            {
-              "label": "Sources",
-              "text": "4"
-            },
-            {
-              "label": "Next step",
-              "text": "Verify pricing"
             }
           ]
         },
@@ -176,33 +178,39 @@
         }
       ],
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "portable",
             "title": "A dossier can package prose, tables, charts, claims, and packet state in one file.",
+            "status": "verified",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** verified\n\n**Confidence** high"
+                "label": "Evidence",
+                "markdown": "- Sources: repo, examples"
               },
               {
-                "label": "Sources",
-                "markdown": "- repo\n- examples"
+                "label": "Note",
+                "markdown": "**0.6 confidence** high"
               }
             ]
           },
           {
             "id": "public-claims",
             "title": "Public market or pricing statements should be rechecked before publication.",
+            "status": "open",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** policy\n\n**Confidence** high"
+                "label": "Detail",
+                "markdown": "**0.6 status** policy"
               },
               {
-                "label": "Sources",
-                "markdown": "- repo"
+                "label": "Evidence",
+                "markdown": "- Sources: repo"
+              },
+              {
+                "label": "Note",
+                "markdown": "**0.6 confidence** high"
               }
             ]
           }

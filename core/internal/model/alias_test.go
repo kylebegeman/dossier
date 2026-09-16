@@ -64,11 +64,14 @@ func TestNormalizeHeroMetaAndKind(t *testing.T) {
 	if parts[2].Spec[0].Label != "Owner" || parts[2].Spec[1].Text != "a, b" {
 		t.Errorf("meta spec: %+v", parts[2].Spec)
 	}
-	if parts[3].Spec[1].Text != "12 (+2 vs last)" {
-		t.Errorf("stat delta: %+v", parts[3].Spec)
+	if len(parts[3].Spec) != 1 || parts[3].Spec[0].Text != "12 (+2 vs last)" {
+		t.Errorf("a stat with a delta stays a spec row: %+v", parts[3].Spec)
+	}
+	if len(doc.Meta.Facts) != 1 || doc.Meta.Facts[0] != (Fact{Label: "version", Value: "0.6.7"}) {
+		t.Errorf("a plain stat becomes a masthead fact, and a card with a note does not: %+v", doc.Meta.Facts)
 	}
 	w := joined(warnings)
-	for _, want := range []string{"/dossierVersion", `/kind: 0.6 kind "release" mapped to "release"`, "/meta/crumbs: has no 0.7 field", `/blocks/0: "hero" is a 0.6 block`, `/blocks/1: "stat-strip" is a 0.6 block, mapped to a spec part`} {
+	for _, want := range []string{"/dossierVersion", `/kind: 0.6 kind "release" mapped to "release"`, "/meta/crumbs: has no 0.7 field", `/blocks/0: "hero" is a 0.6 block`, `/blocks/1: "stat-strip" is a 0.6 block, mapped to the masthead facts, and a spec part for the stats that do not fit`} {
 		if !strings.Contains(w, want) {
 			t.Errorf("warnings lack %q:\n%s", want, w)
 		}
@@ -99,7 +102,7 @@ func TestNormalizeSectionsAndBoards(t *testing.T) {
 		t.Errorf("sections\n got %s\nwant %s", got, want)
 	}
 	first := doc.Sections[0]
-	if first.Parts[0].Markdown != "Sub *title*" || first.Parts[1].Type != "callout" || first.Parts[1].Tone != "risk" || first.Parts[1].Title != "Heads up" || first.Parts[2].Markdown != "### Findings" {
+	if first.Parts[0].Markdown != `Sub \*title\*` || first.Parts[1].Type != "callout" || first.Parts[1].Tone != "risk" || first.Parts[1].Title != "Heads up" || first.Parts[2].Markdown != "### Findings" {
 		t.Errorf("closeout parts: %+v", first.Parts)
 	}
 	if first.Board == nil || first.Board.Layout != "rows" || first.Board.Items[0].ID != "f1" {
@@ -114,7 +117,7 @@ func TestNormalizeSectionsAndBoards(t *testing.T) {
 		t.Fatalf("continuation holds the code part and the next board: %+v", cont)
 	}
 	w := cont.Board.Items[0]
-	if w.Effort != "M" || w.Impact != 0 || cont.Board.Layout != "articles" {
+	if w.Effort != "M" || w.Impact != 0 || cont.Board.Layout != "rows" {
 		t.Errorf("work item: %+v", w)
 	}
 	if w.Facets[0].Markdown != "**Impact** High" {
@@ -134,7 +137,7 @@ func TestNormalizeSectionsAndBoards(t *testing.T) {
 		t.Errorf("math becomes latex code: %+v", commits[2])
 	}
 	ws := joined(warnings)
-	for _, want := range []string{`verdict "block" is 0.6 reader state`, `"math" is a 0.6 block`, `"finding-list" is a 0.6 block, mapped to a board (rows)`} {
+	for _, want := range []string{`verdict "block" is 0.6 reader state`, `"math" is a 0.6 block`, `"finding-list" is a 0.6 block, mapped to a board of rows`} {
 		if !strings.Contains(ws, want) {
 			t.Errorf("warnings lack %q:\n%s", want, ws)
 		}
@@ -190,6 +193,26 @@ func TestMarkdownHelpers(t *testing.T) {
 	if got := mdEscape("a *b* [c] `d` <e>"); got != `a \*b\* \[c\] \`+"`d\\` \\<e>" {
 		t.Errorf("mdEscape: %q", got)
 	}
+	if got := mdEscape("npm pack --dry-run ---"); got != `npm pack -\-dry-run -\-\-` {
+		t.Errorf("mdEscape hyphens: %q", got)
+	}
+	// 0.6 printed globs, flags, tags, and backslashes as typed and knew only
+	// lists, bold, code, and links.
+	for in, want := range map[string]string{
+		"validate examples/*.dossier.json --json":          `validate examples/\*.dossier.json -\-json`,
+		"- **Keep** `--dry-run` and [docs](https://x.dev)": "- **Keep** `--dry-run` and [docs](https://x.dev)",
+		"* one\n2. two <details> a < b":                    `* one` + "\n" + `2. two \<details> a < b`,
+		"```sh\nnpm pack --dry-run *\n```\nafter --x":      "```sh\nnpm pack --dry-run *\n```\nafter -\\-x",
+		`C:\dir\*.json and ` + "``a*b``" + ` done`:         `C:\dir\\\*.json and ` + "``a*b``" + ` done`,
+		"unclosed ` --x": "unclosed ` -\\-x",
+	} {
+		if got := legacyMarkdown(in); got != want {
+			t.Errorf("legacyMarkdown(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if got := joinClauses([]string{"Approve the board.", "Attach evidence", " ", "Rerun"}); got != "Approve the board. Attach evidence; Rerun" {
+		t.Errorf("joinClauses: %q", got)
+	}
 	if got := mdCode("a `b`"); got != "`` a `b` ``" {
 		t.Errorf("mdCode: %q", got)
 	}
@@ -198,5 +221,116 @@ func TestMarkdownHelpers(t *testing.T) {
 	}
 	if got := slug("  Hello, World!! The Sequel  "); got != "hello-world-the-sequel" {
 		t.Errorf("slug: %q", got)
+	}
+}
+
+func facetMap(it Item) map[string]string {
+	out := map[string]string{}
+	for _, f := range it.Facets {
+		out[f.Label] = f.Markdown
+	}
+	return out
+}
+
+func labels(it Item) string {
+	var out []string
+	for _, f := range it.Facets {
+		out = append(out, f.Label)
+	}
+	return strings.Join(out, ",")
+}
+
+func TestNormalizeMapsEachKindsFamilyOntoItsVocabulary(t *testing.T) {
+	board := func(doc *Document) *Board {
+		for _, s := range doc.Sections {
+			if s.Board != nil && s.Board.Layout == "" {
+				return s.Board
+			}
+		}
+		t.Fatalf("no article board in %+v", doc.Sections)
+		return nil
+	}
+
+	plan, warnings := normalize(t, `{"dossierVersion":"1.0","kind":"implementation","meta":{"title":"T","slug":"t"},"blocks":[
+	{"type":"process-board","items":[
+		{"id":"filter","title":"Persist filter","summary":"Keep it in the URL.","status":"partial","owner":"agent","effort":"Small","priority":"P1","files":["a.ts"],"verification":["npm test"],"verdict":"revise"},
+		{"id":"empty","title":"Empty state","status":"guardrail","verdict":"block","body":"**Why:** riders lose context.\n\nShow a hint."}]},
+	{"type":"verdict-gate","prompt":"Apply the plan?","options":["approve","hold"]}]}`)
+	steps := board(plan).Items
+	if plan.Kind != "plan" || steps[0].Status != "doing" || steps[0].Owner != "agent" || steps[0].Effort != "S" || labels(steps[0]) != "What changes,Touches,Done when,Note" {
+		t.Errorf("plan step: %+v", steps[0])
+	}
+	if fm := facetMap(steps[1]); steps[1].Status != "planned" || fm["Why"] != "riders lose context." || fm["What changes"] != "Show a hint." || fm["Done when"] != notStated || !strings.Contains(fm["Note"], "**Status** guardrail") {
+		t.Errorf("lead-ins, placeholders, and unknown statuses: %+v", steps[1])
+	}
+	if plan.Decisions == nil || plan.Decisions.Verdicts["filter"] != "revise" || plan.Decisions.Verdicts["empty"] != "skip" {
+		t.Errorf("0.6 verdicts become plan verdicts: %+v", plan.Decisions)
+	}
+	if plan.Choice == nil || plan.Choice.Options[1].ID != "hold" || plan.Choice.Question != "Apply the plan?" {
+		t.Errorf("a verdict gate with options becomes the document's choice: %+v", plan.Choice)
+	}
+	if !strings.Contains(joined(warnings), `the 0.6 item has nothing for the required facet "Done when"`) {
+		t.Error("a placeholder always warns")
+	}
+
+	review, _ := normalize(t, `{"dossierVersion":"1.0","kind":"integration-loop","meta":{"title":"T","slug":"t"},"blocks":[
+	{"type":"finding-list","findings":[{"id":"f1","title":"Token leak","severity":"high","category":"security","body":"Logs hold tokens.","files":["api.go"],"line":42,"recommendation":"Redact."}]}]}`)
+	f := board(review).Items[0]
+	if fm := facetMap(f); review.Kind != "review" || f.Severity != "major" || f.Category != "security" || fm["Where"] != "- `api.go`, line 42" || fm["Why it matters"] != "Logs hold tokens." || fm["Fix"] != "Redact." {
+		t.Errorf("review finding: %+v", f)
+	}
+
+	release, _ := normalize(t, `{"dossierVersion":"1.0","kind":"release","meta":{"title":"T","slug":"t"},"blocks":[
+	{"type":"release-checklist","gates":[{"id":"version","title":"Version resolved","status":"passed","required":true,"evidence":"0.6.7"},{"id":"arm","title":"arm64 build","status":"blocked","required":true,"evidence":"Runner out of disk."}]},
+	{"type":"verification-run","runs":[{"id":"tests","title":"npm test","command":"npm test","status":"planned","expected":"All pass.","artifacts":["report.xml"]}]}]}`)
+	var gates []Item
+	for _, s := range release.Sections {
+		if s.Board != nil {
+			gates = append(gates, s.Board.Items...)
+		}
+	}
+	if fm := facetMap(gates[0]); gates[0].Status != "passed" || !gates[0].Required || fm["Result"] != "Passed: `0.6.7`" {
+		t.Errorf("checklist gate: %+v", gates[0])
+	}
+	if fm := facetMap(gates[1]); gates[1].Status != "failed" || fm["Result"] != "Failed: Runner out of disk." {
+		t.Errorf("blocked gate: %+v", gates[1])
+	}
+	if fm := facetMap(gates[2]); gates[2].Status != "pending" || fm["How checked"] != "Runs `npm test`. Expected: All pass." || fm["Result"] != "Pending." || fm["Evidence"] != "`report.xml`" {
+		t.Errorf("verification run: %+v", gates[2])
+	}
+
+	incident, _ := normalize(t, `{"dossierVersion":"1.0","kind":"dossier","meta":{"title":"T","slug":"t","tags":["Postmortem"]},"blocks":[
+	{"type":"hero","title":"T","sideCards":[{"label":"Severity","value":"SEV-2"}]},
+	{"type":"timeline","phases":[{"label":"09:12","body":"Alert fired. Pager went off.","status":"done"},{"label":"Detection","date":"2026-01-14","body":"Found.","status":"blocked"}]},
+	{"type":"action-items","items":[{"title":"Add backpressure","owner":"API team","status":"done"}]}]}`)
+	if incident.Kind != "incident" || len(incident.Meta.Facts) != 1 || incident.Meta.Facts[0].Value != "SEV-2" {
+		t.Errorf("a postmortem tag maps to incident, and hero cards to facts: %s %+v", incident.Kind, incident.Meta.Facts)
+	}
+	var events []Event
+	for _, s := range incident.Sections {
+		for _, p := range s.Parts {
+			events = append(events, p.Events...)
+		}
+	}
+	if len(events) != 2 || events[0] != (Event{At: "09:12", Title: "Alert fired", Markdown: "Pager went off.", Tone: "teal"}) || events[1] != (Event{At: "2026-01-14", Title: "Detection", Markdown: "Found.", Tone: "risk"}) {
+		t.Errorf("timeline events: %+v", events)
+	}
+	up := board(incident).Items[0]
+	if fm := facetMap(up); up.Status != "done" || up.Owner != "API team" || fm["Addresses"] != notStated || fm["What changes"] != "Add backpressure" {
+		t.Errorf("follow-up: %+v", up)
+	}
+
+	brief, _ := normalize(t, `{"dossierVersion":"1.0","kind":"research","meta":{"title":"T","slug":"t"},"blocks":[
+	{"type":"trust-report","claims":[{"id":"c1","claim":"Portable.","status":"verified","confidence":"high","sources":["repo"]},{"id":"c2","claim":"Pricing holds.","status":"policy","confidence":"medium","evidence":"Checked in May."}]}]}`)
+	claims := board(brief).Items
+	if claims[0].Status != "verified" || claims[1].Status != "open" || facetMap(claims[1])["Detail"] != "**0.6 status** policy" || facetMap(claims[1])["Evidence"] != "- Checked in May." {
+		t.Errorf("claims as brief findings: %+v", claims)
+	}
+
+	ideas, _ := normalize(t, `{"dossierVersion":"1.0","kind":"review-board","meta":{"title":"T","slug":"t"},"blocks":[
+	{"type":"review-board","candidates":[{"id":"cmdk","title":"Command palette","summary":"Jump anywhere.","category":"Minor","impact":"High","effort":"Medium","body":"Opens with Cmd-K.\n\nWhy: readers get lost."}]}]}`)
+	idea := board(ideas).Items[0]
+	if fm := facetMap(idea); ideas.Kind != "brainstorm" || idea.Size != "minor" || idea.Impact != 4 || idea.Effort != "M" || fm["How it works"] != "Opens with Cmd-K." || fm["Why"] != "readers get lost." {
+		t.Errorf("idea: %+v", idea)
 	}
 }

@@ -44,10 +44,10 @@ func TestLegacyFixtures(t *testing.T) {
 			if p := model.Check(doc); len(p) > 0 {
 				t.Errorf("structure problems: %v", p)
 			}
-			// Read as a 0.6 import, the document must build: problems with the
-			// kind's vocabulary are warnings until the import maps onto it.
-			if _, problems, err := load.Bytes(name, data); err != nil || len(problems) > 0 {
-				t.Errorf("0.6 import must build: %v %v", err, problems)
+			// The upgrade lands in the kind's vocabulary: the upgraded model
+			// passes every strict 0.7 check, kind rules included.
+			if _, problems, err := load.Bytes(name+".upgraded.json", out); err != nil || len(problems) > 0 {
+				t.Errorf("the upgrade must pass the strict checks: %v %v", err, problems)
 			}
 			for _, w := range warnings {
 				if strings.Contains(w.Message, "unknown 0.6 block") || strings.Contains(w.Message, "block inside an item is dropped") || strings.Contains(w.Message, "has no content") {

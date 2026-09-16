@@ -7,7 +7,21 @@
     "kicker": "Live demo",
     "lede": "Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].",
     "updated": "2026-06-29",
-    "status": "durable"
+    "status": "durable",
+    "facts": [
+      {
+        "label": "source",
+        "value": "one .dossier.json"
+      },
+      {
+        "label": "output",
+        "value": "one .html"
+      },
+      {
+        "label": "runtime deps",
+        "value": "0"
+      }
+    ]
   },
   "sections": [
     {
@@ -24,18 +38,6 @@
             {
               "label": "Highlights",
               "text": "43 block types · Self-contained · Agent-readable · Light + dark"
-            },
-            {
-              "label": "Source",
-              "text": "one .dossier.json"
-            },
-            {
-              "label": "Output",
-              "text": "one .html"
-            },
-            {
-              "label": "Runtime deps",
-              "text": "0"
             }
           ]
         },
@@ -123,38 +125,33 @@
           "markdown": "### Roadmap"
         },
         {
-          "type": "table",
-          "columns": [
-            "Phase",
-            "Status",
-            "Notes"
-          ],
-          "rows": [
-            [
-              "0.1",
-              "done",
-              "Generator, catalog, features."
-            ],
-            [
-              "0.2",
-              "done",
-              "MCP, plugins, new blocks."
-            ],
-            [
-              "0.5",
-              "done",
-              "Process workflows, publishing, embed output, and live editor hooks."
-            ],
-            [
-              "0.6",
-              "done",
-              "Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution."
-            ],
-            [
-              "0.7",
-              "planned",
-              "Leaner reader shell, one export contract, fewer block families, and a new default theme."
-            ]
+          "type": "timeline",
+          "events": [
+            {
+              "at": "0.1",
+              "title": "Generator, catalog, features",
+              "tone": "teal"
+            },
+            {
+              "at": "0.2",
+              "title": "MCP, plugins, new blocks",
+              "tone": "teal"
+            },
+            {
+              "at": "0.5",
+              "title": "Process workflows, publishing, embed output, and live editor hooks",
+              "tone": "teal"
+            },
+            {
+              "at": "0.6",
+              "title": "Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution",
+              "tone": "teal"
+            },
+            {
+              "at": "0.7",
+              "title": "Leaner reader shell, one export contract, fewer block families, and a new default theme",
+              "tone": "violet"
+            }
           ]
         },
         {
@@ -456,7 +453,7 @@
       "id": "interactive-review-board-try-it",
       "title": "Interactive review board, try it",
       "board": {
-        "layout": "articles",
+        "layout": "rows",
         "items": [
           {
             "id": "navigation",
@@ -499,7 +496,7 @@
       "id": "process-board-implementation-loop",
       "title": "Process board, implementation loop",
       "board": {
-        "layout": "articles",
+        "layout": "rows",
         "items": [
           {
             "id": "extract-work-item",
@@ -695,49 +692,35 @@
         }
       ],
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "tests-pass",
             "title": "Automated tests pass for the process block family.",
+            "status": "verified",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** verified\n\n**Confidence** high"
-              },
-              {
-                "label": "Notes",
-                "markdown": "Agents can read this with `dossier_read_trust`."
-              },
-              {
                 "label": "Evidence",
-                "markdown": "- test-suite"
+                "markdown": "- test-suite\n- Sources: npm-test"
               },
               {
-                "label": "Sources",
-                "markdown": "- npm-test"
+                "label": "Note",
+                "markdown": "**0.6 confidence** high\n\nAgents can read this with `dossier_read_trust`."
               }
             ]
           },
           {
             "id": "manual-qa-ready",
             "title": "The feature set is ready for public manual QA.",
+            "status": "likely",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** partial\n\n**Confidence** medium"
-              },
-              {
-                "label": "Notes",
-                "markdown": "Manual QA still needs a human browser pass before broad announcement."
-              },
-              {
                 "label": "Evidence",
-                "markdown": "- build-log"
+                "markdown": "- build-log\n- Sources: manual-qa"
               },
               {
-                "label": "Sources",
-                "markdown": "- manual-qa"
+                "label": "Note",
+                "markdown": "**0.6 confidence** medium\n\nManual QA still needs a human browser pass before broad announcement."
               }
             ]
           }
