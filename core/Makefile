@@ -4,6 +4,7 @@
 
 generate:
 	go tool templ generate
+	go run ./cmd/dossier skill --write skill/SKILL.md
 
 check:
 	@sh scripts/check-generated.sh

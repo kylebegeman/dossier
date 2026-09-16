@@ -1,7 +1,7 @@
 {
   "id": "review",
   "title": "Review",
-  "summary": "Findings or candidates for one reviewer to accept or send back by number. Facet vocabulary arrives with the skill; any labels pass for now.",
+  "summary": "Findings or candidates for one reviewer to accept or send back by number.",
   "items": {
     "numbered": true,
     "effort": [
