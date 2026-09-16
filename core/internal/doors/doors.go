@@ -11,14 +11,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 
 	"dossier/internal/decisions"
-	"dossier/internal/kinds"
 	"dossier/internal/model"
-	"dossier/internal/schema"
 )
 
 //go:embed catalog.json
@@ -169,60 +166,6 @@ func Usage() string {
 		}
 	}
 	return b.String()
-}
-
-// loaded is a document that passed schema, structure, and kind checks.
-type loaded struct {
-	Path     string
-	Doc      *model.Document
-	Kind     kinds.Kind
-	Warnings []model.Problem
-}
-
-// loadDocument reads and fully validates one model file. Problems are
-// findings, not errors; an error means the file could not be read or parsed.
-func loadDocument(path string) (*loaded, []model.Problem, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, nil, err
-	}
-	data, aliasWarnings, _, err := model.Normalize(data)
-	if err != nil {
-		return nil, nil, err
-	}
-	problems, err := schema.CheckModel(data)
-	if err != nil {
-		return nil, nil, err
-	}
-	if len(problems) > 0 {
-		return nil, prefix(path, problems), nil
-	}
-	doc, err := model.Decode(bytes.NewReader(data))
-	if err != nil {
-		return nil, nil, err
-	}
-	problems = model.Check(doc)
-	if len(problems) > 0 {
-		return nil, prefix(path, problems), nil
-	}
-	kind, err := kinds.Load(doc.Kind)
-	if err != nil {
-		return nil, prefix(path, []model.Problem{{Path: "/kind", Message: err.Error()}}), nil
-	}
-	problems = kind.Check(doc)
-	if len(problems) > 0 {
-		return nil, prefix(path, problems), nil
-	}
-	warnings := append(prefix(path, aliasWarnings), prefix(path, kind.Advise(doc))...)
-	return &loaded{Path: path, Doc: doc, Kind: kind, Warnings: warnings}, nil, nil
-}
-
-func prefix(path string, problems []model.Problem) []model.Problem {
-	out := make([]model.Problem, len(problems))
-	for i, p := range problems {
-		out[i] = model.Problem{Path: path + "#" + p.Path, Message: p.Message}
-	}
-	return out
 }
 
 func renderHuman(env Envelope, stdout, stderr io.Writer) {

@@ -248,3 +248,38 @@ func TestCatalogPositionalsMatchParameters(t *testing.T) {
 		}
 	}
 }
+
+func TestDecisionsApplyRefusesToOverwriteALegacyFile(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", "sample.dossier.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	src := filepath.Join(dir, "sample.dossier.json")
+	if err := os.WriteFile(src, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	env, code := run(t, "decisions", "apply", src, "--reply", "1")
+	if code != 1 || env.Error == nil || env.Error.Code != "legacy" {
+		t.Fatalf("in-place apply on a 0.6 file must be refused: %d %+v", code, env)
+	}
+	after, err := os.ReadFile(src)
+	if err != nil || string(after) != string(data) {
+		t.Error("the 0.6 source changed")
+	}
+	out := filepath.Join(dir, "sample-upgraded.dossier.json")
+	env, code = run(t, "decisions", "apply", src, "--reply", "1", "--out", out)
+	if code != 0 || env.Outcome != OutcomeOK {
+		t.Fatalf("apply with --out: %d %+v", code, env)
+	}
+	env, code = run(t, "validate", out)
+	if code != 0 {
+		t.Fatalf("the written model must validate: %d %+v", code, env)
+	}
+	// Written as 0.7, the model gets conciseness advice and no alias warnings.
+	for _, w := range env.Warnings {
+		if !strings.Contains(w.Message, "keep facets under") {
+			t.Errorf("unexpected warning on the upgraded model: %s", w)
+		}
+	}
+}

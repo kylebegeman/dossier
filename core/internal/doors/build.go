@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/render"
 )
@@ -54,7 +55,7 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 	var findings, warnings []model.Problem
 	for _, path := range files {
 		started := time.Now()
-		l, problems, err := loadDocument(path)
+		l, problems, err := load.File(path)
 		if err != nil {
 			return errorEnvelope("build", "read", err)
 		}
@@ -64,7 +65,7 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 		}
 		warnings = append(warnings, l.Warnings...)
 		figures, figureWarnings := render.InlineFigures(l.Doc, filepath.Dir(path))
-		warnings = append(warnings, prefix(path, figureWarnings)...)
+		warnings = append(warnings, load.Prefix(path, figureWarnings)...)
 		html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures})
 		if err != nil {
 			return errorEnvelope("build", "render", fmt.Errorf("%s: %w", path, err))
@@ -140,7 +141,7 @@ func validateDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 	result := ValidateResult{SchemaVersion: "dossier.validate-result/v1"}
 	var findings, warnings []model.Problem
 	for _, path := range files {
-		l, problems, err := loadDocument(path)
+		l, problems, err := load.File(path)
 		if err != nil {
 			return errorEnvelope("validate", "read", err)
 		}

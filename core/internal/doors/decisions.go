@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"dossier/internal/decisions"
+	"dossier/internal/load"
 	"dossier/internal/model"
 )
 
@@ -48,7 +49,7 @@ func decisionsReadDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 	if len(files) != 1 {
 		return errorEnvelope(id, "usage", fmt.Errorf("decisions read needs exactly one model file"))
 	}
-	l, problems, err := loadDocument(files[0])
+	l, problems, err := load.File(files[0])
 	if err != nil {
 		return errorEnvelope(id, "read", err)
 	}
@@ -96,7 +97,7 @@ func decisionsApplyDoor(_ context.Context, args []string, stdin io.Reader) Envel
 	if (*from == "") == (*reply == "") {
 		return errorEnvelope(id, "usage", fmt.Errorf("give exactly one of --from FILE or --reply TEXT"))
 	}
-	l, problems, err := loadDocument(files[0])
+	l, problems, err := load.File(files[0])
 	if err != nil {
 		return errorEnvelope(id, "read", err)
 	}
@@ -124,18 +125,17 @@ func decisionsApplyDoor(_ context.Context, args []string, stdin io.Reader) Envel
 			return errorEnvelope(id, "parse", err)
 		}
 	}
-	if problems := decisions.Apply(l.Doc, d); len(problems) > 0 {
-		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: prefix("decisions", problems), Error: &ErrorBody{Code: "unknown-items", Message: "decisions name items the model does not have"}}
+	if l.Upgraded && (*out == "" || sameFile(*out, files[0])) {
+		return errorEnvelope(id, "legacy", fmt.Errorf("%s is a 0.6 document; run dossier upgrade on it first, or pass --out to write the upgraded model elsewhere", files[0]))
 	}
-	encoded, err := model.Encode(l.Doc)
-	if err != nil {
-		return errorEnvelope(id, "render", err)
+	if problems := decisions.Apply(l.Doc, d); len(problems) > 0 {
+		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: load.Prefix("decisions", problems), Error: &ErrorBody{Code: "unknown-items", Message: "decisions name items the model does not have"}}
 	}
 	target := files[0]
 	if *out != "" {
 		target = *out
 	}
-	if err := os.WriteFile(target, encoded, 0o644); err != nil {
+	if err := load.WriteModel(target, l.Doc); err != nil {
 		return errorEnvelope(id, "write", err)
 	}
 	applied := decisions.FromModel(l.Doc)
@@ -157,4 +157,14 @@ func decisionsApplyDoor(_ context.Context, args []string, stdin io.Reader) Envel
 		result.Written = append(result.Written, *decisionsOut)
 	}
 	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Result: result}
+}
+
+// sameFile reports whether two paths name the same file on disk.
+func sameFile(a, b string) bool {
+	ai, errA := os.Stat(a)
+	bi, errB := os.Stat(b)
+	if errA != nil || errB != nil {
+		return filepath.Clean(a) == filepath.Clean(b)
+	}
+	return os.SameFile(ai, bi)
 }
