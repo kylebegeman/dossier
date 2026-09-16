@@ -92,7 +92,7 @@ templ contentsNav(p *Page) {
 				<li class="group">{ g.Label }</li>
 				for _, e := range g.Entries {
 					if e.Item {
-						<li data-item={ e.ID }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
+						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
 					} else {
 						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
 					}
@@ -186,8 +186,8 @@ templ summaryTable(p *Page, b *BoardView) {
 			</thead>
 			<tbody>
 				for _, it := range b.Items {
-					<tr data-item={ it.ID }>
-						<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title }/></td>
+					<tr data-item={ it.ID } class={ templ.KV("picked", it.Picked) }>
+						<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title } checked?={ it.Picked }/></td>
 						for _, c := range b.Columns {
 							@summaryCell(c, it)
 						}
@@ -264,7 +264,7 @@ templ meter(value int, max int) {
 }
 
 templ itemArticle(it ItemView) {
-	<article class="item" id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) }>
+	<article class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title }>
 		<div class="item-head">
 			<div class="item-meta">
 				if it.Size != "" {
@@ -277,12 +277,29 @@ templ itemArticle(it ItemView) {
 					@meter(it.Impact, it.ImpactMax)
 					<span class="meter-label">impact { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
 				}
-				<button class="pick-btn" type="button" aria-pressed="false" data-pick>Pick</button>
+				<button class="pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
+					if it.Picked {
+						Picked
+					} else {
+						Pick
+					}
+				</button>
+				<button class="note-btn" type="button" data-note-toggle>
+					if it.Note != "" {
+						Edit note
+					} else {
+						Add a note
+					}
+				</button>
 			</div>
 			<h3><span class="num">{ strconv.Itoa(it.Number) }</span>{ it.Title }</h3>
 			if it.Summary != "" {
 				<p class="one-line">{ it.Summary }</p>
 			}
+		</div>
+		<div class="note" data-note-wrap hidden?={ it.Note == "" }>
+			<label for={ "note-" + it.ID }>Your note on { strconv.Itoa(it.Number) }</label>
+			<textarea id={ "note-" + it.ID } data-note={ it.ID } rows="2" placeholder="Changes, conditions, or why not">{ it.Note }</textarea>
 		</div>
 		<dl class="facets">
 			for _, f := range it.Facets {
@@ -337,6 +354,7 @@ templ pick(p *Page) {
 		<div class="reply" data-reply>Nothing picked yet.</div>
 		<div class="row">
 			<button class="solid" type="button" data-copy-reply>Copy reply</button>
+			<button type="button" data-copy-decisions>Copy decisions as JSON</button>
 		</div>
 	</div>
 }

@@ -99,6 +99,8 @@ type ItemView struct {
 	ImpactMax int
 	DependsOn []DepView
 	Facets    []FacetView
+	Picked    bool
+	Note      string
 }
 
 // DepView links a dependency by number.
@@ -127,6 +129,7 @@ type TocEntry struct {
 	Label  string
 	Number int
 	Item   bool
+	Picked bool
 }
 
 // Fact is one cell of the masthead facts tile.
@@ -181,6 +184,14 @@ func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
 	if kind.Items.Impact != nil {
 		impactMax = kind.Items.Impact.Max
 	}
+	pickedIDs := map[string]bool{}
+	notes := map[string]string{}
+	if doc.Decisions != nil {
+		for _, id := range doc.Decisions.Picked {
+			pickedIDs[id] = true
+		}
+		notes = doc.Decisions.Notes
+	}
 	var rowsCount int
 	for _, s := range doc.Sections {
 		sv := SectionView{ID: s.ID, Title: s.Title}
@@ -194,7 +205,7 @@ func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
 		if s.Board != nil {
 			bv := &BoardView{Summary: s.Board.Summary, Rows: s.Board.Layout == "rows", Columns: kind.SummaryTable.Columns, Legend: kind.SummaryTable.Legend}
 			for _, it := range s.Board.Items {
-				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Title: it.Title, Summary: it.Summary, Size: it.Size, Effort: it.Effort, Impact: it.Impact, ImpactMax: impactMax}
+				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Title: it.Title, Summary: it.Summary, Size: it.Size, Effort: it.Effort, Impact: it.Impact, ImpactMax: impactMax, Picked: pickedIDs[it.ID], Note: notes[it.ID]}
 				for _, dep := range it.DependsOn {
 					iv.DependsOn = append(iv.DependsOn, DepView{ID: dep, Number: numbers[dep], Title: titles[dep]})
 				}
@@ -216,7 +227,7 @@ func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
 		}
 		page.Sections = append(page.Sections, sv)
 	}
-	page.Contents = contents(doc, kind, numbers)
+	page.Contents = contents(doc, kind, numbers, pickedIDs)
 	page.HasPick = len(page.Numbered) > 0 && kind.Pick.Title != ""
 	if page.HasPick {
 		h, err := markdown(kind.Pick.Markdown)
@@ -304,7 +315,7 @@ func escape(s string) string {
 	return r.Replace(s)
 }
 
-func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int) []TocGroup {
+func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, pickedIDs map[string]bool) []TocGroup {
 	var groups []TocGroup
 	current := &TocGroup{Label: "Frame"}
 	seenBoard := false
@@ -320,7 +331,7 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int) []To
 				g := TocGroup{Label: capitalize(size)}
 				for _, it := range s.Board.Items {
 					if strings.EqualFold(it.Size, size) {
-						g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true})
+						g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]})
 					}
 				}
 				if len(g.Entries) > 0 {
@@ -330,7 +341,7 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int) []To
 		} else {
 			g := TocGroup{Label: s.Title}
 			for _, it := range s.Board.Items {
-				g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true})
+				g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]})
 			}
 			groups = append(groups, g)
 		}
@@ -363,7 +374,13 @@ func facts(page *Page, kind kinds.Kind, rowsCount int) []Fact {
 		out = append(out, Fact{Value: fmt.Sprint(rowsCount), Label: "also considered"})
 	}
 	if page.HasPick {
-		out = append(out, Fact{Value: "0", Label: "picked", Live: true})
+		c := 0
+		for _, it := range page.Numbered {
+			if it.Picked {
+				c++
+			}
+		}
+		out = append(out, Fact{Value: fmt.Sprint(c), Label: "picked", Live: true})
 	}
 	return out
 }
