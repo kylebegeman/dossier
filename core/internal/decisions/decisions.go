@@ -262,7 +262,7 @@ func ParseReply(text string, items []Item) (Document, error) {
 		case i == 0:
 			d.Path = lower
 		default:
-			return Document{}, fmt.Errorf("reply has an unexpected word %q; write a path first, then numbers, then Notes:", tok)
+			return Document{}, fmt.Errorf("reply has an unexpected word %q; write a path first, then numbers, then the notes", tok)
 		}
 	}
 	for _, entry := range strings.Split(strings.TrimSpace(notes), ";") {
