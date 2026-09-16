@@ -390,14 +390,14 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 				for _, dep := range it.DependsOn {
 					iv.DependsOn = append(iv.DependsOn, DepView{ID: dep, Number: numbers[dep], Title: titles[dep]})
 				}
-				for fi, f := range it.Facets {
+				for _, f := range it.Facets {
 					h, err := markdown(f.Markdown)
 					if err != nil {
 						return nil, fmt.Errorf("item %s facet %q: %w", it.ID, f.Label, err)
 					}
 					fv := FacetView{Label: f.Label, HTML: h, Risk: kind.IsRisk(f.Label)}
 					if studio {
-						fv.Edit = fmt.Sprintf("/items/%s/facets/%d/markdown", it.ID, fi)
+						fv.Edit = "/items/" + it.ID + "/facets/" + kinds.Slug(f.Label) + "/markdown"
 					}
 					iv.Facets = append(iv.Facets, fv)
 				}

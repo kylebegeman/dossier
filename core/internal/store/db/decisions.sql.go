@@ -42,6 +42,15 @@ func (q *Queries) DeletePicks(ctx context.Context, documentID string) error {
 	return err
 }
 
+const deleteVerdicts = `-- name: DeleteVerdicts :exec
+DELETE FROM verdicts WHERE document_id = ?
+`
+
+func (q *Queries) DeleteVerdicts(ctx context.Context, documentID string) error {
+	_, err := q.db.ExecContext(ctx, deleteVerdicts, documentID)
+	return err
+}
+
 const listNotes = `-- name: ListNotes :many
 SELECT item_id, body FROM notes WHERE document_id = ? ORDER BY item_id
 `
@@ -101,6 +110,38 @@ func (q *Queries) ListPicks(ctx context.Context, documentID string) ([]string, e
 	return items, nil
 }
 
+const listVerdicts = `-- name: ListVerdicts :many
+SELECT item_id, verdict FROM verdicts WHERE document_id = ? ORDER BY item_id
+`
+
+type ListVerdictsRow struct {
+	ItemID  string
+	Verdict string
+}
+
+func (q *Queries) ListVerdicts(ctx context.Context, documentID string) ([]ListVerdictsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listVerdicts, documentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListVerdictsRow
+	for rows.Next() {
+		var i ListVerdictsRow
+		if err := rows.Scan(&i.ItemID, &i.Verdict); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const putNote = `-- name: PutNote :exec
 INSERT INTO notes (document_id, item_id, body) VALUES (?, ?, ?)
 ON CONFLICT (document_id, item_id) DO UPDATE SET body = excluded.body
@@ -114,5 +155,21 @@ type PutNoteParams struct {
 
 func (q *Queries) PutNote(ctx context.Context, arg PutNoteParams) error {
 	_, err := q.db.ExecContext(ctx, putNote, arg.DocumentID, arg.ItemID, arg.Body)
+	return err
+}
+
+const putVerdict = `-- name: PutVerdict :exec
+INSERT INTO verdicts (document_id, item_id, verdict) VALUES (?, ?, ?)
+ON CONFLICT (document_id, item_id) DO UPDATE SET verdict = excluded.verdict
+`
+
+type PutVerdictParams struct {
+	DocumentID string
+	ItemID     string
+	Verdict    string
+}
+
+func (q *Queries) PutVerdict(ctx context.Context, arg PutVerdictParams) error {
+	_, err := q.db.ExecContext(ctx, putVerdict, arg.DocumentID, arg.ItemID, arg.Verdict)
 	return err
 }

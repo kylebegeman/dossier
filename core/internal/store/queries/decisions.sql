@@ -17,3 +17,13 @@ ON CONFLICT (document_id, item_id) DO UPDATE SET body = excluded.body;
 
 -- name: DeleteNotes :exec
 DELETE FROM notes WHERE document_id = ?;
+
+-- name: ListVerdicts :many
+SELECT item_id, verdict FROM verdicts WHERE document_id = ? ORDER BY item_id;
+
+-- name: PutVerdict :exec
+INSERT INTO verdicts (document_id, item_id, verdict) VALUES (?, ?, ?)
+ON CONFLICT (document_id, item_id) DO UPDATE SET verdict = excluded.verdict;
+
+-- name: DeleteVerdicts :exec
+DELETE FROM verdicts WHERE document_id = ?;

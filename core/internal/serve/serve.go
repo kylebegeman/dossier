@@ -185,6 +185,8 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 	mux.HandleFunc("POST /_/move", s.guard(true, s.move))
 	mux.HandleFunc("PUT /_/decisions", s.guard(true, s.putDecisions))
 	mux.HandleFunc("POST /_/decisions/apply", s.guard(true, s.applyDecisions))
+	mux.HandleFunc("POST /_/decisions/import", s.guard(true, s.importDecisions))
+	mux.HandleFunc("POST /_/facets", s.guard(true, s.editFacets))
 	mux.HandleFunc("GET /_/model", s.guard(true, s.getModel))
 	mux.HandleFunc("PUT /_/model", s.guard(true, s.putModel))
 	mux.HandleFunc("POST /_/validate", s.guard(true, s.validate))
@@ -376,11 +378,26 @@ type studioConfig struct {
 	Findings  []model.Problem `json:"findings"`
 	Error     string          `json:"error,omitempty"`
 	Accent    string          `json:"accent,omitempty"`
+	// Reshaped lists items whose facet lists are drafted.
+	Reshaped []string `json:"reshaped"`
+	// Vocabulary is the kind's facets, for adding and removing them.
+	Vocabulary []facetWord `json:"vocabulary"`
+	Noun       string      `json:"noun,omitempty"`
+	Decides    bool        `json:"decides"`
+	// ModelAccent is the accent the model file already keeps.
+	ModelAccent string `json:"modelAccent,omitempty"`
+}
+
+type facetWord struct {
+	Label    string `json:"label"`
+	Slug     string `json:"slug"`
+	Required bool   `json:"required,omitempty"`
+	Hint     string `json:"hint"`
 }
 
 func (s *Server) baseConfig() studioConfig {
 	return studioConfig{Token: s.token, Version: s.cfg.Version, Model: s.cfg.Model, Store: s.cfg.Store,
-		Drafts: []string{}, Conflicts: []string{}, Orders: []string{}, Warnings: []model.Problem{}, Findings: []model.Problem{}}
+		Drafts: []string{}, Conflicts: []string{}, Orders: []string{}, Reshaped: []string{}, Vocabulary: []facetWord{}, Warnings: []model.Problem{}, Findings: []model.Problem{}}
 }
 
 // page renders the model as the reader sees it, with the stored decisions
@@ -395,6 +412,14 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 	cfg := s.baseConfig()
 	cfg.Upgraded = snap.loaded.Upgraded
 	cfg.Warnings = append(cfg.Warnings, snap.loaded.Warnings...)
+	kind := snap.loaded.Kind
+	cfg.Noun, cfg.Decides = kind.Item.Noun, kind.Decides()
+	for _, f := range kind.Facets {
+		cfg.Vocabulary = append(cfg.Vocabulary, facetWord{Label: f.Label, Slug: kinds.Slug(f.Label), Required: f.Required, Hint: f.Hint})
+	}
+	if th := snap.loaded.Doc.Meta.Theme; th != nil {
+		cfg.ModelAccent = th.Accent
+	}
 	docID, err := s.documentID(ctx, snap.loaded.Doc.Meta.Slug)
 	if err != nil {
 		s.fail(w, err)
@@ -405,12 +430,16 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
+	if err := s.migrateDrafts(ctx, docID, snap.loaded.Doc); err != nil {
+		s.fail(w, err)
+		return
+	}
 	drafts, err := s.store.Drafts(ctx, docID)
 	if err != nil {
 		s.fail(w, err)
 		return
 	}
-	applied, conflicts := applyDrafts(doc, drafts)
+	applied, conflicts := applyDrafts(doc, snap.loaded.Kind, drafts)
 	if len(applied) > 0 {
 		if _, problems, err := s.loader().Check(s.cfg.Model, doc); err != nil || len(problems) > 0 {
 			// The file changed under the drafts in a way they no longer fit.
@@ -425,8 +454,11 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 	}
 	cfg.Drafts, cfg.Conflicts = nonNil(applied), nonNil(conflicts)
 	for _, t := range applied {
-		if strings.HasPrefix(t, "/boards/") {
-			cfg.Orders = append(cfg.Orders, strings.Split(t, "/")[2])
+		switch parts := strings.Split(t, "/"); {
+		case strings.HasPrefix(t, "/boards/"):
+			cfg.Orders = append(cfg.Orders, parts[2])
+		case len(parts) == 4 && parts[1] == "items" && parts[3] == "facets":
+			cfg.Reshaped = append(cfg.Reshaped, parts[2])
 		}
 	}
 	stored, err := s.store.Decisions(ctx, docID)
@@ -481,12 +513,22 @@ func knownDecisions(doc *model.Document, stored store.Decisions, rules decisions
 		}
 	}
 	sort.Slice(d.Picked, func(i, j int) bool { return number[d.Picked[i]] < number[d.Picked[j]] })
+	if rules.Mode == decisions.ModeVerdict {
+		for id, v := range stored.Verdicts {
+			if number[id] > 0 && rules.CanDecide(id) && rules.IsVerdict(v) {
+				if d.Verdicts == nil {
+					d.Verdicts = map[string]string{}
+				}
+				d.Verdicts[id] = v
+			}
+		}
+	}
 	for id, note := range stored.Notes {
 		if number[id] > 0 {
 			d.Notes[id] = note
 		}
 	}
-	return d, d.Path != "" || len(d.Picked) > 0 || len(d.Notes) > 0
+	return d, d.Path != "" || len(d.Picked) > 0 || len(d.Verdicts) > 0 || len(d.Notes) > 0
 }
 
 // findingsPage stands in for the artifact while the model does not validate.

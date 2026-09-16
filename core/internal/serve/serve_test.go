@@ -557,3 +557,152 @@ func waitFor(t *testing.T, cond func() bool) {
 		time.Sleep(10 * time.Millisecond)
 	}
 }
+
+func TestFacetsAddAndRemoveAsDrafts(t *testing.T) {
+	h := start(t, brainstorm)
+	item := "storm-rebook"
+	code, res := h.api("POST", "/_/facets", facetRequest{Item: item, Label: "note"})
+	if code != 200 || res.Target != "/items/storm-rebook/facets/note/markdown" {
+		t.Fatalf("add: %d %+v", code, res)
+	}
+	page := h.page()
+	if !strings.Contains(page, `"reshaped":["storm-rebook"]`) || !strings.Contains(page, `data-edit="/items/storm-rebook/facets/note/markdown"`) {
+		t.Error("the page shows the drafted facet and marks its item")
+	}
+	code, res = h.api("GET", "/_/field?target=/items/storm-rebook/facets/note/markdown", nil)
+	if code != 200 || res.Value == nil || !strings.Contains(*res.Value, "fits nowhere else") {
+		t.Fatalf("a new facet starts from the kind's hint: %d %+v", code, res)
+	}
+	if code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/items/storm-rebook/facets/note/markdown", Value: "Pilot on the Brisk route first."}); code != 200 {
+		t.Fatalf("draft the new facet's text: %d %+v", code, res)
+	}
+	for _, bad := range []struct {
+		req  facetRequest
+		code int
+	}{
+		{facetRequest{Item: item, Label: "Why", Remove: true}, 422},
+		{facetRequest{Item: item, Label: "Risk"}, 409},
+		{facetRequest{Item: item, Label: "Budget"}, 400},
+		{facetRequest{Item: "shelter-seats", Label: "Note"}, 400},
+		{facetRequest{Item: "nope", Label: "Note"}, 404},
+	} {
+		if code, res := h.api("POST", "/_/facets", bad.req); code != bad.code {
+			t.Errorf("%+v: %d %+v", bad.req, code, res)
+		}
+	}
+	if code, res := h.api("POST", "/_/facets", facetRequest{Item: item, Label: "Unlocks", Remove: true}); code != 200 {
+		t.Fatalf("remove: %d %+v", code, res)
+	}
+	if code, res := h.api("POST", "/_/drafts/commit", nil); code != 200 || len(res.Conflicts) > 0 {
+		t.Fatalf("commit: %d %+v", code, res)
+	}
+	var labels []string
+	for _, f := range findItem(h.file(), item).Facets {
+		labels = append(labels, f.Label+"="+f.Markdown[:min(len(f.Markdown), 12)])
+	}
+	if got := strings.Join(labels, " | "); !strings.Contains(got, "Risk=Holds can st | Note=Pilot on the") || strings.Contains(got, "Unlocks") {
+		t.Errorf("committed facets: %s", got)
+	}
+	if code, res := h.api("POST", "/_/facets", facetRequest{Item: item, Label: "Note", Remove: true}); code != 200 {
+		t.Fatalf("remove again: %d %+v", code, res)
+	}
+	if code, res := h.api("POST", "/_/facets", facetRequest{Item: item, Label: "Note"}); code != 200 || !res.Reverted {
+		t.Errorf("adding back what the file has removes the draft: %d %+v", code, res)
+	}
+}
+
+func TestIndexedFacetDraftsMoveToTheirSlug(t *testing.T) {
+	h := start(t, brainstorm)
+	ctx := context.Background()
+	docID, err := h.srv.documentID(ctx, "winter-crossing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	why := findItem(h.file(), "storm-rebook").Facets[1]
+	if err := h.srv.store.PutDraft(ctx, docID, "/items/storm-rebook/facets/1/markdown", jsonText(why.Markdown), jsonText("Shorter why.")); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.srv.store.PutDraft(ctx, docID, "/items/storm-rebook/facets/0/markdown", jsonText("stale"), jsonText("x")); err != nil {
+		t.Fatal(err)
+	}
+	page := h.page()
+	if !strings.Contains(page, `"drafts":["/items/storm-rebook/facets/why/markdown"]`) || !strings.Contains(page, `"conflicts":["/items/storm-rebook/facets/0/markdown"]`) {
+		t.Errorf("a matching indexed draft moves to its slug and a stale one stays a conflict")
+	}
+	if _, ok, _ := h.srv.store.Draft(ctx, docID, "/items/storm-rebook/facets/why/markdown"); !ok {
+		t.Error("the moved draft is stored under its slug")
+	}
+}
+
+const review = `{"dossier":"1.0","kind":"review","meta":{"title":"Tide-aware cancellations","slug":"tides"},"sections":[
+{"id":"scope","title":"Scope","parts":[{"type":"prose","markdown":"The cancellation service."}]},
+{"id":"findings","title":"Findings","board":{"summary":true,"items":[
+{"id":"leak","title":"Token in logs","severity":"blocker","facets":[{"label":"Where","markdown":"api"},{"label":"Why it matters","markdown":"leaks"}]},
+{"id":"typo","title":"Typo","severity":"nit","facets":[{"label":"Where","markdown":"ui"},{"label":"Why it matters","markdown":"polish"}]}]}}]}`
+
+func TestVerdictsSyncImportAndApply(t *testing.T) {
+	h := startWith(t, []byte(review))
+	code, res := h.api("PUT", "/_/decisions", decisionsRequest{Path: "rework", Picked: []string{"leak"}, Verdicts: map[string]string{"leak": "fix", "typo": "merge", "ghost": "fix"}, Notes: map[string]string{"typo": "later"}})
+	if code != 200 || !res.OK {
+		t.Fatalf("put: %d %+v", code, res)
+	}
+	page := h.page()
+	if !strings.Contains(page, `data-item="leak" data-title="Token in logs" data-decides data-num="1" data-tone="teal"`) || strings.Contains(page, `class="item picked"`) {
+		t.Error("stored verdicts render; picks in a verdict kind and unknown verdicts are dropped")
+	}
+	if !strings.Contains(page, `<div class="reply" data-reply>rework, fix 1. Notes: 2: later.</div>`) {
+		t.Error("the reply reflects the stored verdicts")
+	}
+	code, res = h.api("POST", "/_/decisions/import", "approve, later 1; skip 2. Notes: 2: cosmetic.")
+	if code != 200 || res.Reply != "approve, later 1; skip 2. Notes: 2: cosmetic." {
+		t.Fatalf("import a reply: %d %+v", code, res)
+	}
+	for body, want := range map[string]string{
+		"approve, merge 1": `unexpected word "merge"`,
+		"ship, 1":          `unexpected word "ship"`,
+		`{"schema":"dossier.decisions/v1","slug":"other","picked":[]}`: "the decisions do not fit the model",
+	} {
+		if code, res := h.api("POST", "/_/decisions/import", body); code != 422 || !strings.Contains(res.Error, want) {
+			t.Errorf("import %q: %d %+v", body, code, res)
+		}
+	}
+	code, res = h.api("POST", "/_/decisions/apply", nil)
+	if code != 200 || res.Reply != "approve, later 1; skip 2. Notes: 2: cosmetic." {
+		t.Fatalf("apply: %d %+v", code, res)
+	}
+	d := h.file().Decisions
+	if d == nil || d.Path != "approve" || d.Verdicts["leak"] != "later" || d.Verdicts["typo"] != "skip" || d.Notes["typo"] != "cosmetic" {
+		t.Errorf("file decisions: %+v", d)
+	}
+	md := "# Decisions\n\nReply: rework, fix all.\n\n```json\n" + `{"schema":"dossier.decisions/v1","slug":"tides","path":"rework","picked":[],"verdicts":{"leak":"fix","typo":"fix"}}` + "\n```\n"
+	if code, res := h.api("POST", "/_/decisions/import", md); code != 200 || res.Reply != "rework, fix all." {
+		t.Errorf("import a decisions document: %d %+v", code, res)
+	}
+}
+
+func TestAccentPreviewDerivesAndKeepsInTheModel(t *testing.T) {
+	h := start(t, brainstorm)
+	res, text := h.request("PUT", "/_/settings", `{"accent":"#FFD400"}`, map[string]string{"X-Dossier-Token": h.srv.token, "Content-Type": "application/json"})
+	var settings settingsResponse
+	if err := json.Unmarshal([]byte(text), &settings); err != nil || res.StatusCode != 200 {
+		t.Fatalf("settings: %d %s", res.StatusCode, text)
+	}
+	if !strings.Contains(settings.CSS, ":root { --accent: #866e00;") || !strings.Contains(settings.CSS, `:root[data-theme="dark"] { --accent: #f7d65b;`) || len(settings.Warnings) != 1 {
+		t.Errorf("the preview carries the derived palette and its warning: %+v", settings)
+	}
+	if code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/meta/theme/accent", Value: "#2563EB"}); code != 200 {
+		t.Fatalf("keep in model: %d %+v", code, res)
+	}
+	if code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/meta/theme/accent", Value: "blue"}); code != 422 || len(res.Findings) == 0 {
+		t.Errorf("an accent that is not a color is refused: %d %+v", code, res)
+	}
+	if code, res := h.api("POST", "/_/drafts/commit", nil); code != 200 {
+		t.Fatalf("commit: %d %+v", code, res)
+	}
+	if th := h.file().Meta.Theme; th == nil || th.Accent != "#2563eb" {
+		t.Errorf("the model keeps the accent: %+v", th)
+	}
+	if page := h.page(); !strings.Contains(page, `"modelAccent":"#2563eb"`) || !strings.Contains(page, "/* accent from meta.theme.accent */") {
+		t.Error("the page renders the model's accent and tells the studio about it")
+	}
+}

@@ -1,6 +1,7 @@
 /* Dossier studio. Injected by dossier serve before the reader runtime; never
-   part of an artifact. The server is the authority: this island sends edits,
-   picks, and notes, and reloads when the server says the page changed. */
+   part of an artifact. The server is the authority: this island sends edits
+   and the reader's decisions, and reloads when the server says the page
+   changed. */
 (() => {
   "use strict";
   const cfgNode = document.getElementById("dossier-studio");
@@ -98,10 +99,13 @@
       button(draftCount ? "Save " + draftCount + " " + noun : "No drafts", commit, { disabled: !draftCount, title: "Write the drafts into the model file" }),
       button("Discard", discard, { disabled: !draftCount }),
       h("span", { class: "sep" }),
-      button("Write decisions", applyDecisions, { disabled: cfg.upgraded, title: "Write the picks and notes into the model file" }),
+      cfg.decides && button("Write decisions", applyDecisions, { disabled: cfg.upgraded, title: "Write the stored decisions into the model file" }),
+      cfg.decides && button("Import reply", openImport, { title: "Paste a reply line or a decisions document" }),
       button("Model JSON", openModel),
       accentControl()
     );
+    const warned = (cfg.warnings || []).length;
+    if (warned) bar.append(button(warned + (warned === 1 ? " warning" : " warnings"), () => report("Warnings", { findings: cfg.warnings }), { class: "btn studio-warned" }));
     if (cfg.upgraded) bar.append(h("span", { class: "studio-note", title: "dossier upgrade " + cfg.model }, "0.6 document: upgrade to edit"));
     if ((cfg.conflicts || []).length) bar.append(h("span", { class: "studio-note" }, cfg.conflicts.length + " draft(s) conflict with the file"));
   }
@@ -120,7 +124,7 @@
   let lastSent = null, sendTimer = 0;
   document.addEventListener("dossier:decisions", (e) => {
     const d = e.detail || {};
-    const state = { path: d.path || "", picked: d.picked || [], notes: d.notes || {} };
+    const state = { path: d.path || "", picked: d.picked || [], verdicts: d.verdicts || {}, notes: d.notes || {} };
     const json = JSON.stringify(state);
     if (lastSent === null) { lastSent = json; return; }
     if (json === lastSent) return;
@@ -134,14 +138,36 @@
 
   async function applyDecisions() {
     const res = await api("POST", "/_/decisions/apply");
-    if (res.ok) toast("Decisions written: " + (res.data.reply || "nothing picked"));
+    if (res.ok) toast("Decisions written: " + (res.data.reply || "nothing decided"));
     else report("Decisions not written", res.data);
+  }
+
+  /* import: a reply line or decisions document someone sent back */
+  function openImport() {
+    const area = h("textarea", { class: "studio-input", rows: 4, spellcheck: "false", "aria-label": "Reply or decisions document", placeholder: "storms, 1, 3. Notes: 3: keep blue." });
+    const foot = h("footer", { role: "status", "aria-live": "polite" }, "Paste the line the reader sent, or a decisions document. It replaces the stored decisions.");
+    const dialog = h("dialog", { class: "studio-dialog studio-small", "aria-label": "Import a reply" },
+      h("div", null,
+        h("header", null, h("b", null, "Import a reply"), button("Import", submit), button("Close", () => dialog.close())),
+        h("div", { class: "studio-pad" }, area), foot));
+    async function submit() {
+      const r = await api("POST", "/_/decisions/import", area.value, true);
+      if (r.ok) { dialog.close(); toast("Imported: " + (r.data.reply || "")); return; }
+      foot.replaceChildren(h("span", null, (r.data && r.data.error) || "Not imported"), problemsList(r.data) || "");
+    }
+    area.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(); } });
+    dialog.addEventListener("close", () => { dialog.remove(); settle(); });
+    document.body.append(dialog);
+    busy = true;
+    dialog.showModal();
+    area.focus();
   }
 
   /* drafts */
   for (const t of cfg.drafts || []) document.querySelectorAll('[data-edit="' + CSS.escape(t) + '"]').forEach((n) => n.classList.add("studio-drafted"));
   for (const t of cfg.conflicts || []) document.querySelectorAll('[data-edit="' + CSS.escape(t) + '"]').forEach((n) => n.classList.add("studio-conflict"));
   for (const id of cfg.orders || []) { const s = document.getElementById(id); if (s) s.classList.add("studio-reordered"); }
+  for (const id of cfg.reshaped || []) { const s = document.getElementById(id); if (s) s.classList.add("studio-reshaped"); }
 
   async function commit() {
     const res = await api("POST", "/_/drafts/commit");
@@ -224,10 +250,45 @@
         button("↑", (e) => { e.preventDefault(); move(id, "up"); }, { "aria-label": "Move up", title: "Move up" }),
         button("↓", (e) => { e.preventDefault(); move(id, "down"); }, { "aria-label": "Move down", title: "Move down" })));
     };
-    document.querySelectorAll("details.item[id]").forEach((d) => { const meta = d.querySelector(".item-meta"); if (meta) place(d, meta); });
+    document.querySelectorAll("details.item[id]").forEach((d) => { const meta = d.querySelector(".item-meta"); if (meta) place(d, meta); facetControls(d); });
     document.querySelectorAll(".rows > details.row[id]").forEach((d) => place(d, d.querySelector("summary")));
     document.querySelectorAll(".rows > div[id]").forEach((d) => place(d, d));
   }
+
+  /* facets: remove an optional one, or add one the kind has, as drafts */
+  const vocabulary = cfg.vocabulary || [];
+  function facetControls(item) {
+    const list = item.querySelector(".item-body > dl.facets");
+    if (!list || !vocabulary.length) return;
+    const present = new Set();
+    list.querySelectorAll(":scope > .facet > dd[data-edit]").forEach((dd) => {
+      const slug = dd.getAttribute("data-edit").split("/")[4];
+      present.add(slug);
+      const word = vocabulary.find((w) => w.slug === slug);
+      if (word && !word.required) {
+        dd.previousElementSibling.append(h("span", { class: "studio-move" }, button("Remove", () => editFacet(item.id, word.label, true), { class: "link-btn", title: "Remove " + word.label + " as a draft" })));
+      }
+    });
+    const missing = vocabulary.filter((w) => !present.has(w.slug));
+    if (!missing.length) return;
+    const select = h("select", { class: "studio-add", "aria-label": "Add a facet" }, h("option", { value: "" }, "Add a facet"),
+      ...missing.map((w) => h("option", { value: w.label, title: w.hint }, w.label + (w.required ? " (required)" : ""))));
+    select.addEventListener("change", () => { if (select.value) editFacet(item.id, select.value, false); });
+    list.after(h("div", { class: "studio-move studio-facets" }, select, h("span", { class: "studio-hint" }, "New facets start from the kind's hint")));
+  }
+  async function editFacet(item, label, remove) {
+    const res = await api("POST", "/_/facets", { item, label, remove });
+    if (!res.ok) { report(remove ? "Facet not removed" : "Facet not added", res.data); return; }
+    if (!remove) remember("dossier-studio:open", res.data.target);
+    setStatus("live", remove ? "Facet removed as a draft" : "Facet added as a draft");
+  }
+  window.addEventListener("load", () => {
+    const target = recall("dossier-studio:open");
+    if (!target) return;
+    remember("dossier-studio:open", null);
+    const node = document.querySelector('[data-edit="' + CSS.escape(target) + '"]');
+    if (node) { const d = node.closest("details"); if (d) d.open = true; node.scrollIntoView({ block: "center" }); openEditor(node); }
+  });
   async function move(item, direction) {
     const res = await api("POST", "/_/move", { item, direction });
     if (!res.ok) toast((res.data && res.data.error) || "Not moved");
@@ -282,17 +343,34 @@
     dialog.showModal();
   }
 
-  /* accent preview: the brand color, tried live */
+  /* accent: preview a brand color with the palette an artifact would derive
+     from it, then keep it in the model as a draft */
   function accentControl() {
     const style = document.getElementById("studio-accent");
     const current = () => { const v = getComputedStyle(root).getPropertyValue("--accent").trim(); return /^#[0-9a-f]{6}$/i.test(v) ? v : "#c81e4a"; };
-    const input = h("input", { type: "color", "aria-label": "Preview an accent color", value: cfg.accent || current() });
+    const input = h("input", { type: "color", "aria-label": "Preview an accent color", value: cfg.accent || cfg.modelAccent || current() });
     const reset = h("button", { class: "link-btn", type: "button", hidden: !cfg.accent }, "Reset");
+    const keep = h("button", { class: "link-btn", type: "button", hidden: !cfg.accent, title: "Draft this accent into meta.theme.accent" }, "Keep in model");
     let timer = 0;
-    const paint = (hex) => { if (style) style.textContent = hex ? ":root:root{--accent:" + hex + ";--accent-soft:color-mix(in srgb, " + hex + " 14%, var(--bg))}" : ""; };
-    const send = (hex) => { clearTimeout(timer); timer = setTimeout(async () => { const r = await api("PUT", "/_/settings", { accent: hex }); if (!r.ok) toast((r.data && r.data.error) || "Accent not saved"); }, 250); };
-    input.addEventListener("input", () => { paint(input.value); reset.hidden = false; send(input.value); });
-    reset.addEventListener("click", () => { paint(""); reset.hidden = true; send(""); input.value = current(); });
-    return h("label", { class: "studio-accent", title: "Preview the accent; the brand tokens are not changed" }, "Accent", input, reset);
+    // Paint the accent at once, then the derived palette when the server sends it.
+    const paint = (hex) => { if (style) style.textContent = hex ? ":root:root{--accent:" + hex + "}" : ""; };
+    const send = (hex) => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const r = await api("PUT", "/_/settings", { accent: hex });
+        if (!r.ok) { toast((r.data && r.data.error) || "Accent not saved"); return; }
+        if (style && hex === input.value) style.textContent = r.data.css || "";
+        if ((r.data.warnings || []).length) setStatus("changed", r.data.warnings[0]);
+      }, 200);
+    };
+    input.addEventListener("input", () => { paint(input.value); reset.hidden = keep.hidden = false; send(input.value); });
+    reset.addEventListener("click", () => { paint(""); reset.hidden = keep.hidden = true; send(""); input.value = cfg.modelAccent || current(); });
+    keep.addEventListener("click", async () => {
+      const r = await api("PUT", "/_/drafts", { target: "/meta/theme/accent", value: input.value });
+      if (!r.ok) { report("Accent not kept", r.data); return; }
+      await api("PUT", "/_/settings", { accent: "" });
+      toast("Accent drafted into the model; Save writes it");
+    });
+    return h("label", { class: "studio-accent", title: "Preview an accent in both themes" }, "Accent", input, keep, reset);
   }
 })();
