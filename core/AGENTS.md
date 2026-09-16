@@ -26,8 +26,13 @@ The flow is door to model to kind rules to templ render to one byte slice.
 - Generated `*_templ.go` is committed. Edit the `.templ` source and regenerate.
 - The artifact ships zero external requests by default. Web fonts are opt-in.
 - Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB.
-- Unknown JSON fields are errors. Old 0.6 block names are aliases with a
-  deprecation warning, never silent.
+- Unknown JSON fields are errors. A 0.6 document (`dossierVersion`,
+  `blocks`) is rewritten onto the model by `internal/model/alias.go` before
+  validation, with a warning per aliased block, never silently. A clean
+  rewrite is warnings and outcome `ok`, never findings. `testdata/legacy` is
+  the parity set; 0.8 removes the aliases.
+- Diagrams emit their DOT or Mermaid source under a format label. SVG
+  rendering through a wasm Graphviz is a later adoption, not a default.
 - Islands policy: the artifact carries one small vanilla JS reader runtime
   (contents, theme, decisions, copy). Editing tools live only in `serve`.
 - No Node dependencies in this module.

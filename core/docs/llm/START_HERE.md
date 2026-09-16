@@ -14,6 +14,8 @@ for the layout map and rules, and
 | Change how the page renders | `internal/render/document.templ` and `internal/render/render.go`; run `make generate` |
 | Change the look | `internal/render/assets/tokens.css`; the budget test in `render_test.go` fails past 30 KB |
 | Change reader behavior | `internal/render/assets/reader.js`; budget 20 KB |
+| Add a part type | `internal/model/model.go` (struct, `PartTypes`, `checkPart`), the schema, `internal/render/render.go` and `document.templ`, styles in `tokens.css` |
+| Change how a 0.6 block imports | `internal/model/alias.go`; goldens in `testdata/legacy/*.upgraded.json` (`UPDATE_GOLDEN=1 go test ./internal/model/`) |
 | Add a door (CLI, MCP, skill) | one file in `internal/doors/`, one entry in `catalog.json`, one test |
 | Verify a change | `make check` |
 
@@ -24,6 +26,8 @@ make generate        # templ
 make check           # generate, vet, staticcheck, errcheck, race tests, CGO-free build
 go run ./cmd/dossier build examples/dossier-0-7-brainstorm.dossier.json --out examples
 go run ./cmd/dossier validate FILE.dossier.json --json
+go run ./cmd/dossier build testdata/legacy/showcase.dossier.json --out /tmp/out   # a 0.6 file, warnings only
+UPDATE_GOLDEN=1 go test ./internal/render/ ./internal/model/                      # after a deliberate render or import change
 ```
 
 ## Source of truth
