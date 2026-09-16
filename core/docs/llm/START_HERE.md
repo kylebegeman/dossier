@@ -19,17 +19,23 @@ for the layout map and rules, and
 | Add a door (CLI, MCP, skill) | one file in `internal/doors/`, one entry in `catalog.json` (parameters schema, `positional`, `surfaces`), one test; then `make generate` for the skill |
 | Change what the skill says | `internal/doors/skill.go`; `make generate` rewrites `skill/SKILL.md` |
 | Serve tools to an agent | `dossier mcp` (stdio); conformance test in `internal/doors/mcp_test.go` |
+| Change the studio | `internal/serve` (handlers in `api.go`, island in `assets/`); tests start a real server in `serve_test.go` |
+| Change what the studio stores | a new migration in `internal/store/migrations`, queries in `internal/store/queries`, then `make generate` |
+| Change the React wrapper | `../packages/react/src`; `npm test` there builds the binary and renders through it |
+| Change what a release ships | `internal/release`; `make dist-check` dry-runs everything |
 | Verify a change | `make check` |
 
 ## Commands
 
 ```sh
-make generate        # templ and skill/SKILL.md
+make generate        # templ, sqlc, skill/SKILL.md, and the React package's model types
 make check           # generate, vet, staticcheck, errcheck, race tests, CGO-free build
 go run ./cmd/dossier build examples/dossier-0-7-brainstorm.dossier.json --out examples
 go run ./cmd/dossier validate FILE.dossier.json --json
 go run ./cmd/dossier init brainstorm --title "My brainstorm"   # a starter model
 go run ./cmd/dossier mcp                                      # MCP over stdio until the client closes
+go run ./cmd/dossier serve examples/dossier-0-7-brainstorm.dossier.json --port 0   # the studio
+make dist-check                                                # cross-compile and dry-run npm, Homebrew, archives
 go run ./cmd/dossier build testdata/legacy/showcase.dossier.json --out /tmp/out   # a 0.6 file, warnings only
 UPDATE_GOLDEN=1 go test ./internal/render/ ./internal/model/                      # after a deliberate render or import change
 ```
