@@ -1,0 +1,61 @@
+# The Go core, the React wrapper, and a distribution dry run. Nothing here
+# publishes: releases to npm, Homebrew, and GitHub stay a deliberate step.
+name: core
+
+on:
+  push:
+    paths: ["core/**", "packages/**", ".github/workflows/core.yml"]
+  pull_request:
+    paths: ["core/**", "packages/**", ".github/workflows/core.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - run: make check
+
+  react:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - run: npm pack --dry-run
+
+  dist-dry-run:
+    runs-on: ubuntu-latest
+    needs: check
+    defaults:
+      run:
+        working-directory: core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: make dist-check

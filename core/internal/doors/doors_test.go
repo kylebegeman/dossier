@@ -453,3 +453,31 @@ func TestServeDoorRunsUntilCanceled(t *testing.T) {
 		t.Error("serve without a model is a usage error")
 	}
 }
+
+// TestTypesMatchTheReactPackage fails when the React package's generated model
+// types drift from the schemas. Regenerate with make generate.
+func TestTypesMatchTheReactPackage(t *testing.T) {
+	want, err := TypeScript()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(filepath.Join("..", "..", "..", "packages", "react", "src", "model.ts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(want) {
+		t.Error("packages/react/src/model.ts is stale; run make generate")
+	}
+	for _, must := range []string{"export interface DossierModel {", "export interface Part {", `outcome: "ok" | "findings" | "error";`, "[key: string]: unknown;"} {
+		if !strings.Contains(string(want), must) {
+			t.Errorf("types lack %q", must)
+		}
+	}
+	path := filepath.Join(t.TempDir(), "model.ts")
+	if env, code := run(t, "types", "--write", path); code != 0 || env.Outcome != OutcomeOK {
+		t.Errorf("types --write: %d %+v", code, env)
+	}
+	if data, err := os.ReadFile(path); err != nil || string(data) != string(want) {
+		t.Errorf("written types differ: %v", err)
+	}
+}
