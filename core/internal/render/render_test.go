@@ -593,3 +593,77 @@ func TestDiagramsRenderFromOptionsOrShowSource(t *testing.T) {
 		}
 	}
 }
+
+func TestMarkdownGolden(t *testing.T) {
+	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+	md, err := Markdown(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	golden := filepath.Join("..", "..", "testdata", "winter-crossing.md")
+	if os.Getenv("UPDATE_GOLDEN") != "" {
+		if err := os.WriteFile(golden, md, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want, err := os.ReadFile(golden)
+	if err != nil {
+		t.Fatalf("no golden yet: %v (run with UPDATE_GOLDEN=1)", err)
+	}
+	if !bytes.Equal(md, want) {
+		t.Errorf("Markdown differs from golden; review, then run with UPDATE_GOLDEN=1")
+	}
+}
+
+func TestMarkdownCarriesEveryPartAndTheDecisions(t *testing.T) {
+	kind, err := kinds.Load("review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	facets := []model.Facet{{Label: "Where", Markdown: "`api/refund.go:42`"}, {Label: "Why it matters", Markdown: "Tokens leak into logs."}}
+	doc := &model.Document{Dossier: "1.0", Kind: "review", Meta: model.Meta{Title: "Tide-aware cancellations", Slug: "tides", Kicker: "Review", Facts: []model.Fact{{Label: "revision", Value: "a1b2c3"}}},
+		Sections: []model.Section{
+			{ID: "scope", Title: "Scope", Parts: []model.Part{
+				{Type: "callout", Tone: "risk", Markdown: "Two lines\nof warning."},
+				{Type: "table", Columns: []string{"File", "Change"}, Rows: [][]string{{"a|b.go", "**new**"}}, Note: "One file."},
+				{Type: "code", Lang: "go", Title: "The fix", Code: "x := \"```\""},
+				{Type: "timeline", Events: []model.Event{{At: "07:40", Title: "Sailing cancelled", Markdown: "Wind over\nforty knots."}}},
+				{Type: "diagram", Format: "mermaid", Source: "flowchart LR\n a --> b"},
+			}},
+			{ID: "findings", Title: "Findings", Board: &model.Board{Summary: true, Items: []model.Item{
+				{ID: "leak", Title: "Token in logs", Summary: "The refund handler logs the card token.", Severity: "blocker", Effort: "S", Facets: facets},
+				{ID: "typo", Title: "Typo", Severity: "nit", Facets: facets},
+			}}},
+			{ID: "checked", Title: "Checked", Board: &model.Board{Layout: "rows", Items: []model.Item{{ID: "perf", Title: "Performance", Summary: "No change.", Facets: []model.Facet{{Label: "Evidence", Markdown: "Bench ran."}}}}}},
+		},
+		Decisions: &model.Decisions{Path: "rework", Verdicts: map[string]string{"typo": "later"}, Notes: map[string]string{"leak": "rotate the token"}},
+	}
+	md, err := Markdown(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(md)
+	for _, want := range []string{
+		"# Tide-aware cancellations\n\n*Review*\n\n**a1b2c3** revision · **1** blocker · **1** nit · **1** checked · **Rework** choice · **1** decided\n",
+		"> **Risk**\n>\n> Two lines\n> of warning.\n",
+		"| File | Change |\n| --- | --- |\n| a\\|b.go | **new** |\n\n*One file.*\n",
+		"**The fix**\n\n````go\nx := \"```\"\n````\n",
+		"- **07:40** Sailing cancelled\\\n  Wind over forty knots.\n",
+		"```mermaid\nflowchart LR\n a --> b\n```\n",
+		"| # | Finding | Severity | Effort | Verdict |\n| --- | --- | --- | --- | --- |\n| 1 | Token in logs | blocker | S |  |\n| 2 | Typo | nit |  | Later |\n",
+		"### 1. Token in logs\n\nblocker · Effort S\n\nThe refund handler logs the card token.\n\n#### Where\n\n`api/refund.go:42`\n",
+		"**Note:** rotate the token\n",
+		"### 2. Typo\n\nnit · Verdict: Later\n",
+		"- **Performance**\\\n  No change.\n\n  *Evidence:* Bench ran.\n",
+		"## How to rule\n",
+		"- `rework` **Rework**: Send it back before it can merge. (chosen)\n",
+		"Reply so far: `rework, later 2. Notes: 1: rotate the token.`\n",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("Markdown lacks:\n%s\n--- in ---\n%s", want, out)
+		}
+	}
+	if !strings.HasSuffix(out, ".`\n") || strings.HasSuffix(out, "\n\n") {
+		t.Error("the rendition ends with exactly one newline")
+	}
+}

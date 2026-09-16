@@ -157,7 +157,7 @@ func Skill() ([]byte, error) {
 	w("1. `dossier init KIND --title \"…\"` writes `<slug>.dossier.json` with the kind's sections and facets in place.\n")
 	w("2. Fill it in: replace every hint with content, give each item a one-sentence summary and its required facets, and add optional facets only where they earn their place.\n")
 	w("3. `dossier validate <slug>.dossier.json`: findings block, warnings are advice.\n")
-	w("4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader.\n")
+	w("4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader. Add `--md` for a Markdown rendition to paste into a pull request, an issue, or a wiki.\n")
 	w("5. The reader replies with one line in the kind's form. Apply it with `dossier decisions apply <slug>.dossier.json --reply \"…\"`, then rebuild.\n")
 	w("6. `dossier decisions read <slug>.dossier.json` prints the decisions document for the next step.\n\n")
 	w("Pass `--json` to any command for the `dossier.result/v1` envelope: `outcome` is `ok`, `findings`, or `error`; `findings` block, `warnings` do not. A 0.6 model file (`dossierVersion`, `blocks`) still builds, with one warning per aliased block; 0.8 removes the aliases.\n\n")

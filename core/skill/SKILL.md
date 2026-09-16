@@ -139,7 +139,7 @@ A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file
 1. `dossier init KIND --title "…"` writes `<slug>.dossier.json` with the kind's sections and facets in place.
 2. Fill it in: replace every hint with content, give each item a one-sentence summary and its required facets, and add optional facets only where they earn their place.
 3. `dossier validate <slug>.dossier.json`: findings block, warnings are advice.
-4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader.
+4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader. Add `--md` for a Markdown rendition to paste into a pull request, an issue, or a wiki.
 5. The reader replies with one line in the kind's form. Apply it with `dossier decisions apply <slug>.dossier.json --reply "…"`, then rebuild.
 6. `dossier decisions read <slug>.dossier.json` prints the decisions document for the next step.
 
@@ -152,7 +152,7 @@ Pass `--json` to any command for the `dossier.result/v1` envelope: `outcome` is 
 | `dossier describe` | List the commands and the kinds with their facet vocabularies. | none |
 | `dossier init KIND [--force] [--out OUT] [--slug SLUG] [--title TITLE]` | Write a starter model for a kind, with the kind's facets in order, ready to fill in. | `force`: Overwrite an existing file; `kind` (required): A kind id from describe, such as brainstorm or plan; `out`: Directory for the model file; default is the working directory; `slug`: File and anchor slug; default derives from the title; `title`: Document title; default names the kind |
 | `dossier validate FILES...` | Check model files against the schema, the structure rules, and their kind. | `files` (required): one or more model files |
-| `dossier build FILES... [--out OUT]` | Render model files to self-contained HTML beside each source or into --out. | `files` (required): one or more model files; `out`: Directory for the HTML output |
+| `dossier build FILES... [--md] [--out OUT]` | Render model files to self-contained HTML beside each source or into --out, with a Markdown rendition when asked. | `files` (required): one or more model files; `md`: Also write a Markdown rendition beside each HTML file; `out`: Directory for the HTML output |
 | `dossier upgrade FILES... [--out OUT]` | Write 0.6 documents as 0.7 models, in place or into --out; 0.7 models are left alone. | `files` (required): one or more model files; `out`: Directory for the upgraded models; default replaces each source |
 | `dossier serve MODEL [--db DB] [--host HOST] [--open] [--port PORT]` | Run the local studio for one model: live reload, in-place edits kept as drafts, and the reader's decisions kept in a SQLite store beside the model. | `db`: SQLite store; default is the model's name with .db; `host`: Loopback host to bind; default 127.0.0.1; `model` (required); `open`: Open the studio in the default browser; `port`: Port to bind; default 4321, 0 picks a free one |
 | `dossier decisions read MODEL [--out OUT]` | Read a model's decisions as a decisions document, optionally writing it to a file. | `model` (required); `out`: Write the decisions document here, .md or .json |

@@ -533,3 +533,39 @@ func TestVerdictDecisionsForEveryVerdictKind(t *testing.T) {
 		t.Errorf("a pick kind refuses verdicts and names the way forward: %+v", env.Error)
 	}
 }
+
+func TestBuildAndRenderWriteMarkdown(t *testing.T) {
+	model := copyExample(t)
+	dir := t.TempDir()
+	env, code := run(t, "build", model, "--md", "--out", dir)
+	if code != 0 {
+		t.Fatalf("build --md: %+v", env)
+	}
+	raw, _ := json.Marshal(env.Result)
+	var result BuildResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(dir, "winter-crossing.md")
+	if len(result.Outputs) != 1 || result.Outputs[0].Markdown != want {
+		t.Fatalf("outputs: %+v", result.Outputs)
+	}
+	md, err := os.ReadFile(want)
+	if err != nil || !strings.HasPrefix(string(md), "# Ten moves for a calmer winter crossing\n") {
+		t.Errorf("markdown file: %v", err)
+	}
+	env, code = run(t, "render", model, "--md")
+	raw, _ = json.Marshal(env.Result)
+	var rendered RenderResult
+	if err := json.Unmarshal(raw, &rendered); err != nil {
+		t.Fatal(err)
+	}
+	if code != 0 || rendered.HTML != "" || rendered.Markdown != string(md) {
+		t.Errorf("render --md answers with the same Markdown and no HTML: %d", code)
+	}
+	env, _ = run(t, "build", model, "--out", dir)
+	raw, _ = json.Marshal(env.Result)
+	if strings.Contains(string(raw), `"markdown"`) {
+		t.Error("without --md there is no Markdown output")
+	}
+}
