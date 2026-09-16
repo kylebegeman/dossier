@@ -1,0 +1,29 @@
+package serve
+
+templ findingsPage(v findingsView) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ v.Title }</title>
+			@templ.Raw(v.Style)
+		</head>
+		<body>
+			<main class="studio-findings">
+				<p class="kicker">Dossier studio</p>
+				<h1>The model does not validate</h1>
+				<p class="lede">{ v.Message }</p>
+				if len(v.Findings) > 0 {
+					<ol>
+						for _, f := range v.Findings {
+							<li><code>{ f.Path }</code> <span>{ f.Message }</span></li>
+						}
+					</ol>
+				}
+			</main>
+			<div class="toast" role="status" aria-live="polite" data-toast></div>
+			@templ.Raw(v.Inject)
+		</body>
+	</html>
+}

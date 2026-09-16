@@ -4,10 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"dossier/internal/decisions"
 	"dossier/internal/schema"
@@ -376,5 +380,76 @@ func TestRenderAnswersWithHTML(t *testing.T) {
 	code = Run(context.Background(), []string{"render", "-"}, strings.NewReader(`{"dossier":"1.0","kind":"brainstorm","meta":{"title":"T","slug":"t"},"sections":[]}`), &stdout, &stderr)
 	if code != 2 || stdout.Len() != 0 {
 		t.Errorf("an invalid model must be findings with nothing on stdout: %d %q", code, stdout.String())
+	}
+}
+
+// syncBuffer is a bytes.Buffer safe for a writer and a reader goroutine.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+func TestServeDoorRunsUntilCanceled(t *testing.T) {
+	model := copyExample(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var stdout bytes.Buffer
+	stderr := &syncBuffer{}
+	done := make(chan int, 1)
+	go func() {
+		done <- Run(ctx, []string{"serve", model, "--port", "0", "--json"}, strings.NewReader(""), &stdout, stderr)
+	}()
+	url := ""
+	for deadline := time.Now().Add(10 * time.Second); url == "" && time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		if m := regexp.MustCompile(`http://127\.0\.0\.1:\d+/`).FindString(stderr.String()); m != "" {
+			url = m
+		}
+	}
+	if url == "" {
+		cancel()
+		t.Fatalf("serve printed no URL: %s", stderr.String())
+	}
+	res, err := http.Get(url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = res.Body.Close()
+	if res.StatusCode != 200 {
+		t.Errorf("studio page: %d", res.StatusCode)
+	}
+	cancel()
+	select {
+	case code := <-done:
+		if code != 0 {
+			t.Fatalf("serve exit %d: %s", code, stderr.String())
+		}
+	case <-time.After(15 * time.Second):
+		t.Fatal("serve did not stop")
+	}
+	var env Envelope
+	if err := json.Unmarshal(stdout.Bytes(), &env); err != nil {
+		t.Fatal(err)
+	}
+	var result ServeResult
+	if err := json.Unmarshal(mustJSON(env.Result), &result); err != nil || result.URL != url || !strings.HasSuffix(result.Store, "moves.dossier.db") {
+		t.Errorf("serve result: %+v %v", result, err)
+	}
+	if env, code := run(t, "serve", model, "--host", "0.0.0.0", "--port", "0"); code != 1 || env.Error == nil || !strings.Contains(env.Error.Message, "loopback") {
+		t.Errorf("non-loopback host: %d %+v", code, env)
+	}
+	if _, code := run(t, "serve"); code != 1 {
+		t.Error("serve without a model is a usage error")
 	}
 }
