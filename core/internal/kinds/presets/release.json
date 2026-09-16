@@ -1,0 +1,27 @@
+{
+  "id": "release",
+  "title": "Release",
+  "summary": "Gates, verification, and evidence for one release. Facet vocabulary arrives with the skill; any labels pass for now.",
+  "items": {
+    "numbered": false,
+    "effort": [
+      "S",
+      "M",
+      "L"
+    ],
+    "impact": {
+      "min": 1,
+      "max": 5
+    },
+    "limits": {
+      "summary": 160,
+      "facet": 420
+    }
+  },
+  "summary_table": {},
+  "contents": {},
+  "pick": {
+    "title": "",
+    "markdown": ""
+  }
+}
