@@ -10,6 +10,7 @@ generate:
 
 check:
 	@sh scripts/check-generated.sh
+	@bash scripts/graphviz/check.sh
 	@test -z "$$(gofmt -l cmd internal)" || (echo "Go source is not formatted:"; gofmt -l cmd internal; exit 1)
 	go vet ./...
 	go tool staticcheck ./...

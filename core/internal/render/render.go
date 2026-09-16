@@ -51,6 +51,9 @@ type Options struct {
 	// InlineFigures so relative image paths ship inside the artifact while the
 	// model island keeps the original path.
 	Figures map[string]string
+	// Diagrams maps model.DiagramKey to rendered SVG. Build it with
+	// diagram.Renderer; a diagram without one shows its source.
+	Diagrams map[string]string
 	// Studio is set only by the serve studio. Artifacts never carry it.
 	Studio *Studio
 }
@@ -580,6 +583,7 @@ func renderPart(p model.Part, opts Options) (PartView, error) {
 			pv.Format = "dot"
 		}
 		pv.Code = p.Source
+		pv.SVG = opts.Diagrams[model.DiagramKey(pv.Format, p.Source)]
 	case "chart":
 		pv.SVG = chartSVG(p.Title, p.Variant, p.Data)
 	case "timeline":

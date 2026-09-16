@@ -1,0 +1,33 @@
+digraph {
+  rankdir=LR;
+  "box" [label="Box", shape=box, style=""];
+  "rounded" [label="Rounded", shape=box, style=rounded];
+  "stadium" [label="Stadium", shape=box, style=rounded];
+  "sub" [label="Subroutine", shape=box, peripheries=2];
+  "db" [label="Database", shape=cylinder];
+  "circle" [label="Circle", shape=circle];
+  "ring" [label="Ring", shape=doublecircle];
+  "diamond" [label="Diamond", shape=diamond];
+  "hex" [label="Hexagon", shape=hexagon];
+  "lean" [label="Lean right", shape=parallelogram];
+  "leanl" [label="Lean left", shape=parallelogram];
+  "trap" [label="Trapezoid", shape=trapezium];
+  "inv" [label="Inverted", shape=invtrapezium];
+  "flag" [label="Flag", shape=cds];
+  "bare" [label="bare", shape=box, style=rounded];
+  "quoted" [label="A label with (brackets)", shape=box, style=""];
+  "box" -> "rounded";
+  "rounded" -> "stadium";
+  "stadium" -> "sub";
+  "sub" -> "db";
+  "db" -> "circle";
+  "circle" -> "ring";
+  "ring" -> "diamond";
+  "diamond" -> "hex";
+  "hex" -> "lean";
+  "lean" -> "leanl";
+  "leanl" -> "trap";
+  "trap" -> "inv";
+  "inv" -> "flag";
+  "bare" -> "quoted";
+}

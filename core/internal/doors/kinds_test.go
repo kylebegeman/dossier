@@ -1,10 +1,16 @@
 package doors
 
 import (
+	"context"
+	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"dossier/internal/diagram"
 )
 
 func TestMain(m *testing.M) {
@@ -91,4 +97,46 @@ func findingText(env Envelope) string {
 		b.WriteString(f.Path + ": " + f.Message + "\n")
 	}
 	return b.String()
+}
+
+// TestOnlyRenderingLoadsGraphviz runs the doors in a fresh process, since
+// Graphviz loads at most once per process: describe and validate must never
+// load it, even for a document with a diagram, and build must.
+func TestOnlyRenderingLoadsGraphviz(t *testing.T) {
+	if doors := os.Getenv("DOSSIER_GRAPHVIZ_PROBE"); doors != "" {
+		for _, args := range strings.Split(doors, "|") {
+			Run(context.Background(), append(strings.Fields(args), "--json"), strings.NewReader(""), io.Discard, io.Discard)
+		}
+		fmt.Printf("graphviz-loaded=%v\n", diagram.Loaded())
+		return
+	}
+	if testing.Short() {
+		t.Skip("starts subprocesses")
+	}
+	dir := t.TempDir()
+	model := filepath.Join(dir, "flow.dossier.json")
+	doc := `{"dossier":"1.0","kind":"brief","meta":{"title":"Flow","slug":"flow"},"sections":[{"id":"flow","title":"Flow","parts":[{"type":"diagram","source":"digraph { a -> b }"}]}]}`
+	if err := os.WriteFile(model, []byte(doc), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	probe := func(doors string) string {
+		t.Helper()
+		cmd := exec.Command(os.Args[0], "-test.run=^TestOnlyRenderingLoadsGraphviz$")
+		cmd.Env = append(os.Environ(), "DOSSIER_GRAPHVIZ_PROBE="+doors)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("probe %q: %v\n%s", doors, err, out)
+		}
+		return string(out)
+	}
+	if out := probe("describe|validate " + model); !strings.Contains(out, "graphviz-loaded=false") {
+		t.Errorf("describe and validate loaded Graphviz:\n%s", out)
+	}
+	if out := probe("build " + model + " --out " + dir); !strings.Contains(out, "graphviz-loaded=true") {
+		t.Errorf("build must load Graphviz for a diagram:\n%s", out)
+	}
+	html, err := os.ReadFile(filepath.Join(dir, "flow.html"))
+	if err != nil || !strings.Contains(string(html), `<figure class="part diagram" data-format="dot">`) {
+		t.Errorf("the built artifact carries the rendered diagram: %v", err)
+	}
 }

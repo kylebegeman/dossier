@@ -86,6 +86,8 @@ type Config struct {
 	Log         io.Writer
 	// Compile builds one target's binary; tests replace it.
 	Compile func(ctx context.Context, cfg Config, t Target, dst string) error
+	// Notices assembles THIRD_PARTY_NOTICES.md; tests replace it.
+	Notices func(ctx context.Context, cfg Config) ([]byte, error)
 }
 
 var versionPattern = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$`)
@@ -112,6 +114,9 @@ func (cfg *Config) defaults() error {
 	if cfg.Compile == nil {
 		cfg.Compile = compile
 	}
+	if cfg.Notices == nil {
+		cfg.Notices = Notices
+	}
 	return nil
 }
 
@@ -131,6 +136,10 @@ func Build(ctx context.Context, cfg Config) error {
 	if err != nil {
 		return err
 	}
+	notices, err := cfg.Notices(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("third-party notices: %w", err)
+	}
 	sums := map[string]string{}
 	for _, t := range Targets {
 		bin := filepath.Join(cfg.Out, "bin", t.NPM(), t.Exe())
@@ -146,7 +155,7 @@ func Build(ctx context.Context, cfg Config) error {
 			return err
 		}
 		archive := filepath.Join(cfg.Out, t.Archive(cfg.Version))
-		entries := []entry{{t.Exe(), exe, 0o755}, {"LICENSE", license, 0o644}, {"README.md", readme, 0o644}}
+		entries := []entry{{t.Exe(), exe, 0o755}, {"LICENSE", license, 0o644}, {NoticesFile, notices, 0o644}, {"README.md", readme, 0o644}}
 		if t.GOOS == "windows" {
 			err = writeZip(archive, entries)
 		} else {
@@ -160,7 +169,7 @@ func Build(ctx context.Context, cfg Config) error {
 			return err
 		}
 		sums[t.Archive(cfg.Version)] = sum
-		if err := platformPackage(cfg, t, exe, license); err != nil {
+		if err := platformPackage(cfg, t, exe, license, notices); err != nil {
 			return err
 		}
 	}
@@ -286,7 +295,7 @@ func writeChecksums(path string, sums map[string]string) error {
 }
 
 // platformPackage writes the npm package that carries one target's binary.
-func platformPackage(cfg Config, t Target, exe, license []byte) error {
+func platformPackage(cfg Config, t Target, exe, license, notices []byte) error {
 	dir := filepath.Join(cfg.Out, "npm", "dossier-"+t.NPM())
 	if err := os.MkdirAll(filepath.Join(dir, "bin"), 0o755); err != nil {
 		return err
@@ -295,6 +304,9 @@ func platformPackage(cfg Config, t Target, exe, license []byte) error {
 		return err
 	}
 	if err := os.WriteFile(filepath.Join(dir, "LICENSE"), license, 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(dir, NoticesFile), notices, 0o644); err != nil {
 		return err
 	}
 	platform, cpu, _ := strings.Cut(t.NPM(), "-")
@@ -306,7 +318,7 @@ func platformPackage(cfg Config, t Target, exe, license []byte) error {
 		{"repository", orderedJSON{{"type", "git"}, {"url", "git+https://github.com/kylebegeman/dossier.git"}}},
 		{"os", []string{platform}},
 		{"cpu", []string{cpu}},
-		{"files", []string{"bin", "LICENSE"}},
+		{"files", []string{"bin", "LICENSE", NoticesFile}},
 		{"preferUnplugged", true},
 	}
 	return writeJSON(filepath.Join(dir, "package.json"), manifest)

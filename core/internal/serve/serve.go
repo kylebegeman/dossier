@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"dossier/internal/decisions"
+	"dossier/internal/diagram"
 	"dossier/internal/kinds"
 	"dossier/internal/load"
 	"dossier/internal/model"
@@ -442,13 +443,15 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 	if accent, ok, err := s.store.Setting(ctx, docID, "accent"); err == nil && ok && accentPattern.MatchString(accent) {
 		cfg.Accent = accent
 	}
+	diagrams, diagramWarnings := diagram.Default.Document(ctx, doc)
+	cfg.Warnings = append(cfg.Warnings, load.Prefix(s.cfg.Model, diagramWarnings)...)
 	inject, err := s.inject(cfg)
 	if err != nil {
 		s.fail(w, err)
 		return
 	}
 	figures, _ := render.InlineFigures(doc, filepath.Dir(s.cfg.Model))
-	html, err := render.RenderWith(doc, snap.loaded.Kind, render.Options{Figures: figures, Studio: &render.Studio{Inject: inject}})
+	html, err := render.RenderWith(doc, snap.loaded.Kind, render.Options{Figures: figures, Diagrams: diagrams, Studio: &render.Studio{Inject: inject}})
 	if err != nil {
 		s.fail(w, err)
 		return

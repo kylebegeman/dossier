@@ -72,7 +72,7 @@ func Check(ctx context.Context, cfg Config) error {
 	}
 	packages := map[string][]string{filepath.Join(cfg.Out, "npm", "dossier"): {"package.json", "bin/dossier.js", "lib/index.js", "lib/index.d.ts", "README.md", "LICENSE"}}
 	for _, t := range Targets {
-		packages[filepath.Join(cfg.Out, "npm", "dossier-"+t.NPM())] = []string{"package.json", "bin/" + t.Exe(), "LICENSE"}
+		packages[filepath.Join(cfg.Out, "npm", "dossier-"+t.NPM())] = []string{"package.json", "bin/" + t.Exe(), "LICENSE", NoticesFile}
 	}
 	tarballs := map[string]string{}
 	for dir, want := range packages {
