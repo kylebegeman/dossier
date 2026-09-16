@@ -1,7 +1,7 @@
 {
   "id": "incident",
   "title": "Incident",
-  "summary": "Timeline, evidence, decisions, and follow-ups for one incident. Facet vocabulary arrives with the skill; any labels pass for now.",
+  "summary": "Timeline, evidence, decisions, and follow-ups for one incident.",
   "items": {
     "numbered": false,
     "effort": [

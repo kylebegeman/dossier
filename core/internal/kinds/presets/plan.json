@@ -1,7 +1,7 @@
 {
   "id": "plan",
   "title": "Plan",
-  "summary": "Ordered work for one owner to approve step by step. Facet vocabulary arrives with the skill; any labels pass for now.",
+  "summary": "Ordered work for one owner to approve step by step.",
   "items": {
     "numbered": true,
     "effort": [

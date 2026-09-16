@@ -202,6 +202,24 @@
         "additionalProperties": false,
         "properties": {}
       }
+    },
+    {
+      "id": "skill",
+      "summary": "Print SKILL.md, generated from this catalog and the kinds, or write it with --write.",
+      "mutation": "read-only",
+      "surfaces": [
+        "cli"
+      ],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "write": {
+            "type": "string",
+            "description": "Write SKILL.md here instead of printing it."
+          }
+        }
+      }
     }
   ]
 }
