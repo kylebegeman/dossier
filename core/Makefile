@@ -4,6 +4,7 @@
 
 generate:
 	go tool templ generate >/dev/null
+	CGO_ENABLED=0 go tool sqlc generate
 	go run ./cmd/dossier skill --write skill/SKILL.md >/dev/null
 
 check:
@@ -21,4 +22,4 @@ build: generate
 	CGO_ENABLED=0 go build -o bin/dossier ./cmd/dossier
 
 clean:
-	rm -rf bin
+	rm -rf bin dist
