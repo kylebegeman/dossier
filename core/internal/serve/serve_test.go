@@ -130,7 +130,7 @@ func TestPageInjectsTheStudioBeforeTheReader(t *testing.T) {
 	if res.Header.Get("Cache-Control") != "no-store" || res.Header.Get("X-Frame-Options") != "DENY" {
 		t.Errorf("headers: %v", res.Header)
 	}
-	studio, reader := strings.Index(body, `id="dossier-studio"`), strings.LastIndex(body, "<script>\n(function ()")
+	studio, reader := strings.Index(body, `id="dossier-studio"`), strings.LastIndex(body, "<script>\n(() => {")
 	if studio < 0 || reader < 0 || studio > reader {
 		t.Errorf("studio at %d, reader at %d", studio, reader)
 	}

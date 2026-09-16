@@ -21,6 +21,7 @@ templ document(p *Page) {
 				@masthead(p)
 				@contentsNav(p)
 				<main class="main" id="main">
+					<p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p>
 					for _, s := range p.Sections {
 						@section(p, s)
 					}
@@ -110,6 +111,12 @@ templ masthead(p *Page) {
 				<span></span>
 			}
 			<div class="tools">
+				<label class="search">
+					<span class="sr">Search this document</span>
+					<input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search/>
+					<kbd aria-hidden="true">/</kbd>
+				</label>
+				<span class="hits" data-hits aria-live="polite"></span>
 				if p.Decides {
 					<button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button>
 				}

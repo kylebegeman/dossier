@@ -78,6 +78,9 @@ func TestRenderFlagship(t *testing.T) {
 		`<b data-live="count">0</b> <span>picked</span>`,
 		`<div class="reply" data-reply>Nothing decided yet.</div>`,
 		`data-hide aria-pressed="false">Hide decided</button>`,
+		`<input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search>`,
+		`<span class="hits" data-hits aria-live="polite"></span>`,
+		`<p class="no-hits" data-no-hits hidden>`,
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("output lacks %q", want)
