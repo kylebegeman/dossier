@@ -7,7 +7,25 @@
     "kicker": "Workspace",
     "lede": "Gallery workspace for the built-in examples, process packets, release evidence, and agent-readable handoff surfaces.",
     "updated": "2026-06-29T00:00:00.000Z",
-    "status": "generated"
+    "status": "generated",
+    "facts": [
+      {
+        "label": "dossiers",
+        "value": "7"
+      },
+      {
+        "label": "open process",
+        "value": "5"
+      },
+      {
+        "label": "release gaps",
+        "value": "1"
+      },
+      {
+        "label": "trust gaps",
+        "value": "4"
+      }
+    ]
   },
   "sections": [
     {
@@ -26,22 +44,6 @@
         {
           "type": "spec",
           "spec": [
-            {
-              "label": "Dossiers",
-              "text": "7"
-            },
-            {
-              "label": "Open process",
-              "text": "5"
-            },
-            {
-              "label": "Release gaps",
-              "text": "1"
-            },
-            {
-              "label": "Trust gaps",
-              "text": "4"
-            },
             {
               "label": "Missing links",
               "text": "2"
@@ -137,7 +139,7 @@
       "id": "agent-work-queue",
       "title": "Agent work queue",
       "board": {
-        "layout": "articles",
+        "layout": "rows",
         "items": [
           {
             "id": "process-showcase-extract-work-item",
@@ -503,61 +505,77 @@
         }
       ],
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "showcase-manual-qa-ready",
             "title": "Dossier, capabilities showcase: The feature set is ready for public manual QA.",
+            "status": "likely",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** partial\n\n**Confidence** medium"
+                "label": "Evidence",
+                "markdown": "- Sources: doc-showcase"
               },
               {
-                "label": "Sources",
-                "markdown": "- doc-showcase"
+                "label": "Note",
+                "markdown": "**0.6 confidence** medium"
               }
             ]
           },
           {
             "id": "implementation-packet-not-merged",
             "title": "Implementation Packet: Search Filter: The patch is not verified or merged until host commands pass.",
+            "status": "open",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** guardrail\n\n**Confidence** high"
+                "label": "Detail",
+                "markdown": "**0.6 status** guardrail"
               },
               {
-                "label": "Sources",
-                "markdown": "- doc-implementation-packet"
+                "label": "Evidence",
+                "markdown": "- Sources: doc-implementation-packet"
+              },
+              {
+                "label": "Note",
+                "markdown": "**0.6 confidence** high"
               }
             ]
           },
           {
             "id": "research-brief-public-claims",
             "title": "Market Scan: AI Documentation Tools: Public market or pricing statements should be rechecked before publication.",
+            "status": "open",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** policy\n\n**Confidence** high"
+                "label": "Detail",
+                "markdown": "**0.6 status** policy"
               },
               {
-                "label": "Sources",
-                "markdown": "- doc-research-brief"
+                "label": "Evidence",
+                "markdown": "- Sources: doc-research-brief"
+              },
+              {
+                "label": "Note",
+                "markdown": "**0.6 confidence** high"
               }
             ]
           },
           {
             "id": "engineering-release-registry-publish",
             "title": "Release Readiness: 0.5.5: Registry publishing requires npm credentials.",
+            "status": "open",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** external\n\n**Confidence** high"
+                "label": "Detail",
+                "markdown": "**0.6 status** external"
               },
               {
-                "label": "Sources",
-                "markdown": "- doc-engineering-release"
+                "label": "Evidence",
+                "markdown": "- Sources: doc-engineering-release"
+              },
+              {
+                "label": "Note",
+                "markdown": "**0.6 confidence** high"
               }
             ]
           }

@@ -529,63 +529,58 @@
           "markdown": "### Milestones"
         },
         {
-          "type": "table",
-          "columns": [
-            "Phase",
-            "Status",
-            "Notes"
-          ],
-          "rows": [
-            [
-              "M0",
-              "done",
-              "Product scope packet, OSS source posture, and implementation milestones."
-            ],
-            [
-              "M1",
-              "done",
-              "Schema and starter foundation: add process-oriented kinds, starters, validation coverage, README positioning, and MCP starter discovery."
-            ],
-            [
-              "M2",
-              "done",
-              "Process-board foundation: render work items, verdict controls, notes, local persistence, import/export, and MCP readback."
-            ],
-            [
-              "M3",
-              "done",
-              "Patch and diff foundation: add patch-set and diff-view blocks, unified diff parsing, Markdown export, print-safe styling, and sample implementation dossier."
-            ],
-            [
-              "M4",
-              "done",
-              "Embeddable editor foundation: add code-editor blocks, static fallback, host enhancement hooks for CodeMirror, edited-text export/import, validation, docs, and examples."
-            ],
-            [
-              "M5",
-              "done",
-              "Process MCP protocol: render, validate, read process verdicts, read release gates, record run receipts, attach patchsets, and return closeout digest."
-            ],
-            [
-              "M6",
-              "done",
-              "Live Studio hooks: save-back model editing, patch import, watcher integration, editor hooks, and source model writeback in `dossier serve`."
-            ],
-            [
-              "M7",
-              "done",
-              "Integration-loop dossiers: producer/consumer packet templates, cycle control, upstream response, integration report, and closeout examples."
-            ],
-            [
-              "M8",
-              "done",
-              "Polish and platform: catalog facets for process artifacts, docs, examples, release readiness, and incident closeout blocks."
-            ],
-            [
-              "M9",
-              "done",
-              "Unified state workflow and accessibility closeout: full state packet import, state merge/diff/handoff tools, AI prompt export, shortcuts modal, focus-trapped overlays, and manual QA alignment."
-            ]
+          "type": "timeline",
+          "events": [
+            {
+              "at": "M0",
+              "title": "Product scope packet, OSS source posture, and implementation milestones",
+              "tone": "teal"
+            },
+            {
+              "at": "M1",
+              "title": "Schema and starter foundation: add process-oriented kinds, starters, validation coverage, README positioning, and MCP starter discovery",
+              "tone": "teal"
+            },
+            {
+              "at": "M2",
+              "title": "Process-board foundation: render work items, verdict controls, notes, local persistence, import/export, and MCP readback",
+              "tone": "teal"
+            },
+            {
+              "at": "M3",
+              "title": "Patch and diff foundation: add patch-set and diff-view blocks, unified diff parsing, Markdown export, print-safe styling, and sample implementation dossier",
+              "tone": "teal"
+            },
+            {
+              "at": "M4",
+              "title": "Embeddable editor foundation: add code-editor blocks, static fallback, host enhancement hooks for CodeMirror, edited-text export/import, validation, docs, and examples",
+              "tone": "teal"
+            },
+            {
+              "at": "M5",
+              "title": "Process MCP protocol: render, validate, read process verdicts, read release gates, record run receipts, attach patchsets, and return closeout digest",
+              "tone": "teal"
+            },
+            {
+              "at": "M6",
+              "title": "Live Studio hooks: save-back model editing, patch import, watcher integration, editor hooks, and source model writeback in dossier serve",
+              "tone": "teal"
+            },
+            {
+              "at": "M7",
+              "title": "Integration-loop dossiers: producer/consumer packet templates, cycle control, upstream response, integration report, and closeout examples",
+              "tone": "teal"
+            },
+            {
+              "at": "M8",
+              "title": "Polish and platform: catalog facets for process artifacts, docs, examples, release readiness, and incident closeout blocks",
+              "tone": "teal"
+            },
+            {
+              "at": "M9",
+              "title": "Unified state workflow and accessibility closeout: full state packet import, state merge/diff/handoff tools, AI prompt export, shortcuts modal, focus-trapped overlays, and manual QA alignment",
+              "tone": "teal"
+            }
           ]
         },
         {

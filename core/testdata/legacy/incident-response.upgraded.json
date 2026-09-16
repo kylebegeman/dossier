@@ -7,7 +7,21 @@
     "kicker": "Operational packet",
     "lede": "Use this shape during an incident or post-incident review. It keeps the timeline, evidence, decisions, mitigations, and follow-up work in one structured artifact.",
     "updated": "2026-06-29",
-    "status": "review"
+    "status": "review",
+    "facts": [
+      {
+        "label": "severity",
+        "value": "SEV-2"
+      },
+      {
+        "label": "status",
+        "value": "Mitigated"
+      },
+      {
+        "label": "owner",
+        "value": "On-call"
+      }
+    ]
   },
   "sections": [
     {
@@ -24,18 +38,6 @@
             {
               "label": "Highlights",
               "text": "Timeline · Evidence · Decisions · Follow-ups"
-            },
-            {
-              "label": "Severity",
-              "text": "SEV-2"
-            },
-            {
-              "label": "Status",
-              "text": "Mitigated"
-            },
-            {
-              "label": "Owner",
-              "text": "On-call"
             }
           ]
         },
@@ -59,33 +61,28 @@
       "title": "Incident timeline",
       "parts": [
         {
-          "type": "table",
-          "columns": [
-            "Phase",
-            "Status",
-            "Notes"
-          ],
-          "rows": [
-            [
-              "09:12",
-              "done",
-              "Latency alert fired for `/api/search` p95 above threshold."
-            ],
-            [
-              "09:18",
-              "done",
-              "Traffic shifted away from the overloaded worker pool."
-            ],
-            [
-              "09:31",
-              "done",
-              "Queue depth returned to normal range."
-            ],
-            [
-              "10:20",
-              "planned",
-              "Follow-up patch queued for backpressure and dashboard annotation."
-            ]
+          "type": "timeline",
+          "events": [
+            {
+              "at": "09:12",
+              "title": "Latency alert fired for /api/search p95 above threshold",
+              "tone": "teal"
+            },
+            {
+              "at": "09:18",
+              "title": "Traffic shifted away from the overloaded worker pool",
+              "tone": "teal"
+            },
+            {
+              "at": "09:31",
+              "title": "Queue depth returned to normal range",
+              "tone": "teal"
+            },
+            {
+              "at": "10:20",
+              "title": "Follow-up patch queued for backpressure and dashboard annotation",
+              "tone": "violet"
+            }
           ]
         }
       ]
@@ -176,21 +173,32 @@
       "id": "remediation-work",
       "title": "Remediation work",
       "board": {
-        "layout": "articles",
+        "summary": true,
         "items": [
           {
             "id": "backpressure",
             "title": "Add upstream backpressure",
             "summary": "Limit retry bursts when the search provider slows down.",
+            "status": "open",
             "effort": "M",
+            "impact": 4,
+            "owner": "API team",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** proposed\n\n**Category** Reliability\n\n**Owner** API team\n\n**Priority** P1\n\n**Impact** High"
+                "label": "Addresses",
+                "markdown": "Not stated in the 0.6 document."
               },
               {
-                "label": "Verification",
+                "label": "What changes",
+                "markdown": "Limit retry bursts when the search provider slows down."
+              },
+              {
+                "label": "Done when",
                 "markdown": "- load test\n- synthetic monitor"
+              },
+              {
+                "label": "Note",
+                "markdown": "**Category** Reliability · **Priority** P1"
               }
             ]
           },
@@ -198,11 +206,22 @@
             "id": "dashboard-marker",
             "title": "Annotate incident dashboard",
             "summary": "Mark the mitigation window so later analysis is clear.",
+            "status": "open",
             "effort": "S",
+            "impact": 3,
+            "owner": "SRE",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** proposed\n\n**Category** Observability\n\n**Owner** SRE\n\n**Priority** P2\n\n**Impact** Medium"
+                "label": "Addresses",
+                "markdown": "Not stated in the 0.6 document."
+              },
+              {
+                "label": "What changes",
+                "markdown": "Mark the mitigation window so later analysis is clear."
+              },
+              {
+                "label": "Note",
+                "markdown": "**Category** Observability · **Priority** P2"
               }
             ]
           }
@@ -263,7 +282,7 @@
             },
             {
               "label": "Follow-ups",
-              "text": "Approve remediation board.; Attach load-test evidence after patch."
+              "text": "Approve remediation board. Attach load-test evidence after patch."
             }
           ]
         }

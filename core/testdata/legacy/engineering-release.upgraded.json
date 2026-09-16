@@ -7,7 +7,21 @@
     "kicker": "Release control room",
     "lede": "Use this shape when a team needs public QA readiness, release notes, command receipts, and a durable closeout packet for agents.",
     "updated": "2026-06-29",
-    "status": "review"
+    "status": "review",
+    "facts": [
+      {
+        "label": "release",
+        "value": "0.5.5"
+      },
+      {
+        "label": "required gates",
+        "value": "6"
+      },
+      {
+        "label": "state",
+        "value": "Manual QA"
+      }
+    ]
   },
   "sections": [
     {
@@ -24,18 +38,6 @@
             {
               "label": "Highlights",
               "text": "Release gates · Verification · Manual QA · Closeout"
-            },
-            {
-              "label": "Release",
-              "text": "0.5.5"
-            },
-            {
-              "label": "Required gates",
-              "text": "6"
-            },
-            {
-              "label": "State",
-              "text": "Manual QA"
             }
           ]
         },
@@ -58,89 +60,100 @@
       "id": "release-gates",
       "title": "Release gates",
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "tests",
             "title": "Automated tests pass",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- npm test"
+                "label": "Result",
+                "markdown": "Passed: npm test"
               }
             ]
           },
           {
             "id": "react",
             "title": "React renderer typecheck passes",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- cd react && npx tsc --noEmit"
+                "label": "Result",
+                "markdown": "Passed: cd react && npx tsc -\\-noEmit"
               }
             ]
           },
           {
             "id": "docs",
             "title": "README and examples regenerated",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- node bin/dossier.mjs build examples/\\*.dossier.json"
+                "label": "Result",
+                "markdown": "Passed: node bin/dossier.mjs build examples/\\*.dossier.json"
               }
             ]
           },
           {
             "id": "live-editor",
             "title": "Live CodeMirror editor smoke passes",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- Playwright smoke edited a CodeMirror-backed code-editor and saved back to source JSON"
+                "label": "Result",
+                "markdown": "Passed: Playwright smoke edited a CodeMirror-backed code-editor and saved back to source JSON"
               }
             ]
           },
           {
             "id": "manual",
             "title": "Manual browser pass complete",
+            "status": "pending",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** todo\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- Run docs/product/public-manual-qa.md"
+                "label": "Result",
+                "markdown": "Pending: Run docs/product/public-manual-qa.md"
               }
             ]
           },
           {
             "id": "npm",
             "title": "npm publish credential available",
+            "status": "failed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** blocked\n\n**Required** no"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- npm whoami if publishing to registry"
+                "label": "Result",
+                "markdown": "Failed: npm whoami if publishing to registry"
               }
             ]
           }
@@ -151,35 +164,50 @@
       "id": "command-receipts",
       "title": "Command receipts",
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "unit-tests",
             "title": "Unit tests",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `npm test`\n\n**Expected** All node tests pass.\n\n**Actual** Process, trust, export, and render tests passed."
+                "label": "How checked",
+                "markdown": "Runs `npm test`. Expected: All node tests pass."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Process, trust, export, and render tests passed."
               }
             ]
           },
           {
             "id": "example-build",
             "title": "Example build",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `node bin/dossier.mjs build examples/*.dossier.json`\n\n**Expected** Every example emits HTML and Markdown.\n\n**Actual** Generated showcase, overview, and focused example pages."
+                "label": "How checked",
+                "markdown": "Runs `node bin/dossier.mjs build examples/*.dossier.json`. Expected: Every example emits HTML and Markdown."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Generated showcase, overview, and focused example pages."
               }
             ]
           },
           {
             "id": "codemirror-smoke",
             "title": "Live editor smoke",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `dossier serve examples/implementation-packet.dossier.json`\n\n**Expected** CodeMirror mounts, edits sync, and save-back writes the source model.\n\n**Actual** Playwright verified desktop and mobile CodeMirror mounting, textarea sync, and save-back."
+                "label": "How checked",
+                "markdown": "Runs `dossier serve examples/implementation-packet.dossier.json`. Expected: CodeMirror mounts, edits sync, and save-back writes the source model."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Playwright verified desktop and mobile CodeMirror mounting, textarea sync, and save-back."
               }
             ]
           }
@@ -317,11 +345,11 @@
             },
             {
               "label": "Risks",
-              "text": "Manual QA is not a substitute for production telemetry.; Registry publishing depends on credentials."
+              "text": "Manual QA is not a substitute for production telemetry. Registry publishing depends on credentials."
             },
             {
               "label": "Follow-ups",
-              "text": "Run public manual QA guide.; Confirm Pages deployment after push."
+              "text": "Run public manual QA guide. Confirm Pages deployment after push."
             }
           ]
         }

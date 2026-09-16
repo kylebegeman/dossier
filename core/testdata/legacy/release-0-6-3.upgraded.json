@@ -7,7 +7,25 @@
     "kicker": "Release evidence",
     "lede": "Evidence collected for changes from v0.6.2 to bc9a9df.",
     "updated": "2026-06-30T15:21:19.000Z",
-    "status": "ready"
+    "status": "ready",
+    "facts": [
+      {
+        "label": "version",
+        "value": "0.6.3"
+      },
+      {
+        "label": "commits",
+        "value": "1"
+      },
+      {
+        "label": "changed files",
+        "value": "3"
+      },
+      {
+        "label": "checks",
+        "value": "3"
+      }
+    ]
   },
   "sections": [
     {
@@ -44,22 +62,6 @@
           "type": "spec",
           "spec": [
             {
-              "label": "Version",
-              "text": "0.6.3"
-            },
-            {
-              "label": "Commits",
-              "text": "1"
-            },
-            {
-              "label": "Changed files",
-              "text": "3"
-            },
-            {
-              "label": "Checks",
-              "text": "3"
-            },
-            {
               "label": "Dirty entries",
               "text": "0"
             }
@@ -71,89 +73,100 @@
       "id": "release-gates",
       "title": "Release gates",
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "version-resolved",
             "title": "Package version resolved",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- 0.6.3"
+                "label": "Result",
+                "markdown": "Passed: `0.6.3`"
               }
             ]
           },
           {
             "id": "git-head-resolved",
             "title": "Git HEAD resolved",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- bc9a9dfb0207232d68952fa650bf9337a3866936"
+                "label": "Result",
+                "markdown": "Passed: `bc9a9dfb0207232d68952fa650bf9337a3866936`"
               }
             ]
           },
           {
             "id": "working-tree-clean",
             "title": "Working tree clean before evidence write",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- No git status entries before writing release evidence."
+                "label": "Result",
+                "markdown": "Passed: No git status entries before writing release evidence."
               }
             ]
           },
           {
             "id": "commits-collected",
             "title": "Release commits collected",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- 1 commit(s) from v0.6.2..HEAD"
+                "label": "Result",
+                "markdown": "Passed: 1 commit(s) from v0.6.2..HEAD"
               }
             ]
           },
           {
             "id": "verification-recorded",
             "title": "Verification commands recorded",
+            "status": "passed",
+            "required": true,
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** yes"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- npm test, npm pack --dry-run --json, npm publish --dry-run --access public"
+                "label": "Result",
+                "markdown": "Passed: npm test, npm pack -\\-dry-run -\\-json, npm publish -\\-dry-run -\\-access public"
               }
             ]
           },
           {
             "id": "package-dry-run",
             "title": "npm package dry run recorded",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Required** no"
+                "label": "How checked",
+                "markdown": "An item on the 0.6 release checklist."
               },
               {
-                "label": "Evidence",
-                "markdown": "- npm pack command listed in verification checks."
+                "label": "Result",
+                "markdown": "Passed: npm pack command listed in verification checks."
               }
             ]
           }
@@ -170,35 +183,50 @@
         }
       ],
       "board": {
-        "layout": "rows",
+        "summary": true,
         "items": [
           {
             "id": "npm-test",
             "title": "npm test",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `npm test`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+                "label": "How checked",
+                "markdown": "Runs `npm test`. Expected: Command completes before release evidence collection."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Completed before this release dossier was generated."
               }
             ]
           },
           {
             "id": "npm-pack-dry-run-json",
             "title": "npm pack --dry-run --json",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `npm pack --dry-run --json`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+                "label": "How checked",
+                "markdown": "Runs `npm pack --dry-run --json`. Expected: Command completes before release evidence collection."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Completed before this release dossier was generated."
               }
             ]
           },
           {
             "id": "npm-publish-dry-run-access-public",
             "title": "npm publish --dry-run --access public",
+            "status": "passed",
             "facets": [
               {
-                "label": "Status",
-                "markdown": "**Status** passed\n\n**Command** `npm publish --dry-run --access public`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+                "label": "How checked",
+                "markdown": "Runs `npm publish --dry-run --access public`. Expected: Command completes before release evidence collection."
+              },
+              {
+                "label": "Result",
+                "markdown": "Passed. Completed before this release dossier was generated."
               }
             ]
           }
@@ -339,7 +367,7 @@
               "Verification commands",
               "command",
               "high",
-              "npm test, npm pack --dry-run --json, npm publish --dry-run --access public"
+              "npm test, npm pack -\\-dry-run -\\-json, npm publish -\\-dry-run -\\-access public"
             ]
           ]
         }

@@ -7,7 +7,25 @@
     "kicker": "Documentation kit",
     "lede": "Dossier renders a single document model into a self-contained, themed, interactive HTML artifact. The page you see is a projection of the embedded [[dossier-model]] data island, so agents read one block while humans get the rendered view.",
     "updated": "2026-06-29",
-    "status": "ready"
+    "status": "ready",
+    "facts": [
+      {
+        "label": "block types",
+        "value": "42"
+      },
+      {
+        "label": "selected features",
+        "value": "18"
+      },
+      {
+        "label": "jSON file to author",
+        "value": "1"
+      },
+      {
+        "label": "runtime dependencies",
+        "value": "0"
+      }
+    ]
   },
   "sections": [
     {
@@ -85,27 +103,6 @@
           "type": "spec",
           "spec": [
             {
-              "label": "Block types",
-              "text": "42"
-            },
-            {
-              "label": "Selected features",
-              "text": "18"
-            },
-            {
-              "label": "JSON file to author",
-              "text": "1"
-            },
-            {
-              "label": "Runtime dependencies",
-              "text": "0"
-            }
-          ]
-        },
-        {
-          "type": "spec",
-          "spec": [
-            {
               "label": "For humans",
               "text": "A polished, themed reading surface with TOC, search, command palette, and one-click export."
             },
@@ -152,38 +149,33 @@
       "title": "Roadmap",
       "parts": [
         {
-          "type": "table",
-          "columns": [
-            "Phase",
-            "Status",
-            "Notes"
-          ],
-          "rows": [
-            [
-              "Phase 1",
-              "done",
-              "Schema + tokens/themes."
-            ],
-            [
-              "Phase 2",
-              "done",
-              "Generator engine + data island + Markdown export."
-            ],
-            [
-              "Phase 3",
-              "done",
-              "Full static catalog."
-            ],
-            [
-              "Phase 4",
-              "done",
-              "Process dossier closeout."
-            ],
-            [
-              "Phase 5",
-              "done",
-              "Bug bash, release polish, gallery examples, and public QA guide."
-            ]
+          "type": "timeline",
+          "events": [
+            {
+              "at": "Phase 1",
+              "title": "Schema + tokens/themes",
+              "tone": "teal"
+            },
+            {
+              "at": "Phase 2",
+              "title": "Generator engine + data island + Markdown export",
+              "tone": "teal"
+            },
+            {
+              "at": "Phase 3",
+              "title": "Full static catalog",
+              "tone": "teal"
+            },
+            {
+              "at": "Phase 4",
+              "title": "Process dossier closeout",
+              "tone": "teal"
+            },
+            {
+              "at": "Phase 5",
+              "title": "Bug bash, release polish, gallery examples, and public QA guide",
+              "tone": "teal"
+            }
           ]
         }
       ]
@@ -384,7 +376,7 @@
       "id": "optional-features-triage-and-decide",
       "title": "Optional features, triage and decide",
       "board": {
-        "layout": "articles",
+        "layout": "rows",
         "items": [
           {
             "id": "command-palette",

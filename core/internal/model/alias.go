@@ -14,12 +14,15 @@ import (
 	"strings"
 )
 
-// legacyKinds maps every 0.6 kind onto a 0.7 preset.
+// legacyKinds maps every 0.6 kind onto a 0.7 preset: the reader family to
+// brief, work to plan, loops between teams to review, candidate boards to
+// brainstorm, and postmortems to incident.
 var legacyKinds = map[string]string{
 	"dossier": "brief", "reader": "brief", "research": "brief", "comparison": "brief", "adr": "brief", "runbook": "brief",
-	"plan": "plan", "implementation": "plan", "integration-loop": "plan", "debug": "plan",
-	"review": "review", "review-board": "review",
-	"release": "release", "incident": "incident",
+	"plan": "plan", "implementation": "plan", "debug": "plan",
+	"review": "review", "integration-loop": "review",
+	"review-board": "brainstorm",
+	"release":      "release", "incident": "incident", "postmortem": "incident",
 }
 
 // keptMeta lists the 0.6 meta keys that have a 0.7 home or an Overview row.
@@ -83,7 +86,7 @@ func Normalize(data []byte) (out []byte, warnings []Problem, upgraded bool, err 
 	if json.Unmarshal(data, &raw) != nil || !IsLegacy(raw) {
 		return data, nil, false, nil
 	}
-	c := &converter{ids: idRegistry{used: map[string]bool{}, renamed: map[string]string{}}, refSeen: map[string]bool{}}
+	c := &converter{ids: idRegistry{used: map[string]bool{}, renamed: map[string]string{}}, refSeen: map[string]bool{}, verdicts: map[string]string{}}
 	doc := c.convert(raw)
 	out, err = Encode(doc)
 	if err != nil {
@@ -99,6 +102,17 @@ type converter struct {
 	closed   bool // the open section carries a board; the next content opens another
 	pending  []pendingDeps
 	refSeen  map[string]bool
+	// kind is the 0.7 kind the document maps to; its main block families
+	// become the kind's items.
+	kind string
+	// facts, choice, picked, and verdicts become the masthead facts, the
+	// document's question, and the decisions.
+	facts     []Fact
+	stripDone bool
+	choice    *Choice
+	path      string
+	picked    []string
+	verdicts  map[string]string
 }
 
 type pendingDeps struct {
@@ -126,6 +140,13 @@ func (c *converter) convert(raw map[string]any) *Document {
 		doc.Kind = "brief"
 		c.warn("/kind", "unknown 0.6 kind %q mapped to \"brief\"", oldKind)
 	}
+	for _, tag := range strs(obj(raw, "meta"), "tags") {
+		if strings.EqualFold(tag, "postmortem") && doc.Kind != "incident" {
+			c.warn("/meta/tags", "tagged postmortem, so mapped to \"incident\" instead of %q", doc.Kind)
+			doc.Kind = "incident"
+		}
+	}
+	c.kind = doc.Kind
 	blocks := objs(raw, "blocks")
 	heroIndex := -1
 	for i, b := range blocks {
@@ -150,6 +171,14 @@ func (c *converter) convert(raw map[string]any) *Document {
 		c.block(fmt.Sprintf("/blocks/%d", i), b, "")
 	}
 	c.finish(doc)
+	doc.Meta.Facts = c.facts
+	doc.Choice = c.choice
+	if c.path != "" || len(c.picked) > 0 || len(c.verdicts) > 0 {
+		doc.Decisions = &Decisions{Path: c.path, Picked: c.picked}
+		if len(c.verdicts) > 0 {
+			doc.Decisions.Verdicts = c.verdicts
+		}
+	}
 	return doc
 }
 
@@ -200,17 +229,31 @@ func (c *converter) hero(path string, hero map[string]any, metaTitle string) {
 		rows = append(rows, SpecRow{Label: "Highlights", Text: mdEscape(strings.Join(pills, " · "))})
 	}
 	for _, card := range objs(hero, "sideCards") {
-		text := mdEscape(str(card, "value"))
+		label, value := str(card, "label"), str(card, "value")
+		if c.fact(label, value, str(card, "note")) {
+			continue
+		}
+		text := mdEscape(value)
 		if note := str(card, "note"); note != "" {
 			text += " (" + mdEscape(note) + ")"
 		}
-		if label := str(card, "label"); label != "" && text != "" {
+		if label != "" && text != "" {
 			rows = append(rows, SpecRow{Label: label, Text: text})
 		}
 	}
 	if len(rows) > 0 {
 		c.add(Part{Type: "spec", Spec: rows})
 	}
+}
+
+// fact moves one hero card or stat into the masthead facts while there is
+// room for four and it fits there.
+func (c *converter) fact(label, value, note string) bool {
+	if len(c.facts) >= 4 || label == "" || value == "" || note != "" || len([]rune(label)) > 40 || len([]rune(value)) > 40 {
+		return false
+	}
+	c.facts = append(c.facts, Fact{Label: strings.ToLower(label[:1]) + label[1:], Value: value})
+	return true
 }
 
 // metaOverview keeps the 0.6 meta fields that have no 0.7 field but carry
@@ -326,6 +369,25 @@ func (c *converter) block(path string, b map[string]any, parent string) {
 		}
 		return
 	}
+	if typ == "stat-strip" && !nested && !c.stripDone {
+		// The first stat strip fills the masthead facts; stats that do not
+		// fit stay where the strip was.
+		c.stripDone = true
+		var rows []SpecRow
+		for _, s := range objs(b, "stats") {
+			if row, delta := statRow(s); !c.fact(str(s, "label"), text(s["value"]), delta) && row.Label != "" {
+				rows = append(rows, row)
+			}
+		}
+		if len(rows) == 0 {
+			c.alias(path, typ, "the masthead facts")
+			return
+		}
+		c.alias(path, typ, "the masthead facts, and a spec part for the stats that do not fit")
+		c.ensureOpen(path)
+		c.add(specParts(rows)...)
+		return
+	}
 	parts, board := c.convertBlock(path, b)
 	title := str(b, "title")
 	if lightTypes[typ] {
@@ -388,7 +450,13 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 	typ := str(b, "type")
 	title := str(b, "title")
 	if f, ok := boardFamilies[typ]; ok {
-		c.alias(path, typ, "a board ("+f.layout+")")
+		layout := "rows"
+		if mainFamilies[c.kind][typ] {
+			layout = "articles"
+			c.alias(path, typ, "the "+c.kind+" kind's items")
+		} else {
+			c.alias(path, typ, "a board of rows")
+		}
 		var parts []Part
 		if s := str(b, "summary"); s != "" {
 			parts = append(parts, Part{Type: "prose", Markdown: c.rich(path+"/summary", s)})
@@ -396,7 +464,7 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 		if scopes := strs(b, "scopes"); len(scopes) > 0 {
 			parts = append(parts, Part{Type: "prose", Markdown: "Scopes: " + mdEscape(strings.Join(scopes, ", "))})
 		}
-		return parts, c.board(path, typ, f.field, f.layout, objs(b, f.field))
+		return parts, c.board(path, typ, f.field, layout, objs(b, f.field))
 	}
 	switch typ {
 	case "prose":
@@ -478,19 +546,8 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 		c.alias(path, typ, "a spec part")
 		var rows []SpecRow
 		for _, s := range objs(b, "stats") {
-			value := mdEscape(text(s["value"]))
-			switch d := s["delta"].(type) {
-			case string:
-				if d != "" {
-					value += " (" + mdEscape(d) + ")"
-				}
-			case map[string]any:
-				if dv := text(d["value"]); dv != "" {
-					value += " (" + mdEscape(strings.TrimSpace(dv+" "+str(d, "label"))) + ")"
-				}
-			}
-			if label := str(s, "label"); label != "" && value != "" {
-				rows = append(rows, SpecRow{Label: label, Text: value})
+			if row, _ := statRow(s); row.Label != "" {
+				rows = append(rows, row)
 			}
 		}
 		return specParts(rows), nil
@@ -531,10 +588,10 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 			rows = append(rows, SpecRow{Label: "Commands", Text: codeList(cmds)})
 		}
 		if risks := strs(b, "risks"); len(risks) > 0 {
-			rows = append(rows, SpecRow{Label: "Risks", Text: mdEscape(strings.Join(risks, "; "))})
+			rows = append(rows, SpecRow{Label: "Risks", Text: mdEscape(joinClauses(risks))})
 		}
 		if ups := strs(b, "followUps"); len(ups) > 0 {
-			rows = append(rows, SpecRow{Label: "Follow-ups", Text: mdEscape(strings.Join(ups, "; "))})
+			rows = append(rows, SpecRow{Label: "Follow-ups", Text: mdEscape(joinClauses(ups))})
 		}
 		return append(parts, specParts(rows)...), nil
 	case "upstream-response":
@@ -552,9 +609,14 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 		}
 		return parts, nil
 	case "verdict-gate":
+		if choice, chosen := choiceOf(b); choice != nil && c.kind != "brief" && c.choice == nil {
+			c.alias(path, typ, "the document's choice")
+			c.choice, c.path = choice, chosen
+			return nil, nil
+		}
 		c.alias(path, typ, "a callout")
 		if v := str(b, "verdict"); v != "" && v != "undecided" {
-			c.warn(path+"/verdict", "verdict %q is 0.6 reader state and is dropped; 0.7 state is picks and notes", v)
+			c.warn(path+"/verdict", "verdict %q is 0.6 reader state and is dropped; the gate names no options to hold it", v)
 		}
 		md := c.rich(path+"/prompt", str(b, "prompt"))
 		if opts := strs(b, "options"); len(opts) > 0 {
@@ -596,28 +658,33 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 		}
 		return proseParts(strings.Join(lines, "\n")), nil
 	case "timeline":
-		c.alias(path, typ, "a table")
-		phases := objs(b, "phases")
-		dated := false
-		for _, p := range phases {
-			if str(p, "date") != "" {
-				dated = true
+		c.alias(path, typ, "a timeline part")
+		p := Part{Type: "timeline", Title: title}
+		for i, ph := range objs(b, "phases") {
+			label, body := str(ph, "label"), c.rich(fmt.Sprintf("%s/phases/%d/body", path, i), str(ph, "body"))
+			at := firstStr(ph, "date", "label")
+			if at == "" {
+				at = fmt.Sprintf("Phase %d", i+1)
 			}
-		}
-		t := Part{Type: "table", Title: title, Columns: []string{"Phase", "Status"}}
-		if dated {
-			t.Columns = append(t.Columns, "Date")
-		}
-		t.Columns = append(t.Columns, "Notes")
-		for i, p := range phases {
-			row := []string{mdEscape(str(p, "label")), mdEscape(str(p, "status"))}
-			if dated {
-				row = append(row, mdEscape(str(p, "date")))
+			at, _ = clamp(at, 40)
+			event := Event{At: at, Tone: phaseTone(str(ph, "status"))}
+			// A phase with its own date keeps its label as the title; a phase
+			// named by its time takes its first sentence.
+			title := label
+			if title == at || title == "" {
+				title, body = firstSentence(plainText(body)), restAfterSentence(body)
 			}
-			row = append(row, c.rich(fmt.Sprintf("%s/phases/%d/body", path, i), str(p, "body")))
-			t.Rows = append(t.Rows, row)
+			if title == "" {
+				title = at
+			}
+			event.Title, _ = clamp(title, maxTitleRunes)
+			event.Markdown = body
+			p.Events = append(p.Events, event)
 		}
-		return []Part{t}, nil
+		if len(p.Events) == 0 {
+			return nil, nil
+		}
+		return []Part{p}, nil
 	case "references":
 		c.alias(path, typ, "a table")
 		t := Part{Type: "table", Title: title, Columns: []string{"Source", "Signal", "Use"}}
@@ -654,6 +721,10 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 		}
 		return []Part{t}, nil
 	case "action-items":
+		if mainFamilies[c.kind][typ] {
+			c.alias(path, typ, "the "+c.kind+" kind's items")
+			return nil, c.board(path, typ, "items", "articles", objs(b, "items"))
+		}
 		c.alias(path, typ, "a table; done state is not reader state in 0.7")
 		t := Part{Type: "table", Title: title, Columns: []string{"Item", "Owner", "Status", "Note"}}
 		for i, it := range objs(b, "items") {
@@ -705,12 +776,37 @@ func (c *converter) convertBlock(path string, b map[string]any) ([]Part, *Board)
 			parts = append(parts, heading("Sources"), t)
 		}
 		if claims := objs(b, "claims"); len(claims) > 0 {
-			return parts, c.board(path, typ, "claims", "rows", claims)
+			layout := "rows"
+			if mainFamilies[c.kind][typ] {
+				layout = "articles"
+			}
+			return parts, c.board(path, typ, "claims", layout, claims)
 		}
 		return parts, nil
 	}
 	c.warn(path, "unknown 0.6 block %q is dropped", typ)
 	return nil, nil
+}
+
+// statRow is one stat as a spec row, with its delta in parentheses, and the
+// delta on its own. A stat without a label or value has no row.
+func statRow(s map[string]any) (SpecRow, string) {
+	value := mdEscape(text(s["value"]))
+	delta := ""
+	switch d := s["delta"].(type) {
+	case string:
+		delta = d
+	case map[string]any:
+		delta = strings.TrimSpace(text(d["value"]) + " " + str(d, "label"))
+	}
+	if delta != "" {
+		value += " (" + mdEscape(delta) + ")"
+	}
+	label := str(s, "label")
+	if label == "" || text(s["value"]) == "" {
+		return SpecRow{}, delta
+	}
+	return SpecRow{Label: label, Text: value}, delta
 }
 
 func specParts(rows []SpecRow) []Part {
@@ -758,8 +854,17 @@ var listFacets = []struct{ key, label string }{
 
 func (c *converter) board(path, family, field, layout string, raw []map[string]any) *Board {
 	b := &Board{Layout: layout}
+	if layout == "articles" {
+		// Articles are the default layout, and the summary table lists them.
+		b.Layout, b.Summary = "", true
+	}
 	for i, m := range raw {
-		b.Items = append(b.Items, c.item(fmt.Sprintf("%s/%s/%d", path, field, i), family, m))
+		p := fmt.Sprintf("%s/%s/%d", path, field, i)
+		if layout == "articles" {
+			b.Items = append(b.Items, c.kindItem(p, family, m))
+		} else {
+			b.Items = append(b.Items, c.item(p, family, m))
+		}
 	}
 	if len(b.Items) == 0 {
 		b.Items = []Item{{ID: c.ids.claim(c, path, "", family+"-empty"), Title: "No entries"}}
@@ -991,8 +1096,8 @@ func (c *converter) finish(doc *Document) {
 	}
 }
 
-// rich passes markdown through and warns once per reference syntax family
-// that 0.7 renders as literal text.
+// rich carries 0.6 rich text into 0.7 markdown and warns once per reference
+// syntax family that 0.7 renders as literal text.
 func (c *converter) rich(path, s string) string {
 	for _, name := range []string{"footnote [^id]", "citation [@id]", "glossary [[Term]]"} {
 		if !c.refSeen[name] && refPatterns[name].MatchString(s) {
@@ -1000,7 +1105,82 @@ func (c *converter) rich(path, s string) string {
 			c.warn(path, "%s references render as literal text in 0.7", name)
 		}
 	}
-	return s
+	return legacyMarkdown(s)
+}
+
+// legacyMarkdown keeps 0.6 rich text reading as 0.6 printed it. 0.6 knew
+// lists, bold, code spans, and links, and printed everything else as typed,
+// so outside code it escapes what 0.7's markdown would reinterpret: a lone
+// asterisk (a glob like *.json), a double hyphen (a flag like --dry-run),
+// and a tag-like angle bracket.
+func legacyMarkdown(s string) string {
+	lines := strings.Split(s, "\n")
+	fenced := false
+	for i, line := range lines {
+		if t := strings.TrimSpace(line); strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~") {
+			fenced = !fenced
+			continue
+		}
+		if !fenced {
+			lines[i] = legacyLine(line)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+var listMarker = regexp.MustCompile(`^\s*(?:[-*]|\d+[.)])\s+`)
+
+const asciiPunct = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+
+func legacyLine(line string) string {
+	var b strings.Builder
+	marker := listMarker.FindString(line)
+	b.WriteString(marker)
+	rest := line[len(marker):]
+	for i := 0; i < len(rest); {
+		switch ch := rest[i]; {
+		case ch == '`':
+			j := i
+			for j < len(rest) && rest[j] == '`' {
+				j++
+			}
+			end := strings.Index(rest[j:], rest[i:j])
+			if end < 0 {
+				b.WriteString(rest[i:j])
+				i = j
+				continue
+			}
+			span := j + end + (j - i)
+			b.WriteString(rest[i:span])
+			i = span
+		case ch == '\\' && i+1 < len(rest) && strings.ContainsRune(asciiPunct, rune(rest[i+1])):
+			// 0.6 printed a backslash as typed; alone it would escape.
+			b.WriteString(`\\`)
+			i++
+		case ch == '*':
+			j := i
+			for j < len(rest) && rest[j] == '*' {
+				j++
+			}
+			if j-i == 2 {
+				b.WriteString("**")
+			} else {
+				b.WriteString(strings.Repeat(`\*`, j-i))
+			}
+			i = j
+		case ch == '-' && i+1 < len(rest) && rest[i+1] == '-':
+			// Each hyphen after the first is escaped: --flag becomes -\-flag.
+			b.WriteString(`-\`)
+			i++
+		case ch == '<' && i+1 < len(rest) && strings.ContainsRune("/!?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", rune(rest[i+1])):
+			b.WriteString(`\<`)
+			i++
+		default:
+			b.WriteByte(ch)
+			i++
+		}
+	}
+	return b.String()
 }
 
 // idRegistry keeps ids unique across sections and items and remembers
@@ -1087,9 +1267,35 @@ func plainText(md string) string {
 
 var mdEscaper = strings.NewReplacer(`\`, `\\`, "*", `\*`, "_", `\_`, "[", `\[`, "]", `\]`, "`", "\\`", "<", `\<`)
 
-// mdEscape makes a plain 0.6 value safe inside markdown.
+// mdEscape makes a plain 0.6 value safe inside markdown, including double
+// hyphens, which 0.7's typographer would set as a dash.
 func mdEscape(s string) string {
-	return mdEscaper.Replace(strings.TrimSpace(s))
+	s = mdEscaper.Replace(strings.TrimSpace(s))
+	for strings.Contains(s, "--") {
+		s = strings.ReplaceAll(s, "--", `-\-`)
+	}
+	return s
+}
+
+// joinClauses joins short 0.6 list entries into one line: a space follows
+// an entry that ends a sentence, a semicolon any other.
+func joinClauses(entries []string) string {
+	var b strings.Builder
+	for _, e := range entries {
+		e = strings.TrimSpace(e)
+		if e == "" {
+			continue
+		}
+		if b.Len() > 0 {
+			if prev := b.String(); strings.ContainsAny(prev[len(prev)-1:], ".!?") {
+				b.WriteString(" ")
+			} else {
+				b.WriteString("; ")
+			}
+		}
+		b.WriteString(e)
+	}
+	return b.String()
 }
 
 // mdCode sets a value in backticks.
@@ -1237,4 +1443,64 @@ func text(v any) string {
 		return string(b)
 	}
 	return fmt.Sprint(v)
+}
+
+// choiceOf reads a verdict gate's options as a document choice, when it
+// names at least two that make one-word ids, and the verdict it holds.
+func choiceOf(b map[string]any) (*Choice, string) {
+	opts := strs(b, "options")
+	if len(opts) < 2 || len(opts) > 6 {
+		return nil, ""
+	}
+	question := firstStr(b, "prompt", "title")
+	if question == "" {
+		question = "Which way?"
+	}
+	question, _ = clamp(question, 120)
+	choice := &Choice{Question: question}
+	seen := map[string]bool{"all": true, "and": true, "rest": true, "nothing": true, "none": true, "notes": true}
+	chosen := ""
+	for _, o := range opts {
+		word := strings.ToLower(nonLetters.Split(strings.TrimSpace(o), 2)[0])
+		if len(word) == 0 || len(word) > 24 || seen[word] {
+			return nil, ""
+		}
+		seen[word] = true
+		label, _ := clamp(o, 40)
+		choice.Options = append(choice.Options, Option{ID: word, Label: label})
+		if strings.EqualFold(o, str(b, "verdict")) || word == strings.ToLower(str(b, "verdict")) {
+			chosen = word
+		}
+	}
+	return choice, chosen
+}
+
+func phaseTone(status string) string {
+	switch strings.ToLower(status) {
+	case "done", "complete", "completed", "resolved":
+		return "teal"
+	case "planned", "next", "todo", "active", "in-progress":
+		return "violet"
+	case "blocked", "failed", "incident", "outage":
+		return "risk"
+	}
+	return ""
+}
+
+var nonLetters = regexp.MustCompile(`[^A-Za-z]+`)
+
+var sentenceEnd = regexp.MustCompile(`[.!?](\s|$)`)
+
+func firstSentence(s string) string {
+	if loc := sentenceEnd.FindStringIndex(s); loc != nil {
+		return strings.TrimSpace(s[:loc[0]])
+	}
+	return strings.TrimSpace(s)
+}
+
+func restAfterSentence(s string) string {
+	if loc := sentenceEnd.FindStringIndex(s); loc != nil {
+		return strings.TrimSpace(s[loc[1]:])
+	}
+	return ""
 }
