@@ -23,15 +23,22 @@ var modelSchema []byte
 //go:embed dossier.result.schema.json
 var resultSchema []byte
 
+//go:embed dossier.kind.schema.json
+var kindSchema []byte
+
 // ModelSchemaJSON returns the embedded dossier.model/v1 schema.
 func ModelSchemaJSON() []byte { return append([]byte(nil), modelSchema...) }
 
 // ResultSchemaJSON returns the embedded dossier.result/v1 envelope schema.
 func ResultSchemaJSON() []byte { return append([]byte(nil), resultSchema...) }
 
+// KindSchemaJSON returns the embedded dossier.kind/v1 preset schema.
+func KindSchemaJSON() []byte { return append([]byte(nil), kindSchema...) }
+
 const (
 	modelSchemaURL  = "https://dossier.dev/schemas/dossier.model/v1"
 	resultSchemaURL = "https://dossier.dev/schemas/dossier.result/v1"
+	kindSchemaURL   = "https://dossier.dev/schemas/dossier.kind/v1"
 )
 
 func compile(url string, raw []byte) func() (*jsonschema.Schema, error) {
@@ -51,6 +58,7 @@ func compile(url string, raw []byte) func() (*jsonschema.Schema, error) {
 var (
 	compiledModel  = compile(modelSchemaURL, modelSchema)
 	compiledResult = compile(resultSchemaURL, resultSchema)
+	compiledKind   = compile(kindSchemaURL, kindSchema)
 )
 
 var printer = message.NewPrinter(language.English)
@@ -65,6 +73,11 @@ func CheckModel(data []byte) ([]model.Problem, error) {
 // CheckEnvelope validates a dossier.result/v1 envelope the same way.
 func CheckEnvelope(data []byte) ([]model.Problem, error) {
 	return check(compiledResult, data)
+}
+
+// CheckKind validates a dossier.kind/v1 preset the same way.
+func CheckKind(data []byte) ([]model.Problem, error) {
+	return check(compiledKind, data)
 }
 
 func check(compiled func() (*jsonschema.Schema, error), data []byte) ([]model.Problem, error) {

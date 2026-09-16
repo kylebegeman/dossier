@@ -90,26 +90,53 @@ func Skill() ([]byte, error) {
 	w("Dossier turns **one JSON model** into **one self-contained HTML file**: no server, no external requests, the model embedded as a JSON island so an agent reads one block instead of scraping. The reader gets a contents rail, collapsed items, a summary table, and a pick block that writes a reply line. You get the reply back as decisions.\n\n")
 
 	w("## Five concepts\n\n")
-	w("- **Kind** is a preset: the facets an item carries, the field vocabularies, the summary columns, and the pick text. Pick one from the table below.\n")
+	w("- **Kind** is a preset: what its items are, the fields and facets they carry, the sections a document has, and how the reader decides. Choose one below.\n")
 	w("- **Section** has a title and either content parts or a board. Part types: %s.\n", strings.Join(model.PartTypes, ", "))
-	w("- **Item** is a numbered thing in a board: id, title, one-sentence summary, size, effort, impact, dependsOn, facets. A board with `\"layout\": \"rows\"` lists unnumbered entries.\n")
-	w("- **Facet** is a labeled markdown body on an item, in the kind's fixed order.\n")
-	w("- **Decision** is the only state: path, picked ids, notes by id.\n\n")
+	w("- **Item** is a thing on a board: id, title, a one-sentence summary, the fields its kind declares, and facets. A board with `\"layout\": \"rows\"` lists unnumbered, free-form entries.\n")
+	w("- **Facet** is a labeled Markdown body on an item. Labels come from the kind, in its order; required facets must be present.\n")
+	w("- **Decision** is the only state: the choice, picked ids, verdicts, and notes by id.\n\n")
 
 	w("## Kinds\n\n")
-	w("| Kind | What it is | Facets, in order | Closers |\n| --- | --- | --- | --- |\n")
+	w("Run `dossier describe --json` for the full presets. `*` marks a required facet.\n\n")
 	for _, k := range all {
-		facets := "any labels, until the vocabulary ships"
-		if len(k.Items.Facets) > 0 {
-			facets = strings.Join(k.Items.Facets, ", ")
+		w("### %s\n\n", k.ID)
+		w("%s Items are **%s**, %s.\n\n", k.Summary, k.Item.Plural, map[bool]string{true: "numbered", false: "unnumbered"}[k.Item.Numbered])
+		if fields := fieldList(k); fields != "" {
+			w("- **Fields:** %s.\n", fields)
 		}
-		closers := ""
-		if len(k.Items.Closers) > 0 {
-			closers = strings.Join(k.Items.Closers, ", ")
+		w("- **Facets:**\n")
+		for _, f := range k.Facets {
+			mark := ""
+			if f.Required {
+				mark = "*"
+			}
+			w("  - %s%s: %s\n", f.Label, mark, f.Hint)
 		}
-		w("| `%s` | %s | %s | %s |\n", k.ID, k.Summary, facets, closers)
+		var sections []string
+		for _, s := range k.Sections {
+			label := "`" + s.ID + "`"
+			switch {
+			case s.Board && s.Repeat:
+				label += " (boards, one per phase)"
+			case s.Board:
+				label += " (board)"
+			case s.Layout == "rows":
+				label += " (rows)"
+			}
+			if s.Optional {
+				label += " optional"
+			}
+			sections = append(sections, label)
+		}
+		w("- **Sections:** %s.\n", strings.Join(sections, ", "))
+		switch k.Decision.Mode {
+		case kinds.ModeNone:
+			w("- **Decision:** none; the reader only reads.\n\n")
+		default:
+			w("- **Decision:** %s.\n", itemLine(k)[strings.Index(itemLine(k), "; ")+2:])
+			w("- **Reply:** %s For example `%s`\n\n", k.Decision.Markdown, k.Decision.Example)
+		}
 	}
-	w("\nRisk and Note facets render in the risk color. Run `dossier describe --json` for the full presets.\n\n")
 
 	w("## Content rules\n\n")
 	w("- **Effort is agent time, never calendar time.** `S` is under an hour, `M` a few hours with review, `L` a day or more across sessions. Never write days-of-work or weeks-of-work.\n")
@@ -117,11 +144,12 @@ func Skill() ([]byte, error) {
 	w("- **Detail sits behind a fold.** Items open collapsed, so the summary line must stand alone.\n")
 	w("- **Ids** are lowercase letters, digits, and hyphens, unique across sections and items. `dependsOn` names item ids.\n")
 	w("- **Markdown** in prose, facets, table cells, and spec text. Raw HTML is escaped. Fenced code is highlighted.\n")
-	w("- **Figures** may use a path relative to the model file; `build` inlines it. Diagrams carry DOT or Mermaid source and render as source for now.\n\n")
+	w("- **Figures** may use a path relative to the model file; `build` inlines it. Diagrams carry DOT or Mermaid source and render as source for now.\n")
+	w("- **Color is meaning.** Field values carry the kind's tones: teal for settled, violet for open, ochre for risk. Only the Risk facet is ochre.\n\n")
 
 	w("## Workflow\n\n")
-	w("1. `dossier init KIND --title \"…\"` writes `<slug>.dossier.json` with the kind's facets in place.\n")
-	w("2. Fill it in: one prose section that states the thesis, one board of items, each with a one-sentence summary and every facet.\n")
+	w("1. `dossier init KIND --title \"…\"` writes `<slug>.dossier.json` with the kind's sections and facets in place.\n")
+	w("2. Fill it in: replace every hint with content, give each item a one-sentence summary and its required facets, and add optional facets only where they earn their place.\n")
 	w("3. `dossier validate <slug>.dossier.json`: findings block, warnings are advice.\n")
 	w("4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader.\n")
 	w("5. The reader replies with numbers, for example `1, 3, 4. Notes: 3: keep blue.` Apply it with `dossier decisions apply <slug>.dossier.json --reply \"…\"`, then rebuild.\n")

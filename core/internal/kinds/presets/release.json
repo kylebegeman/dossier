@@ -1,27 +1,67 @@
 {
   "id": "release",
   "title": "Release",
-  "summary": "Gates, verification, and evidence for one release.",
-  "items": {
-    "numbered": false,
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
+  "summary": "Gates and evidence behind one ship or hold call.",
+  "item": {"noun": "gate", "plural": "gates", "numbered": true},
+  "fields": {
+    "status": {
+      "values": ["failed", "pending", "passed", "skipped"],
+      "tones": {"failed": "risk", "pending": "violet", "passed": "teal"}
     },
-    "limits": {
-      "summary": 160,
-      "facet": 420
-    }
+    "required": {}
   },
-  "summary_table": {},
-  "contents": {},
-  "pick": {
-    "title": "",
-    "markdown": ""
-  }
+  "facets": [
+    {"label": "How checked", "required": true, "hint": "The command, job, or procedure that ran."},
+    {
+      "label": "Result",
+      "required": true,
+      "hint": "The outcome against what was expected, with numbers."
+    },
+    {"label": "Evidence", "hint": "A link, log excerpt, or artifact name."},
+    {"label": "Risk", "tone": "risk", "hint": "What shipping without this gate would mean."},
+    {"label": "Note", "hint": "Anything the release owner must know that fits nowhere else."}
+  ],
+  "sections": [
+    {
+      "id": "ships",
+      "title": "What ships",
+      "hint": "The changes in this release and who they reach."
+    },
+    {
+      "id": "gates",
+      "title": "Gates",
+      "board": true,
+      "hint": "Every gate, failed and pending first."
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback",
+      "hint": "What triggers a rollback, and the exact steps."
+    }
+  ],
+  "columns": ["number", "title", "status", "required", "decision"],
+  "group": "status",
+  "decision": {
+    "mode": "verdict",
+    "verdicts": [
+      {"id": "waive", "label": "Waive", "tone": "risk"},
+      {"id": "rerun", "label": "Rerun", "tone": "violet"}
+    ],
+    "when": {"status": ["failed", "pending"]},
+    "choice": {
+      "question": "Ship or hold?",
+      "options": [
+        {"id": "ship", "label": "Ship", "summary": "Release now, with any waivers noted."},
+        {
+          "id": "hold",
+          "label": "Hold",
+          "summary": "Wait until the gates that did not pass are settled."
+        }
+      ]
+    },
+    "title": "How to decide",
+    "markdown": "Choose ship or hold, then waive or rerun any gate that did not pass.",
+    "example": "ship, waive 6. Notes: 6: known arm64 flake."
+  },
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }

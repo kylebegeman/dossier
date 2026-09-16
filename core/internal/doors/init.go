@@ -69,9 +69,10 @@ func initDoor(_ context.Context, in Input) Envelope {
 	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Result: InitResult{SchemaVersion: "dossier.init-result/v1", Kind: kind.ID, Slug: doc.Meta.Slug, Model: target}}
 }
 
-// Starter builds the model an agent starts from for a kind: a masthead, one
-// prose section, and a board with one item carrying the kind's facets in
-// order. It validates against the kind's rules by construction.
+// Starter builds the model an agent starts from for a kind: every expected
+// section in order, prose sections holding their hint, the board holding two
+// items with plausible field values and the facets to fill, and rows holding
+// one entry. It validates against the kind by construction.
 func Starter(kind kinds.Kind, title, slug, updated string) *model.Document {
 	if title == "" {
 		title = kind.Title + " title"
@@ -79,33 +80,77 @@ func Starter(kind kinds.Kind, title, slug, updated string) *model.Document {
 	if slug == "" {
 		slug = slugify(title)
 	}
-	item := model.Item{ID: "first-item", Title: "First item", Summary: "One sentence on what this item is."}
-	if len(kind.Items.Size) > 0 {
-		item.Size = kind.Items.Size[0]
+	doc := &model.Document{
+		Dossier: model.Version,
+		Kind:    kind.ID,
+		Meta:    model.Meta{Title: title, Slug: slug, Lede: "One sentence on what this " + strings.ToLower(kind.Title) + " is for.", Updated: updated, Status: "draft"},
 	}
-	if len(kind.Items.Effort) > 0 {
-		item.Effort = kind.Items.Effort[0]
+	for _, rule := range kind.Sections {
+		section := model.Section{ID: rule.ID, Title: rule.Title}
+		switch {
+		case rule.Board:
+			first := starterItem(kind, rule, 1, "")
+			second := starterItem(kind, rule, 2, first.ID)
+			section.Board = &model.Board{Summary: kind.Item.Numbered, Items: []model.Item{first, second}}
+		case rule.Layout == "rows":
+			section.Board = &model.Board{Layout: "rows", Items: []model.Item{{ID: rule.ID + "-first", Title: "First entry", Summary: rule.Hint}}}
+		default:
+			section.Parts = []model.Part{{Type: "prose", Markdown: rule.Hint}}
+		}
+		doc.Sections = append(doc.Sections, section)
 	}
-	if kind.Items.Impact != nil {
-		item.Impact = kind.Items.Impact.Min
+	return doc
+}
+
+// starterDefaults are field values a starter item takes when the kind has
+// them: calm, undecided values rather than the first of each list.
+var starterDefaults = []string{"minor", "planned", "pending", "open", "detect", "S"}
+
+func starterItem(kind kinds.Kind, rule kinds.SectionRule, n int, previous string) model.Item {
+	ordinal := map[int]string{1: "First", 2: "Second"}[n]
+	it := model.Item{
+		ID:      fmt.Sprintf("%s-%s", slugify(kind.Item.Noun), strings.ToLower(ordinal)),
+		Title:   ordinal + " " + kind.Item.Noun,
+		Summary: "One sentence on what this " + kind.Item.Noun + " is.",
 	}
-	facets := kind.Items.Facets
-	if len(facets) == 0 {
-		facets = []string{"Notes"}
+	value := func(name string) string {
+		f := kind.Field(name)
+		if f == nil || len(f.Values) == 0 {
+			return ""
+		}
+		for _, preferred := range starterDefaults {
+			for _, v := range f.Values {
+				if v == preferred {
+					return v
+				}
+			}
+		}
+		return f.Values[0]
 	}
-	for _, label := range facets {
-		item.Facets = append(item.Facets, model.Facet{Label: label, Markdown: "Two or three sentences for " + strings.ToLower(label) + "."})
+	it.Size, it.Category, it.Severity, it.Status, it.Effort = value("size"), value("category"), value("severity"), value("status"), value("effort")
+	if kind.Fields.Impact != nil {
+		it.Impact = kind.Fields.Impact.Min
 	}
-	sections := []model.Section{
-		{ID: "summary", Title: "Summary", Parts: []model.Part{{Type: "prose", Markdown: "One paragraph that says what this document decides and why now."}}},
-		{ID: "items", Title: "Items", Board: &model.Board{Summary: kind.Items.Numbered, Items: []model.Item{item}}},
+	if kind.Fields.Required != nil {
+		it.Required = true
 	}
-	return &model.Document{
-		Dossier:  model.Version,
-		Kind:     kind.ID,
-		Meta:     model.Meta{Title: title, Slug: slug, Lede: "One sentence for the masthead.", Updated: updated, Status: "draft"},
-		Sections: sections,
+	if f := kind.Field("owner"); f != nil {
+		it.Owner = "Owner name"
 	}
+	if kind.Fields.DependsOn != nil && previous != "" {
+		it.DependsOn = []string{previous}
+	}
+	required := false
+	for _, f := range kind.Facets {
+		if f.Required {
+			required = true
+			it.Facets = append(it.Facets, model.Facet{Label: f.Label, Markdown: f.Hint})
+		}
+	}
+	if !required && len(kind.Facets) > 0 {
+		it.Facets = append(it.Facets, model.Facet{Label: kind.Facets[0].Label, Markdown: kind.Facets[0].Hint})
+	}
+	return it
 }
 
 func slugify(s string) string {

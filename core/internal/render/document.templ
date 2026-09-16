@@ -24,7 +24,7 @@ templ document(p *Page) {
 					for _, s := range p.Sections {
 						@section(p, s)
 					}
-					if p.HasPick {
+					if p.Decides {
 						@pick(p)
 					}
 				</main>
@@ -41,6 +41,26 @@ templ document(p *Page) {
 			@templ.Raw(p.ReaderScriptHTML)
 		</body>
 	</html>
+}
+
+// cellOf returns an item's summary cell for a field, empty when unset.
+func cellOf(it ItemView, name string) Cell { return it.Cells[name] }
+
+// numberAttr carries an item's number for the reader runtime; unnumbered
+// items carry none and take no part in decisions.
+func numberAttr(it ItemView) templ.Attributes {
+	if !it.Numbered {
+		return nil
+	}
+	return templ.Attributes{"data-num": strconv.Itoa(it.Number)}
+}
+
+// entryNumber is a contents entry's marker: its number, or a dash.
+func entryNumber(e TocEntry) string {
+	if e.Number == 0 {
+		return "–"
+	}
+	return strconv.Itoa(e.Number) + "."
 }
 
 // edit marks a field the serve studio can edit. Artifacts pass no target,
@@ -68,10 +88,10 @@ templ masthead(p *Page) {
 				<span></span>
 			}
 			<div class="tools">
-				if p.HasPick {
+				if p.Decides && p.Mode == "pick" {
 					<button class="btn" type="button" data-hide-picked aria-pressed="false">Hide picked</button>
 				}
-				if len(p.Numbered) > 0 {
+				if p.HasArticles {
 					<button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button>
 				}
 				@themeToggle()
@@ -84,7 +104,7 @@ templ masthead(p *Page) {
 		if len(p.Facts) > 0 {
 			<div class="stats" aria-label="At a glance">
 				for _, f := range p.Facts {
-					<div class={ templ.KV("live", f.Live) }>
+					<div class={ templ.KV("live", f.Live), templ.KV("t-"+f.Tone, f.Tone != "") }>
 						if f.Live {
 							<b data-pick-count>{ f.Value }</b>
 						} else {
@@ -114,7 +134,7 @@ templ contentsNav(p *Page) {
 				<li class="group">{ g.Label }</li>
 				for _, e := range g.Entries {
 					if e.Item {
-						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }.</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
+						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
 					} else {
 						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
 					}
@@ -233,7 +253,6 @@ templ summaryTable(p *Page, b *BoardView) {
 		<table>
 			<thead>
 				<tr>
-					<th class="ck"><span class="sr">Pick</span></th>
 					for _, c := range b.Columns {
 						@summaryHeader(c)
 					}
@@ -242,7 +261,6 @@ templ summaryTable(p *Page, b *BoardView) {
 			<tbody>
 				for _, it := range b.Items {
 					<tr data-item={ it.ID } class={ templ.KV("picked", it.Picked) }>
-						<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title } checked?={ it.Picked }/></td>
 						for _, c := range b.Columns {
 							@summaryCell(c, it)
 						}
@@ -256,37 +274,25 @@ templ summaryTable(p *Page, b *BoardView) {
 	}
 }
 
-templ summaryHeader(c string) {
-	switch c {
+templ summaryHeader(c Column) {
+	switch c.Name {
 		case "number":
 			<th class="num">#</th>
-		case "title":
-			<th>Item</th>
-		case "size":
-			<th>Size</th>
-		case "effort":
-			<th>Effort</th>
-		case "impact":
-			<th>Impact</th>
-		case "dependsOn":
-			<th>Depends on</th>
+		case "decision":
+			<th class="ck"><span class="sr">{ c.Header }</span></th>
+		default:
+			<th>{ c.Header }</th>
 	}
 }
 
-templ summaryCell(c string, it ItemView) {
-	switch c {
+templ summaryCell(c Column, it ItemView) {
+	switch c.Name {
 		case "number":
 			<td class="num">{ strconv.Itoa(it.Number) }</td>
 		case "title":
 			<td><a href={ templ.URL("#" + it.ID) }>{ it.Title }</a></td>
-		case "size":
-			<td>
-				if it.Size != "" {
-					<span class={ "chip", it.Size }>{ it.Size }</span>
-				}
-			</td>
-		case "effort":
-			<td>{ it.Effort }</td>
+		case "decision":
+			<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title } checked?={ it.Picked }/></td>
 		case "impact":
 			<td>
 				if it.Impact > 0 {
@@ -307,6 +313,14 @@ templ summaryCell(c string, it ItemView) {
 					}
 				</span>
 			</td>
+		default:
+			<td>
+				if cellOf(it, c.Name).Chip {
+					<span class={ "chip", "t-" + cellOf(it, c.Name).Tone }>{ cellOf(it, c.Name).Text }</span>
+				} else {
+					{ cellOf(it, c.Name).Text }
+				}
+			</td>
 	}
 }
 
@@ -319,37 +333,40 @@ templ meter(value int, max int) {
 }
 
 templ itemArticle(it ItemView) {
-	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title }>
+	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-title={ it.Title } { numberAttr(it)... }>
 		<summary class="item-head">
 			<div class="item-meta">
-				if it.Size != "" {
-					<span class={ "chip", it.Size }>{ it.Size }</span>
-				}
-				if it.Effort != "" {
-					<span class="chip effort">Effort { it.Effort }</span>
+				for _, c := range it.Chips {
+					@chip(c)
 				}
 				if it.Impact > 0 {
 					@meter(it.Impact, it.ImpactMax)
-					<span class="meter-label">impact { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
+					<span class="meter-label">{ it.ImpactLabel } { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
 				}
-				<button class="btn pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
-					if it.Picked {
-						Picked
-					} else {
-						Pick
-					}
-				</button>
-				<button class="link-btn note-btn" type="button" data-note-toggle>
-					if it.Note != "" {
-						Edit note
-					} else {
-						Add a note
-					}
-				</button>
+				if it.Pickable {
+					<button class="btn pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
+						if it.Picked {
+							Picked
+						} else {
+							Pick
+						}
+					</button>
+				}
+				if it.Notes {
+					<button class="link-btn note-btn" type="button" data-note-toggle>
+						if it.Note != "" {
+							Edit note
+						} else {
+							Add a note
+						}
+					</button>
+				}
 			</div>
 			<h3 { edit(it.EditTitle)... }>
 				<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-				<span class="num">{ strconv.Itoa(it.Number) }</span>
+				if it.Numbered {
+					<span class="num">{ strconv.Itoa(it.Number) }</span>
+				}
 				{ it.Title }
 			</h3>
 			if it.Summary != "" {
@@ -357,10 +374,12 @@ templ itemArticle(it ItemView) {
 			}
 		</summary>
 		<div class="item-body">
-			<div class="note" data-note-wrap hidden?={ it.Note == "" }>
-				<label for={ "note-" + it.ID }>Your note on { strconv.Itoa(it.Number) }</label>
-				<textarea id={ "note-" + it.ID } data-note={ it.ID } rows="2" placeholder="Changes, conditions, or why not">{ it.Note }</textarea>
-			</div>
+			if it.Notes {
+				<div class="note" data-note-wrap hidden?={ it.Note == "" }>
+					<label for={ "note-" + it.ID }>Your note on { strconv.Itoa(it.Number) }</label>
+					<textarea id={ "note-" + it.ID } data-note={ it.ID } rows="2" placeholder="Changes, conditions, or why not">{ it.Note }</textarea>
+				</div>
+			}
 			<dl class="facets">
 				for _, f := range it.Facets {
 					<div class={ "facet", templ.KV("risk", f.Risk) }>
@@ -387,6 +406,14 @@ templ itemArticle(it ItemView) {
 	</details>
 }
 
+templ chip(c Chip) {
+	if c.Tone == "owner" {
+		<span class="owner" title={ c.Label }><span class="sr">{ c.Label + ": " }</span>{ c.Text }</span>
+	} else {
+		<span class={ "chip", "t-" + c.Tone } title={ c.Label }>{ c.Text }</span>
+	}
+}
+
 templ rowsBoard(b *BoardView) {
 	<div class="part rows">
 		for _, it := range b.Items {
@@ -399,9 +426,11 @@ templ rowsBoard(b *BoardView) {
 								<p { edit(it.EditSummary)... }>{ it.Summary }</p>
 							}
 						</div>
-						if it.Effort != "" {
-							<span class="chip effort">{ it.Effort }</span>
-						}
+						<span class="row-chips">
+							for _, c := range it.Chips {
+								@chip(c)
+							}
+						</span>
 						<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 					</summary>
 					<dl class="facets">
@@ -423,9 +452,11 @@ templ rowsBoard(b *BoardView) {
 							<p { edit(it.EditSummary)... }>{ it.Summary }</p>
 						}
 					</div>
-					if it.Effort != "" {
-						<span class="chip effort">{ it.Effort }</span>
-					}
+					<span class="row-chips">
+						for _, c := range it.Chips {
+							@chip(c)
+						}
+					</span>
 				</div>
 			}
 		}
@@ -434,10 +465,13 @@ templ rowsBoard(b *BoardView) {
 
 templ pick(p *Page) {
 	<div class="pick" id="pick">
-		<b>{ p.Kind.Pick.Title }</b>
+		<b>{ p.Kind.Decision.Title }</b>
 		<div>
 			@templ.Raw(p.PickHTML)
 		</div>
+		if p.ReplyExample != "" {
+			<p class="example">For example <code>{ p.ReplyExample }</code></p>
+		}
 		<div class="reply" data-reply>Nothing picked yet.</div>
 		<div class="row">
 			<button class="solid" type="button" data-copy-reply>Copy reply</button>

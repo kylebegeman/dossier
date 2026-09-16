@@ -67,6 +67,15 @@ func upgradeDoor(_ context.Context, in Input) Envelope {
 			result.Files = append(result.Files, UpgradedFile{Source: path})
 			continue
 		}
+		// Written, the model is read as 0.7, strictly. A document that does not
+		// fit its kind yet is reported instead of written.
+		if _, problems, err := load.Check(path, l.Doc); err != nil || len(problems) > 0 {
+			if err != nil {
+				return errorEnvelope(id, "verify", err)
+			}
+			findings = append(findings, problems...)
+			continue
+		}
 		warnings = append(warnings, l.Warnings...)
 		target := path
 		if *out != "" {

@@ -45,3 +45,11 @@ still open is a continuous connector rail for `timeline` (`flow` already draws o
 This lab produced the Console Slate skin that ships as `--skin console-slate`. It is kept as a
 reference for how the skin was derived. The 0.7 visual direction is being planned separately in
 `dossier-0-7-brainstorm.html` in this folder.
+
+## The 0.7 self-brainstorm
+
+- `dossier-0-7-brainstorm.html` — the hand-built page that set the 0.7 design.
+- `dossier-0-7-brainstorm.dossier.json` — the same document as a model, the reference core rendered
+  through M6. It predates the designed kind vocabularies (its facets are How it works, Reader,
+  Agent, Unlocks), so it no longer validates as a 0.7 `brainstorm`. It is kept as the spec for the
+  twelve moves, not as a fixture; `core/examples/winter-crossing.dossier.json` replaced it.

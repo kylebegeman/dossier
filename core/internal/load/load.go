@@ -62,14 +62,20 @@ func Bytes(path string, data []byte) (*Document, []model.Problem, error) {
 	if err != nil {
 		return nil, Prefix(path, []model.Problem{{Path: "/kind", Message: err.Error()}}), nil
 	}
-	if problems := kind.Check(doc); len(problems) > 0 {
-		return nil, Prefix(path, problems), nil
+	kindProblems := kind.Check(doc)
+	if len(kindProblems) > 0 && !upgraded {
+		return nil, Prefix(path, kindProblems), nil
 	}
 	warnings := Prefix(path, aliasWarnings)
-	// Conciseness advice is for authored 0.7 models. The alias pass assembles
-	// facets from several 0.6 fields, so advice on them is not actionable until
-	// the source is upgraded.
-	if !upgraded {
+	if upgraded {
+		// A 0.6 import is read leniently: where it does not fit the kind's
+		// vocabulary, that is a warning to fix when upgrading, not a reason to
+		// refuse the build. Conciseness advice waits for the upgrade too, since
+		// the alias pass assembles facets from several 0.6 fields.
+		for _, p := range kindProblems {
+			warnings = append(warnings, model.Problem{Path: path + "#" + p.Path, Message: "0.6 import does not fit the " + kind.ID + " kind yet: " + p.Message})
+		}
+	} else {
 		warnings = append(warnings, Prefix(path, kind.Advise(doc))...)
 	}
 	return &Document{Path: path, Doc: doc, Kind: kind, Warnings: warnings, Upgraded: upgraded}, nil, nil

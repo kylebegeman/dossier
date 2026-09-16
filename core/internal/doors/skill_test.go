@@ -22,7 +22,7 @@ func TestSkillIsCurrent(t *testing.T) {
 	if string(got) != string(want) {
 		t.Errorf("skill/SKILL.md is stale; run make generate and commit")
 	}
-	for _, must := range []string{"name: dossier", "| `brainstorm` |", "How it works, Reader, Agent, Unlocks", "| `dossier init KIND [--force] [--out OUT] [--slug SLUG] [--title TITLE]` |", "`dossier validate FILES...`", "agent time, never calendar time", "`decisions_apply`", "\"kind\": \"brainstorm\""} {
+	for _, must := range []string{"name: dossier", "### brainstorm", "  - How it works*: The mechanism", "### incident", "- **Decision:** verdicts go, revise, skip", "| `dossier init KIND [--force] [--out OUT] [--slug SLUG] [--title TITLE]` |", "`dossier validate FILES...`", "agent time, never calendar time", "`decisions_apply`", "\"kind\": \"brainstorm\""} {
 		if !strings.Contains(string(want), must) {
 			t.Errorf("skill lacks %q", must)
 		}

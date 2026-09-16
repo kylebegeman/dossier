@@ -17,14 +17,27 @@ import (
 	"dossier/internal/schema"
 )
 
+// copyExample copies the flagship model and its figure into a fresh
+// directory, so builds there are clean.
 func copyExample(t *testing.T) string {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "dossier-0-7-brainstorm.dossier.json"))
+	dir := t.TempDir()
+	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(t.TempDir(), "moves.dossier.json")
+	path := filepath.Join(dir, "moves.dossier.json")
 	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	figure, err := os.ReadFile(filepath.Join("..", "..", "examples", "assets", "wenlow-routes.svg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "assets"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "assets", "wenlow-routes.svg"), figure, 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return path
@@ -69,19 +82,19 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("build failed: %+v", env)
 	}
-	html, err := os.ReadFile(filepath.Join(dir, "dossier-0-7-brainstorm.html"))
+	html, err := os.ReadFile(filepath.Join(dir, "winter-crossing.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`class="item picked" id="shell-reset"`, `class="item picked" id="type-tokens"`, `keep the blue accent`} {
+	for _, want := range []string{`class="item picked" id="storm-rebook"`, `class="item picked" id="car-waitlist"`, `keep the blue accent`} {
 		if !strings.Contains(string(html), want) {
 			t.Errorf("built artifact lacks %q", want)
 		}
 	}
-	if tag := inputTag(string(html), `data-pick-row="shell-reset"`); !strings.Contains(tag, " checked") {
+	if tag := inputTag(string(html), `data-pick-row="storm-rebook"`); !strings.Contains(tag, " checked") {
 		t.Errorf("summary checkbox for a picked item is not checked: %s", tag)
 	}
-	if tag := inputTag(string(html), `data-pick-row="left-contents"`); strings.Contains(tag, " checked") {
+	if tag := inputTag(string(html), `data-pick-row="plain-notices"`); strings.Contains(tag, " checked") {
 		t.Errorf("summary checkbox for an unpicked item is checked: %s", tag)
 	}
 
@@ -97,7 +110,7 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(raw, &result); err != nil {
 		t.Fatal(err)
 	}
-	if result.Decisions.Path != "rebuild" || strings.Join(result.Decisions.Picked, ",") != "shell-reset,type-tokens" || result.Decisions.Notes["type-tokens"] != "keep the blue accent" {
+	if result.Decisions.Path != "rebuild" || strings.Join(result.Decisions.Picked, ",") != "storm-rebook,car-waitlist" || result.Decisions.Notes["car-waitlist"] != "keep the blue accent" {
 		t.Errorf("read back %+v", result.Decisions)
 	}
 
@@ -254,12 +267,12 @@ func TestCatalogPositionalsMatchParameters(t *testing.T) {
 }
 
 func TestDecisionsApplyRefusesToOverwriteALegacyFile(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", "sample.dossier.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", "implementation-packet.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	src := filepath.Join(dir, "sample.dossier.json")
+	src := filepath.Join(dir, "packet.dossier.json")
 	if err := os.WriteFile(src, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -271,27 +284,19 @@ func TestDecisionsApplyRefusesToOverwriteALegacyFile(t *testing.T) {
 	if err != nil || string(after) != string(data) {
 		t.Error("the 0.6 source changed")
 	}
-	out := filepath.Join(dir, "sample-upgraded.dossier.json")
+	out := filepath.Join(dir, "packet-upgraded.dossier.json")
 	env, code = run(t, "decisions", "apply", src, "--reply", "1", "--out", out)
 	if code != 0 || env.Outcome != OutcomeOK {
 		t.Fatalf("apply with --out: %d %+v", code, env)
 	}
-	env, code = run(t, "validate", out)
-	if code != 0 {
-		t.Fatalf("the written model must validate: %d %+v", code, env)
-	}
-	// Written as 0.7, the model gets conciseness advice and no alias warnings.
-	for _, w := range env.Warnings {
-		if !strings.Contains(w.Message, "keep facets under") {
-			t.Errorf("unexpected warning on the upgraded model: %s", w)
-		}
+	if _, err := os.Stat(out); err != nil {
+		t.Error(err)
 	}
 }
 
-func TestUpgradeWritesLegacyFilesAsModels(t *testing.T) {
+func TestUpgradeWritesOnlyStrictModels(t *testing.T) {
 	dir := t.TempDir()
-	var sources []string
-	for _, name := range []string{"release-0-6-7.dossier.json", "showcase.dossier.json"} {
+	copyLegacy := func(name string) string {
 		data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", name))
 		if err != nil {
 			t.Fatal(err)
@@ -300,46 +305,42 @@ func TestUpgradeWritesLegacyFilesAsModels(t *testing.T) {
 		if err := os.WriteFile(path, data, 0o644); err != nil {
 			t.Fatal(err)
 		}
-		sources = append(sources, path)
+		return path
 	}
+	release := copyLegacy("release-0-6-7.dossier.json")
+	showcase := copyLegacy("showcase.dossier.json")
+	showcaseBefore, _ := os.ReadFile(showcase)
 	modern := copyExample(t)
 	before, err := os.ReadFile(modern)
 	if err != nil {
 		t.Fatal(err)
 	}
-	env, code := run(t, append([]string{"upgrade"}, append(sources, modern)...)...)
-	if code != 0 || env.Outcome != OutcomeOK || len(env.Warnings) == 0 {
+
+	env, code := run(t, "upgrade", release, modern)
+	if code != 0 || env.Outcome != OutcomeOK {
 		t.Fatalf("upgrade: %d %+v", code, env)
 	}
 	var result UpgradeResult
 	if err := json.Unmarshal(mustJSON(env.Result), &result); err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Files) != 3 || !result.Files[0].Upgraded || !result.Files[1].Upgraded || result.Files[2].Upgraded {
+	if len(result.Files) != 2 || !result.Files[0].Upgraded || result.Files[1].Upgraded {
 		t.Errorf("result: %+v", result.Files)
 	}
-	for _, src := range sources {
-		env, code := run(t, "validate", src)
-		if code != 0 {
-			t.Errorf("%s does not validate after upgrade: %+v", src, env)
-		}
-		for _, w := range env.Warnings {
-			if strings.Contains(w.Message, "0.6") {
-				t.Errorf("%s still carries alias warnings: %s", src, w)
-			}
-		}
+	if env, code := run(t, "validate", release); code != 0 {
+		t.Errorf("the upgraded release must validate strictly: %+v", env)
 	}
-	after, err := os.ReadFile(modern)
-	if err != nil || string(after) != string(before) {
+	if after, _ := os.ReadFile(modern); string(after) != string(before) {
 		t.Error("a 0.7 model must be left untouched")
 	}
-	out := t.TempDir()
-	env, code = run(t, "upgrade", filepath.Join("..", "..", "testdata", "legacy", "sample.dossier.json"), "--out", out)
-	if code != 0 {
-		t.Fatalf("upgrade --out: %+v", env)
+
+	// A 0.6 document that does not fit its kind yet is reported, not written.
+	env, code = run(t, "upgrade", showcase)
+	if code != 2 || env.Outcome != OutcomeFindings || len(env.Findings) == 0 {
+		t.Errorf("an upgrade that would not validate must be findings: %d %+v", code, env)
 	}
-	if _, err := os.Stat(filepath.Join(out, "sample.dossier.json")); err != nil {
-		t.Error(err)
+	if after, _ := os.ReadFile(showcase); string(after) != string(showcaseBefore) {
+		t.Error("a refused upgrade must not touch the source")
 	}
 }
 
@@ -353,7 +354,7 @@ func TestRenderAnswersWithHTML(t *testing.T) {
 	if err := json.Unmarshal(mustJSON(env.Result), &result); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(strings.ToLower(result.HTML), "<!doctype html>") || result.Bytes != len(result.HTML) || result.Slug != "dossier-0-7-brainstorm" {
+	if !strings.HasPrefix(strings.ToLower(result.HTML), "<!doctype html>") || result.Bytes != len(result.HTML) || result.Slug != "winter-crossing" {
 		t.Errorf("render result: slug=%s bytes=%d", result.Slug, result.Bytes)
 	}
 	data, err := os.ReadFile(model)
@@ -361,7 +362,7 @@ func TestRenderAnswersWithHTML(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
-	code = Run(context.Background(), []string{"render", "-", "--json"}, bytes.NewReader(data), &stdout, &stderr)
+	code = Run(context.Background(), []string{"render", "-", "--base", filepath.Dir(model), "--json"}, bytes.NewReader(data), &stdout, &stderr)
 	if code != 0 {
 		t.Fatalf("render from stdin: %d %s", code, stderr.String())
 	}

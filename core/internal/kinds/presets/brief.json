@@ -1,27 +1,34 @@
 {
   "id": "brief",
   "title": "Brief",
-  "summary": "A readable document with no decision to make: notes, research, references, or a launch page.",
-  "items": {
-    "numbered": false,
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
-    },
-    "limits": {
-      "summary": 160,
-      "facet": 420
+  "summary": "A readable document with nothing to decide: research, notes, and references.",
+  "item": {"noun": "finding", "plural": "findings", "numbered": false},
+  "fields": {
+    "status": {
+      "label": "Confidence",
+      "values": ["verified", "likely", "open"],
+      "tones": {"verified": "teal", "likely": "violet"}
     }
   },
-  "summary_table": {},
-  "contents": {},
-  "pick": {
-    "title": "",
-    "markdown": ""
-  }
+  "facets": [
+    {"label": "Detail", "hint": "The finding in two or three sentences."},
+    {"label": "Evidence", "hint": "What it rests on: data, quotes, or sources."},
+    {"label": "So what", "hint": "Why the reader should care."},
+    {"label": "Note", "hint": "Anything the reader must know that fits nowhere else."}
+  ],
+  "sections": [
+    {"id": "answer", "title": "Answer", "hint": "The conclusion first, in a paragraph."},
+    {
+      "id": "findings",
+      "title": "Findings",
+      "board": true,
+      "optional": true,
+      "hint": "The findings behind the answer, each with its confidence."
+    },
+    {"id": "sources", "title": "Sources", "hint": "A table of the sources used."}
+  ],
+  "columns": ["title", "status"],
+  "group": "status",
+  "decision": {"mode": "none"},
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }

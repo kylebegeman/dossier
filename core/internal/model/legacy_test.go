@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"dossier/internal/kinds"
+	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/schema"
 )
@@ -44,12 +44,10 @@ func TestLegacyFixtures(t *testing.T) {
 			if p := model.Check(doc); len(p) > 0 {
 				t.Errorf("structure problems: %v", p)
 			}
-			kind, err := kinds.Load(doc.Kind)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if p := kind.Check(doc); len(p) > 0 {
-				t.Errorf("kind problems: %v", p)
+			// Read as a 0.6 import, the document must build: problems with the
+			// kind's vocabulary are warnings until the import maps onto it.
+			if _, problems, err := load.Bytes(name, data); err != nil || len(problems) > 0 {
+				t.Errorf("0.6 import must build: %v %v", err, problems)
 			}
 			for _, w := range warnings {
 				if strings.Contains(w.Message, "unknown 0.6 block") || strings.Contains(w.Message, "block inside an item is dropped") || strings.Contains(w.Message, "has no content") {

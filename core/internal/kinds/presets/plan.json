@@ -1,36 +1,67 @@
 {
   "id": "plan",
   "title": "Plan",
-  "summary": "Ordered work for one owner to approve step by step.",
-  "items": {
-    "numbered": true,
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
+  "summary": "Ordered steps one owner approves before the work starts.",
+  "item": {"noun": "step", "plural": "steps", "numbered": true},
+  "fields": {
+    "status": {
+      "values": ["planned", "doing", "done", "blocked"],
+      "tones": {"doing": "violet", "done": "teal", "blocked": "risk"}
     },
-    "limits": {
-      "summary": 160,
-      "facet": 420
+    "effort": {"values": ["S", "M", "L"]},
+    "owner": {"text": true},
+    "dependsOn": {}
+  },
+  "facets": [
+    {
+      "label": "What changes",
+      "required": true,
+      "hint": "The edit or action, concretely enough to start on."
+    },
+    {"label": "Why", "hint": "Only when the goal does not already explain it."},
+    {"label": "Touches", "hint": "Files, services, tables, or people it affects."},
+    {
+      "label": "Done when",
+      "required": true,
+      "hint": "The check that proves it, as a command where possible."
+    },
+    {"label": "Diff", "hint": "A fenced diff, when the change is small enough to show."},
+    {"label": "Risk", "tone": "risk", "hint": "What could break, and how you would roll it back."},
+    {"label": "Note", "hint": "Anything the owner must know that fits nowhere else."}
+  ],
+  "sections": [
+    {
+      "id": "goal",
+      "title": "Goal",
+      "hint": "The outcome, the constraints, and what is out of scope."
+    },
+    {
+      "id": "steps",
+      "title": "Steps",
+      "board": true,
+      "repeat": true,
+      "hint": "One board per phase; steps number across phases."
+    },
+    {
+      "id": "verify",
+      "title": "Verification",
+      "hint": "The commands or checks that prove the whole plan worked."
     }
-  },
-  "summary_table": {
-    "columns": [
-      "number",
-      "title",
-      "effort",
-      "impact",
-      "dependsOn"
+  ],
+  "columns": ["number", "title", "effort", "status", "owner", "dependsOn", "decision"],
+  "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.",
+  "group": "section",
+  "decision": {
+    "mode": "verdict",
+    "verdicts": [
+      {"id": "go", "label": "Go", "tone": "teal"},
+      {"id": "revise", "label": "Revise", "tone": "violet"},
+      {"id": "skip", "label": "Skip", "tone": "neutral"}
     ],
-    "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions."
+    "default": "go",
+    "title": "How to approve",
+    "markdown": "Say go, revise, or skip by step number. Numbers without a word mean go.",
+    "example": "go all; revise 4; skip 7. Notes: 4: split the migration."
   },
-  "contents": {},
-  "pick": {
-    "title": "How to reply",
-    "markdown": "Reply with the step numbers to approve, for example `1, 2, 4`, plus any changes or blockers."
-  }
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }

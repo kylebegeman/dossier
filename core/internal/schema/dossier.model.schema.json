@@ -21,7 +21,22 @@
         "lede": { "type": "string", "maxLength": 1000 },
         "updated": { "type": "string", "maxLength": 40 },
         "status": { "type": "string", "maxLength": 40 },
-        "fonts": { "type": "string", "enum": ["google"], "description": "Opt in to web fonts. Omitted means the system stack and zero external requests." }
+        "fonts": { "type": "string", "enum": ["google"], "description": "Opt in to web fonts. Omitted means the system stack and zero external requests." },
+        "facts": {
+          "type": "array",
+          "maxItems": 4,
+          "description": "Document-level figures shown first in the masthead strip, such as severity or version.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "value"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "value": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "tone": { "type": "string", "enum": ["teal", "violet", "risk", "neutral"] }
+            }
+          }
+        }
       }
     },
     "sections": {
@@ -87,8 +102,13 @@
         "title": { "type": "string", "minLength": 1, "maxLength": 200 },
         "summary": { "type": "string", "maxLength": 400 },
         "size": { "type": "string", "maxLength": 40 },
+        "category": { "type": "string", "maxLength": 40 },
+        "severity": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "maxLength": 40 },
         "effort": { "type": "string", "maxLength": 40 },
         "impact": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "owner": { "type": "string", "maxLength": 80 },
+        "required": { "type": "boolean" },
         "dependsOn": { "type": "array", "items": { "$ref": "#/$defs/id" } },
         "facets": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "markdown"], "properties": { "label": { "type": "string", "minLength": 1, "maxLength": 60 }, "markdown": { "type": "string", "minLength": 1 } } } }
       }

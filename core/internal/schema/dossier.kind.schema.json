@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dossier.dev/schemas/dossier.kind/v1",
+  "title": "dossier.kind/v1",
+  "description": "A kind preset: what its items are, the fields and facets they carry, the sections a document has, how the summary and contents group, and how the reader decides.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "summary", "item", "fields", "facets", "sections", "columns", "decision"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 60 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["noun", "plural", "numbered"],
+      "properties": {
+        "noun": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "plural": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "numbered": { "type": "boolean" }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "size": { "$ref": "#/$defs/field" },
+        "category": { "$ref": "#/$defs/field" },
+        "severity": { "$ref": "#/$defs/field" },
+        "status": { "$ref": "#/$defs/field" },
+        "effort": { "$ref": "#/$defs/field" },
+        "owner": { "$ref": "#/$defs/field" },
+        "impact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": { "label": { "type": "string", "maxLength": 30 }, "min": { "type": "integer" }, "max": { "type": "integer" } }
+        },
+        "required": { "$ref": "#/$defs/toggle" },
+        "dependsOn": { "$ref": "#/$defs/toggle" }
+      }
+    },
+    "facets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "hint"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1, "maxLength": 30 },
+          "required": { "type": "boolean" },
+          "tone": { "enum": ["risk"] },
+          "hint": { "type": "string", "minLength": 1, "maxLength": 200 }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "hint"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "hint": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "board": { "type": "boolean" },
+          "repeat": { "type": "boolean" },
+          "layout": { "enum": ["rows"] },
+          "optional": { "type": "boolean" }
+        }
+      }
+    },
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "enum": ["number", "title", "size", "category", "severity", "status", "effort", "impact", "owner", "required", "dependsOn", "decision"] }
+    },
+    "legend": { "type": "string", "maxLength": 300 },
+    "group": { "enum": ["section", "size", "category", "severity", "status"] },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["pick", "verdict", "none"] },
+        "verdicts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "tone"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z]{1,24}$" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 20 },
+              "tone": { "$ref": "#/$defs/tone" }
+            }
+          }
+        },
+        "default": { "type": "string", "pattern": "^[a-z]{1,24}$" },
+        "when": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } } },
+        "choice": { "$ref": "#/$defs/choice" },
+        "title": { "type": "string", "maxLength": 60 },
+        "markdown": { "type": "string", "maxLength": 600 },
+        "example": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "summary": { "type": "integer", "minimum": 1 }, "facet": { "type": "integer", "minimum": 1 }, "event": { "type": "integer", "minimum": 1 } }
+    }
+  },
+  "$defs": {
+    "tone": { "enum": ["teal", "violet", "risk", "neutral"] },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 30 },
+        "values": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 40 } },
+        "tones": { "type": "object", "additionalProperties": { "$ref": "#/$defs/tone" } },
+        "text": { "type": "boolean" }
+      }
+    },
+    "toggle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "label": { "type": "string", "maxLength": 30 } }
+    },
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "options"],
+      "properties": {
+        "question": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z]{1,24}$" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "summary": { "type": "string", "maxLength": 200 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

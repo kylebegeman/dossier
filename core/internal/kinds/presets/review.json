@@ -1,35 +1,68 @@
 {
   "id": "review",
   "title": "Review",
-  "summary": "Findings or candidates for one reviewer to accept or send back by number.",
-  "items": {
-    "numbered": true,
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
+  "summary": "Findings on one change for one reviewer to rule on.",
+  "item": {"noun": "finding", "plural": "findings", "numbered": true},
+  "fields": {
+    "severity": {
+      "values": ["blocker", "major", "minor", "nit"],
+      "tones": {"blocker": "risk", "major": "violet", "minor": "teal"}
     },
-    "limits": {
-      "summary": 160,
-      "facet": 420
+    "effort": {"values": ["S", "M", "L"]},
+    "category": {"text": true}
+  },
+  "facets": [
+    {
+      "label": "Where",
+      "required": true,
+      "hint": "File and line, screen, or section, so it can be found again."
+    },
+    {"label": "Why it matters", "required": true, "hint": "The consequence if it ships as it is."},
+    {"label": "Fix", "hint": "The smallest change that resolves it."},
+    {"label": "Evidence", "hint": "A reproduction, output, or quote that shows it."},
+    {"label": "Diff", "hint": "A fenced diff of the suggested fix."},
+    {"label": "Note", "hint": "Anything the reviewer must know that fits nowhere else."}
+  ],
+  "sections": [
+    {
+      "id": "scope",
+      "title": "Scope",
+      "hint": "What was reviewed, at which revision, and what was not."
+    },
+    {"id": "findings", "title": "Findings", "board": true, "hint": "Every finding, worst first."},
+    {
+      "id": "checked",
+      "title": "Checked",
+      "layout": "rows",
+      "optional": true,
+      "hint": "Areas examined and found fine, one line each."
     }
-  },
-  "summary_table": {
-    "columns": [
-      "number",
-      "title",
-      "effort",
-      "impact"
+  ],
+  "columns": ["number", "title", "severity", "effort", "decision"],
+  "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.",
+  "group": "severity",
+  "decision": {
+    "mode": "verdict",
+    "verdicts": [
+      {"id": "fix", "label": "Fix", "tone": "teal"},
+      {"id": "later", "label": "Later", "tone": "violet"},
+      {"id": "skip", "label": "Skip", "tone": "neutral"}
     ],
-    "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions."
+    "default": "fix",
+    "choice": {
+      "question": "Approve or rework?",
+      "options": [
+        {
+          "id": "approve",
+          "label": "Approve",
+          "summary": "Merge once the findings marked fix are in."
+        },
+        {"id": "rework", "label": "Rework", "summary": "Send it back before it can merge."}
+      ]
+    },
+    "title": "How to rule",
+    "markdown": "Choose approve or rework, then rule on findings by number. Numbers without a word mean fix.",
+    "example": "rework, fix 1, 2; later 4; skip 6. Notes: 4: after the release."
   },
-  "contents": {},
-  "pick": {
-    "title": "How to reply",
-    "markdown": "Reply with the numbers you approve, for example `1, 3`, and a note on anything to revise or block."
-  }
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }
