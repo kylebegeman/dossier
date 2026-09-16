@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 
+	"dossier/internal/decisions"
 	"dossier/internal/kinds"
 	"dossier/internal/model"
 	"dossier/internal/schema"
@@ -116,6 +117,12 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 		return 2
 	}
 	id := args[0]
+	if _, ok := registry[id]; !ok && len(args) > 1 {
+		if _, ok := registry[id+"."+args[1]]; ok {
+			id = id + "." + args[1]
+			args = args[1:]
+		}
+	}
 	d, ok := registry[id]
 	if !ok {
 		say(stderr, "unknown command %q\n\n%s", id, Usage())
@@ -156,7 +163,7 @@ func Usage() string {
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].ID < cmds[j].ID })
 	for _, cmd := range cmds {
 		if cmd.Surfaced("cli") {
-			say(&b, "  %-10s %s\n", cmd.ID, cmd.Summary)
+			say(&b, "  %-16s %s\n", strings.ReplaceAll(cmd.ID, ".", " "), cmd.Summary)
 		}
 	}
 	return b.String()
@@ -278,3 +285,14 @@ func parseInterspersed(fs *flag.FlagSet, args []string) ([]string, error) {
 func say(w io.Writer, format string, args ...any) { _, _ = fmt.Fprintf(w, format, args...) }
 
 func sayln(w io.Writer, args ...any) { _, _ = fmt.Fprintln(w, args...) }
+
+func encodeDecisions(d decisions.Document) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(d); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
