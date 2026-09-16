@@ -1,6 +1,7 @@
 package serve
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,12 +9,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"dossier/internal/decisions"
+	"dossier/internal/kinds"
 	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/store"
+	"dossier/internal/theme"
 )
 
 // response is the one JSON shape the studio API answers with.
@@ -114,17 +119,18 @@ func (s *Server) getField(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	target := r.URL.Query().Get("target")
-	doc, err := clone(l.Doc)
+	doc, err := s.shaped(r.Context(), docID, l)
 	if err != nil {
 		s.fail(w, err)
 		return
 	}
-	f, err := resolve(doc, target)
-	if err != nil || f.board != nil {
+	f, err := resolve(doc, l.Kind, target)
+	if err != nil || f.board != nil || f.facets != nil {
 		problem(w, http.StatusBadRequest, "%q is not an editable text field", target)
 		return
 	}
-	value := *f.text
+	var value string
+	_ = json.Unmarshal([]byte(f.value()), &value)
 	res := response{OK: true, Target: target, Value: &value, Multiline: f.multiline}
 	d, found, err := s.store.Draft(r.Context(), docID, target)
 	if err != nil {
@@ -157,13 +163,13 @@ func (s *Server) putDraft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	onDisk, err := clone(l.Doc)
+	shaped, err := s.shaped(ctx, docID, l)
 	if err != nil {
 		s.fail(w, err)
 		return
 	}
-	f, err := resolve(onDisk, req.Target)
-	if err != nil || f.board != nil {
+	f, err := resolve(shaped, l.Kind, req.Target)
+	if err != nil || f.board != nil || f.facets != nil {
 		problem(w, http.StatusBadRequest, "%q is not an editable text field", req.Target)
 		return
 	}
@@ -206,7 +212,7 @@ func (s *Server) putDraft(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
-	applyDrafts(candidate, drafts)
+	applyDrafts(candidate, l.Kind, drafts)
 	if _, problems, err := s.loader().Check(s.cfg.Model, candidate); err != nil || len(problems) > 0 {
 		if err != nil {
 			problem(w, http.StatusUnprocessableEntity, "%v", err)
@@ -228,6 +234,51 @@ func (s *Server) putDraft(w http.ResponseWriter, r *http.Request) {
 	}
 	s.hub.publish("reload", "drafts")
 	writeJSON(w, http.StatusOK, response{OK: true, Target: req.Target})
+}
+
+// shaped is the file's document with the structural drafts applied, after
+// moving any draft saved before facets had stable targets.
+func (s *Server) shaped(ctx context.Context, docID string, l *load.Document) (*model.Document, error) {
+	if err := s.migrateDrafts(ctx, docID, l.Doc); err != nil {
+		return nil, err
+	}
+	doc, err := clone(l.Doc)
+	if err != nil {
+		return nil, err
+	}
+	drafts, err := s.store.Drafts(ctx, docID)
+	if err != nil {
+		return nil, err
+	}
+	withStructure(doc, l.Kind, drafts)
+	return doc, nil
+}
+
+var indexedFacet = regexp.MustCompile(`^/items/([^/]+)/facets/([0-9]+)/markdown$`)
+
+// migrateDrafts moves drafts that named a facet by its position, from before
+// facets had stable targets, to the facet's slug while their base still
+// matches the file. A draft whose base no longer matches stays a conflict.
+func (s *Server) migrateDrafts(ctx context.Context, docID string, doc *model.Document) error {
+	drafts, err := s.store.Drafts(ctx, docID)
+	if err != nil {
+		return err
+	}
+	for _, d := range drafts {
+		m := indexedFacet.FindStringSubmatch(d.Target)
+		if m == nil {
+			continue
+		}
+		it := findItem(doc, m[1])
+		i, _ := strconv.Atoi(m[2])
+		if it == nil || i >= len(it.Facets) || jsonText(it.Facets[i].Markdown) != d.Base {
+			continue
+		}
+		if err := s.store.RetargetDraft(ctx, docID, d.Target, "/items/"+m[1]+"/facets/"+kinds.Slug(it.Facets[i].Label)+"/markdown"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func sortDrafts(d []store.Draft) {
@@ -330,7 +381,7 @@ func (s *Server) commitDrafts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	doc := fresh.Doc
-	applied, conflicts := applyDrafts(doc, drafts)
+	applied, conflicts := applyDrafts(doc, fresh.Kind, drafts)
 	if len(applied) == 0 {
 		writeJSON(w, http.StatusOK, response{OK: true, Conflicts: conflicts})
 		return
@@ -368,9 +419,10 @@ func (s *Server) discardDrafts(w http.ResponseWriter, r *http.Request) {
 }
 
 type decisionsRequest struct {
-	Path   string            `json:"path"`
-	Picked []string          `json:"picked"`
-	Notes  map[string]string `json:"notes"`
+	Path     string            `json:"path"`
+	Picked   []string          `json:"picked"`
+	Verdicts map[string]string `json:"verdicts"`
+	Notes    map[string]string `json:"notes"`
 }
 
 // putDecisions stores the reader's state. Ids the model does not number are
@@ -384,13 +436,198 @@ func (s *Server) putDecisions(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	d, _ := knownDecisions(l.Doc, store.Decisions{Path: strings.TrimSpace(req.Path), Picked: req.Picked, Notes: req.Notes}, l.Kind.Rules(l.Doc))
-	if err := s.store.ReplaceDecisions(r.Context(), docID, store.Decisions{Path: d.Path, Picked: d.Picked, Notes: d.Notes}); err != nil {
+	d, _ := knownDecisions(l.Doc, store.Decisions{Path: strings.TrimSpace(req.Path), Picked: req.Picked, Verdicts: req.Verdicts, Notes: req.Notes}, l.Kind.Rules(l.Doc))
+	if err := s.store.ReplaceDecisions(r.Context(), docID, store.Decisions{Path: d.Path, Picked: d.Picked, Verdicts: d.Verdicts, Notes: d.Notes}); err != nil {
 		s.fail(w, err)
 		return
 	}
 	s.hub.publish("decisions", clientID(r))
 	writeJSON(w, http.StatusOK, response{OK: true})
+}
+
+// importDecisions stores a reply line or a decisions document someone sent
+// back, in place of the stored decisions, when it fits the model's kind.
+func (s *Server) importDecisions(w http.ResponseWriter, r *http.Request) {
+	data, ok := readBody(w, r)
+	if !ok {
+		return
+	}
+	l, docID, ok := s.ready(w, r)
+	if !ok {
+		return
+	}
+	rules := l.Kind.Rules(l.Doc)
+	if rules.Mode == decisions.ModeNone {
+		problem(w, http.StatusUnprocessableEntity, "the %s kind has nothing to decide", l.Kind.ID)
+		return
+	}
+	text := strings.TrimSpace(string(data))
+	var d decisions.Document
+	var err error
+	if strings.HasPrefix(text, "{") || strings.Contains(text, "```json") {
+		d, err = decisions.Parse(data)
+	} else {
+		d, err = decisions.ParseReply(strings.TrimPrefix(text, "Reply: "), decisions.Items(l.Doc, rules), rules)
+	}
+	if err != nil {
+		problem(w, http.StatusUnprocessableEntity, "%v", err)
+		return
+	}
+	doc, err := clone(l.Doc)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	if problems := decisions.Apply(doc, d, rules); len(problems) > 0 {
+		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "the decisions do not fit the model", Findings: problems})
+		return
+	}
+	stored := store.Decisions{}
+	if doc.Decisions != nil {
+		stored = store.Decisions{Path: doc.Decisions.Path, Picked: doc.Decisions.Picked, Verdicts: doc.Decisions.Verdicts, Notes: doc.Decisions.Notes}
+	}
+	if err := s.store.ReplaceDecisions(r.Context(), docID, stored); err != nil {
+		s.fail(w, err)
+		return
+	}
+	s.hub.publish("decisions", "")
+	writeJSON(w, http.StatusOK, response{OK: true, Reply: decisions.FromModel(doc, rules).Reply})
+}
+
+type facetRequest struct {
+	Item   string `json:"item"`
+	Label  string `json:"label"`
+	Remove bool   `json:"remove"`
+}
+
+// editFacets drafts adding or removing one facet of an item. A new facet
+// takes its place in the kind's order and starts from the kind's hint; a
+// required facet cannot be removed.
+func (s *Server) editFacets(w http.ResponseWriter, r *http.Request) {
+	var req facetRequest
+	if !decodeBody(w, r, &req) {
+		return
+	}
+	l, docID, ok := s.ready(w, r)
+	if !ok || !s.editable(w, l) {
+		return
+	}
+	ctx := r.Context()
+	rule, ok := l.Kind.FacetRule(req.Label)
+	if !ok {
+		problem(w, http.StatusBadRequest, "%q is not a facet of the %s kind", req.Label, l.Kind.ID)
+		return
+	}
+	if req.Remove && rule.Required {
+		problem(w, http.StatusUnprocessableEntity, "every %s needs %q, so it cannot be removed", l.Kind.Item.Noun, rule.Label)
+		return
+	}
+	shaped, err := s.shaped(ctx, docID, l)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	item := findItem(shaped, req.Item)
+	onDisk := findItem(l.Doc, req.Item)
+	if item == nil || onDisk == nil {
+		problem(w, http.StatusNotFound, "no item %q", req.Item)
+		return
+	}
+	if sec := sectionOf(l.Doc, req.Item); sec.Board.Layout == "rows" {
+		problem(w, http.StatusBadRequest, "%s is a rows entry, whose facets are free-form; edit them in Model JSON", req.Item)
+		return
+	}
+	var labels []string
+	present := false
+	for _, f := range l.Kind.Facets {
+		has := false
+		for _, label := range facetLabels(item) {
+			has = has || kinds.Slug(label) == kinds.Slug(f.Label)
+		}
+		present = present || (has && kinds.Slug(f.Label) == kinds.Slug(rule.Label))
+		switch {
+		case kinds.Slug(f.Label) == kinds.Slug(rule.Label) && !req.Remove:
+			labels = append(labels, labelAsWritten(item, f.Label))
+		case kinds.Slug(f.Label) == kinds.Slug(rule.Label):
+		case has:
+			labels = append(labels, labelAsWritten(item, f.Label))
+		}
+	}
+	if present != req.Remove {
+		verb := "already has"
+		if req.Remove {
+			verb = "has no"
+		}
+		problem(w, http.StatusConflict, "%s %s %q", req.Item, verb, rule.Label)
+		return
+	}
+	target := "/items/" + req.Item + "/facets"
+	base, value := jsonText(facetLabels(onDisk)), jsonText(labels)
+	drafts, err := s.store.Drafts(ctx, docID)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	next := store.Draft{Target: target, Base: base, Value: value}
+	kept := drafts[:0]
+	for _, d := range drafts {
+		if d.Target == target {
+			next.Base = d.Base
+			continue
+		}
+		// Removing a facet drops the drafts of its text.
+		if req.Remove && d.Target == target+"/"+kinds.Slug(rule.Label)+"/markdown" {
+			continue
+		}
+		kept = append(kept, d)
+	}
+	candidate, err := clone(l.Doc)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	applyDrafts(candidate, l.Kind, append(kept, next))
+	if _, problems, err := s.loader().Check(s.cfg.Model, candidate); err != nil || len(problems) > 0 {
+		if err != nil {
+			problem(w, http.StatusUnprocessableEntity, "%v", err)
+			return
+		}
+		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "this change would make the model invalid", Findings: problems})
+		return
+	}
+	if req.Remove {
+		if err := s.store.DeleteDraft(ctx, docID, target+"/"+kinds.Slug(rule.Label)+"/markdown"); err != nil {
+			s.fail(w, err)
+			return
+		}
+	}
+	if err := s.store.DeleteDraft(ctx, docID, target); err != nil {
+		s.fail(w, err)
+		return
+	}
+	if value != next.Base {
+		if err := s.store.PutDraft(ctx, docID, target, next.Base, value); err != nil {
+			s.fail(w, err)
+			return
+		}
+	}
+	s.hub.publish("reload", "drafts")
+	res := response{OK: true, Target: target, Reverted: value == next.Base}
+	if !req.Remove {
+		res.Target = target + "/" + kinds.Slug(rule.Label) + "/markdown"
+	}
+	writeJSON(w, http.StatusOK, res)
+}
+
+// labelAsWritten keeps an item's own spelling of a facet label it has, and
+// uses the kind's spelling for one it does not.
+func labelAsWritten(it *model.Item, label string) string {
+	for _, f := range it.Facets {
+		if kinds.Slug(f.Label) == kinds.Slug(label) {
+			return f.Label
+		}
+	}
+	return label
 }
 
 // applyDecisions writes the stored decisions into the model file.
@@ -493,6 +730,14 @@ type settingsRequest struct {
 	Accent *string `json:"accent"`
 }
 
+// settingsResponse carries the derived accent palette as CSS, so the studio
+// previews exactly what an artifact with that accent would use.
+type settingsResponse struct {
+	OK       bool     `json:"ok"`
+	CSS      string   `json:"css"`
+	Warnings []string `json:"warnings,omitempty"`
+}
+
 func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 	var req settingsRequest
 	if !decodeBody(w, r, &req) {
@@ -525,7 +770,16 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.hub.publish("settings", clientID(r))
-	writeJSON(w, http.StatusOK, response{OK: true})
+	res := settingsResponse{OK: true}
+	if accent := strings.ToLower(strings.TrimSpace(*req.Accent)); accent != "" {
+		palette, warnings, err := theme.Derive(accent)
+		if err == nil {
+			res.CSS, res.Warnings = palette.CSS(), warnings
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(res)
 }
 
 var errBadAccent = errors.New("bad accent")

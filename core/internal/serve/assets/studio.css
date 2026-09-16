@@ -14,6 +14,15 @@ html.studio-editing [data-edit] { outline: 1px dashed transparent; outline-offse
 html [data-edit].studio-drafted { outline: 1px dashed var(--violet); outline-offset: 4px; border-radius: 4px; }
 html [data-edit].studio-conflict { outline: 1px dashed var(--coral); outline-offset: 4px; border-radius: 4px; }
 html.studio-editing [data-edit]:hover { outline: 1px dashed var(--accent); }
+.item.studio-reshaped h3::after { content: "facets changed"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; background: var(--violet-soft); color: var(--violet); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; align-self: center; }
+.studio-facets { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.studio-add { height: 28px; padding: 0 6px; border: 1px dashed var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; font-size: 12.5px; }
+.facet dt .studio-move { display: block; margin-top: 4px; }
+.studio-warned { color: var(--coral); }
+.studio-dialog.studio-small { height: auto; max-height: 70vh; }
+.studio-dialog.studio-small > div { grid-template-rows: auto auto auto; }
+.studio-pad { padding: 12px; }
+.studio-dialog.studio-small textarea.studio-input { height: auto; min-height: 96px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; }
 .section.studio-reordered > h2::after { content: "reordered"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; background: var(--violet-soft); color: var(--violet); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
 .studio-editor { display: grid; gap: 8px; margin: 10px 0 14px; padding: 10px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--paper); max-width: var(--measure); }
 .studio-input { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14.5px; line-height: 1.5; }

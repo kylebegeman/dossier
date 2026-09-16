@@ -99,11 +99,13 @@ func (s *Store) Document(ctx context.Context, slug string) (string, error) {
 	return s.writeQ.EnsureDocument(ctx, db.EnsureDocumentParams{ID: id, Slug: slug, CreatedAt: now, UpdatedAt: now})
 }
 
-// Decisions is the reader state the studio keeps for a document.
+// Decisions is the reader state the studio keeps for a document: the chosen
+// option, picks or verdicts by item id, and notes.
 type Decisions struct {
-	Path   string
-	Picked []string
-	Notes  map[string]string
+	Path     string
+	Picked   []string
+	Verdicts map[string]string
+	Notes    map[string]string
 }
 
 // Decisions reads a document's decisions.
@@ -120,9 +122,16 @@ func (s *Store) Decisions(ctx context.Context, documentID string) (Decisions, er
 	if err != nil {
 		return Decisions{}, err
 	}
-	d := Decisions{Path: path, Picked: picked, Notes: map[string]string{}}
+	verdicts, err := s.readQ.ListVerdicts(ctx, documentID)
+	if err != nil {
+		return Decisions{}, err
+	}
+	d := Decisions{Path: path, Picked: picked, Verdicts: map[string]string{}, Notes: map[string]string{}}
 	for _, r := range rows {
 		d.Notes[r.ItemID] = r.Body
+	}
+	for _, v := range verdicts {
+		d.Verdicts[v.ItemID] = v.Verdict
 	}
 	return d, nil
 }
@@ -140,17 +149,22 @@ func (s *Store) ReplaceDecisions(ctx context.Context, documentID string, d Decis
 		if err := q.DeleteNotes(ctx, documentID); err != nil {
 			return err
 		}
+		if err := q.DeleteVerdicts(ctx, documentID); err != nil {
+			return err
+		}
 		for _, id := range d.Picked {
 			if err := q.AddPick(ctx, db.AddPickParams{DocumentID: documentID, ItemID: id}); err != nil {
 				return err
 			}
 		}
-		ids := make([]string, 0, len(d.Notes))
-		for id := range d.Notes {
-			ids = append(ids, id)
+		for _, id := range sortedKeys(d.Verdicts) {
+			if v := strings.TrimSpace(d.Verdicts[id]); v != "" {
+				if err := q.PutVerdict(ctx, db.PutVerdictParams{DocumentID: documentID, ItemID: id, Verdict: v}); err != nil {
+					return err
+				}
+			}
 		}
-		sort.Strings(ids)
-		for _, id := range ids {
+		for _, id := range sortedKeys(d.Notes) {
 			body := strings.TrimSpace(d.Notes[id])
 			if body == "" {
 				continue
@@ -243,6 +257,33 @@ func (s *Store) tx(ctx context.Context, fn func(q *db.Queries) error) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// RetargetDraft moves a draft to a new target in one transaction, keeping
+// its base and value. An existing draft at the new target is replaced.
+func (s *Store) RetargetDraft(ctx context.Context, documentID, from, to string) error {
+	return s.tx(ctx, func(q *db.Queries) error {
+		d, err := q.GetDraft(ctx, db.GetDraftParams{DocumentID: documentID, Target: from})
+		if err != nil {
+			return err
+		}
+		if err := q.DeleteDraft(ctx, db.DeleteDraftParams{DocumentID: documentID, Target: from}); err != nil {
+			return err
+		}
+		if err := q.DeleteDraft(ctx, db.DeleteDraftParams{DocumentID: documentID, Target: to}); err != nil {
+			return err
+		}
+		return q.PutDraft(ctx, db.PutDraftParams{DocumentID: documentID, Target: to, Base: d.Base, Value: d.Value, UpdatedAt: rfc(time.Now())})
+	})
 }
 
 func rfc(t time.Time) string { return t.UTC().Format(time.RFC3339) }

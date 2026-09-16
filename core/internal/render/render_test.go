@@ -438,7 +438,7 @@ func TestStudioMarksEditableFieldsAndInjectsFirst(t *testing.T) {
 		`<div class="part prose" data-edit="/sections/thesis/parts/0/markdown">`,
 		`<h3 data-edit="/items/storm-rebook/title">`,
 		`<p class="one-line" data-edit="/items/storm-rebook/summary">`,
-		`<dd data-edit="/items/storm-rebook/facets/0/markdown">`,
+		`<dd data-edit="/items/storm-rebook/facets/how-it-works/markdown">`,
 		`<b data-edit="/items/shelter-seats/title">`,
 	} {
 		if !strings.Contains(out, want) {

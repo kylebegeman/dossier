@@ -27,8 +27,8 @@ func TestOpenMigratesOnceAndIsStrict(t *testing.T) {
 	if err := s.read.QueryRowContext(ctx, `SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND sql LIKE '%STRICT'`).Scan(&n); err != nil {
 		t.Fatal(err)
 	}
-	if n != 5 {
-		t.Errorf("expected five STRICT tables, got %d", n)
+	if n != 6 {
+		t.Errorf("expected six STRICT tables, got %d", n)
 	}
 	var mode string
 	if err := s.write.QueryRowContext(ctx, `PRAGMA journal_mode`).Scan(&mode); err != nil || mode != "wal" {
@@ -98,6 +98,37 @@ func TestDecisionsReplaceWholeState(t *testing.T) {
 	d, _ = s.Decisions(ctx, doc)
 	if d.Path != "" || strings.Join(d.Picked, ",") != "c" || len(d.Notes) != 0 {
 		t.Errorf("replace must drop the old state: %+v", d)
+	}
+	if err := s.ReplaceDecisions(ctx, doc, Decisions{Path: "rework", Verdicts: map[string]string{"b": "later", "a": "fix", "c": " "}}); err != nil {
+		t.Fatal(err)
+	}
+	d, _ = s.Decisions(ctx, doc)
+	if d.Path != "rework" || len(d.Picked) != 0 || len(d.Verdicts) != 2 || d.Verdicts["a"] != "fix" || d.Verdicts["b"] != "later" {
+		t.Errorf("verdicts are part of the whole state: %+v", d)
+	}
+	if err := s.ReplaceDecisions(ctx, doc, Decisions{}); err != nil {
+		t.Fatal(err)
+	}
+	if d, _ = s.Decisions(ctx, doc); len(d.Verdicts) != 0 {
+		t.Errorf("replace drops old verdicts: %+v", d)
+	}
+}
+
+func TestRetargetDraftKeepsBaseAndValue(t *testing.T) {
+	ctx := context.Background()
+	s, _ := open(t)
+	doc, _ := s.Document(ctx, "doc")
+	if err := s.PutDraft(ctx, doc, "/items/a/facets/0/markdown", `"old"`, `"new"`); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RetargetDraft(ctx, doc, "/items/a/facets/0/markdown", "/items/a/facets/why/markdown"); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, _ := s.Draft(ctx, doc, "/items/a/facets/0/markdown"); ok {
+		t.Error("the old target is gone")
+	}
+	if d, ok, _ := s.Draft(ctx, doc, "/items/a/facets/why/markdown"); !ok || d.Base != `"old"` || d.Value != `"new"` {
+		t.Errorf("moved draft: %+v %v", d, ok)
 	}
 }
 

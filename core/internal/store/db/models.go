@@ -37,3 +37,9 @@ type Setting struct {
 	Value      string
 	UpdatedAt  string
 }
+
+type Verdict struct {
+	DocumentID string
+	ItemID     string
+	Verdict    string
+}
