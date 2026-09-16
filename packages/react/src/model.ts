@@ -22,6 +22,10 @@ export interface Meta {
   status?: string;
   /** Opt in to web fonts. Omitted means the system stack and zero external requests. */
   fonts?: "google";
+  theme?: {
+    /** The brand color as #rrggbb. Light and dark variants are derived so text stays readable; a color too light for text is darkened with a warning. */
+    accent?: string;
+  };
   /** Document-level figures shown first in the masthead strip, such as severity or version. */
   facts?: Array<{
     label: string;

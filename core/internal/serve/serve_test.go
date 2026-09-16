@@ -428,19 +428,19 @@ func TestFindingsPageKeepsTheStudioLive(t *testing.T) {
 
 func TestSettingsPreviewTheAccent(t *testing.T) {
 	h := start(t, brainstorm)
-	accent := "#1F6FEB"
+	accent := "#2563EB"
 	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &accent}); code != 200 {
 		t.Fatal("put accent")
 	}
-	if !strings.Contains(h.page(), "--accent:#1f6feb") {
-		t.Error("the page must carry the previewed accent")
+	if page := h.page(); !strings.Contains(page, ":root { --accent: #2563eb;") || !strings.Contains(page, `:root[data-theme="dark"] { --accent: #`) {
+		t.Error("the page must carry the previewed accent, derived for both themes")
 	}
 	bad := "red; } body { display:none"
 	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &bad}); code != 400 {
 		t.Errorf("a bad accent must be refused: %d", code)
 	}
 	empty := ""
-	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &empty}); code != 200 || strings.Contains(h.page(), "--accent:#1f6feb") {
+	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &empty}); code != 200 || strings.Contains(h.page(), "--accent: #2563eb") {
 		t.Error("reset must clear the accent")
 	}
 }

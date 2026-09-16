@@ -13,6 +13,7 @@ import (
 	"dossier/internal/kinds"
 	"dossier/internal/model"
 	"dossier/internal/schema"
+	"dossier/internal/theme"
 )
 
 // Document is a model that passed every check.
@@ -103,6 +104,15 @@ func (l Loader) Bytes(path string, data []byte) (*Document, []model.Problem, err
 		}
 	} else {
 		warnings = append(warnings, Prefix(path, kind.Advise(doc))...)
+	}
+	if doc.Meta.Theme != nil && doc.Meta.Theme.Accent != "" {
+		_, advice, err := theme.Derive(doc.Meta.Theme.Accent)
+		if err != nil {
+			return nil, Prefix(path, []model.Problem{{Path: "/meta/theme/accent", Message: err.Error()}}), nil
+		}
+		for _, a := range advice {
+			warnings = append(warnings, model.Problem{Path: path + "#/meta/theme/accent", Message: a})
+		}
 	}
 	return &Document{Path: path, Doc: doc, Kind: kind, Warnings: warnings, Upgraded: upgraded}, nil, nil
 }

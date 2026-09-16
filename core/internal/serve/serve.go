@@ -35,6 +35,7 @@ import (
 	"dossier/internal/model"
 	"dossier/internal/render"
 	"dossier/internal/store"
+	"dossier/internal/theme"
 )
 
 //go:embed assets/studio.js
@@ -543,8 +544,13 @@ func (s *Server) inject(cfg studioConfig) (string, error) {
 	return b.String(), nil
 }
 
+// accentCSS is the derived palette for a previewed accent, for both themes.
 func accentCSS(hex string) string {
-	return ":root:root{--accent:" + hex + ";--accent-soft:color-mix(in srgb, " + hex + " 14%, var(--bg))}"
+	palette, _, err := theme.Derive(hex)
+	if err != nil {
+		return ""
+	}
+	return palette.CSS()
 }
 
 func (s *Server) fail(w http.ResponseWriter, err error) {
