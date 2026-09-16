@@ -95,6 +95,9 @@ func itemLine(k kinds.Kind) string {
 		}
 		decide += "; choice " + strings.Join(ids, " or ")
 	}
+	if g := k.GuardText(); g != "" {
+		decide += "; " + g
+	}
 	return k.Item.Plural + ", " + numbered + "; " + decide
 }
 

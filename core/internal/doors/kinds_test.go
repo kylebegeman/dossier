@@ -1,6 +1,7 @@
 package doors
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -49,6 +50,11 @@ func TestCustomKindsWorkThroughEveryDoor(t *testing.T) {
 	}
 	if sources["retro"] != filepath.Join(dir, "retro.kind.json") || sources["brief"] != "built-in" {
 		t.Errorf("describe sources: %v", sources)
+	}
+
+	var stdout bytes.Buffer
+	if code := Run(context.Background(), []string{"--kinds", dir, "--json", "describe"}, strings.NewReader(""), &stdout, io.Discard); code != 0 || !strings.Contains(stdout.String(), `"id": "retro"`) {
+		t.Errorf("global flags may lead the command: %d %s", code, stdout.String())
 	}
 
 	if env, code := run(t, "init", "retro", "--title", "Sprint 14 retro", "--out", out, "--kinds="+dir); code != 0 {
