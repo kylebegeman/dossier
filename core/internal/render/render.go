@@ -6,12 +6,17 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/util"
 
 	"dossier/internal/kinds"
 	"dossier/internal/model"
@@ -32,7 +37,18 @@ const (
 // AssetSizes reports the embedded asset sizes for budget tests.
 func AssetSizes() (css, js int) { return len(tokensCSS), len(readerJS) }
 
-var md = goldmark.New(goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.Typographer))
+var md = goldmark.New(
+	goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.Typographer),
+	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(codeRenderer{}, 100))),
+)
+
+// Options tune one render without changing the document.
+type Options struct {
+	// Figures maps a figure src to the data URI to emit instead. Build it with
+	// InlineFigures so relative image paths ship inside the artifact while the
+	// model island keeps the original path.
+	Figures map[string]string
+}
 
 // Page is the view model handed to the templ components.
 type Page struct {
@@ -76,6 +92,11 @@ type PartView struct {
 	Columns []string
 	Rows    [][]string
 	Spec    []model.SpecRow
+	Src     string
+	Alt     string
+	Caption string
+	Format  string
+	SVG     string
 }
 
 // BoardView is a board with numbered or row items.
@@ -141,7 +162,12 @@ type Fact struct {
 
 // Render produces the complete HTML document.
 func Render(doc *model.Document, kind kinds.Kind) ([]byte, error) {
-	page, err := build(doc, kind)
+	return RenderWith(doc, kind, Options{})
+}
+
+// RenderWith produces the complete HTML document with render options.
+func RenderWith(doc *model.Document, kind kinds.Kind, opts Options) ([]byte, error) {
+	page, err := build(doc, kind, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +178,7 @@ func Render(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
+func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	modelJSON, err := embedJSON(doc)
 	if err != nil {
 		return nil, err
@@ -196,7 +222,7 @@ func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
 	for _, s := range doc.Sections {
 		sv := SectionView{ID: s.ID, Title: s.Title}
 		for _, p := range s.Parts {
-			pv, err := renderPart(p)
+			pv, err := renderPart(p, opts)
 			if err != nil {
 				return nil, fmt.Errorf("section %s: %w", s.ID, err)
 			}
@@ -240,8 +266,8 @@ func build(doc *model.Document, kind kinds.Kind) (*Page, error) {
 	return page, nil
 }
 
-func renderPart(p model.Part) (PartView, error) {
-	pv := PartView{Type: p.Type, Title: p.Title, Tone: p.Tone, Note: p.Note, Lang: p.Lang, Code: p.Code, Columns: p.Columns, Spec: p.Spec}
+func renderPart(p model.Part, opts Options) (PartView, error) {
+	pv := PartView{Type: p.Type, Title: p.Title, Tone: p.Tone, Note: p.Note, Lang: p.Lang, Code: p.Code, Columns: p.Columns, Spec: p.Spec, Src: p.Src, Alt: p.Alt, Format: p.Format}
 	switch p.Type {
 	case "prose", "callout":
 		h, err := markdown(p.Markdown)
@@ -249,6 +275,26 @@ func renderPart(p model.Part) (PartView, error) {
 			return pv, err
 		}
 		pv.HTML = h
+	case "code":
+		pv.HTML = codeInner(p.Lang, p.Code)
+	case "figure":
+		if inlined, ok := opts.Figures[p.Src]; ok {
+			pv.Src = inlined
+		}
+		if p.Caption != "" {
+			h, err := inline(p.Caption)
+			if err != nil {
+				return pv, err
+			}
+			pv.Caption = h
+		}
+	case "diagram":
+		if pv.Format == "" {
+			pv.Format = "dot"
+		}
+		pv.Code = p.Source
+	case "chart":
+		pv.SVG = chartSVG(p.Title, p.Variant, p.Data)
 	case "table":
 		for _, row := range p.Rows {
 			var cells []string
@@ -273,6 +319,44 @@ func renderPart(p model.Part) (PartView, error) {
 		pv.Spec = rows
 	}
 	return pv, nil
+}
+
+// imageTypes maps the file extensions InlineFigures inlines to their MIME types.
+var imageTypes = map[string]string{
+	".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif",
+	".svg": "image/svg+xml", ".webp": "image/webp", ".avif": "image/avif",
+}
+
+// InlineFigures reads every figure whose src is a relative path, resolved
+// against dir, and returns the data URIs to render in their place. A file that
+// cannot be read or has an unknown image type is reported as a warning and its
+// path is left as written.
+func InlineFigures(doc *model.Document, dir string) (map[string]string, []model.Problem) {
+	figures := map[string]string{}
+	var warnings []model.Problem
+	for si, s := range doc.Sections {
+		for pi, p := range s.Parts {
+			if p.Type != "figure" || strings.Contains(p.Src, ":") {
+				continue
+			}
+			if _, done := figures[p.Src]; done {
+				continue
+			}
+			path := fmt.Sprintf("/sections/%d/parts/%d/src", si, pi)
+			mime, ok := imageTypes[strings.ToLower(filepath.Ext(p.Src))]
+			if !ok {
+				warnings = append(warnings, model.Problem{Path: path, Message: fmt.Sprintf("%q is not an image type the artifact can inline; the path is kept as written", p.Src)})
+				continue
+			}
+			data, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p.Src)))
+			if err != nil {
+				warnings = append(warnings, model.Problem{Path: path, Message: fmt.Sprintf("cannot read %q; the path is kept as written", p.Src)})
+				continue
+			}
+			figures[p.Src] = "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data)
+		}
+	}
+	return figures, warnings
 }
 
 // markdown renders block markdown to HTML. Raw HTML in the source is escaped.
