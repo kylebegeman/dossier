@@ -16,16 +16,20 @@ for the layout map and rules, and
 | Change reader behavior | `internal/render/assets/reader.js`; budget 20 KB |
 | Add a part type | `internal/model/model.go` (struct, `PartTypes`, `checkPart`), the schema, `internal/render/render.go` and `document.templ`, styles in `tokens.css` |
 | Change how a 0.6 block imports | `internal/model/alias.go`; goldens in `testdata/legacy/*.upgraded.json` (`UPDATE_GOLDEN=1 go test ./internal/model/`) |
-| Add a door (CLI, MCP, skill) | one file in `internal/doors/`, one entry in `catalog.json`, one test |
+| Add a door (CLI, MCP, skill) | one file in `internal/doors/`, one entry in `catalog.json` (parameters schema, `positional`, `surfaces`), one test; then `make generate` for the skill |
+| Change what the skill says | `internal/doors/skill.go`; `make generate` rewrites `skill/SKILL.md` |
+| Serve tools to an agent | `dossier mcp` (stdio); conformance test in `internal/doors/mcp_test.go` |
 | Verify a change | `make check` |
 
 ## Commands
 
 ```sh
-make generate        # templ
+make generate        # templ and skill/SKILL.md
 make check           # generate, vet, staticcheck, errcheck, race tests, CGO-free build
 go run ./cmd/dossier build examples/dossier-0-7-brainstorm.dossier.json --out examples
 go run ./cmd/dossier validate FILE.dossier.json --json
+go run ./cmd/dossier init brainstorm --title "My brainstorm"   # a starter model
+go run ./cmd/dossier mcp                                      # MCP over stdio until the client closes
 go run ./cmd/dossier build testdata/legacy/showcase.dossier.json --out /tmp/out   # a 0.6 file, warnings only
 UPDATE_GOLDEN=1 go test ./internal/render/ ./internal/model/                      # after a deliberate render or import change
 ```
@@ -35,5 +39,6 @@ UPDATE_GOLDEN=1 go test ./internal/render/ ./internal/model/                    
 - model types and structure rules: `internal/model/model.go`
 - schema: `internal/schema/dossier.model.schema.json`
 - kinds: `internal/kinds/presets/*.json`
-- doors and envelope: `internal/doors/doors.go`, `internal/doors/catalog.json`
+- doors and envelope: `internal/doors/doors.go`, `internal/doors/catalog.json`; the envelope schema is `internal/schema/dossier.result.schema.json`
+- the skill: generated `skill/SKILL.md` from `internal/doors/skill.go`
 - fixtures: `examples/`, goldens in `testdata/`
