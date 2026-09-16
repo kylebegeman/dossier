@@ -90,6 +90,17 @@ button { font: inherit; color: inherit; }
 .mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.search { position: relative; display: inline-flex; align-items: center; }
+.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
+.search input::placeholder { color: var(--muted); }
+.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hits:empty { display: none; }
+::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
+::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
+.no-hits { padding-block: 36px; color: var(--muted); }
+@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
 .masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
 .masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
 .masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
@@ -307,7 +318,7 @@ select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; b
   .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
   .pick { background: none; color: var(--ink); border: 1px solid var(--line); }
 }
-</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Live demo</p><div class="tools"><button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Dossier, capabilities showcase</h1><p class="lede">Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].</p><div class="stats" aria-label="At a glance"><div class=""><b>1</b> <span>patch set, proposed edits</span></div><div class=""><b>1</b> <span>process closeout blocks</span></div><div class=""><b>1</b> <span>evidence log</span></div><div class=""><b>2</b> <span>trust report</span></div><div class=""><b>1</b> <span>trust report, continued</span></div><div class=""><b>1</b> <span>review thread</span></div><div class=""><b>1</b> <span>integration cycles</span></div><div class=""><b>1</b> <span>integration report</span></div><div class=""><b>2</b> <span>integration report, continued</span></div><div class=""><b>1</b> <span>decision log</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#overview"><span class="n">–</span>Overview</a></li><li><a href="#structure-prose"><span class="n">–</span>Structure &amp; prose</a></li><li><a href="#reference-blocks"><span class="n">–</span>Reference blocks</a></li><li><a href="#media-data"><span class="n">–</span>Media &amp; data</a></li><li><a href="#decisions-trust"><span class="n">–</span>Decisions &amp; trust</a></li><li><a href="#interactive-review-board-try-it"><span class="n">–</span>Interactive review board, try it</a></li><li class="group">Other</li><li data-item="navigation" class=""><a href="#navigation"><span class="n">–</span>Navigation<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="themeable" class=""><a href="#themeable"><span class="n">–</span>Themeable<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#process-board-implementation-loop"><span class="n">–</span>Process board, implementation loop</a></li><li class="group">Other</li><li data-item="extract-work-item" class=""><a href="#extract-work-item"><span class="n">–</span>Extract a work item<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#patch-set-proposed-edits"><span class="n">–</span>Patch set, proposed edits</a></li><li><a href="#code-editor-editable-snippet"><span class="n">–</span>Code editor, editable snippet</a></li><li><a href="#diff-view-file-first-review"><span class="n">–</span>Diff view, file-first review</a></li><li><a href="#process-closeout-blocks"><span class="n">–</span>Process closeout blocks</a></li><li><a href="#evidence-log"><span class="n">–</span>Evidence log</a></li><li><a href="#trust-report"><span class="n">–</span>Trust report</a></li><li><a href="#trust-report-continued"><span class="n">–</span>Trust report, continued</a></li><li><a href="#review-thread"><span class="n">–</span>Review thread</a></li><li><a href="#integration-cycles"><span class="n">–</span>Integration cycles</a></li><li><a href="#integration-report"><span class="n">–</span>Integration report</a></li><li><a href="#integration-report-continued"><span class="n">–</span>Integration report, continued</a></li><li><a href="#decision-log"><span class="n">–</span>Decision log</a></li><li><a href="#decision-log-continued"><span class="n">–</span>Decision log, continued</a></li><li><a href="#glossary"><span class="n">–</span>Glossary</a></li><li><a href="#notes"><span class="n">–</span>Notes</a></li><li><a href="#citations"><span class="n">–</span>Citations</a></li></ol></nav><main class="main" id="main"><section class="section" id="overview"><h2>Overview</h2><div class="part prose"><p><strong>One JSON file becomes this</strong></p></div><div class="part spec"><div><b>Highlights</b><span>43 block types · Self-contained · Agent-readable · Light + dark</span></div><div><b>Source</b><span>one .dossier.json</span></div><div><b>Output</b><span>one .html</span></div><div><b>Runtime deps</b><span>0</span></div></div><div class="part spec"><div><b>Owner</b><span>Kyle</span></div><div><b>Tags</b><span>demo, blocks</span></div></div><div class="part callout"><b>Use the full-page toolbar.</b><div><p>In the full HTML artifact, <strong>Edit</strong> changes text in place, the color swatch restyles live in the <strong>Theme Studio</strong>, and <strong>Export</strong> gives you Markdown, JSON, or the agent digest. From the CLI, <code>dossier export</code> also writes <strong>Word</strong> (charts and diagrams embedded as images) or <strong>PDF</strong>.</p></div></div><div class="part spec"><div><b>Block types</b><span>43 (+1 citation block)</span></div><div><b>Runtime deps</b><span>0 (view-time network free)</span></div><div><b>Renderers (Node + React)</b><span>2 (same model)</span></div><div><b>Self-contained</b><span>100% (HTML + source)</span></div></div><div class="part spec"><div><b>For humans</b><span>A navigable, searchable, themeable page, not a wall of Markdown.</span></div><div><b>For agents</b><span>The full model is embedded as <code>#dossier-model</code>; read one block, no scraping.</span></div><div><b>For your wiki</b><span>One portable file, link it, email it, or <code>&lt;iframe&gt;</code> it anywhere.</span></div></div></section><section class="section" id="structure-prose"><h2>Structure &amp; prose</h2><div class="part prose"><p>Sections nest other blocks; text fields take inline markdown.</p></div><div class="part prose"><p>This is a <strong>prose</strong> block with <code>inline code</code>, a <a href="https://github.com/kylebegeman/dossier">link</a>, and a footnote.[^island]</p>
+</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Live demo</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Dossier, capabilities showcase</h1><p class="lede">Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].</p><div class="stats" aria-label="At a glance"><div class=""><b>1</b> <span>patch set, proposed edits</span></div><div class=""><b>1</b> <span>process closeout blocks</span></div><div class=""><b>1</b> <span>evidence log</span></div><div class=""><b>2</b> <span>trust report</span></div><div class=""><b>1</b> <span>trust report, continued</span></div><div class=""><b>1</b> <span>review thread</span></div><div class=""><b>1</b> <span>integration cycles</span></div><div class=""><b>1</b> <span>integration report</span></div><div class=""><b>2</b> <span>integration report, continued</span></div><div class=""><b>1</b> <span>decision log</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#overview"><span class="n">–</span>Overview</a></li><li><a href="#structure-prose"><span class="n">–</span>Structure &amp; prose</a></li><li><a href="#reference-blocks"><span class="n">–</span>Reference blocks</a></li><li><a href="#media-data"><span class="n">–</span>Media &amp; data</a></li><li><a href="#decisions-trust"><span class="n">–</span>Decisions &amp; trust</a></li><li><a href="#interactive-review-board-try-it"><span class="n">–</span>Interactive review board, try it</a></li><li class="group">Other</li><li data-item="navigation" class=""><a href="#navigation"><span class="n">–</span>Navigation<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="themeable" class=""><a href="#themeable"><span class="n">–</span>Themeable<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#process-board-implementation-loop"><span class="n">–</span>Process board, implementation loop</a></li><li class="group">Other</li><li data-item="extract-work-item" class=""><a href="#extract-work-item"><span class="n">–</span>Extract a work item<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#patch-set-proposed-edits"><span class="n">–</span>Patch set, proposed edits</a></li><li><a href="#code-editor-editable-snippet"><span class="n">–</span>Code editor, editable snippet</a></li><li><a href="#diff-view-file-first-review"><span class="n">–</span>Diff view, file-first review</a></li><li><a href="#process-closeout-blocks"><span class="n">–</span>Process closeout blocks</a></li><li><a href="#evidence-log"><span class="n">–</span>Evidence log</a></li><li><a href="#trust-report"><span class="n">–</span>Trust report</a></li><li><a href="#trust-report-continued"><span class="n">–</span>Trust report, continued</a></li><li><a href="#review-thread"><span class="n">–</span>Review thread</a></li><li><a href="#integration-cycles"><span class="n">–</span>Integration cycles</a></li><li><a href="#integration-report"><span class="n">–</span>Integration report</a></li><li><a href="#integration-report-continued"><span class="n">–</span>Integration report, continued</a></li><li><a href="#decision-log"><span class="n">–</span>Decision log</a></li><li><a href="#decision-log-continued"><span class="n">–</span>Decision log, continued</a></li><li><a href="#glossary"><span class="n">–</span>Glossary</a></li><li><a href="#notes"><span class="n">–</span>Notes</a></li><li><a href="#citations"><span class="n">–</span>Citations</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="overview"><h2>Overview</h2><div class="part prose"><p><strong>One JSON file becomes this</strong></p></div><div class="part spec"><div><b>Highlights</b><span>43 block types · Self-contained · Agent-readable · Light + dark</span></div><div><b>Source</b><span>one .dossier.json</span></div><div><b>Output</b><span>one .html</span></div><div><b>Runtime deps</b><span>0</span></div></div><div class="part spec"><div><b>Owner</b><span>Kyle</span></div><div><b>Tags</b><span>demo, blocks</span></div></div><div class="part callout"><b>Use the full-page toolbar.</b><div><p>In the full HTML artifact, <strong>Edit</strong> changes text in place, the color swatch restyles live in the <strong>Theme Studio</strong>, and <strong>Export</strong> gives you Markdown, JSON, or the agent digest. From the CLI, <code>dossier export</code> also writes <strong>Word</strong> (charts and diagrams embedded as images) or <strong>PDF</strong>.</p></div></div><div class="part spec"><div><b>Block types</b><span>43 (+1 citation block)</span></div><div><b>Runtime deps</b><span>0 (view-time network free)</span></div><div><b>Renderers (Node + React)</b><span>2 (same model)</span></div><div><b>Self-contained</b><span>100% (HTML + source)</span></div></div><div class="part spec"><div><b>For humans</b><span>A navigable, searchable, themeable page, not a wall of Markdown.</span></div><div><b>For agents</b><span>The full model is embedded as <code>#dossier-model</code>; read one block, no scraping.</span></div><div><b>For your wiki</b><span>One portable file, link it, email it, or <code>&lt;iframe&gt;</code> it anywhere.</span></div></div></section><section class="section" id="structure-prose"><h2>Structure &amp; prose</h2><div class="part prose"><p>Sections nest other blocks; text fields take inline markdown.</p></div><div class="part prose"><p>This is a <strong>prose</strong> block with <code>inline code</code>, a <a href="https://github.com/kylebegeman/dossier">link</a>, and a footnote.[^island]</p>
 <ul>
 <li>Bullet lists render as real lists.</li>
 <li>Inline markdown still works inside list items.</li>
@@ -402,147 +413,144 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
 </ul></dd></div></dl></details></div></section><section class="section" id="decision-log"><h2>Decision log</h2><div class="part rows"><details class="row" id="host-runtime"><summary><div><b>Keep execution in host tools</b> <p>Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Owner</strong> Kyle + Codex</p></dd></div></dl></details></div></section><section class="section" id="decision-log-continued"><h2>Decision log, continued</h2><div class="part prose"><h3>Process receipt</h3></div><div class="part spec"><div><b>Outcome</b><span>functionality closeout ready for public manual QA</span></div><div><b>Owner</b><span>Codex</span></div><div><b>Date</b><span>2026-06-29</span></div><div><b>Changed files</b><span><code>src/generate.mjs</code>, <code>src/runtime/runtime.mjs</code>, <code>schema/packets/trust.schema.json</code>, <code>mcp/server.mjs</code></span></div><div><b>Commands</b><span><code>npm test</code></span></div><div><b>Follow-ups</b><span>Run the public manual QA guide before broad announcement.</span></div></div></section><section class="section" id="glossary"><h2>Glossary</h2><div class="part spec"><div><b>island</b><span>The embedded <code>#dossier-model</code> JSON that is the source of truth for the page.</span></div></div></section><section class="section" id="notes"><h2>Notes</h2><div class="part prose"><ol>
 <li>Reference a note inline with a bracketed caret id; it links here and back.</li>
 </ol></div></section><section class="section" id="citations"><h2>Citations</h2><div class="part table-wrap"><table><thead><tr><th>Citation</th><th>Authors</th><th>Source</th><th>Year</th><th>Note</th></tr></thead> <tbody><tr><td><a href="https://github.com/kylebegeman/dossier">Dossier README</a></td><td>Kyle Begeman</td><td>GitHub</td><td>2026</td><td>Canonical feature and workflow overview for the Dossier project.</td></tr></tbody></table></div></section></main><footer class="foot"><span>Dossier, capabilities showcase</span> <span>Generated with Dossier · 2026-06-29</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brief","meta":{"title":"Dossier, capabilities showcase","slug":"showcase","kicker":"Live demo","lede":"Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].","updated":"2026-06-29","status":"durable"},"sections":[{"id":"overview","title":"Overview","parts":[{"type":"prose","markdown":"**One JSON file becomes this**"},{"type":"spec","spec":[{"label":"Highlights","text":"43 block types · Self-contained · Agent-readable · Light + dark"},{"label":"Source","text":"one .dossier.json"},{"label":"Output","text":"one .html"},{"label":"Runtime deps","text":"0"}]},{"type":"spec","spec":[{"label":"Owner","text":"Kyle"},{"label":"Tags","text":"demo, blocks"}]},{"type":"callout","title":"Use the full-page toolbar.","tone":"note","markdown":"In the full HTML artifact, **Edit** changes text in place, the color swatch restyles live in the **Theme Studio**, and **Export** gives you Markdown, JSON, or the agent digest. From the CLI, `dossier export` also writes **Word** (charts and diagrams embedded as images) or **PDF**."},{"type":"spec","spec":[{"label":"Block types","text":"43 (+1 citation block)"},{"label":"Runtime deps","text":"0 (view-time network free)"},{"label":"Renderers (Node + React)","text":"2 (same model)"},{"label":"Self-contained","text":"100% (HTML + source)"}]},{"type":"spec","spec":[{"label":"For humans","text":"A navigable, searchable, themeable page, not a wall of Markdown."},{"label":"For agents","text":"The full model is embedded as `#dossier-model`; read one block, no scraping."},{"label":"For your wiki","text":"One portable file, link it, email it, or `\u003ciframe\u003e` it anywhere."}]}]},{"id":"structure-prose","title":"Structure \u0026 prose","parts":[{"type":"prose","markdown":"Sections nest other blocks; text fields take inline markdown."},{"type":"prose","markdown":"This is a **prose** block with `inline code`, a [link](https://github.com/kylebegeman/dossier), and a footnote.[^island]\n\n- Bullet lists render as real lists.\n- Inline markdown still works inside list items.\n\n1. Numbered lists work too.\n2. Paragraph rhythm stays intact.\n\nA second paragraph to show vertical rhythm."},{"type":"prose","markdown":"### How it's built"},{"type":"prose","markdown":"1. **Author** An agent writes a `*.dossier.json`.\n2. **Validate** `dossier build` validates and lints.\n3. **Render** JSON becomes HTML + the data island + Markdown.\n4. **Use** Read, decide, export, embed."},{"type":"prose","markdown":"### Roadmap"},{"type":"table","columns":["Phase","Status","Notes"],"rows":[["0.1","done","Generator, catalog, features."],["0.2","done","MCP, plugins, new blocks."],["0.5","done","Process workflows, publishing, embed output, and live editor hooks."],["0.6","done","Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution."],["0.7","planned","Leaner reader shell, one export contract, fewer block families, and a new default theme."]]},{"type":"callout","title":"Composable.","tone":"note","markdown":"Sections, two-col, and tabs nest other blocks."},{"type":"callout","title":"Self-contained.","tone":"risk","markdown":"No external fonts, scripts, or images. Works offline."}]},{"id":"reference-blocks","title":"Reference blocks","parts":[{"type":"prose","markdown":"### Code"},{"type":"code","title":"render.ts","lang":"ts","code":"import { renderDossier } from \"@kylebegeman/dossier-react\";\nconst { html, md } = await renderDossier(model); // one self-contained file"},{"type":"prose","markdown":"### Shell"},{"type":"code","lang":"bash","code":"dossier init my-doc\ndossier build my-doc.dossier.json \u0026\u0026 open my-doc.html"},{"type":"diagram","title":"Pipeline","source":"digraph { rankdir=LR; bgcolor=\"transparent\"; node [shape=box style=rounded fontname=\"Inter\" fontsize=12 color=\"#c81e4a\" fontcolor=\"#1a1822\"]; edge [color=\"#8b8698\"]; \"doc.json\" -\u003e \"build\" -\u003e \"doc.html\"; \"build\" -\u003e \"doc.md\"; }","format":"dot"},{"type":"diagram","title":"The loop (Mermaid)","source":"flowchart LR\n  A([Ask your AI]) --\u003e B[Dossier JSON]\n  B --\u003e C{Render}\n  C --\u003e D[Self-contained HTML]\n  C --\u003e E[Word / PDF]\n  D --\u003e F([You triage]) --\u003e G([Agent implements])","format":"mermaid"},{"type":"prose","markdown":"### Exports"},{"type":"table","columns":["Format","Use"],"rows":[["HTML","The page humans open"],["Markdown","Plain-text copy"],["JSON / digest","What agents read"]]},{"type":"prose","markdown":"### References"},{"type":"table","columns":["Source","Signal","Use"],"rows":[["[Repository](https://github.com/kylebegeman/dossier)","Source + docs","Clone, star, contribute"]]},{"type":"prose","markdown":"### FAQ"},{"type":"prose","markdown":"**Does it replace my docs site?**\n\nNo, it's a companion: linkable, embeddable, exportable artifacts."}]},{"id":"media-data","title":"Media \u0026 data","parts":[{"type":"chart","title":"Adoption (bar)","variant":"bar","data":[{"label":"Q1","value":12},{"label":"Q2","value":19},{"label":"Q3","value":30},{"label":"Q4","value":42}]},{"type":"chart","title":"Trend (area)","variant":"area","data":[{"label":"Jan","value":4},{"label":"Feb","value":9},{"label":"Mar","value":7},{"label":"Apr","value":15}]},{"type":"code","lang":"latex","code":"E = mc^2 \\quad\\text{and}\\quad \\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}"},{"type":"figure","src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='90'%3E%3Crect width='320' height='90' rx='10' fill='%23c81e4a'/%3E%3Ctext x='160' y='54' font-family='Inter,sans-serif' font-size='22' fill='white' text-anchor='middle'%3EFigure block%3C/text%3E%3C/svg%3E","caption":"Images are inlined as data URIs at build time."}]},{"id":"decisions-trust","title":"Decisions \u0026 trust","parts":[{"type":"prose","markdown":"### Where it lives"},{"type":"table","columns":["Option","Cross-project","Public later"],"rows":[["Standalone repo (recommended)","Yes","One-line flip"],["Inside a monorepo","No","Hard"]]},{"type":"prose","markdown":"### Risks"},{"type":"table","columns":["Risk","Likelihood","Impact","Mitigation"],"rows":[["Scope creep","medium","medium","Freeze the schema, then build."]]},{"type":"prose","markdown":"### Try it"},{"type":"table","columns":["Item","Owner","Status","Note"],"rows":[["Install: npm i -g github:kylebegeman/dossier","","todo",""],["Run: dossier init demo \u0026\u0026 dossier build demo.dossier.json","","todo",""]]},{"type":"prose","markdown":"### Assumptions and open questions"},{"type":"table","columns":["Statement","Kind","Status"],"rows":[["One file beats a folder of assets for sharing.","assumption","verified"]]},{"type":"prose","markdown":"### Provenance"},{"type":"spec","spec":[{"label":"Generated by","text":"Dossier"},{"label":"Model","text":"n/a"},{"label":"Date","text":"2026-06-26"},{"label":"Confidence","text":"high"},{"label":"Tools","text":"shiki, graphviz, katex"},{"label":"Notes","text":"Rendered entirely at build time; nothing loads at view time."}]}]},{"id":"interactive-review-board-try-it","title":"Interactive review board, try it","board":{"layout":"articles","items":[{"id":"navigation","title":"Navigation","summary":"Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Reader\n\n**Impact** High"},{"label":"Notes","markdown":"Expand a row, tick the checkbox, leave a note, then **Export JSON**, that decisions packet is what an agent reads back."},{"label":"Details","markdown":"**Shortcut** Cmd/Ctrl-K"}]},{"id":"themeable","title":"Themeable","summary":"Light + dark, per-project token overrides, fully responsive to mobile.","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Design\n\n**Impact** High"},{"label":"Notes","markdown":"The whole design is a small token system; one accent, near-monochrome neutrals."}]}]}},{"id":"process-board-implementation-loop","title":"Process board, implementation loop","board":{"layout":"articles","items":[{"id":"extract-work-item","title":"Extract a work item","summary":"Use verdicts and notes to steer actual implementation work.","effort":"S","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Category** Implementation\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"},{"label":"Notes","markdown":"Pick a verdict, leave notes, then export process JSON. An agent reads that packet with `dossier_read_process` and acts on the accepted work.\n\n```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n@@ -1 +1 @@\n-// plan-only surface\n+// process-aware surface\n```"},{"label":"Details","markdown":"**Packet** `dossier.process/v1`\n\n**Verdicts** approve, revise, skip, defer, split, retry, block"},{"label":"Files","markdown":"- `src/generate.mjs`\n- `src/runtime/runtime.mjs`"},{"label":"Verification","markdown":"- npm test"}]}]}},{"id":"patch-set-proposed-edits","title":"Patch set, proposed edits","parts":[{"type":"prose","markdown":"Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification."}],"board":{"layout":"rows","items":[{"id":"patch-process-aware-surface","title":"Patch process-aware surface","summary":"Move the artifact from a plan-only surface to a process-aware one.","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Operation** modify\n\n**Risk** low"},{"label":"Files","markdown":"- `src/generate.mjs`"},{"label":"Verification","markdown":"- npm test"},{"label":"Work items","markdown":"- `extract-work-item`"},{"label":"Diff","markdown":"```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n--- a/src/generate.mjs\n+++ b/src/generate.mjs\n@@ -1,2 +1,2 @@\n-// plan-only surface\n+// process-aware surface\n```"}]}]}},{"id":"code-editor-editable-snippet","title":"Code editor, editable snippet","parts":[{"type":"callout","title":"Editor","markdown":"Small edits can round-trip as `dossier.edits/v1` without turning the artifact into a full IDE.\n\nTarget: `src/runtime/runtime.mjs`\n\nWork items: extract-work-item"},{"type":"code","title":"runtime.mjs","lang":"js","code":"function exportEdits(state) {\n  return { schema: \"dossier.edits/v1\", edits: state.editors || {} };\n}"}]},{"id":"diff-view-file-first-review","title":"Diff view, file-first review","parts":[{"type":"prose","markdown":"A standalone unified diff renders with file summaries, hunks, additions, and deletions."},{"type":"code","lang":"diff","code":"diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs\n--- a/src/runtime/runtime.mjs\n+++ b/src/runtime/runtime.mjs\n@@ -1,3 +1,4 @@\n const state = loadState();\n+state.process = state.process || {};\n \n exportProcess(state);"}]},{"id":"process-closeout-blocks","title":"Process closeout blocks","parts":[{"type":"prose","markdown":"The same artifact now covers implementation, review, integration, release, and incident loops."},{"type":"prose","markdown":"### Verification run"}],"board":{"layout":"rows","items":[{"id":"test-suite","title":"Test suite","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Command** `npm test`\n\n**Expected** All tests pass.\n\n**Actual** 17 passing."}]}]}},{"id":"evidence-log","title":"Evidence log","board":{"layout":"rows","items":[{"id":"build-log","title":"Build log","facets":[{"label":"Status","markdown":"**Kind** command\n\n**Trust** high\n\n**Source** `local`"},{"label":"Notes","markdown":"`npm test` completed successfully."}]}]}},{"id":"trust-report","title":"Trust report","parts":[{"type":"prose","markdown":"A provenance layer ties claims to source ids and verification evidence for agent readback."},{"type":"prose","markdown":"### Sources"},{"type":"table","columns":["Source","Kind","Trust","Summary"],"rows":[["npm test","command","high","Local test command recorded in the verification run."],["[Public manual QA guide](../docs/product/public-manual-qa.md)","doc","medium","Manual browser, live serve, MCP, export, and release gate checklist."]]}],"board":{"layout":"rows","items":[{"id":"tests-pass","title":"Automated tests pass for the process block family.","facets":[{"label":"Status","markdown":"**Status** verified\n\n**Confidence** high"},{"label":"Notes","markdown":"Agents can read this with `dossier_read_trust`."},{"label":"Evidence","markdown":"- test-suite"},{"label":"Sources","markdown":"- npm-test"}]},{"id":"manual-qa-ready","title":"The feature set is ready for public manual QA.","facets":[{"label":"Status","markdown":"**Status** partial\n\n**Confidence** medium"},{"label":"Notes","markdown":"Manual QA still needs a human browser pass before broad announcement."},{"label":"Evidence","markdown":"- build-log"},{"label":"Sources","markdown":"- manual-qa"}]}]}},{"id":"trust-report-continued","title":"Trust report, continued","parts":[{"type":"prose","markdown":"### Apply gate"},{"type":"callout","title":"Apply gate","markdown":"Approve, revise, skip, defer, split, retry, or block this process packet."},{"type":"prose","markdown":"### Review findings"}],"board":{"layout":"rows","items":[{"id":"missing-evidence","title":"Missing evidence link","facets":[{"label":"Status","markdown":"**Severity** medium"},{"label":"Notes","markdown":"Attach the verification run to the work item before closeout."},{"label":"Recommendation","markdown":"Link the finding to a `verification-run` id."},{"label":"Files","markdown":"- `src/starters/review.dossier.json`"}]}]}},{"id":"review-thread","title":"Review thread","board":{"layout":"rows","items":[{"id":"thread-agent-access","title":"Agent access","facets":[{"label":"Notes","markdown":"**Kyle** Make the packet readable without DOM scraping.\n\n**Agent** Use MCP readback and versioned export packets."}]}]}},{"id":"integration-cycles","title":"Integration cycles","board":{"layout":"rows","items":[{"id":"producer-consumer","title":"Producer to consumer","summary":"Consumer project accepted the packet shape.","facets":[{"label":"Status","markdown":"**Status** done"}]}]}},{"id":"integration-report","title":"Integration report","parts":[{"type":"spec","spec":[{"label":"Producer","text":"dossier"},{"label":"Consumer","text":"lumen"},{"label":"Status","text":"accepted"},{"label":"Version","text":"0.5.5"},{"label":"Next step","text":"Dogfood against a live dependency change."}]}],"board":{"layout":"rows","items":[{"id":"process-packets","title":"Process packets","summary":"Verdicts, releases, edits, and process state all export as structured packets."}]}},{"id":"integration-report-continued","title":"Integration report, continued","parts":[{"type":"prose","markdown":"### Upstream response"},{"type":"spec","spec":[{"label":"Upstream","text":"CodeMirror host adapter"},{"label":"Status","text":"accepted"},{"label":"Request","text":"Enhance \\`data-code-editor\\` hooks in the local serve runtime."},{"label":"Response","text":"\\`dossier serve\\` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact."},{"label":"Next step","text":"Keep Monaco reserved for hosted Studio or Lumen integrations."}]},{"type":"prose","markdown":"### Release checklist"}],"board":{"layout":"rows","items":[{"id":"tests","title":"Tests pass","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- npm test"}]},{"id":"docs","title":"Docs regenerated","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- README and public manual QA guide refreshed."}]}]}},{"id":"decision-log","title":"Decision log","board":{"layout":"rows","items":[{"id":"host-runtime","title":"Keep execution in host tools","summary":"Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.","facets":[{"label":"Status","markdown":"**Owner** Kyle + Codex"}]}]}},{"id":"decision-log-continued","title":"Decision log, continued","parts":[{"type":"prose","markdown":"### Process receipt"},{"type":"spec","spec":[{"label":"Outcome","text":"functionality closeout ready for public manual QA"},{"label":"Owner","text":"Codex"},{"label":"Date","text":"2026-06-29"},{"label":"Changed files","text":"`src/generate.mjs`, `src/runtime/runtime.mjs`, `schema/packets/trust.schema.json`, `mcp/server.mjs`"},{"label":"Commands","text":"`npm test`"},{"label":"Follow-ups","text":"Run the public manual QA guide before broad announcement."}]}]},{"id":"glossary","title":"Glossary","parts":[{"type":"spec","spec":[{"label":"island","text":"The embedded `#dossier-model` JSON that is the source of truth for the page."}]}]},{"id":"notes","title":"Notes","parts":[{"type":"prose","markdown":"1. Reference a note inline with a bracketed caret id; it links here and back."}]},{"id":"citations","title":"Citations","parts":[{"type":"table","columns":["Citation","Authors","Source","Year","Note"],"rows":[["[Dossier README](https://github.com/kylebegeman/dossier)","Kyle Begeman","GitHub","2026","Canonical feature and workflow overview for the Dossier project."]]}]}]}</script><script>
-(function () {
+(() => {
   "use strict";
-  /* reply writes the one line a reader sends back. It must match the Go reply
-     line exactly: testdata/replies.json holds both to the same cases. */
-  function reply(c, s) {
-    var num = {}, can = {}, total = 0, open = 0;
-    c.items.forEach(function (it) { num[it.id] = it.n; can[it.id] = it.eligible; total++; if (it.eligible) open++; });
-    var nums = function (ids) { var seen = {}; return ids.map(function (id) { return num[id]; }).filter(function (n) { return n && !seen[n] && (seen[n] = 1); }).sort(function (a, b) { return a - b; }); };
-    var groups = [], v = s.verdicts || {};
+  /* reply writes the line a reader sends back, exactly as Go does: testdata/replies.json holds both to the same cases */
+  const reply = (c, s) => {
+    const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
+    let open = 0;
+    c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
+    const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
     if (c.mode === "pick") {
-      var p = nums(s.picked || []);
-      if (p.length) groups.push(p.length === total ? "all" : p.join(", "));
+      const p = nums(s.picked || []);
+      if (p.length) groups.push(p.length === c.items.length ? "all" : p.join(", "));
     } else if (c.mode === "verdict") {
-      c.verdicts.forEach(function (id) {
-        var n = nums(Object.keys(v).filter(function (k) { return v[k] === id && can[k]; }));
+      c.verdicts.forEach((id) => {
+        const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k]));
         if (n.length) groups.push(id + " " + (n.length === open ? "all" : n.join(", ")));
       });
     }
-    var body = groups.join("; "), line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
-    var notes = s.notes || {}, noted = Object.keys(notes).filter(function (id) { return num[id] && String(notes[id]).trim(); }).sort(function (a, b) { return num[a] - num[b]; });
-    if (noted.length) line += " Notes: " + noted.map(function (id) { return num[id] + ": " + notes[id].trim().split(/\s+/).join(" "); }).join("; ") + ".";
+    const body = groups.join("; "), noted = Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]);
+    let line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
+    if (noted.length) line += " Notes: " + noted.map((id) => num[id] + ": " + notes[id].trim().split(/\s+/).join(" ")).join("; ") + ".";
     return line;
-  }
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply: reply }; return; }
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply }; return; }
 
-  var $ = function (s, r) { return (r || document).querySelector(s); };
-  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var root = document.documentElement;
-  var model = {};
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+  const at = (el, name) => el.getAttribute(name);
+  const idOf = (el) => at(el.closest("[data-item]"), "data-item");
+  const on = (type, fn, target) => (target || document).addEventListener(type, fn);
+  const say = (sel, text) => $$(sel).forEach((el) => { el.textContent = text; });
+  const keys = Object.keys;
+  let model = {};
   try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
-  var slug = (model.meta && model.meta.slug) || "dossier";
-  function load(k) { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } }
-  function keep(k, v) { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} }
+  const slug = (model.meta && model.meta.slug) || "dossier";
+  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
+  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
 
   /* theme: auto, light, dark */
-  var themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
-  function applyTheme(m) {
-    if (modes.indexOf(m) < 0) m = "auto";
-    if (m === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", m);
+  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const applyTheme = (m) => {
+    if (!modes.includes(m)) m = "auto";
+    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
     if (themeBtn) {
       themeBtn.setAttribute("data-mode", m);
       themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
       $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
-      $$("svg", themeBtn).forEach(function (s) { s.hidden = !s.classList.contains("th-" + m); });
+      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
     }
     keep("theme", m);
-  }
-  applyTheme(load("theme") || "auto");
-  if (themeBtn) themeBtn.addEventListener("click", function () { applyTheme(modes[(modes.indexOf(themeBtn.getAttribute("data-mode")) + 1) % 3]); });
+  };
+  applyTheme(load("theme"));
+  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
 
   /* decisions: the embedded model is the baseline, this device may go further */
-  var pickBlock = $("#pick"), mode = pickBlock ? pickBlock.getAttribute("data-mode") : "none";
-  var defs = [];
-  try { defs = JSON.parse(pickBlock.getAttribute("data-verdicts")) || []; } catch (e) {}
-  var tone = {}, label = {};
-  defs.forEach(function (d) { tone[d.id] = d.tone; label[d.id] = d.label; });
-  var items = $$("[data-item][data-num]"), num = {}, can = {};
-  var ctx = { mode: mode, verdicts: defs.map(function (d) { return d.id; }), items: [] };
-  items.forEach(function (el) {
-    var id = el.getAttribute("data-item");
-    num[id] = +el.getAttribute("data-num");
+  const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
+  let defs = [];
+  try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
+  defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
+  const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
+  const ctx = { mode, verdicts: defs.map((d) => d.id), items: [] };
+  items.forEach((el) => {
+    const id = at(el, "data-item");
+    num[id] = +at(el, "data-num");
     can[id] = el.hasAttribute("data-decides");
-    ctx.items.push({ id: id, n: num[id], eligible: can[id] });
+    ctx.items.push({ id, n: num[id], eligible: can[id] });
   });
-  var choices = $$("input[data-choice]");
-  function keys(o) { return Object.keys(o); }
-  function clean(s) {
-    var out = { path: "", picked: [], verdicts: {}, notes: {} };
+  const clean = (s) => {
+    const out = { path: "", picked: [], verdicts: {}, notes: {} };
     if (!s || typeof s !== "object") return out;
-    if (choices.some(function (r) { return r.value === s.path; })) out.path = s.path;
-    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter(function (id, i, a) { return num[id] && a.indexOf(id) === i; });
-    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach(function (id) { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
-    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach(function (id) { var v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    if (choices.some((r) => r.value === s.path)) out.path = s.path;
+    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter((id, i, a) => num[id] && a.indexOf(id) === i);
+    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach((id) => { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
+    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach((id) => { const v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
     return out;
-  }
-  var state = clean(model.decisions);
-  try { var saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
-  var framed = true;
+  };
+  let state = clean(model.decisions), framed = true;
+  try { const saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
   try { framed = window.parent !== window; } catch (e) {}
-  function tell(msg) { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } }
-  function byNumber(ids) { return ids.slice().sort(function (a, b) { return num[a] - num[b]; }); }
-  function detail() { return { path: state.path, picked: byNumber(state.picked), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) }; }
-  function announce() {
-    var d = detail();
+  const tell = (msg) => { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } };
+  const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
+  const announce = () => {
+    const d = detail();
     try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
     tell({ type: "dossier:decisions", decisions: d });
-  }
-  function save() { keep("decisions", JSON.stringify(state)); announce(); render(); }
-  function decided(id) { return mode === "pick" ? state.picked.indexOf(id) >= 0 : !!state.verdicts[id]; }
-  function setPick(id, on) { if (on === decided(id)) return; state.picked = on ? state.picked.concat(id) : state.picked.filter(function (x) { return x !== id; }); save(); }
-  function setVerdict(id, v) { if (!can[id] || (state.verdicts[id] || "") === v) return; if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); }
-  function setPath(p) { if (state.path !== p) { state.path = p; save(); } }
-  function setNote(id, text) { var v = String(text || "").trim(); if ((state.notes[id] || "") === v) return; if (v) state.notes[id] = v; else delete state.notes[id]; save(); }
-  function toneOf(el, v) { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); }
-  function render() {
-    items.forEach(function (el) {
-      var id = el.getAttribute("data-item"), v = state.verdicts[id] || "", on = decided(id);
-      el.classList.toggle("picked", mode === "pick" && on);
+  };
+  const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
+  const decided = (id) => (mode === "pick" ? state.picked.includes(id) : !!state.verdicts[id]);
+  const setPick = (id, yes) => { if (yes !== decided(id)) { state.picked = yes ? state.picked.concat(id) : state.picked.filter((x) => x !== id); save(); } };
+  const setVerdict = (id, v) => { if (can[id] && (state.verdicts[id] || "") !== v) { if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); } };
+  const setPath = (p) => { if (state.path !== p) { state.path = p; save(); } };
+  const setNote = (id, text) => { const v = String(text || "").trim(); if ((state.notes[id] || "") !== v) { if (v) state.notes[id] = v; else delete state.notes[id]; save(); } };
+  const toneOf = (el, v) => { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); };
+  const render = () => {
+    items.forEach((el) => {
+      const id = at(el, "data-item"), v = state.verdicts[id] || "", yes = decided(id), picked = mode === "pick" && yes;
+      el.classList.toggle("picked", picked);
       toneOf(el, v);
-      $$("[data-verdict]", el).forEach(function (b, i) {
-        var sel = b.getAttribute("data-verdict") === v;
-        b.setAttribute("aria-checked", String(sel));
+      $$("[data-verdict]", el).forEach((b, i) => {
+        const sel = at(b, "data-verdict") === v;
+        b.setAttribute("aria-checked", sel);
         b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
       });
-      var b = $("[data-pick]", el);
-      if (b) { b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "Picked" : "Pick"; }
-      var tr = $('tr[data-item="' + id + '"]');
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
       if (tr) {
-        tr.classList.toggle("picked", mode === "pick" && on);
+        tr.classList.toggle("picked", picked);
         toneOf(tr, v);
-        var ctl = $("input,select", tr);
-        if (ctl && ctl.type === "checkbox") ctl.checked = on; else if (ctl) ctl.value = v;
+        const ctl = $("input,select", tr);
+        if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
       }
-      var li = $('.toc li[data-item="' + id + '"]');
-      if (li) { li.classList.toggle("picked", mode === "pick" && on); toneOf(li, v); $(".sr", li).textContent = on ? ", " + (label[v] || "picked") : ""; }
-      var note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
       if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
       if (note && state.notes[id]) note.hidden = false;
       if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
     });
-    var chosen = "Open";
-    choices.forEach(function (r) { r.checked = r.value === state.path; if (r.checked) chosen = r.getAttribute("data-label"); });
-    $$("[data-choice-clear]").forEach(function (b) { b.hidden = !state.path; });
-    $$('[data-live="choice"]').forEach(function (el) { el.textContent = chosen; });
-    $$('[data-live="count"]').forEach(function (el) { el.textContent = String(mode === "pick" ? state.picked.length : keys(state.verdicts).length); });
-    var empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
-    $$("[data-reply]").forEach(function (el) { el.textContent = empty ? "Nothing decided yet." : reply(ctx, state); });
-    applyHide();
-  }
-  function decisionsJSON() {
-    var d = detail();
-    return JSON.stringify({ schema: "dossier.decisions/v1", slug: slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: keys(d.verdicts).length ? d.verdicts : undefined, notes: keys(d.notes).length ? d.notes : undefined, reply: d.reply }, null, 2);
-  }
-  var noteTimer;
-  document.addEventListener("click", function (e) {
-    var t = e.target, b = t.closest("[data-verdict]"), id;
-    if (b) { e.preventDefault(); id = b.closest("[data-item]").getAttribute("data-item"); var v = b.getAttribute("data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
-    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); id = b.closest("[data-item]").getAttribute("data-item"); setPick(id, !decided(id)); return; }
+    let chosen = "Open";
+    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
+    say('[data-live="choice"]', chosen);
+    say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
+    const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
+    say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
+    applyView();
+  };
+  const decisionsJSON = () => {
+    const d = detail(), some = (o) => (keys(o).length ? o : undefined);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+  };
+  let noteTimer;
+  on("click", (e) => {
+    const t = e.target;
+    let b = t.closest("[data-verdict]");
+    if (b) { e.preventDefault(); const id = idOf(b), v = at(b, "data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
+    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); setPick(idOf(b), !decided(idOf(b))); return; }
     if ((b = t.closest("[data-note-toggle]"))) {
       e.preventDefault();
-      var d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
+      const d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
       if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden) d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); }
       return;
     }
@@ -551,78 +559,130 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
     else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
     else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
     else if (t.closest("[data-hide]")) setHide(!hide);
-    else if (t.closest("[data-show-all]")) setHide(false);
+    else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
+    else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
   });
-  document.addEventListener("keydown", function (e) {
-    var b = e.target.closest && e.target.closest("[data-verdict]");
+  on("keydown", (e) => {
+    const t = e.target, b = t.closest && t.closest("[data-verdict]");
+    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
     if (!b) return;
-    var group = $$("[data-verdict]", b.parentNode), id = b.closest("[data-item]").getAttribute("data-item"), step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
-    if (step) {
+    const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (dir) {
       e.preventDefault();
-      var next = group[(group.indexOf(b) + step + group.length) % group.length];
-      setVerdict(id, next.getAttribute("data-verdict"));
+      const next = group[(group.indexOf(b) + dir + group.length) % group.length];
+      setVerdict(idOf(b), at(next, "data-verdict"));
       next.focus();
-    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(id, ""); }
+    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(idOf(b), ""); }
   });
-  document.addEventListener("change", function (e) {
-    var t = e.target;
-    if (t.matches("input[data-pick-row]")) setPick(t.getAttribute("data-pick-row"), t.checked);
-    else if (t.matches("select[data-verdict-row]")) setVerdict(t.getAttribute("data-verdict-row"), t.value);
+  on("change", (e) => {
+    const t = e.target;
+    if (t.matches("input[data-pick-row]")) setPick(at(t, "data-pick-row"), t.checked);
+    else if (t.matches("select[data-verdict-row]")) setVerdict(at(t, "data-verdict-row"), t.value);
     else if (t.matches("input[data-choice]")) setPath(t.value);
   });
-  document.addEventListener("input", function (e) { var t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(function () { setNote(t.getAttribute("data-note"), t.value); }, 300); } });
-  document.addEventListener("focusout", function (e) { var t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(t.getAttribute("data-note"), t.value); } });
+  on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
 
   /* collapsing: remembered per item on this device */
-  var details = $$("details.item[id]"), opened = {}, printing = false, beforePrint = null;
-  try { (JSON.parse(load("open") || "[]") || []).forEach(function (id) { opened[id] = true; }); } catch (e) {}
-  details.forEach(function (d) {
+  const details = $$("details.item[id]"), opened = {};
+  let printing = false, beforePrint = null;
+  try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
+  const anyOpen = () => details.some((d) => d.open);
+  const setAllOpen = (open) => details.forEach((d) => { d.open = open; });
+  const renderCollapse = () => { const b = $("[data-collapse-toggle]"); if (b) { b.textContent = anyOpen() ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", anyOpen()); } };
+  details.forEach((d) => {
     if (opened[d.id]) d.open = true;
-    d.addEventListener("toggle", function () {
-      if (!printing) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
+    on("toggle", () => {
+      if (!printing && !auto[d.id]) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
       renderCollapse();
-    });
+    }, d);
   });
-  function anyOpen() { return details.some(function (d) { return d.open; }); }
-  function setAllOpen(open) { details.forEach(function (d) { d.open = open; }); }
-  function renderCollapse() { var b = $("[data-collapse-toggle]"); if (b) { var open = anyOpen(); b.textContent = open ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", String(open)); } }
-  window.addEventListener("beforeprint", function () { printing = true; beforePrint = details.map(function (d) { return d.open; }); setAllOpen(true); });
-  window.addEventListener("afterprint", function () { if (beforePrint) details.forEach(function (d, i) { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(function () { printing = false; }, 0); });
-  function openHash() { var t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; }
+  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
   openHash();
-  window.addEventListener("hashchange", openHash);
+  on("hashchange", openHash, window);
   renderCollapse();
 
-  /* hide decided: keep the list to what still needs a decision */
-  var hide = load("hide") === "1";
-  function applyHide() {
-    details.forEach(function (d) { d.hidden = hide && d.hasAttribute("data-num") && (decided(d.id) || !can[d.id]); });
-    $$("[data-hidden-row]").forEach(function (row) {
-      var n = $$("details.item[hidden]", row.parentNode).length;
-      row.hidden = !n;
-      $("[data-hidden-count]", row).textContent = String(n);
+  /* view: Hide decided and search together decide what shows; printing shows everything */
+  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
+  const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
+  const matches = (u, terms) => terms.every((t) => u.text.includes(t) || (u.n > 0 && +t === u.n));
+  let hide = load("hide") === "1", query = "", auto = {}, hits = [], now = -1;
+  const mark = (name, ranges) => { if (hl) hl.set(name, new Highlight(...ranges)); };
+  const count = (active) => say("[data-hits]", !active ? "" : !hits.length ? "No matches" : now >= 0 ? now + 1 + " of " + hits.length : hits.length + (hits.length === 1 ? " match" : " matches"));
+  const applyView = () => {
+    const terms = printing ? [] : fold(query).split(/\s+/).filter(Boolean);
+    let shown = 0;
+    units.forEach((u) => {
+      const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
+      u.el.hidden = h;
+      if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
+      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
     });
-    var b = $("[data-hide]");
-    if (b) { b.setAttribute("aria-pressed", String(hide)); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
+    sections.forEach((sec) => {
+      const h = terms.length > 0 && !matches(sec, terms) && !$$("details.item:not([hidden]), .rows > :not([hidden])", sec.el).length, a = $('.toc a[href="#' + sec.el.id + '"]');
+      sec.el.hidden = h;
+      if (!h) shown++;
+      if (a) a.parentNode.hidden = h;
+    });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any; });
+    $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
+    const none = $("[data-no-hits]"), b = $("[data-hide]");
+    if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
+    if (b) { b.setAttribute("aria-pressed", hide); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    hits = [];
+    now = -1;
+    const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
+    for (let node; terms.length && (node = walk.nextNode());) {
+      const el = node.parentElement, closed = el.closest("details:not([open])");
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits]") || (closed && !el.closest("summary"))) continue;
+      let f = "";
+      const map = [], x = node.data;
+      for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }
+      terms.forEach((t) => { for (let k = f.indexOf(t); k >= 0; k = f.indexOf(t, k + t.length)) { const r = new Range(); r.setStart(node, map[k]); r.setEnd(node, map[k + t.length - 1] + 1); hits.push(r); } });
+    }
+    hits.sort((a, z) => a.compareBoundaryPoints(Range.START_TO_START, z));
+    mark("dossier-hit", hits);
+    mark("dossier-now", []);
+    count(terms.length);
+  };
+  const step = (dir) => {
+    if (!hits.length) return;
+    now = (now + dir + hits.length) % hits.length;
+    mark("dossier-now", [hits[now]]);
+    hits[now].startContainer.parentElement.scrollIntoView({ block: "center" });
+    count(true);
+  };
+  const search = (q) => { if (box) box.value = q; query = q; applyView(); };
+  const setHide = (yes) => { hide = yes; keep("hide", hide ? "1" : "0"); applyView(); };
+  if (box) {
+    on("input", () => { query = box.value; applyView(); }, box);
+    on("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") { e.preventDefault(); if (box.value) search(""); else box.blur(); }
+    }, box);
   }
-  function setHide(on) { hide = !!on; keep("hide", hide ? "1" : "0"); applyHide(); }
 
   /* copy and toast */
-  var toastTimer;
-  function toast(msg) { var t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 1800); }
-  function copy(text, msg) {
-    var done = function () { toast(msg); };
-    var fallback = function () { var ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); done(); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
-  }
+  let toastTimer;
+  const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
+  const copy = (text, msg) => {
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+  };
 
   /* contents: mark the section in view */
-  var links = {}, active = null;
-  $$(".toc a[href^='#']").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
-  function setActive(id) { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); }
+  const links = {};
+  let active = null;
+  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
   if ("IntersectionObserver" in window) {
-    var io = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); }); }, { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
-    $$(".section[id], .item[id]").forEach(function (t) { io.observe(t); });
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
   }
 
   render();
@@ -630,10 +690,10 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
 
   /* embedded: keep the parent's frame as tall as the page */
   if (framed) {
-    var lastHeight = -1;
-    var postHeight = function () { var h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    let lastHeight = -1;
+    const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
     if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
-    window.addEventListener("load", postHeight);
+    on("load", postHeight, window);
     postHeight();
   }
 })();
