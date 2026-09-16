@@ -78,15 +78,35 @@
   var noteTimer;
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-pick]");
-    if (b) { var id = b.closest("[data-item]").getAttribute("data-item"); toggle(id, !picked(id)); return; }
+    if (b) { e.preventDefault(); var id = b.closest("[data-item]").getAttribute("data-item"); toggle(id, !picked(id)); return; }
     var n = e.target.closest("[data-note-toggle]");
-    if (n) { var wrap = $("[data-note-wrap]", n.closest("[data-item]")); if (wrap) { wrap.hidden = !wrap.hidden; render(); if (!wrap.hidden) $("textarea", wrap).focus(); } return; }
+    if (n) { e.preventDefault(); var d = n.closest("[data-item]"); var wrap = $("[data-note-wrap]", d); if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden && d.tagName === "DETAILS") d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); } return; }
+    var c = e.target.closest("[data-collapse-toggle]");
+    if (c) { setAllOpen(!anyOpen()); return; }
     if (e.target.closest("[data-copy-reply]")) { copy(replyLine(), "Reply copied"); return; }
     if (e.target.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
   });
   document.addEventListener("change", function (e) { var t = e.target; if (t.matches && t.matches("input[data-pick-row]")) toggle(t.getAttribute("data-pick-row"), t.checked); });
   document.addEventListener("input", function (e) { var t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(function () { setNote(t.getAttribute("data-note"), t.value); }, 300); } });
   document.addEventListener("focusout", function (e) { var t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(t.getAttribute("data-note"), t.value); } });
+
+  /* collapsing: remembered per item on this device */
+  var details = $$("details.item[id]");
+  var closed = {};
+  try { (JSON.parse(localStorage.getItem(key + ":closed") || "[]") || []).forEach(function (id) { closed[id] = true; }); } catch (e) {}
+  var printing = false, beforePrint = null;
+  details.forEach(function (d) {
+    if (closed[d.id]) d.open = false;
+    d.addEventListener("toggle", function () { if (!printing) { if (d.open) delete closed[d.id]; else closed[d.id] = true; try { localStorage.setItem(key + ":closed", JSON.stringify(Object.keys(closed))); } catch (e) {} } renderCollapse(); });
+  });
+  function anyOpen() { return details.some(function (d) { return d.open; }); }
+  function setAllOpen(open) { details.forEach(function (d) { d.open = open; }); }
+  function renderCollapse() { var b = $("[data-collapse-toggle]"); if (!b) return; var open = anyOpen(); b.textContent = open ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", String(open)); }
+  window.addEventListener("beforeprint", function () { printing = true; beforePrint = details.map(function (d) { return d.open; }); details.forEach(function (d) { d.open = true; }); });
+  window.addEventListener("afterprint", function () { if (beforePrint) details.forEach(function (d, i) { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(function () { printing = false; }, 0); });
+  if (location.hash) { var target = document.getElementById(location.hash.slice(1)); if (target && target.tagName === "DETAILS") target.open = true; }
+  window.addEventListener("hashchange", function () { var t = document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; });
+  renderCollapse();
 
   /* copy and toast */
   var toastTimer;
