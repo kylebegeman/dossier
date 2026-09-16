@@ -21,6 +21,12 @@ export interface Meta {
   status?: string;
   /** Opt in to web fonts. Omitted means the system stack and zero external requests. */
   fonts?: "google";
+  /** Document-level figures shown first in the masthead strip, such as severity or version. */
+  facts?: Array<{
+    label: string;
+    value: string;
+    tone?: "teal" | "violet" | "risk" | "neutral";
+  }>;
 }
 
 export type Id = string;
@@ -72,8 +78,13 @@ export interface Item {
   title: string;
   summary?: string;
   size?: string;
+  category?: string;
+  severity?: string;
+  status?: string;
   effort?: string;
   impact?: number;
+  owner?: string;
+  required?: boolean;
   dependsOn?: Id[];
   facets?: Array<{
     label: string;

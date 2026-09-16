@@ -1,59 +1,58 @@
 {
   "id": "brainstorm",
   "title": "Brainstorm",
-  "summary": "A set of proposed features for one decision-maker to read once and pick by number.",
-  "items": {
-    "numbered": true,
-    "size": [
-      "minor",
-      "major"
-    ],
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
+  "summary": "Options for one person to read once and pick by number.",
+  "item": {"noun": "idea", "plural": "ideas", "numbered": true},
+  "fields": {
+    "size": {"values": ["minor", "major"], "tones": {"minor": "teal", "major": "violet"}},
+    "effort": {"values": ["S", "M", "L"]},
+    "impact": {"min": 1, "max": 5},
+    "dependsOn": {}
+  },
+  "facets": [
+    {
+      "label": "How it works",
+      "required": true,
+      "hint": "The mechanism, concretely: what exists afterwards that does not exist now."
     },
-    "facets": [
-      "How it works",
-      "Reader",
-      "Agent",
-      "Unlocks"
-    ],
-    "closers": [
-      "Depends on",
-      "Effort",
-      "Risk",
-      "Note"
-    ],
-    "riskFacets": [
-      "Risk",
-      "Note"
-    ],
-    "limits": {
-      "summary": 160,
-      "facet": 420
+    {
+      "label": "Why",
+      "required": true,
+      "hint": "The value, and for whom. This is what the reader weighs when picking."
+    },
+    {"label": "In use", "hint": "What someone sees or does differently once it ships."},
+    {"label": "Unlocks", "hint": "What it makes possible next, by idea number where it helps."},
+    {"label": "Risk", "tone": "risk", "hint": "What could go wrong, and how you would notice."},
+    {"label": "Note", "hint": "Anything the reader must know that fits nowhere else."}
+  ],
+  "sections": [
+    {
+      "id": "thesis",
+      "title": "Thesis",
+      "hint": "The purpose and the constraint, in a paragraph or two."
+    },
+    {
+      "id": "ideas",
+      "title": "Ideas",
+      "board": true,
+      "hint": "Every idea, numbered, with the summary table on."
+    },
+    {
+      "id": "also",
+      "title": "Also considered",
+      "layout": "rows",
+      "optional": true,
+      "hint": "Ideas left out, one line each saying why not."
     }
-  },
-  "summary_table": {
-    "columns": [
-      "number",
-      "title",
-      "size",
-      "effort",
-      "impact",
-      "dependsOn"
-    ],
-    "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions."
-  },
-  "contents": {
-    "groupBy": "size"
-  },
-  "pick": {
+  ],
+  "columns": ["decision", "number", "title", "size", "effort", "impact", "dependsOn"],
+  "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.",
+  "group": "size",
+  "decision": {
+    "mode": "pick",
     "title": "How to pick",
-    "markdown": "Reply with the numbers you want, for example `1, 3, 4, 7`, plus any changes."
-  }
+    "markdown": "Reply with the numbers you want, plus notes on anything to change.",
+    "example": "2, 5, 7. Notes: 5: smaller first."
+  },
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }

@@ -2,7 +2,9 @@ package doors
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"dossier/internal/kinds"
@@ -27,13 +29,11 @@ func (r DescribeResult) human(w io.Writer) {
 	sayln(w, "\nKinds")
 	for _, k := range r.Kinds {
 		say(w, "  %-10s %s\n", k.ID, k.Summary)
-		if len(k.Items.Facets) > 0 {
-			say(w, "             facets: %s", strings.Join(k.Items.Facets, ", "))
-			if len(k.Items.Closers) > 0 {
-				say(w, "; closers: %s", strings.Join(k.Items.Closers, ", "))
-			}
-			say(w, "\n")
+		say(w, "             %s\n", itemLine(k))
+		if fields := fieldList(k); fields != "" {
+			say(w, "             fields: %s\n", fields)
 		}
+		say(w, "             facets: %s\n", facetList(k))
 	}
 }
 
@@ -47,4 +47,79 @@ func describeDoor(_ context.Context, _ Input) Envelope {
 		return errorEnvelope("describe", "kinds", err)
 	}
 	return Envelope{SchemaVersion: SchemaVersion, Command: "describe", Outcome: OutcomeOK, Result: DescribeResult{SchemaVersion: "dossier.describe-result/v1", Version: Version, Commands: c.Commands, Kinds: all}}
+}
+
+// itemLine says what a kind's items are and how the reader decides.
+func itemLine(k kinds.Kind) string {
+	numbered := "unnumbered"
+	if k.Item.Numbered {
+		numbered = "numbered"
+	}
+	decide := "nothing to decide"
+	switch k.Decision.Mode {
+	case kinds.ModePick:
+		decide = "pick by number"
+	case kinds.ModeVerdict:
+		var ids []string
+		for _, v := range k.Decision.Verdicts {
+			ids = append(ids, v.ID)
+		}
+		decide = "verdicts " + strings.Join(ids, ", ")
+		if k.Decision.Default != "" {
+			decide += " (bare numbers mean " + k.Decision.Default + ")"
+		}
+		fields := make([]string, 0, len(k.Decision.When))
+		for field := range k.Decision.When {
+			fields = append(fields, field)
+		}
+		sort.Strings(fields)
+		for _, field := range fields {
+			decide += ", only where " + field + " is " + strings.Join(k.Decision.When[field], " or ")
+		}
+	}
+	if c := k.Decision.Choice; c != nil {
+		var ids []string
+		for _, o := range c.Options {
+			ids = append(ids, o.ID)
+		}
+		decide += "; choice " + strings.Join(ids, " or ")
+	}
+	return k.Item.Plural + ", " + numbered + "; " + decide
+}
+
+// fieldList names a kind's fields with their vocabularies.
+func fieldList(k kinds.Kind) string {
+	var parts []string
+	for _, name := range kinds.FieldNames {
+		if !k.HasField(name) {
+			continue
+		}
+		label := name
+		if name != "impact" && k.Field(name) != nil && k.Field(name).Label != "" {
+			label += " shown as " + k.Field(name).Label
+		}
+		switch {
+		case name == "impact":
+			label += fmt.Sprintf(" (%d-%d)", k.Fields.Impact.Min, k.Fields.Impact.Max)
+		case k.Field(name) != nil && len(k.Field(name).Values) > 0:
+			label += " (" + strings.Join(k.Field(name).Values, ", ") + ")"
+		case k.Field(name) != nil && k.Field(name).Text:
+			label += " (text)"
+		}
+		parts = append(parts, label)
+	}
+	return strings.Join(parts, ", ")
+}
+
+// facetList names a kind's facets in order, marking required ones.
+func facetList(k kinds.Kind) string {
+	var parts []string
+	for _, f := range k.Facets {
+		label := f.Label
+		if f.Required {
+			label += "*"
+		}
+		parts = append(parts, label)
+	}
+	return strings.Join(parts, ", ")
 }

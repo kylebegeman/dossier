@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320" role="img" aria-labelledby="t d">
+  <title id="t">Wenlow Islands ferry routes</title>
+  <desc id="d">Three routes leave Varre on the mainland: to Keddle, to Holm, and to Brisk, the longest and most exposed crossing.</desc>
+  <rect width="760" height="320" rx="14" fill="#f7f5f7"/>
+  <g fill="none" stroke="#e0dae0" stroke-width="1">
+    <path d="M300 40c40 10 80 6 120 -4M320 80c50 12 110 8 160 -6M340 250c60 10 130 6 190 -10M300 290c40 8 90 6 130 -4"/>
+  </g>
+  <path d="M0 0h170c-8 40 18 70 6 110c-14 44 22 80 10 120c-8 30 6 60 -4 90H0z" fill="#ece7ec"/>
+  <path d="M150 0c-6 36 20 70 8 108c-14 46 20 82 8 122c-8 32 6 60 -2 90" fill="none" stroke="#e0dae0" stroke-width="1.5"/>
+  <g fill="#efecf0" stroke="#e0dae0" stroke-width="1.5">
+    <path d="M430 70c22 -14 60 -12 78 6c16 16 10 40 -12 50c-26 12 -64 8 -76 -12c-8 -14 -4 -34 10 -44z"/>
+    <path d="M520 150c30 -18 84 -14 104 12c16 22 4 50 -26 58c-34 10 -78 2 -92 -22c-10 -18 -4 -38 14 -48z"/>
+    <path d="M640 240c20 -12 52 -8 62 10c10 18 -2 36 -24 40c-24 4 -48 -6 -52 -22c-2 -12 4 -22 14 -28z"/>
+  </g>
+  <g fill="none" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 9">
+    <path d="M178 150C260 120 360 96 440 92" stroke="#08776e"/>
+    <path d="M178 158C290 162 420 172 526 180" stroke="#6a46d9"/>
+    <path d="M178 166C320 210 520 250 640 262" stroke="#9a5b00"/>
+  </g>
+  <g fill="#c81e4a"><circle cx="172" cy="158" r="7"/></g>
+  <g fill="#201c22"><circle cx="446" cy="92" r="4.5"/><circle cx="532" cy="180" r="4.5"/><circle cx="646" cy="262" r="4.5"/></g>
+  <g font-family="Figtree, 'Avenir Next', 'Segoe UI', system-ui, sans-serif" fill="#201c22">
+    <text x="40" y="150" font-size="17" font-weight="600">Varre</text>
+    <text x="40" y="170" font-size="12" fill="#6b6270">Mainland port</text>
+    <text x="456" y="64" font-size="15" font-weight="600">Keddle</text>
+    <text x="456" y="82" font-size="11.5" fill="#6b6270">35 min, Petrel</text>
+    <text x="560" y="140" font-size="15" font-weight="600">Holm</text>
+    <text x="560" y="158" font-size="11.5" fill="#6b6270">55 min, Gannet</text>
+    <text x="660" y="228" font-size="15" font-weight="600">Brisk</text>
+    <text x="604" y="298" font-size="11.5" fill="#6b6270">1 h 40, Gannet, exposed</text>
+  </g>
+</svg>

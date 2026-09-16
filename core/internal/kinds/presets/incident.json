@@ -1,27 +1,62 @@
 {
   "id": "incident",
   "title": "Incident",
-  "summary": "Timeline, evidence, decisions, and follow-ups for one incident.",
-  "items": {
-    "numbered": false,
-    "effort": [
-      "S",
-      "M",
-      "L"
-    ],
-    "impact": {
-      "min": 1,
-      "max": 5
+  "summary": "What happened, why, and the follow-ups the team commits to.",
+  "item": {"noun": "follow-up", "plural": "follow-ups", "numbered": true},
+  "fields": {
+    "category": {
+      "values": ["detect", "mitigate", "prevent"],
+      "tones": {"mitigate": "violet", "prevent": "teal"}
     },
-    "limits": {
-      "summary": 160,
-      "facet": 420
-    }
+    "status": {"values": ["open", "done"], "tones": {"done": "teal"}},
+    "effort": {"values": ["S", "M", "L"]},
+    "impact": {"min": 1, "max": 5},
+    "owner": {"text": true}
   },
-  "summary_table": {},
-  "contents": {},
-  "pick": {
-    "title": "",
-    "markdown": ""
-  }
+  "facets": [
+    {
+      "label": "Addresses",
+      "required": true,
+      "hint": "The contributing factor or moment in the timeline it answers."
+    },
+    {
+      "label": "What changes",
+      "required": true,
+      "hint": "The action, concretely enough to start on."
+    },
+    {"label": "Done when", "hint": "The check that proves the follow-up worked."},
+    {"label": "Note", "hint": "Anything the team must know that fits nowhere else."}
+  ],
+  "sections": [
+    {"id": "impact", "title": "Impact", "hint": "Who was affected, how badly, and for how long."},
+    {"id": "timeline", "title": "Timeline", "hint": "The events in order, with times."},
+    {
+      "id": "factors",
+      "title": "Contributing factors",
+      "layout": "rows",
+      "hint": "Each factor in one line, with its evidence behind the fold."
+    },
+    {
+      "id": "followups",
+      "title": "Follow-ups",
+      "board": true,
+      "hint": "Every follow-up, grouped by detect, mitigate, and prevent."
+    }
+  ],
+  "columns": ["number", "title", "category", "owner", "effort", "impact", "decision"],
+  "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.",
+  "group": "category",
+  "decision": {
+    "mode": "verdict",
+    "verdicts": [
+      {"id": "do", "label": "Do", "tone": "teal"},
+      {"id": "later", "label": "Later", "tone": "violet"},
+      {"id": "skip", "label": "Skip", "tone": "neutral"}
+    ],
+    "default": "do",
+    "title": "How to commit",
+    "markdown": "Commit to follow-ups by number. Numbers without a word mean do.",
+    "example": "do 1, 2, 4; later 3. Notes: 3: after the winter timetable."
+  },
+  "limits": {"summary": 160, "facet": 420, "event": 280}
 }

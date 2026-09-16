@@ -13,24 +13,106 @@ Dossier turns **one JSON model** into **one self-contained HTML file**: no serve
 
 ## Five concepts
 
-- **Kind** is a preset: the facets an item carries, the field vocabularies, the summary columns, and the pick text. Pick one from the table below.
+- **Kind** is a preset: what its items are, the fields and facets they carry, the sections a document has, and how the reader decides. Choose one below.
 - **Section** has a title and either content parts or a board. Part types: prose, spec, table, callout, code, figure, diagram, chart.
-- **Item** is a numbered thing in a board: id, title, one-sentence summary, size, effort, impact, dependsOn, facets. A board with `"layout": "rows"` lists unnumbered entries.
-- **Facet** is a labeled markdown body on an item, in the kind's fixed order.
-- **Decision** is the only state: path, picked ids, notes by id.
+- **Item** is a thing on a board: id, title, a one-sentence summary, the fields its kind declares, and facets. A board with `"layout": "rows"` lists unnumbered, free-form entries.
+- **Facet** is a labeled Markdown body on an item. Labels come from the kind, in its order; required facets must be present.
+- **Decision** is the only state: the choice, picked ids, verdicts, and notes by id.
 
 ## Kinds
 
-| Kind | What it is | Facets, in order | Closers |
-| --- | --- | --- | --- |
-| `brainstorm` | A set of proposed features for one decision-maker to read once and pick by number. | How it works, Reader, Agent, Unlocks | Depends on, Effort, Risk, Note |
-| `brief` | A readable document with no decision to make: notes, research, references, or a launch page. | any labels, until the vocabulary ships |  |
-| `incident` | Timeline, evidence, decisions, and follow-ups for one incident. | any labels, until the vocabulary ships |  |
-| `plan` | Ordered work for one owner to approve step by step. | any labels, until the vocabulary ships |  |
-| `release` | Gates, verification, and evidence for one release. | any labels, until the vocabulary ships |  |
-| `review` | Findings or candidates for one reviewer to accept or send back by number. | any labels, until the vocabulary ships |  |
+Run `dossier describe --json` for the full presets. `*` marks a required facet.
 
-Risk and Note facets render in the risk color. Run `dossier describe --json` for the full presets.
+### brainstorm
+
+Options for one person to read once and pick by number. Items are **ideas**, numbered.
+
+- **Fields:** size (minor, major), effort (S, M, L), impact (1-5), dependsOn.
+- **Facets:**
+  - How it works*: The mechanism, concretely: what exists afterwards that does not exist now.
+  - Why*: The value, and for whom. This is what the reader weighs when picking.
+  - In use: What someone sees or does differently once it ships.
+  - Unlocks: What it makes possible next, by idea number where it helps.
+  - Risk: What could go wrong, and how you would notice.
+  - Note: Anything the reader must know that fits nowhere else.
+- **Sections:** `thesis`, `ideas` (board), `also` (rows) optional.
+- **Decision:** pick by number.
+- **Reply:** Reply with the numbers you want, plus notes on anything to change. For example `2, 5, 7. Notes: 5: smaller first.`
+
+### brief
+
+A readable document with nothing to decide: research, notes, and references. Items are **findings**, unnumbered.
+
+- **Fields:** status shown as Confidence (verified, likely, open).
+- **Facets:**
+  - Detail: The finding in two or three sentences.
+  - Evidence: What it rests on: data, quotes, or sources.
+  - So what: Why the reader should care.
+  - Note: Anything the reader must know that fits nowhere else.
+- **Sections:** `answer`, `findings` (board) optional, `sources`.
+- **Decision:** none; the reader only reads.
+
+### incident
+
+What happened, why, and the follow-ups the team commits to. Items are **follow-ups**, numbered.
+
+- **Fields:** category (detect, mitigate, prevent), status (open, done), effort (S, M, L), impact (1-5), owner (text).
+- **Facets:**
+  - Addresses*: The contributing factor or moment in the timeline it answers.
+  - What changes*: The action, concretely enough to start on.
+  - Done when: The check that proves the follow-up worked.
+  - Note: Anything the team must know that fits nowhere else.
+- **Sections:** `impact`, `timeline`, `factors` (rows), `followups` (board).
+- **Decision:** verdicts do, later, skip (bare numbers mean do).
+- **Reply:** Commit to follow-ups by number. Numbers without a word mean do. For example `do 1, 2, 4; later 3. Notes: 3: after the winter timetable.`
+
+### plan
+
+Ordered steps one owner approves before the work starts. Items are **steps**, numbered.
+
+- **Fields:** status (planned, doing, done, blocked), effort (S, M, L), owner (text), dependsOn.
+- **Facets:**
+  - What changes*: The edit or action, concretely enough to start on.
+  - Why: Only when the goal does not already explain it.
+  - Touches: Files, services, tables, or people it affects.
+  - Done when*: The check that proves it, as a command where possible.
+  - Diff: A fenced diff, when the change is small enough to show.
+  - Risk: What could break, and how you would roll it back.
+  - Note: Anything the owner must know that fits nowhere else.
+- **Sections:** `goal`, `steps` (boards, one per phase), `verify`.
+- **Decision:** verdicts go, revise, skip (bare numbers mean go).
+- **Reply:** Say go, revise, or skip by step number. Numbers without a word mean go. For example `go all; revise 4; skip 7. Notes: 4: split the migration.`
+
+### release
+
+Gates and evidence behind one ship or hold call. Items are **gates**, numbered.
+
+- **Fields:** status (failed, pending, passed, skipped), required.
+- **Facets:**
+  - How checked*: The command, job, or procedure that ran.
+  - Result*: The outcome against what was expected, with numbers.
+  - Evidence: A link, log excerpt, or artifact name.
+  - Risk: What shipping without this gate would mean.
+  - Note: Anything the release owner must know that fits nowhere else.
+- **Sections:** `ships`, `gates` (board), `rollback`.
+- **Decision:** verdicts waive, rerun, only where status is failed or pending; choice ship or hold.
+- **Reply:** Choose ship or hold, then waive or rerun any gate that did not pass. For example `ship, waive 6. Notes: 6: known arm64 flake.`
+
+### review
+
+Findings on one change for one reviewer to rule on. Items are **findings**, numbered.
+
+- **Fields:** category (text), severity (blocker, major, minor, nit), effort (S, M, L).
+- **Facets:**
+  - Where*: File and line, screen, or section, so it can be found again.
+  - Why it matters*: The consequence if it ships as it is.
+  - Fix: The smallest change that resolves it.
+  - Evidence: A reproduction, output, or quote that shows it.
+  - Diff: A fenced diff of the suggested fix.
+  - Note: Anything the reviewer must know that fits nowhere else.
+- **Sections:** `scope`, `findings` (board), `checked` (rows) optional.
+- **Decision:** verdicts fix, later, skip (bare numbers mean fix); choice approve or rework.
+- **Reply:** Choose approve or rework, then rule on findings by number. Numbers without a word mean fix. For example `rework, fix 1, 2; later 4; skip 6. Notes: 4: after the release.`
 
 ## Content rules
 
@@ -40,11 +122,12 @@ Risk and Note facets render in the risk color. Run `dossier describe --json` for
 - **Ids** are lowercase letters, digits, and hyphens, unique across sections and items. `dependsOn` names item ids.
 - **Markdown** in prose, facets, table cells, and spec text. Raw HTML is escaped. Fenced code is highlighted.
 - **Figures** may use a path relative to the model file; `build` inlines it. Diagrams carry DOT or Mermaid source and render as source for now.
+- **Color is meaning.** Field values carry the kind's tones: teal for settled, violet for open, ochre for risk. Only the Risk facet is ochre.
 
 ## Workflow
 
-1. `dossier init KIND --title "…"` writes `<slug>.dossier.json` with the kind's facets in place.
-2. Fill it in: one prose section that states the thesis, one board of items, each with a one-sentence summary and every facet.
+1. `dossier init KIND --title "…"` writes `<slug>.dossier.json` with the kind's sections and facets in place.
+2. Fill it in: replace every hint with content, give each item a one-sentence summary and its required facets, and add optional facets only where they earn their place.
 3. `dossier validate <slug>.dossier.json`: findings block, warnings are advice.
 4. `dossier build <slug>.dossier.json` writes `<slug>.html` beside it. Open it for the reader.
 5. The reader replies with numbers, for example `1, 3, 4. Notes: 3: keep blue.` Apply it with `dossier decisions apply <slug>.dossier.json --reply "…"`, then rebuild.
@@ -78,51 +161,78 @@ What `dossier init brainstorm --title "Twelve moves"` writes:
   "meta": {
     "title": "Twelve moves",
     "slug": "twelve-moves",
-    "lede": "One sentence for the masthead.",
+    "lede": "One sentence on what this brainstorm is for.",
     "status": "draft"
   },
   "sections": [
     {
-      "id": "summary",
-      "title": "Summary",
+      "id": "thesis",
+      "title": "Thesis",
       "parts": [
         {
           "type": "prose",
-          "markdown": "One paragraph that says what this document decides and why now."
+          "markdown": "The purpose and the constraint, in a paragraph or two."
         }
       ]
     },
     {
-      "id": "items",
-      "title": "Items",
+      "id": "ideas",
+      "title": "Ideas",
       "board": {
         "summary": true,
         "items": [
           {
-            "id": "first-item",
-            "title": "First item",
-            "summary": "One sentence on what this item is.",
+            "id": "idea-first",
+            "title": "First idea",
+            "summary": "One sentence on what this idea is.",
             "size": "minor",
             "effort": "S",
             "impact": 1,
             "facets": [
               {
                 "label": "How it works",
-                "markdown": "Two or three sentences for how it works."
+                "markdown": "The mechanism, concretely: what exists afterwards that does not exist now."
               },
               {
-                "label": "Reader",
-                "markdown": "Two or three sentences for reader."
-              },
-              {
-                "label": "Agent",
-                "markdown": "Two or three sentences for agent."
-              },
-              {
-                "label": "Unlocks",
-                "markdown": "Two or three sentences for unlocks."
+                "label": "Why",
+                "markdown": "The value, and for whom. This is what the reader weighs when picking."
               }
             ]
+          },
+          {
+            "id": "idea-second",
+            "title": "Second idea",
+            "summary": "One sentence on what this idea is.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 1,
+            "dependsOn": [
+              "idea-first"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "The mechanism, concretely: what exists afterwards that does not exist now."
+              },
+              {
+                "label": "Why",
+                "markdown": "The value, and for whom. This is what the reader weighs when picking."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "also",
+      "title": "Also considered",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "also-first",
+            "title": "First entry",
+            "summary": "Ideas left out, one line each saying why not."
           }
         ]
       }

@@ -80,8 +80,13 @@ type Page struct {
 	ModelScriptHTML  string
 	ReaderScriptHTML string
 	Fonts            bool
-	HasPick          bool
-	PickHTML         string
+	// Decides is set when the kind decides and the document has numbered
+	// items; Mode is the kind's decision mode.
+	Decides      bool
+	Mode         string
+	HasArticles  bool
+	PickHTML     string
+	ReplyExample string
 	// Studio only: the injected studio and the edit targets of the masthead.
 	StudioHTML string
 	EditTitle  string
@@ -122,21 +127,46 @@ type PartView struct {
 type BoardView struct {
 	Summary bool
 	Rows    bool
-	Columns []string
+	Columns []Column
 	Legend  string
 	Items   []ItemView
+}
+
+// Column is one summary table column.
+type Column struct {
+	Name   string
+	Header string
+}
+
+// Chip is one labeled value in an item's meta row. Tone is a palette tone or
+// outline for plain facts such as effort.
+type Chip struct {
+	Text  string
+	Tone  string
+	Label string
+}
+
+// Cell is one summary table cell for a field.
+type Cell struct {
+	Text string
+	Tone string
+	Chip bool
 }
 
 // ItemView is one item with rendered facets.
 type ItemView struct {
 	ID          string
 	Number      int
+	Numbered    bool
+	Pickable    bool
+	Notes       bool
 	Title       string
 	Summary     string
-	Size        string
-	Effort      string
+	Chips       []Chip
+	Cells       map[string]Cell
 	Impact      int
 	ImpactMax   int
+	ImpactLabel string
 	DependsOn   []DepView
 	Facets      []FacetView
 	Picked      bool
@@ -175,10 +205,11 @@ type TocEntry struct {
 	Picked bool
 }
 
-// Fact is one cell of the masthead facts tile.
+// Fact is one cell of the masthead facts strip.
 type Fact struct {
 	Value string
 	Label string
+	Tone  string
 	Live  bool
 }
 
@@ -219,7 +250,8 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 		page.EditTitle, page.EditKicker, page.EditLede = "/meta/title", "/meta/kicker", "/meta/lede"
 	}
 
-	// Number items across every article board, in document order.
+	// Number items across every article board, in document order, when the
+	// kind numbers its items.
 	numbers := map[string]int{}
 	titles := map[string]string{}
 	n := 0
@@ -228,15 +260,18 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			continue
 		}
 		for _, it := range s.Board.Items {
-			n++
-			numbers[it.ID] = n
 			titles[it.ID] = it.Title
+			if kind.Item.Numbered {
+				n++
+				numbers[it.ID] = n
+			}
 		}
 	}
 	impactMax := 5
-	if kind.Items.Impact != nil {
-		impactMax = kind.Items.Impact.Max
+	if kind.Fields.Impact != nil {
+		impactMax = kind.Fields.Impact.Max
 	}
+	page.Mode = kind.Decision.Mode
 	pickedIDs := map[string]bool{}
 	notes := map[string]string{}
 	if doc.Decisions != nil {
@@ -245,7 +280,7 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 		}
 		notes = doc.Decisions.Notes
 	}
-	var rowsCount int
+	var rows []rowCount
 	for _, s := range doc.Sections {
 		sv := SectionView{ID: s.ID, Title: s.Title}
 		if studio {
@@ -262,9 +297,13 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			sv.Parts = append(sv.Parts, pv)
 		}
 		if s.Board != nil {
-			bv := &BoardView{Summary: s.Board.Summary, Rows: s.Board.Layout == "rows", Columns: kind.SummaryTable.Columns, Legend: kind.SummaryTable.Legend}
+			bv := &BoardView{Summary: s.Board.Summary, Rows: s.Board.Layout == "rows", Columns: columns(kind), Legend: kind.Legend}
 			for _, it := range s.Board.Items {
-				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Title: it.Title, Summary: it.Summary, Size: it.Size, Effort: it.Effort, Impact: it.Impact, ImpactMax: impactMax, Picked: pickedIDs[it.ID], Note: notes[it.ID]}
+				article := !bv.Rows
+				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Numbered: article && kind.Item.Numbered, Title: it.Title, Summary: it.Summary, Impact: it.Impact, ImpactMax: impactMax, ImpactLabel: strings.ToLower(kind.FieldLabel("impact")), Picked: pickedIDs[it.ID], Note: notes[it.ID]}
+				iv.Pickable = article && kind.Item.Numbered && kind.Decision.Mode == kinds.ModePick
+				iv.Notes = article && kind.Decides()
+				iv.Chips, iv.Cells = fields(kind, it)
 				if studio {
 					iv.EditTitle, iv.EditSummary = "/items/"+it.ID+"/title", "/items/"+it.ID+"/summary"
 				}
@@ -283,10 +322,14 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 					iv.Facets = append(iv.Facets, fv)
 				}
 				bv.Items = append(bv.Items, iv)
-				if bv.Rows {
-					rowsCount++
-				} else {
+				switch {
+				case bv.Rows:
+					rows = append(rows, rowCount{title: s.Title})
+				case iv.Numbered:
 					page.Numbered = append(page.Numbered, iv)
+					page.HasArticles = true
+				default:
+					page.HasArticles = true
 				}
 			}
 			sv.Board = bv
@@ -294,16 +337,82 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 		page.Sections = append(page.Sections, sv)
 	}
 	page.Contents = contents(doc, kind, numbers, pickedIDs)
-	page.HasPick = len(page.Numbered) > 0 && kind.Pick.Title != ""
-	if page.HasPick {
-		h, err := markdown(kind.Pick.Markdown)
+	page.Decides = kind.Decides() && len(page.Numbered) > 0
+	if page.Decides {
+		h, err := markdown(kind.Decision.Markdown)
 		if err != nil {
 			return nil, err
 		}
 		page.PickHTML = h
+		page.ReplyExample = kind.Decision.Example
 	}
-	page.Facts = facts(page, kind, rowsCount)
+	page.Facts = facts(doc, page, kind, rows)
 	return page, nil
+}
+
+// rowCount remembers each rows entry's section, so the facts strip can name
+// what it counts.
+type rowCount struct{ title string }
+
+// columns resolves the kind's summary columns to headers. The decision
+// column is a pick checkbox and only exists for pick kinds.
+func columns(kind kinds.Kind) []Column {
+	var out []Column
+	for _, name := range kind.Columns {
+		switch name {
+		case "number":
+			out = append(out, Column{Name: name, Header: "#"})
+		case "title":
+			out = append(out, Column{Name: name, Header: kinds.Capitalize(kind.Item.Noun)})
+		case "decision":
+			if kind.Decision.Mode == kinds.ModePick {
+				out = append(out, Column{Name: name, Header: "Pick"})
+			}
+		default:
+			out = append(out, Column{Name: name, Header: kind.FieldLabel(name)})
+		}
+	}
+	return out
+}
+
+// fields renders an item's fields as meta-row chips, in the kind's field
+// order, and as summary cells.
+func fields(kind kinds.Kind, it model.Item) ([]Chip, map[string]Cell) {
+	var chips []Chip
+	cells := map[string]Cell{}
+	for _, name := range []string{"size", "category", "severity", "status"} {
+		v := kinds.Value(it, name)
+		f := kind.Field(name)
+		if v == "" || f == nil {
+			continue
+		}
+		label := kind.FieldLabel(name)
+		text := kind.Canonical(name, v)
+		if f.Text {
+			chips = append(chips, Chip{Text: text, Tone: "outline", Label: label})
+			cells[name] = Cell{Text: text}
+			continue
+		}
+		if f.Label != "" {
+			text = f.Label + " " + text
+		}
+		tone := kind.Tone(name, v)
+		chips = append(chips, Chip{Text: text, Tone: tone, Label: label})
+		cells[name] = Cell{Text: kind.Canonical(name, v), Tone: tone, Chip: true}
+	}
+	if it.Effort != "" && kind.HasField("effort") {
+		chips = append(chips, Chip{Text: "Effort " + kind.Canonical("effort", it.Effort), Tone: "outline", Label: kind.FieldLabel("effort")})
+		cells["effort"] = Cell{Text: kind.Canonical("effort", it.Effort)}
+	}
+	if it.Owner != "" && kind.HasField("owner") {
+		chips = append(chips, Chip{Text: it.Owner, Tone: "owner", Label: kind.FieldLabel("owner")})
+		cells["owner"] = Cell{Text: it.Owner}
+	}
+	if it.Required && kind.HasField("required") {
+		chips = append(chips, Chip{Text: kind.FieldLabel("required"), Tone: "outline", Label: kind.FieldLabel("required")})
+		cells["required"] = Cell{Text: "Yes"}
+	}
+	return chips, cells
 }
 
 func renderPart(p model.Part, opts Options) (PartView, error) {
@@ -443,6 +552,9 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, pick
 	var groups []TocGroup
 	current := &TocGroup{Label: "Frame"}
 	seenBoard := false
+	entry := func(it model.Item) TocEntry {
+		return TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]}
+	}
 	for _, s := range doc.Sections {
 		current.Entries = append(current.Entries, TocEntry{ID: s.ID, Label: s.Title})
 		if s.Board == nil || s.Board.Layout == "rows" {
@@ -450,22 +562,33 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, pick
 		}
 		groups = append(groups, *current)
 		seenBoard = true
-		if kind.Contents.GroupBy == "size" && len(kind.Items.Size) > 0 {
-			for _, size := range kind.Items.Size {
-				g := TocGroup{Label: capitalize(size)}
+		if f := kind.Field(kind.Group); f != nil && len(f.Values) > 0 {
+			placed := map[string]bool{}
+			for _, value := range f.Values {
+				g := TocGroup{Label: kinds.Capitalize(value)}
 				for _, it := range s.Board.Items {
-					if strings.EqualFold(it.Size, size) {
-						g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]})
+					if strings.EqualFold(kinds.Value(it, kind.Group), value) {
+						g.Entries = append(g.Entries, entry(it))
+						placed[it.ID] = true
 					}
 				}
 				if len(g.Entries) > 0 {
 					groups = append(groups, g)
 				}
 			}
+			other := TocGroup{Label: "Other"}
+			for _, it := range s.Board.Items {
+				if !placed[it.ID] {
+					other.Entries = append(other.Entries, entry(it))
+				}
+			}
+			if len(other.Entries) > 0 {
+				groups = append(groups, other)
+			}
 		} else {
 			g := TocGroup{Label: s.Title}
 			for _, it := range s.Board.Items {
-				g.Entries = append(g.Entries, TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]})
+				g.Entries = append(g.Entries, entry(it))
 			}
 			groups = append(groups, g)
 		}
@@ -477,31 +600,55 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, pick
 	return groups
 }
 
-func facts(page *Page, kind kinds.Kind, rowsCount int) []Fact {
+// facts builds the masthead strip: the document's own facts, counts by the
+// kind's group field or a total, the rows entries by section, and the live
+// decision count.
+func facts(doc *model.Document, page *Page, kind kinds.Kind, rows []rowCount) []Fact {
 	var out []Fact
-	if len(kind.Items.Size) > 0 {
-		for _, size := range kind.Items.Size {
+	for _, f := range doc.Meta.Facts {
+		out = append(out, Fact{Value: f.Value, Label: f.Label, Tone: f.Tone})
+	}
+	var articles []model.Item
+	for _, s := range doc.Sections {
+		if s.Board != nil && s.Board.Layout != "rows" {
+			articles = append(articles, s.Board.Items...)
+		}
+	}
+	if f := kind.Field(kind.Group); f != nil && len(f.Values) > 0 {
+		for _, value := range f.Values {
 			c := 0
-			for _, it := range page.Numbered {
-				if strings.EqualFold(it.Size, size) {
+			for _, it := range articles {
+				if strings.EqualFold(kinds.Value(it, kind.Group), value) {
 					c++
 				}
 			}
 			if c > 0 {
-				out = append(out, Fact{Value: fmt.Sprint(c), Label: size})
+				tone := ""
+				if kind.Tone(kind.Group, value) == "risk" {
+					tone = "risk"
+				}
+				out = append(out, Fact{Value: fmt.Sprint(c), Label: value, Tone: tone})
 			}
 		}
-	} else if len(page.Numbered) > 0 {
-		out = append(out, Fact{Value: fmt.Sprint(len(page.Numbered)), Label: "items"})
-	}
-	if rowsCount > 0 {
-		label := "entries"
-		if page.HasPick {
-			label = "also considered"
+	} else if len(articles) > 0 {
+		label := kind.Item.Plural
+		if len(articles) == 1 {
+			label = kind.Item.Noun
 		}
-		out = append(out, Fact{Value: fmt.Sprint(rowsCount), Label: label})
+		out = append(out, Fact{Value: fmt.Sprint(len(articles)), Label: label})
 	}
-	if page.HasPick {
+	counted := map[string]int{}
+	var order []string
+	for _, r := range rows {
+		if counted[r.title] == 0 {
+			order = append(order, r.title)
+		}
+		counted[r.title]++
+	}
+	for _, title := range order {
+		out = append(out, Fact{Value: fmt.Sprint(counted[title]), Label: strings.ToLower(title)})
+	}
+	if page.Decides && page.Mode == kinds.ModePick {
 		c := 0
 		for _, it := range page.Numbered {
 			if it.Picked {
@@ -511,13 +658,6 @@ func facts(page *Page, kind kinds.Kind, rowsCount int) []Fact {
 		out = append(out, Fact{Value: fmt.Sprint(c), Label: "picked", Live: true})
 	}
 	return out
-}
-
-func capitalize(s string) string {
-	if s == "" {
-		return s
-	}
-	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 // embedJSON encodes the model for the data island. HTML-significant

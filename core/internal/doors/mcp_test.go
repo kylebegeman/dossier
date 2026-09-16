@@ -85,7 +85,7 @@ func exerciseServer(t *testing.T, cs *mcp.ClientSession) {
 		t.Errorf("decisions_apply: %+v", env)
 	}
 	env, res = callTool(t, cs, "decisions_read", map[string]any{"model": modelPath})
-	if res.IsError || env.Outcome != OutcomeOK || !strings.Contains(string(mustJSON(env.Result)), `"picked":["first-item"]`) {
+	if res.IsError || env.Outcome != OutcomeOK || !strings.Contains(string(mustJSON(env.Result)), `"picked":["idea-first"]`) {
 		t.Errorf("decisions_read: %+v", env)
 	}
 

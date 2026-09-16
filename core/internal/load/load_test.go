@@ -10,7 +10,7 @@ import (
 )
 
 func TestFileReportsFindingsWarningsAndUpgrades(t *testing.T) {
-	doc, problems, err := File(filepath.Join("..", "..", "examples", "dossier-0-7-brainstorm.dossier.json"))
+	doc, problems, err := File(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
 	if err != nil || len(problems) > 0 {
 		t.Fatalf("brainstorm: %v %v", err, problems)
 	}

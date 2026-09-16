@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"dossier/internal/kinds"
 )
 
 func TestExampleValidates(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "dossier-0-7-brainstorm.dossier.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,6 +90,36 @@ func TestEnvelopeSchema(t *testing.T) {
 		}
 		if len(problems) == 0 {
 			t.Errorf("invalid envelope accepted: %s", b)
+		}
+	}
+}
+
+func TestBuiltInKindsPassTheKindSchema(t *testing.T) {
+	all, err := kinds.All()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, k := range all {
+		data, err := kinds.PresetJSON(k.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		problems, err := CheckKind(data)
+		if err != nil || len(problems) > 0 {
+			t.Errorf("%s: %v %v", k.ID, err, problems)
+		}
+	}
+	problems, err := CheckKind([]byte(`{"id":"x","title":"X","summary":"s","item":{"noun":"a","plural":"as","numbered":true},"fields":{"priority":{}},"facets":[],"sections":[],"columns":["rank"],"decision":{"mode":"vote"}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	joined := ""
+	for _, p := range problems {
+		joined += p.String() + "\n"
+	}
+	for _, want := range []string{"/fields", "/columns/0", "/decision/mode"} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("expected a problem at %s, got:\n%s", want, joined)
 		}
 	}
 }

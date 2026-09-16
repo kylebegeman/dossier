@@ -60,7 +60,7 @@ func startWith(t *testing.T, data []byte) *harness {
 	return &harness{t: t, srv: srv, model: path}
 }
 
-const brainstorm = "../../examples/dossier-0-7-brainstorm.dossier.json"
+const brainstorm = "../../examples/winter-crossing.dossier.json"
 
 func (h *harness) request(method, path, body string, headers map[string]string) (*http.Response, string) {
 	h.t.Helper()
@@ -164,14 +164,14 @@ func TestGuardRefusesForeignRequests(t *testing.T) {
 	if res, _ := h.request("GET", "/", "", map[string]string{"Host": "evil.example"}); res.StatusCode != http.StatusMisdirectedRequest {
 		t.Errorf("page on a foreign host: %d", res.StatusCode)
 	}
-	if doc := h.file(); doc.Meta.Title != "Twelve moves toward a leaner Dossier" {
+	if doc := h.file(); doc.Meta.Title != "Ten moves for a calmer winter crossing" {
 		t.Errorf("a refused request changed the file: %q", doc.Meta.Title)
 	}
 }
 
 func TestDraftsPreviewCommitAndRevert(t *testing.T) {
 	h := start(t, brainstorm)
-	target := "/items/shell-reset/summary"
+	target := "/items/storm-rebook/summary"
 	code, field := h.api("GET", "/_/field?target="+target, nil)
 	if code != 200 || field.Value == nil || field.Draft {
 		t.Fatalf("field: %d %+v", code, field)
@@ -181,17 +181,17 @@ func TestDraftsPreviewCommitAndRevert(t *testing.T) {
 	if code, res := h.api("PUT", "/_/drafts", draftRequest{Target: target, Value: "  A sharper   summary. "}); code != 200 || !res.OK {
 		t.Fatalf("draft: %d %+v", code, res)
 	}
-	if !strings.Contains(h.page(), `data-edit="/items/shell-reset/summary">A sharper summary.</p>`) {
+	if !strings.Contains(h.page(), `data-edit="/items/storm-rebook/summary">A sharper summary.</p>`) {
 		t.Error("the page does not preview the draft")
 	}
-	if h.file().Sections[5].Board.Items[0].Summary != original {
+	if h.file().Sections[2].Board.Items[0].Summary != original {
 		t.Error("a draft must not touch the file")
 	}
 	if _, field = h.api("GET", "/_/field?target="+target, nil); !field.Draft || *field.Value != "A sharper summary." {
 		t.Errorf("field with draft: %+v", field)
 	}
 
-	code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/items/shell-reset/title", Value: "   "})
+	code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/items/storm-rebook/title", Value: "   "})
 	if code != http.StatusUnprocessableEntity || len(res.Findings) == 0 {
 		t.Errorf("an edit that breaks the model must be refused with findings: %d %+v", code, res)
 	}
@@ -209,7 +209,7 @@ func TestDraftsPreviewCommitAndRevert(t *testing.T) {
 	if code != 200 || len(res.Applied) != 1 || res.Applied[0] != target || len(res.Conflicts) != 0 {
 		t.Fatalf("commit: %d %+v", code, res)
 	}
-	if got := h.file().Sections[5].Board.Items[0].Summary; got != "A sharper summary." {
+	if got := h.file().Sections[2].Board.Items[0].Summary; got != "A sharper summary." {
 		t.Errorf("file after commit: %q", got)
 	}
 	if !strings.Contains(h.page(), `"drafts":[],"conflicts":[]`) {
@@ -254,7 +254,7 @@ func TestConflictingDraftsAreKept(t *testing.T) {
 
 func TestMoveDraftsAnOrder(t *testing.T) {
 	h := start(t, brainstorm)
-	before := boardIDs(h.file().Sections[5].Board)
+	before := boardIDs(h.file().Sections[2].Board)
 	if code, res := h.api("POST", "/_/move", moveRequest{Item: before[1], Direction: "up"}); code != 200 || res.Reverted {
 		t.Fatalf("move: %d %+v", code, res)
 	}
@@ -262,7 +262,7 @@ func TestMoveDraftsAnOrder(t *testing.T) {
 	if strings.Index(page, `id="`+before[1]+`" data-item`) > strings.Index(page, `id="`+before[0]+`" data-item`) {
 		t.Error("the page does not preview the new order")
 	}
-	if !strings.Contains(page, `"orders":["summary"]`) {
+	if !strings.Contains(page, `"orders":["ideas"]`) {
 		t.Error("the page must report the reordered board")
 	}
 	if code, _ := h.api("POST", "/_/move", moveRequest{Item: before[1], Direction: "up"}); code != 200 {
@@ -274,7 +274,7 @@ func TestMoveDraftsAnOrder(t *testing.T) {
 	if code, res := h.api("POST", "/_/drafts/commit", nil); code != 200 || len(res.Applied) != 1 {
 		t.Fatalf("commit order: %d %+v", code, res)
 	}
-	after := boardIDs(h.file().Sections[5].Board)
+	after := boardIDs(h.file().Sections[2].Board)
 	if after[0] != before[1] || after[1] != before[0] {
 		t.Errorf("file order: %v", after[:3])
 	}
@@ -282,7 +282,7 @@ func TestMoveDraftsAnOrder(t *testing.T) {
 
 func TestDecisionsSyncToTheStoreAndApply(t *testing.T) {
 	h := start(t, brainstorm)
-	first := h.file().Sections[5].Board.Items[0].ID
+	first := h.file().Sections[2].Board.Items[0].ID
 	code, res := h.api("PUT", "/_/decisions", decisionsRequest{Path: "rebuild", Picked: []string{first, "not-an-item"}, Notes: map[string]string{first: "keep it", "ghost": "x"}})
 	if code != 200 || !res.OK {
 		t.Fatalf("put decisions: %d %+v", code, res)
@@ -324,7 +324,7 @@ func TestModelEditorValidatesBeforeWriting(t *testing.T) {
 	if code, out := h.api("POST", "/_/validate", broken); code != 200 || out.Outcome != "findings" {
 		t.Errorf("validate: %d %+v", code, out)
 	}
-	fixed := strings.Replace(text, "Twelve moves toward a leaner Dossier", "Eleven moves", 1)
+	fixed := strings.Replace(text, "Ten moves for a calmer winter crossing", "Eleven moves", 1)
 	if code, out := h.api("PUT", "/_/model", fixed); code != 200 || out.Written == "" {
 		t.Fatalf("save: %d %+v", code, out)
 	}

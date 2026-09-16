@@ -1,0 +1,372 @@
+{
+  "dossier": "1.0",
+  "kind": "brainstorm",
+  "meta": {
+    "title": "Ten moves for a calmer winter crossing",
+    "slug": "winter-crossing",
+    "kicker": "Tidewright · Wenlow Islands ferries",
+    "emphasis": "calmer",
+    "lede": "Six small moves and four large ones for the ferry ticketing app, and one choice first: build for storm days or for quiet midweeks. Pick by number.",
+    "updated": "2026-09-16",
+    "status": "for-decision"
+  },
+  "sections": [
+    {
+      "id": "thesis",
+      "title": "Winter is the hard season",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Tidewright runs ticketing for the Wenlow Islands ferries: three routes from Varre, two boats, and about 2,400 bookings a week in winter. Four of us build it, with agents doing most of the writing.\n\nWinter is where the product hurts. A storm cancels sailings with a few hours of notice, every rider on them needs a new crossing at once, and the harbour office takes the load by phone. On quiet midweeks the boats run half empty.\n\nThese ten moves aim at both problems. Effort is agent time, not calendar time."
+        },
+        {
+          "type": "figure",
+          "src": "assets/wenlow-routes.svg",
+          "alt": "A map of the three routes from Varre to Keddle, Holm, and Brisk.",
+          "caption": "Three routes from Varre. The Brisk crossing is the longest and the first to cancel in a gale."
+        }
+      ]
+    },
+    {
+      "id": "winter",
+      "title": "Where winter hurts",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Contacts to the harbour office rose sixfold from October to January last winter, and most of them were riders trying to rebook."
+        },
+        {
+          "type": "chart",
+          "title": "Harbour office contacts per month, winter 2025 to 2026",
+          "variant": "bar",
+          "data": [
+            {
+              "label": "Oct",
+              "value": 410
+            },
+            {
+              "label": "Nov",
+              "value": 1240
+            },
+            {
+              "label": "Dec",
+              "value": 2050
+            },
+            {
+              "label": "Jan",
+              "value": 2480
+            },
+            {
+              "label": "Feb",
+              "value": 1960
+            },
+            {
+              "label": "Mar",
+              "value": 820
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "38 sailings",
+              "text": "Cancelled for weather between November and March."
+            },
+            {
+              "label": "61%",
+              "text": "Of winter contacts were riders rebooking a cancelled crossing."
+            },
+            {
+              "label": "11 minutes",
+              "text": "Average office time per refund, the second largest contact type."
+            },
+            {
+              "label": "4 people",
+              "text": "Build and run the product, and nobody is on call overnight."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "risk",
+          "title": "Storm days carry the load",
+          "markdown": "On the eleven worst days, contacts ran at six times a normal day. Anything that spreads rebooking across hours, or starts it a day early, helps more than anything that makes the office faster."
+        }
+      ]
+    },
+    {
+      "id": "ideas",
+      "title": "Ideas",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "storm-rebook",
+            "title": "Rebook in one tap on storm days",
+            "summary": "When a sailing is cancelled, every rider gets a link that moves them to the next crossing with room.",
+            "size": "minor",
+            "effort": "M",
+            "impact": 5,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Cancelling a sailing sends each rider a link with the next three crossings that have room, each held for 20 minutes. One tap moves the booking and voids the old ticket."
+              },
+              {
+                "label": "Why",
+                "markdown": "Rebooking was 61% of winter contacts. Riders want the next boat, not a phone queue, and a held place removes the scramble."
+              },
+              {
+                "label": "In use",
+                "markdown": "A rider booked on the 16:10 to Keddle gets a message at 13:02 and is on the 18:40 before the harbour office opens its phones."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "The held place is the same mechanism 3 and 7 need."
+              },
+              {
+                "label": "Risk",
+                "markdown": "Holds can strand walk-up riders on a busy boat. Cap holds at half the free space on any sailing."
+              }
+            ]
+          },
+          {
+            "id": "plain-notices",
+            "title": "Plain cancellation notices",
+            "summary": "Notices say what happened, what happens next, and that changing a ticket costs nothing.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Three templates replace the free-text notices: cancelled, delayed, and at risk. Each names the sailing, the reason, the next step, and the cost, which is nothing."
+              },
+              {
+                "label": "Why",
+                "markdown": "Riders call to ask whether rebooking costs money. A notice that says so answers the most common question before anyone dials."
+              },
+              {
+                "label": "In use",
+                "markdown": "The notice reads: the 16:10 to Keddle is cancelled for wind. Tap to move to the 18:40, free."
+              }
+            ]
+          },
+          {
+            "id": "car-waitlist",
+            "title": "A waitlist for full car decks",
+            "summary": "Riders join a waitlist when a car deck is full, and released spaces are offered in order.",
+            "size": "minor",
+            "effort": "M",
+            "impact": 4,
+            "dependsOn": [
+              "storm-rebook"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A full car deck offers a waitlist instead of an error. When a space frees up, the next rider gets it held for 15 minutes, then the next rider does."
+              },
+              {
+                "label": "Why",
+                "markdown": "Car space is the scarce thing in winter, when the Gannet runs fewer crossings. Today riders refresh the page and phone the office."
+              },
+              {
+                "label": "Risk",
+                "markdown": "A waitlist can promise too much. Show each rider their place and how often spaces free up on that sailing."
+              }
+            ]
+          },
+          {
+            "id": "midweek-fares",
+            "title": "The midweek fare beside weekend searches",
+            "summary": "A search for a weekend crossing shows the cheaper Tuesday to Thursday fare on the same route.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A search for Friday to Sunday adds one line with the lowest fare on the same route from Tuesday to Thursday that week, with a one-tap switch."
+              },
+              {
+                "label": "Why",
+                "markdown": "Midweek boats run half empty in winter while weekends sell out. A nudge moves flexible riders without changing a single price."
+              }
+            ]
+          },
+          {
+            "id": "weather-line",
+            "title": "A weather line on every ticket",
+            "summary": "Tickets and reminders show the forecast risk for that sailing, refreshed every three hours.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Each ticket shows calm, watch, or at risk from the marine forecast for the crossing, refreshed every three hours and repeated in the day-before reminder."
+              },
+              {
+                "label": "Why",
+                "markdown": "Riders who know a crossing is at risk move early, which spreads rebooking across hours instead of one spike."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "The forecast feed is the input 7 scores."
+              }
+            ]
+          },
+          {
+            "id": "crew-updates",
+            "title": "Delay reasons from the deck",
+            "summary": "Crew post a delay reason in one tap, and the departures board and every ticket update.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "The crew app gets four buttons: waiting for cars, weather, mechanical, and harbour traffic. A tap updates the departures board and every ticket on that sailing."
+              },
+              {
+                "label": "Why",
+                "markdown": "An unexplained delay starts phone calls. The crew know the reason first and have no way to say it."
+              }
+            ]
+          },
+          {
+            "id": "storm-warnings",
+            "title": "Warn riders two days before a storm",
+            "summary": "A forecast score flags sailings 48 hours out and offers free moves before any cancellation.",
+            "size": "major",
+            "effort": "L",
+            "impact": 5,
+            "dependsOn": [
+              "weather-line",
+              "storm-rebook"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A daily job scores every sailing in the next 48 hours against the operator's wind and swell limits. Sailings over the line offer a free move before anything is cancelled."
+              },
+              {
+                "label": "Why",
+                "markdown": "Moving riders a day early turns the storm-day spike into a calm trickle, and riders keep their plans."
+              },
+              {
+                "label": "In use",
+                "markdown": "On Tuesday evening, riders booked on Thursday's early crossings see: storm likely, move to Wednesday for free."
+              },
+              {
+                "label": "Risk",
+                "markdown": "False alarms teach riders to ignore warnings. Start with the operator confirming each warning before it sends."
+              }
+            ]
+          },
+          {
+            "id": "winter-pass",
+            "title": "A flexible winter pass",
+            "summary": "Ten crossings on any sailing from November to March, moved or cancelled for free.",
+            "size": "major",
+            "effort": "M",
+            "impact": 4,
+            "dependsOn": [
+              "midweek-fares"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A pass holds ten crossings. Riders book as they would any ticket, and moving or cancelling returns the crossing to the pass."
+              },
+              {
+                "label": "Why",
+                "markdown": "Island residents cross every week in winter and pay for every storm in lost time. A pass rewards them for booking at all."
+              },
+              {
+                "label": "Risk",
+                "markdown": "Passes can crowd popular sailings. Limit pass bookings to 30% of each car deck."
+              }
+            ]
+          },
+          {
+            "id": "resident-priority",
+            "title": "Priority rebooking for island residents",
+            "summary": "Verified residents rebook first on storm days and keep a reserved share of each car deck.",
+            "size": "major",
+            "effort": "M",
+            "impact": 4,
+            "dependsOn": [
+              "car-waitlist"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Residents verify once with a council address. On storm days they rebook an hour before everyone else, and 15% of each car deck stays theirs until 24 hours out."
+              },
+              {
+                "label": "Why",
+                "markdown": "Residents need the boat for work, school, and supplies. Most visitors can wait a day."
+              },
+              {
+                "label": "Risk",
+                "markdown": "Verification touches personal data. Keep only a yes, a no, and an expiry date, never the address."
+              }
+            ]
+          },
+          {
+            "id": "self-refunds",
+            "title": "Refunds without calling",
+            "summary": "Riders refund cancelled or unwanted crossings themselves, within the fare policy, in seconds.",
+            "size": "major",
+            "effort": "L",
+            "impact": 5,
+            "dependsOn": [
+              "plain-notices"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A refund button applies the fare policy: a full refund for cancellations, a small fee for a change of plans inside 24 hours. The payment provider returns the money to the card."
+              },
+              {
+                "label": "Why",
+                "markdown": "Refunds are the second largest contact type and take the office eleven minutes each. Most follow rules a page can apply."
+              },
+              {
+                "label": "Note",
+                "markdown": "Card refunds take the provider three to five working days to show, whatever we build. The confirmation should say so."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "also",
+      "title": "Also considered",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "shelter-seats",
+            "title": "Book a seat in the heated shelter",
+            "summary": "Not ticketing: the harbour authority runs the shelters and has its own plans."
+          },
+          {
+            "id": "storm-surcharge",
+            "title": "A surcharge on storm-risk sailings",
+            "summary": "It charges riders for weather they cannot control and would push residents away."
+          },
+          {
+            "id": "rebook-chat",
+            "title": "A chat assistant for rebooking",
+            "summary": "One tap does the job better than a conversation, once idea 1 ships."
+          }
+        ]
+      }
+    }
+  ]
+}

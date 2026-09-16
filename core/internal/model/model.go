@@ -38,6 +38,29 @@ type Meta struct {
 	Updated  string `json:"updated,omitempty"`
 	Status   string `json:"status,omitempty"`
 	Fonts    string `json:"fonts,omitempty"`
+	// Facts are up to four document-level figures shown first in the
+	// masthead strip, such as an incident's severity or a release's version.
+	Facts []Fact `json:"facts,omitempty"`
+}
+
+// Fact is one labeled figure in the masthead strip.
+type Fact struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+	Tone  string `json:"tone,omitempty"`
+}
+
+// Choice is a document-level decision: one question with a few options.
+type Choice struct {
+	Question string   `json:"question"`
+	Options  []Option `json:"options"`
+}
+
+// Option is one answer to a choice.
+type Option struct {
+	ID      string `json:"id"`
+	Label   string `json:"label"`
+	Summary string `json:"summary,omitempty"`
 }
 
 // Section is a titled unit in the contents. It holds content parts and may
@@ -89,17 +112,27 @@ type Board struct {
 	Items   []Item `json:"items"`
 }
 
-// Item is one numbered thing in a board.
+// Item is one thing on a board. Which fields it may carry, and their
+// vocabularies, come from its kind.
 type Item struct {
 	ID        string   `json:"id"`
 	Title     string   `json:"title"`
 	Summary   string   `json:"summary,omitempty"`
 	Size      string   `json:"size,omitempty"`
+	Category  string   `json:"category,omitempty"`
+	Severity  string   `json:"severity,omitempty"`
+	Status    string   `json:"status,omitempty"`
 	Effort    string   `json:"effort,omitempty"`
 	Impact    int      `json:"impact,omitempty"`
+	Owner     string   `json:"owner,omitempty"`
+	Required  bool     `json:"required,omitempty"`
 	DependsOn []string `json:"dependsOn,omitempty"`
 	Facets    []Facet  `json:"facets,omitempty"`
 }
+
+// Tones are the only colors a kind or a document may assign: the categorical
+// pair, the risk color, and neutral.
+var Tones = []string{"teal", "violet", "risk", "neutral"}
 
 // Facet is a labeled markdown body on an item.
 type Facet struct {
@@ -194,6 +227,18 @@ func Check(doc *Document) []Problem {
 	}
 	if doc.Meta.Fonts != "" && doc.Meta.Fonts != "google" {
 		add("/meta/fonts", "must be omitted or %q", "google")
+	}
+	if len(doc.Meta.Facts) > 4 {
+		add("/meta/facts", "at most four facts fit the masthead")
+	}
+	for i, f := range doc.Meta.Facts {
+		fp := fmt.Sprintf("/meta/facts/%d", i)
+		if strings.TrimSpace(f.Label) == "" || strings.TrimSpace(f.Value) == "" {
+			add(fp, "label and value are required")
+		}
+		if f.Tone != "" && !contains(Tones, f.Tone) {
+			add(fp+"/tone", "must be one of %s", strings.Join(Tones, ", "))
+		}
 	}
 	if len(doc.Sections) == 0 {
 		add("/sections", "at least one section is required")
