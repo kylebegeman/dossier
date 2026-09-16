@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"dossier/internal/diagram"
 	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/render"
@@ -29,7 +30,7 @@ func (r RenderResult) human(w io.Writer) { say(w, "%s", r.HTML) }
 // renderDoor renders one model, from a file or from stdin, and answers with
 // the HTML instead of writing it. Integrations such as the React wrapper
 // call it with --json.
-func renderDoor(_ context.Context, in Input) Envelope {
+func renderDoor(ctx context.Context, in Input) Envelope {
 	args, stdin := in.Args, in.Stdin
 	const id = "render"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
@@ -68,11 +69,13 @@ func renderDoor(_ context.Context, in Input) Envelope {
 		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: problems, Error: &ErrorBody{Code: "invalid", Message: "model did not validate"}}
 	}
 	figures, figureWarnings := render.InlineFigures(l.Doc, dir)
-	html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures})
+	diagrams, diagramWarnings := diagram.Default.Document(ctx, l.Doc)
+	html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures, Diagrams: diagrams})
 	if err != nil {
 		return errorEnvelope(id, "render", err)
 	}
 	warnings := append(l.Warnings, load.Prefix(source, figureWarnings)...)
+	warnings = append(warnings, load.Prefix(source, diagramWarnings)...)
 	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Warnings: warnings,
 		Result: RenderResult{SchemaVersion: "dossier.render-result/v1", Source: source, Slug: l.Doc.Meta.Slug, Bytes: len(html), HTML: string(html)}}
 }

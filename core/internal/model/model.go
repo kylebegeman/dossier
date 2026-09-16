@@ -4,6 +4,8 @@ package model
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -464,4 +466,14 @@ func sortedKeys(m map[string]string) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// DiagramKey identifies a diagram's rendering by its format and source, so
+// a rendered SVG can be looked up for any part with the same diagram.
+func DiagramKey(format, source string) string {
+	if format == "" {
+		format = "dot"
+	}
+	sum := sha256.Sum256([]byte(format + "\x00" + source))
+	return hex.EncodeToString(sum[:])
 }

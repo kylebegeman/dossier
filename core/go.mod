@@ -31,6 +31,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-sql-driver/mysql v1.10.0 // indirect
+	github.com/goccy/go-graphviz v0.2.10
 	github.com/google/cel-go v0.28.0 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -96,3 +97,5 @@ tool (
 	github.com/sqlc-dev/sqlc/cmd/sqlc
 	honnef.co/go/tools/cmd/staticcheck
 )
+
+replace github.com/goccy/go-graphviz => ./third_party/go-graphviz

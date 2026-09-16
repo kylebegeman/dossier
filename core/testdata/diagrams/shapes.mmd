@@ -1,0 +1,9 @@
+flowchart LR
+  %% every node shape Mermaid flowcharts have
+  box[Box] --> rounded(Rounded) --> stadium([Stadium])
+  stadium --> sub[[Subroutine]] --> db[(Database)]
+  db --> circle((Circle)) --> ring(((Ring)))
+  ring --> diamond{Diamond} --> hex{{Hexagon}}
+  hex --> lean[/Lean right/] --> leanl[\Lean left\]
+  leanl --> trap[/Trapezoid\] --> inv[\Inverted/] --> flag>Flag]
+  bare --> quoted["A label with (brackets)"]

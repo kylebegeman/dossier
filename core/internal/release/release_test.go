@@ -18,9 +18,13 @@ func fakeCompile(_ context.Context, _ Config, t Target, dst string) error {
 	return os.WriteFile(dst, []byte("binary for "+t.GOOS+"/"+t.GOARCH), 0o755)
 }
 
+func fakeNotices(_ context.Context, _ Config) ([]byte, error) {
+	return []byte("# Third-party notices\n"), nil
+}
+
 func testConfig(t *testing.T) Config {
 	t.Helper()
-	return Config{Version: "9.8.7", Core: "../..", Repo: "../../..", Out: filepath.Join(t.TempDir(), "dist"), Compile: fakeCompile}
+	return Config{Version: "9.8.7", Core: "../..", Repo: "../../..", Out: filepath.Join(t.TempDir(), "dist"), Compile: fakeCompile, Notices: fakeNotices}
 }
 
 func TestBuildWritesTheDistribution(t *testing.T) {
@@ -32,7 +36,7 @@ func TestBuildWritesTheDistribution(t *testing.T) {
 		"dossier_9.8.7_darwin_arm64.tar.gz", "dossier_9.8.7_linux_amd64.tar.gz", "dossier_9.8.7_windows_amd64.zip",
 		"checksums.txt", "homebrew/dossier.rb",
 		"npm/dossier/package.json", "npm/dossier/bin/dossier.js", "npm/dossier/lib/index.js", "npm/dossier/LICENSE",
-		"npm/dossier-darwin-arm64/bin/dossier", "npm/dossier-win32-x64/bin/dossier.exe", "npm/dossier-linux-x64/package.json",
+		"npm/dossier-darwin-arm64/bin/dossier", "npm/dossier-win32-x64/bin/dossier.exe", "npm/dossier-linux-x64/package.json", "npm/dossier-linux-x64/THIRD_PARTY_NOTICES.md",
 	} {
 		if _, err := os.Stat(filepath.Join(cfg.Out, rel)); err != nil {
 			t.Errorf("missing %s", rel)
@@ -121,7 +125,7 @@ func TestArchivesAreDeterministicAndLaidOut(t *testing.T) {
 			t.Errorf("binary mode %o", hdr.Mode)
 		}
 	}
-	if strings.Join(names, ",") != "dossier,LICENSE,README.md" {
+	if strings.Join(names, ",") != "dossier,LICENSE,THIRD_PARTY_NOTICES.md,README.md" {
 		t.Errorf("archive entries: %v", names)
 	}
 	dir := t.TempDir()
@@ -191,6 +195,39 @@ func TestTargetNames(t *testing.T) {
 	for target, want := range map[Target]string{{"darwin", "arm64"}: "darwin-arm64", {"linux", "amd64"}: "linux-x64", {"windows", "amd64"}: "win32-x64"} {
 		if got := target.NPM(); got != want {
 			t.Errorf("%v: %s", target, got)
+		}
+	}
+}
+
+func TestNoticesCoverEveryLinkedModule(t *testing.T) {
+	if testing.Short() {
+		t.Skip("lists dependencies for every target")
+	}
+	cfg := testConfig(t)
+	notices, err := Notices(context.Background(), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(notices)
+	for _, want := range []string{
+		"## github.com/goccy/go-graphviz v0.2.10\n\nVendored in core/third_party with Dossier's patch",
+		"## github.com/tetratelabs/wazero ",
+		"## github.com/yuin/goldmark ",
+		"## modernc.org/sqlite ",
+		"## The Go standard library and runtime",
+		"## Libraries inside graphviz.wasm",
+		"### graphviz/epl-v10.txt",
+		"Eclipse Public License - v 1.0",
+		"### expat/COPYING",
+		"### wasi-libc/musl-COPYRIGHT",
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("notices lack %q", want)
+		}
+	}
+	for _, gone := range []string{"## dossier ", "github.com/fogleman/gg", "github.com/golang/freetype"} {
+		if strings.Contains(text, gone) {
+			t.Errorf("notices list %q, which the binary does not link", gone)
 		}
 	}
 }

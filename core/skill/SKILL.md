@@ -129,7 +129,8 @@ A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file
 - **Detail sits behind a fold.** Items open collapsed, so the summary line must stand alone.
 - **Ids** are lowercase letters, digits, and hyphens, unique across sections and items. `dependsOn` names item ids.
 - **Markdown** in prose, facets, table cells, and spec text. Raw HTML is escaped. Fenced code is highlighted.
-- **Figures** may use a path relative to the model file; `build` inlines it. Diagrams carry DOT or Mermaid source and render as source for now.
+- **Figures** may use a path relative to the model file; `build` inlines it.
+- **Diagrams** carry DOT or a Mermaid flowchart. `build` lays them out as SVG in the page's colors, with the source one click away. The classes teal, violet, risk, and accent mark nodes, edges, and clusters; other Mermaid diagram types stay as source with a warning.
 - **Color is meaning.** Field values carry the kind's tones: teal for settled, violet for open, ochre for risk. Only the Risk facet is ochre.
 - **One brand color.** `meta.theme.accent` (`#rrggbb`) recolors the accent. Light and dark variants are derived to keep text readable, and a color too light for text is darkened with a warning.
 

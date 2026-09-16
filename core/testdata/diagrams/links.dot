@@ -1,0 +1,38 @@
+digraph {
+  rankdir=TB;
+  "a" [label="a", shape=box, style=rounded];
+  "b" [label="b", shape=box, style=rounded];
+  "c" [label="c", shape=box, style=rounded];
+  "d" [label="d", shape=box, style=rounded];
+  "e" [label="e", shape=box, style=rounded];
+  "f" [label="f", shape=box, style=rounded];
+  "g" [label="g", shape=box, style=rounded];
+  "h" [label="h", shape=box, style=rounded];
+  "i" [label="i", shape=box, style=rounded];
+  "j" [label="j", shape=box, style=rounded];
+  "k" [label="k", shape=box, style=rounded];
+  "l" [label="l", shape=box, style=rounded];
+  "m" [label="m", shape=box, style=rounded];
+  "n" [label="n", shape=box, style=rounded];
+  "o" [label="o", shape=box, style=rounded];
+  "p" [label="p", shape=box, style=rounded];
+  "q" [label="q", shape=box, style=rounded];
+  "r" [label="r", shape=box, style=rounded];
+  "a" -> "b";
+  "a" -> "c" [arrowhead=none];
+  "a" -> "d" [style=dashed];
+  "a" -> "e" [style=dashed, arrowhead=none];
+  "a" -> "f" [style=bold];
+  "a" -> "g" [arrowhead=odot];
+  "a" -> "h" [arrowhead=tee];
+  "a" -> "i" [dir=both, arrowtail=normal];
+  "a" -> "j" [label="pipe label"];
+  "a" -> "k" [label="text label"];
+  "a" -> "l" [label="dotted label", style=dashed];
+  "a" -> "m" [label="thick label", style=bold];
+  "n" -> "p";
+  "n" -> "q";
+  "o" -> "p";
+  "o" -> "q";
+  "p" -> "r";
+}

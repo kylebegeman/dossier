@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"dossier/internal/diagram"
 	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/render"
@@ -39,7 +40,7 @@ func (r BuildResult) human(w io.Writer) {
 	}
 }
 
-func buildDoor(_ context.Context, in Input) Envelope {
+func buildDoor(ctx context.Context, in Input) Envelope {
 	args := in.Args
 	fs := flag.NewFlagSet("build", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -67,7 +68,9 @@ func buildDoor(_ context.Context, in Input) Envelope {
 		warnings = append(warnings, l.Warnings...)
 		figures, figureWarnings := render.InlineFigures(l.Doc, filepath.Dir(path))
 		warnings = append(warnings, load.Prefix(path, figureWarnings)...)
-		html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures})
+		diagrams, diagramWarnings := diagram.Default.Document(ctx, l.Doc)
+		warnings = append(warnings, load.Prefix(path, diagramWarnings)...)
+		html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures, Diagrams: diagrams})
 		if err != nil {
 			return errorEnvelope("build", "render", fmt.Errorf("%s: %w", path, err))
 		}

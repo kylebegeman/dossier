@@ -95,6 +95,14 @@ func edit(target string) templ.Attributes {
 	return templ.Attributes{"data-edit": target}
 }
 
+// formatName is a diagram format as people write it.
+func formatName(format string) string {
+	if format == "mermaid" {
+		return "Mermaid"
+	}
+	return "DOT"
+}
+
 func updatedSuffix(p *Page) string {
 	if p.Doc.Meta.Updated == "" {
 		return ""
@@ -262,15 +270,32 @@ templ partView(part PartView) {
 				}
 			</figure>
 		case "diagram":
-			<div class="part block diagram" data-format={ part.Format }>
-				<div class="block-label">
-					<span>{ part.Format }</span>
-					if part.Title != "" {
-						<span>{ part.Title }</span>
-					}
+			if part.SVG != "" {
+				<figure class="part diagram" data-format={ part.Format }>
+					<div class="dg-frame">
+						@templ.Raw(part.SVG)
+					</div>
+					<figcaption>
+						if part.Title != "" {
+							<span>{ part.Title }</span>
+						}
+						<details class="dg-source">
+							<summary>{ formatName(part.Format) } source</summary>
+							<pre><code>{ part.Code }</code></pre>
+						</details>
+					</figcaption>
+				</figure>
+			} else {
+				<div class="part block diagram" data-format={ part.Format }>
+					<div class="block-label">
+						<span>{ part.Format }</span>
+						if part.Title != "" {
+							<span>{ part.Title }</span>
+						}
+					</div>
+					<pre><code>{ part.Code }</code></pre>
 				</div>
-				<pre><code>{ part.Code }</code></pre>
-			</div>
+			}
 		case "timeline":
 			<ol class="part timeline">
 				for _, e := range part.Events {

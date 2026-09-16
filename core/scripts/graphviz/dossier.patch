@@ -1,0 +1,387 @@
+diff -ruN a/alias.go b/alias.go
+--- a/alias.go	2026-09-16 14:58:25
++++ b/alias.go	2026-09-16 17:54:02
+@@ -86,13 +86,9 @@
+ 	Color               = gvc.Color
+ )
+ 
+-// variables from cgraph package.
+-var (
+-	Directed         = cgraph.Directed
+-	StrictDirected   = cgraph.StrictDirected
+-	UnDirected       = cgraph.UnDirected
+-	StrictUnDirected = cgraph.StrictUnDirected
+-)
++// Dossier patch: the graph descriptor variables are gone. Upstream copied
++// them from cgraph at init, which is only valid after Load; use
++// cgraph.Directed and the others after calling Load.
+ 
+ // const variables from cgraph package.
+ const (
+@@ -332,7 +328,6 @@
+ 
+ // functions from gvc package.
+ var (
+-	SetFontLoader   = gvc.SetFontLoader
+ 	DefaultPlugins  = gvc.DefaultPlugins
+ 	DeviceQuality   = gvc.WithDeviceQuality
+ 	DeviceFeatures  = gvc.WithDeviceFeatures
+@@ -345,6 +340,4 @@
+ 	RenderColorType = gvc.WithRenderColorType
+ 	RenderPAD       = gvc.WithRenderPAD
+ 	NewRenderPlugin = gvc.NewRenderPlugin
+-	PNGRenderPlugin = gvc.PNGRenderPlugin
+-	JPGRenderPlugin = gvc.JPGRenderPlugin
+ )
+diff -ruN a/cgraph/init.go b/cgraph/init.go
+--- a/cgraph/init.go	2026-09-16 14:58:25
++++ b/cgraph/init.go	2026-09-16 17:54:02
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	"context"
++	"sync"
+ 
+ 	"github.com/goccy/go-graphviz/internal/wasm"
+ )
+@@ -13,10 +14,16 @@
+ 	StrictUnDirected *Desc
+ )
+ 
+-func init() {
+-	if err := setGlobalVars(context.Background()); err != nil {
+-		panic(err)
+-	}
++var (
++	initOnce sync.Once
++	initErr  error
++)
++
++// Init sets the graph descriptors once the module is loaded. Dossier patch:
++// replaces upstream's package init.
++func Init(ctx context.Context) error {
++	initOnce.Do(func() { initErr = setGlobalVars(ctx) })
++	return initErr
+ }
+ 
+ func setGlobalVars(ctx context.Context) error {
+diff -ruN a/go.mod b/go.mod
+--- a/go.mod	2026-09-16 14:58:25
++++ b/go.mod	2026-09-16 17:54:02
+@@ -2,19 +2,4 @@
+ 
+ go 1.23.0
+ 
+-require (
+-	github.com/corona10/goimagehash v1.1.0
+-	github.com/disintegration/imaging v1.6.2
+-	github.com/flopp/go-findfont v0.1.0
+-	github.com/fogleman/gg v1.3.0
+-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+-	github.com/tetratelabs/wazero v1.10.1
+-	golang.org/x/image v0.21.0
+-)
+-
+-require (
+-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+-	golang.org/x/text v0.19.0 // indirect
+-)
+-
+-replace github.com/flopp/go-findfont => github.com/goccy/go-findfont v0.0.0-20250109093214-c2e12b298c75
++require github.com/tetratelabs/wazero v1.10.1
+diff -ruN a/graphviz.go b/graphviz.go
+--- a/graphviz.go	2026-09-16 14:58:25
++++ b/graphviz.go	2026-09-16 17:54:02
+@@ -2,7 +2,6 @@
+ 
+ import (
+ 	"context"
+-	"image"
+ 	"io"
+ 	"io/fs"
+ 
+@@ -43,26 +42,50 @@
+ 	JPG  Format = "jpg"
+ )
+ 
++// Load compiles and starts the Graphviz module and prepares the packages that
++// use it. The first call pays for it; later calls return at once. New calls
++// it; call it before ParseBytes. Dossier patch: upstream did this in package
++// init functions.
++func Load(ctx context.Context) error {
++	if err := wasm.Load(); err != nil {
++		return err
++	}
++	if err := cgraph.Init(ctx); err != nil {
++		return err
++	}
++	gvc.Init()
++	return nil
++}
++
++// Loaded reports whether Load has compiled the module.
++func Loaded() bool { return wasm.Loaded() }
++
+ func New(ctx context.Context) (*Graphviz, error) {
++	if err := Load(ctx); err != nil {
++		return nil, err
++	}
+ 	c, err := gvc.New(ctx)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	return &Graphviz{
+ 		ctx:    c,
+-		dir:    Directed,
++		dir:    cgraph.Directed,
+ 		layout: DOT,
+ 	}, nil
+ }
+ 
+ func NewWithPlugins(ctx context.Context, plugins ...Plugin) (*Graphviz, error) {
++	if err := Load(ctx); err != nil {
++		return nil, err
++	}
+ 	c, err := gvc.NewWithPlugins(ctx, plugins...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	return &Graphviz{
+ 		ctx:    c,
+-		dir:    Directed,
++		dir:    cgraph.Directed,
+ 		layout: DOT,
+ 	}, nil
+ }
+@@ -90,23 +113,6 @@
+ 		return err
+ 	}
+ 	return nil
+-}
+-
+-func (g *Graphviz) RenderImage(ctx context.Context, graph *Graph) (img image.Image, e error) {
+-	defer func() {
+-		if err := g.ctx.FreeLayout(ctx, graph); err != nil {
+-			e = err
+-		}
+-	}()
+-
+-	if err := g.ctx.Layout(ctx, graph, string(g.layout)); err != nil {
+-		return nil, err
+-	}
+-	image, err := g.ctx.RenderImage(ctx, graph, string(PNG))
+-	if err != nil {
+-		return nil, err
+-	}
+-	return image, nil
+ }
+ 
+ func (g *Graphviz) RenderFilename(ctx context.Context, graph *Graph, format Format, path string) (e error) {
+diff -ruN a/gvc/gvc.go b/gvc/gvc.go
+--- a/gvc/gvc.go	2026-09-16 14:58:25
++++ b/gvc/gvc.go	2026-09-16 17:54:02
+@@ -1,13 +1,9 @@
+ package gvc
+ 
+ import (
+-	"bytes"
+ 	"context"
+ 	"errors"
+ 	"fmt"
+-	"image"
+-	_ "image/jpeg"
+-	_ "image/png"
+ 	"io"
+ 	"os"
+ 
+@@ -70,18 +66,6 @@
+ 		return err
+ 	}
+ 	return nil
+-}
+-
+-func (c *Context) RenderImage(ctx context.Context, g *cgraph.Graph, format string) (image.Image, error) {
+-	var buf bytes.Buffer
+-	if err := c.RenderData(ctx, g, format, &buf); err != nil {
+-		return nil, err
+-	}
+-	img, _, err := image.Decode(&buf)
+-	if err != nil {
+-		return nil, err
+-	}
+-	return img, nil
+ }
+ 
+ func (c *Context) RenderFilename(ctx context.Context, g *cgraph.Graph, format, filename string) error {
+diff -ruN a/gvc/init.go b/gvc/init.go
+--- a/gvc/init.go	2026-09-16 14:58:25
++++ b/gvc/init.go	2026-09-16 17:54:02
+@@ -1,10 +1,18 @@
+ package gvc
+ 
+ import (
++	"sync"
++
+ 	"github.com/goccy/go-graphviz/internal/wasm"
+ )
+ 
+-func init() {
++var initOnce sync.Once
++
++// Init registers the render callbacks once the module is loaded. Dossier
++// patch: replaces upstream's package init.
++func Init() { initOnce.Do(register) }
++
++func register() {
+ 	getRenderEnginePtr := func(job *wasm.Job) uint64 {
+ 		return job.GetGvc().GetApi()[wasm.API_RENDER].GetTypeptr().GetEngine().(uint64)
+ 	}
+diff -ruN a/gvc/plugin.go b/gvc/plugin.go
+--- a/gvc/plugin.go	2026-09-16 14:58:25
++++ b/gvc/plugin.go	2026-09-16 17:54:02
+@@ -10,32 +10,9 @@
+ 	raw() *wasm.PluginAPI
+ }
+ 
++// DefaultPlugins is empty: the module's built-in plugins lay out graphs and
++// write SVG. Dossier patch: upstream added PNG and JPEG renderers in Go, which
++// pulled font and image libraries into every binary.
+ func DefaultPlugins(ctx context.Context) ([]Plugin, error) {
+-	pngRenderPlugin, err := PNGRenderPlugin(ctx)
+-	if err != nil {
+-		return nil, err
+-	}
+-	pngDevicePlugin, err := PNGDevicePlugin(ctx)
+-	if err != nil {
+-		return nil, err
+-	}
+-	jpgRenderPlugin, err := JPGRenderPlugin(ctx)
+-	if err != nil {
+-		return nil, err
+-	}
+-	jpgDevicePlugin, err := JPGDevicePlugin(ctx)
+-	if err != nil {
+-		return nil, err
+-	}
+-	pngLoadImagePlugin, err := PNGLoadImagePlugin(ctx, pngRenderPlugin.RenderEngine())
+-	if err != nil {
+-		return nil, err
+-	}
+-	return []Plugin{
+-		pngRenderPlugin,
+-		pngDevicePlugin,
+-		jpgRenderPlugin,
+-		jpgDevicePlugin,
+-		pngLoadImagePlugin,
+-	}, nil
++	return []Plugin{}, nil
+ }
+diff -ruN a/gvc/render_plugin.go b/gvc/render_plugin.go
+--- a/gvc/render_plugin.go	2026-09-16 14:58:25
++++ b/gvc/render_plugin.go	2026-09-16 17:54:02
+@@ -245,14 +245,6 @@
+ 	return newRenderPlugin(ctx, cfg)
+ }
+ 
+-func PNGRenderPlugin(ctx context.Context) (*RenderPlugin, error) {
+-	return newRenderPlugin(ctx, defaultRenderPluginConfig("png", newPNGRenderEngine()))
+-}
+-
+-func JPGRenderPlugin(ctx context.Context) (*RenderPlugin, error) {
+-	return newRenderPlugin(ctx, defaultRenderPluginConfig("jpg", newJPGRenderEngine()))
+-}
+-
+ func defaultRenderPluginConfig(typ string, engine RenderEngine) *renderConfig {
+ 	return &renderConfig{
+ 		Type:    typ,
+@@ -265,14 +257,6 @@
+ 		PAD:          4,
+ 		RenderEngine: engine,
+ 	}
+-}
+-
+-func newPNGRenderEngine() *ImageRenderer {
+-	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
+-}
+-
+-func newJPGRenderEngine() *ImageRenderer {
+-	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
+ }
+ 
+ type renderConfig struct {
+diff -ruN a/internal/wasm/bind.go b/internal/wasm/bind.go
+--- a/internal/wasm/bind.go	2026-09-16 14:58:25
++++ b/internal/wasm/bind.go	2026-09-16 17:54:02
+@@ -392,7 +392,10 @@
+ 	}
+ }
+ 
+-func init() {
++// load compiles and instantiates the module. Dossier patch: upstream runs
++// this in init, which made every binary importing go-graphviz pay for it at
++// start; Load in ext.go runs it once, on first use.
++func load() {
+ 	ctx := context.Background()
+ 	cfg := wazero.NewRuntimeConfig()
+ 	if cache := getCompilationCache(); cache != nil {
+@@ -3004,16 +3007,16 @@
+ 	return v.getPtr()
+ }
+ 
++// getCompilationCache keeps compiled code in the user cache directory.
++// Dossier patch: upstream used a shared directory under the temp dir.
+ func getCompilationCache() wazero.CompilationCache {
+-	tmpDir := os.TempDir()
+-	if tmpDir == "" {
++	userCache, err := os.UserCacheDir()
++	if err != nil || userCache == "" {
+ 		return nil
+ 	}
+-	cacheDir := filepath.Join(tmpDir, "go-graphviz")
+-	if _, err := os.Stat(cacheDir); err != nil {
+-		if err := os.Mkdir(cacheDir, 0o755); err != nil {
+-			return nil
+-		}
++	cacheDir := filepath.Join(userCache, "dossier", "graphviz")
++	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
++		return nil
+ 	}
+ 	cache, err := wazero.NewCompilationCacheWithDir(cacheDir)
+ 	if err != nil {
+diff -ruN a/internal/wasm/ext.go b/internal/wasm/ext.go
+--- a/internal/wasm/ext.go	2026-09-16 14:58:25
++++ b/internal/wasm/ext.go	2026-09-16 17:54:02
+@@ -2,9 +2,33 @@
+ 
+ import (
+ 	"context"
++	"fmt"
+ 	"io/fs"
+ 	"sync"
+ )
++
++var (
++	loadOnce sync.Once
++	loadErr  error
++)
++
++// Load compiles and instantiates the Graphviz module the first time it is
++// called, and reports why it could not. Dossier patch: replaces upstream's
++// package init.
++func Load() error {
++	loadOnce.Do(func() {
++		defer func() {
++			if r := recover(); r != nil {
++				loadErr = fmt.Errorf("graphviz: %v", r)
++			}
++		}()
++		load()
++	})
++	return loadErr
++}
++
++// Loaded reports whether the module has been loaded.
++func Loaded() bool { return mod != nil }
+ 
+ func DefaultSymList(ctx context.Context) ([]*SymList, error) {
+ 	p, err := mod.NewPtr(ctx)

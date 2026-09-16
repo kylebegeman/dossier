@@ -1,0 +1,18 @@
+digraph {
+  rankdir=TB;
+  subgraph cluster_0 {
+    label="Booking service";
+    "hold" [label="Hold a place", shape=box, style="", class="violet"];
+    subgraph cluster_1 {
+      label="Payments";
+      "charge" [label="Charge card", shape=box, style="", class="risk"];
+    }
+  }
+  "start" [label="Rider books", shape=box, style="", class="accent violet"];
+  "ticket" [label="Ticket", shape=box, style="", class="teal"];
+  "start" -> "hold";
+  "hold" -> "charge";
+  "charge" -> "ticket";
+}
+// note: Mermaid classdef statements are ignored: diagrams take the page's colors, and the classes teal, violet, risk, and accent mark nodes
+// note: Mermaid style statements are ignored: diagrams take the page's colors, and the classes teal, violet, risk, and accent mark nodes

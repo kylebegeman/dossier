@@ -189,6 +189,34 @@ select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; b
 .chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
 .diagram pre { white-space: pre-wrap; }
 
+/* diagrams: Graphviz geometry, colored by the tokens */
+figure.diagram { margin: 0; display: grid; gap: 8px; }
+.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.dg { display: block; max-width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.dg text { fill: var(--ink); font-family: var(--font-body); font-size: 11px; }
+.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
+.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
+.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
+.dg .edge .hollow { fill: var(--bg); }
+.dg .edge text { fill: var(--muted); font-size: 10px; }
+.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
+.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
+.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
+.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
+figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.dg-source { flex: 1 1 100%; }
+.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
+.dg-source summary:hover { color: var(--ink); }
+.dg-source[open] summary { margin-bottom: 6px; }
+figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
+figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
+
 /* timeline: times in a column, a hairline rail, a dot per event in its tone */
 .timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
 .timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
@@ -328,7 +356,8 @@ select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; b
   .verdicts { border: 0; background: none; }
   body { padding: 0; font-size: 12px; }
   .page { display: block; }
-  .item, .figure, .chart, .timeline li, pre { break-inside: avoid; }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
+  .dg-source { display: none; }
   .item h3 .chev { display: none; }
   .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
   .pick { background: none; color: var(--ink); border: 1px solid var(--line); }

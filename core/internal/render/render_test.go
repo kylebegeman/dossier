@@ -567,3 +567,29 @@ func TestTimelineRendersTimesTonesAndMarkdown(t *testing.T) {
 		}
 	}
 }
+
+func TestDiagramsRenderFromOptionsOrShowSource(t *testing.T) {
+	kind, err := kinds.Load("brief")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := "digraph { a -> b }"
+	doc := &model.Document{Dossier: "1.0", Kind: "brief", Meta: model.Meta{Title: "Flow", Slug: "flow"}, Sections: []model.Section{{ID: "flow", Title: "Flow", Parts: []model.Part{
+		{Type: "diagram", Title: "The flow", Source: source},
+		{Type: "diagram", Format: "mermaid", Source: "pie"},
+	}}}}
+	svg := `<svg class="dg" role="img" aria-label="The flow" viewBox="0 0 10 10"><g class="graph"></g></svg>`
+	html, err := RenderWith(doc, kind, Options{Diagrams: map[string]string{model.DiagramKey("dot", source): svg}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := markupOnly(string(html))
+	for _, want := range []string{
+		`<figure class="part diagram" data-format="dot"><div class="dg-frame">` + svg + `</div><figcaption><span>The flow</span> <details class="dg-source"><summary>DOT source</summary><pre><code>digraph { a -&gt; b }</code></pre></details></figcaption></figure>`,
+		`<div class="part block diagram" data-format="mermaid"><div class="block-label"><span>mermaid</span> </div><pre><code>pie</code></pre></div>`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("output lacks %s", want)
+		}
+	}
+}

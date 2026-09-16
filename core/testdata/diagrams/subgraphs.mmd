@@ -1,0 +1,14 @@
+flowchart TB
+  start[Rider books]:::accent --> hold
+  subgraph booking [Booking service]
+    direction LR
+    hold[Hold a place] --> charge
+    subgraph pay ["Payments"]
+      charge[Charge card]:::risk
+    end
+  end
+  charge --> ticket[Ticket]
+  classDef old fill:#f00
+  style ticket fill:#0f0
+  class ticket teal
+  class hold,start violet
