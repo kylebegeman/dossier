@@ -11,6 +11,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -98,6 +101,7 @@ type Page struct {
 	Reply        string
 	VerdictsJSON string
 	Choice       *ChoiceView
+	Guard        *GuardView
 	// Studio only: the injected studio and the edit targets of the masthead.
 	StudioHTML string
 	EditTitle  string
@@ -159,6 +163,15 @@ type ChoiceView struct {
 	Question string
 	Options  []OptionView
 	Chosen   bool
+}
+
+// GuardView warns in the decision block when the choice goes ahead over
+// items the kind guards, such as shipping over a failed required gate with
+// no waiver. The reader keeps it current: One and Many are the message for
+// one item and for several, with {n} standing for the item numbers.
+type GuardView struct {
+	Choice, Unless, Watch string
+	One, Many, Text       string
 }
 
 // OptionView is one answer to the choice.
@@ -243,9 +256,11 @@ type FacetView struct {
 	Edit  string
 }
 
-// TocGroup is one labeled group in the contents column.
+// TocGroup is one labeled group in the contents column. A group with an ID
+// is a board's own group, and its label links to the board's section.
 type TocGroup struct {
 	Label   string
+	ID      string
 	Entries []TocEntry
 }
 
@@ -433,7 +448,7 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			return nil, err
 		}
 		page.PickHTML = h
-		page.ReplyExample = exampleReply(kind, rules)
+		page.ReplyExample = exampleReply(kind, rules, decisions.Items(doc, rules))
 		verdictsJSON, err := json.Marshal(rules.Verdicts)
 		if err != nil {
 			return nil, err
@@ -453,20 +468,61 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			}
 			page.Choice = cv
 		}
+		if g := rules.Guard; g != nil && rules.Choice != nil {
+			choice, _ := rules.Option(g.Choice)
+			unless := rules.VerdictLabel(g.Unless)
+			gv := &GuardView{
+				Choice: g.Choice,
+				Unless: g.Unless,
+				One:    fmt.Sprintf("%s goes ahead over %s {n}, which is %s and has no %s verdict.", choice.Label, kind.Item.Noun, g.Describe, unless),
+				Many:   fmt.Sprintf("%s goes ahead over %s {n}, which are %s and have no %s verdict.", choice.Label, kind.Item.Plural, g.Describe, unless),
+			}
+			var watch, open []string
+			for _, it := range decisions.Items(doc, rules) {
+				if !g.Watch[it.ID] {
+					continue
+				}
+				watch = append(watch, it.ID)
+				if d.Path == g.Choice && d.Verdicts[it.ID] != g.Unless {
+					open = append(open, strconv.Itoa(it.N))
+				}
+			}
+			gv.Watch = strings.Join(watch, " ")
+			switch len(open) {
+			case 0:
+			case 1:
+				gv.Text = strings.Replace(gv.One, "{n}", open[0], 1)
+			default:
+				gv.Text = strings.Replace(gv.Many, "{n}", strings.Join(open, ", "), 1)
+			}
+			if len(watch) > 0 {
+				page.Guard = gv
+			}
+		}
 	}
 	page.Facts = facts(doc, page, kind, rows)
 	return page, nil
 }
 
-// exampleReply is the kind's example reply, fitted to the document's choice:
-// a kind's answer to its own question becomes the document's first option,
-// and a document that asks a question the kind does not gets its first option
-// in front.
-func exampleReply(kind kinds.Kind, rules decisions.Rules) string {
+// exampleReply is the kind's example reply fitted to the document. When the
+// document replaces the kind's choice, the choice word becomes the
+// document's first option, and a document that asks a question the kind
+// does not gets its first option in front. When the example names items the
+// document cannot take, its numbers move onto ones it can, in order, so the
+// example always applies when pasted back; with too few decidable items for
+// that, it shrinks to its first group on the first of them.
+func exampleReply(kind kinds.Kind, rules decisions.Rules, items []decisions.Item) string {
 	example := kind.Decision.Example
-	if rules.Choice == nil || example == "" {
+	if rules.Choice != nil && example != "" {
+		example = choiceExample(example, kind, rules)
+	}
+	if len(items) == 0 || example == "" {
 		return example
 	}
+	return fitExample(example, rules, items)
+}
+
+func choiceExample(example string, kind kinds.Kind, rules decisions.Rules) string {
 	first := rules.Choice.Options[0].ID
 	n := 0
 	for n < len(example) && (example[n]|0x20) >= 'a' && (example[n]|0x20) <= 'z' {
@@ -484,6 +540,100 @@ func exampleReply(kind kinds.Kind, rules decisions.Rules) string {
 		}
 	}
 	return first + ", " + example
+}
+
+var exampleNumber = regexp.MustCompile(`\b[0-9]+\b`)
+
+func fitExample(example string, rules decisions.Rules, items []decisions.Item) string {
+	head, notes, hasNotes := strings.Cut(example, " Notes: ")
+	noteParts := strings.Split(notes, "; ")
+	var eligible []int
+	can := map[int]bool{}
+	for _, it := range items {
+		if rules.CanDecide(it.ID) {
+			eligible = append(eligible, it.N)
+			can[it.N] = true
+		}
+	}
+	var used []int
+	seen := map[int]bool{}
+	collect := func(s string) {
+		for _, m := range exampleNumber.FindAllString(s, -1) {
+			if n, err := strconv.Atoi(m); err == nil && !seen[n] {
+				seen[n] = true
+				used = append(used, n)
+			}
+		}
+	}
+	collect(head)
+	if hasNotes {
+		for _, p := range noteParts {
+			key, _, _ := strings.Cut(p, ":")
+			collect(key)
+		}
+	}
+	fits := true
+	for _, n := range used {
+		fits = fits && can[n]
+	}
+	if fits || len(eligible) == 0 || strings.Contains(head, "-") {
+		return example
+	}
+	sort.Ints(used)
+	if len(used) > len(eligible) {
+		if loc := exampleNumber.FindStringIndex(head); loc != nil {
+			return head[:loc[0]] + strconv.Itoa(eligible[0]) + "."
+		}
+		return example
+	}
+	// Each number keeps its place when the document can take it; otherwise
+	// it moves to the nearest decidable number at or below it, or above it
+	// when there is none, always leaving room for the numbers still to come.
+	to := map[string]string{}
+	prev := 0
+	for k, n := range used {
+		remaining := len(used) - k - 1
+		room := func(v int) bool {
+			after := 0
+			for _, e := range eligible {
+				if e > v {
+					after++
+				}
+			}
+			return v > prev && after >= remaining
+		}
+		v := 0
+		if can[n] && room(n) {
+			v = n
+		} else {
+			for _, e := range eligible {
+				if !room(e) {
+					continue
+				}
+				if e <= n || v == 0 {
+					v = e
+				}
+				if e >= n {
+					break
+				}
+			}
+		}
+		to[strconv.Itoa(n)] = strconv.Itoa(v)
+		prev = v
+	}
+	move := func(s string) string {
+		return exampleNumber.ReplaceAllStringFunc(s, func(m string) string { return to[m] })
+	}
+	out := move(head)
+	if hasNotes {
+		for i, p := range noteParts {
+			if key, rest, ok := strings.Cut(p, ":"); ok {
+				noteParts[i] = move(key) + ":" + rest
+			}
+		}
+		out += " Notes: " + strings.Join(noteParts, "; ")
+	}
+	return out
 }
 
 // rowCount remembers each rows entry's section, so the facts strip can name
@@ -521,7 +671,15 @@ func columns(kind kinds.Kind) []Column {
 func fields(kind kinds.Kind, it model.Item) ([]Chip, map[string]Cell) {
 	var chips []Chip
 	cells := map[string]Cell{}
-	for _, name := range []string{"size", "category", "severity", "status"} {
+	// The field the kind groups by leads, so a finding reads blocker first.
+	names := []string{"size", "category", "severity", "status"}
+	for i, name := range names {
+		if name == kind.Group && i > 0 {
+			names = append([]string{name}, append(append([]string{}, names[:i]...), names[i+1:]...)...)
+			break
+		}
+	}
+	for _, name := range names {
 		v := kinds.Value(it, name)
 		f := kind.Field(name)
 		if v == "" || f == nil {
@@ -714,27 +872,53 @@ func escape(s string) string {
 	return r.Replace(s)
 }
 
+// contents builds the rail: the sections before the first board as the
+// Frame, the items in groups, and the sections after as the Rest. A kind
+// that groups by a field gathers the items of every board into one set of
+// groups, placed after the first board's title. A kind grouped by section
+// gives each board its own group, headed by a link to its section, and lists
+// a section between two boards under the group before it.
 func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, marks map[string]TocEntry) []TocGroup {
-	var groups []TocGroup
-	current := &TocGroup{Label: "Frame"}
-	seenBoard := false
 	entry := func(it model.Item) TocEntry {
 		m := marks[it.ID]
 		return TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: m.Picked, Tone: m.Tone, Decided: m.Decided}
 	}
-	for _, s := range doc.Sections {
-		current.Entries = append(current.Entries, TocEntry{ID: s.ID, Label: s.Title})
-		if s.Board == nil || s.Board.Layout == "rows" {
-			continue
+	section := func(s model.Section) TocEntry { return TocEntry{ID: s.ID, Label: s.Title} }
+	isBoard := func(s model.Section) bool { return s.Board != nil && s.Board.Layout != "rows" }
+	last := -1
+	for i, s := range doc.Sections {
+		if isBoard(s) {
+			last = i
 		}
-		groups = append(groups, *current)
-		seenBoard = true
-		if f := kind.Field(kind.Group); f != nil && len(f.Values) > 0 {
+	}
+	groups := []TocGroup{{Label: "Frame"}}
+	add := func(e TocEntry) { groups[len(groups)-1].Entries = append(groups[len(groups)-1].Entries, e) }
+	field := kind.Field(kind.Group)
+	byValue := field != nil && len(field.Values) > 0
+	gathered := false
+	for i, s := range doc.Sections {
+		switch {
+		case !isBoard(s):
+			add(section(s))
+		case byValue && gathered:
+			add(section(s))
+		case byValue:
+			add(section(s))
+			gathered = true
+			var items []model.Item
+			for _, t := range doc.Sections[i:] {
+				if isBoard(t) {
+					items = append(items, t.Board.Items...)
+				}
+			}
 			placed := map[string]bool{}
-			for _, value := range f.Values {
+			for _, value := range append(append([]string{}, field.Values...), "") {
 				g := TocGroup{Label: kinds.Capitalize(value)}
-				for _, it := range s.Board.Items {
-					if strings.EqualFold(kinds.Value(it, kind.Group), value) {
+				if value == "" {
+					g.Label = "Other"
+				}
+				for _, it := range items {
+					if !placed[it.ID] && (value == "" || strings.EqualFold(kinds.Value(it, kind.Group), value)) {
 						g.Entries = append(g.Entries, entry(it))
 						placed[it.ID] = true
 					}
@@ -743,28 +927,25 @@ func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, mark
 					groups = append(groups, g)
 				}
 			}
-			other := TocGroup{Label: "Other"}
-			for _, it := range s.Board.Items {
-				if !placed[it.ID] {
-					other.Entries = append(other.Entries, entry(it))
-				}
-			}
-			if len(other.Entries) > 0 {
-				groups = append(groups, other)
-			}
-		} else {
-			g := TocGroup{Label: s.Title}
+			groups = append(groups, TocGroup{Label: "Rest"})
+		default:
+			g := TocGroup{Label: s.Title, ID: s.ID}
 			for _, it := range s.Board.Items {
 				g.Entries = append(g.Entries, entry(it))
 			}
 			groups = append(groups, g)
+			if i == last {
+				groups = append(groups, TocGroup{Label: "Rest"})
+			}
 		}
-		current = &TocGroup{Label: "Rest"}
 	}
-	if len(current.Entries) > 0 || !seenBoard {
-		groups = append(groups, *current)
+	out := groups[:0]
+	for _, g := range groups {
+		if len(g.Entries) > 0 {
+			out = append(out, g)
+		}
 	}
-	return groups
+	return out
 }
 
 // facts builds the masthead strip: the document's own facts, counts by the

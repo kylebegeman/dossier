@@ -5,7 +5,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -111,6 +113,16 @@ func writeAttr(b *strings.Builder, element string, a xml.Attr, prefix string) {
 	switch a.Name.Local {
 	case "viewBox", "width", "height":
 		ok = (element == "svg" || element == "rect") && numeric.MatchString(v)
+		if ok && element == "svg" && a.Name.Local != "viewBox" && strings.HasSuffix(v, "pt") {
+			// Graphviz lays the diagram out in points, with 11pt labels in
+			// Helvetica, which the stylesheet also uses. Sized in pixels
+			// at 12/11 of a pixel a point, labels show at 12px, and a
+			// diagram wider than its frame scrolls rather than shrinking.
+			if pt, err := strconv.ParseFloat(strings.TrimSuffix(v, "pt"), 64); err == nil {
+				fmt.Fprintf(b, ` %s="%spx"`, a.Name.Local, strconv.FormatFloat(math.Round(pt*labelPx/labelPt*10)/10, 'f', -1, 64))
+			}
+			return
+		}
 	case "points", "cx", "cy", "rx", "ry", "r", "x", "y", "x1", "y1", "x2", "y2", "stroke-width", "stroke-dasharray", "dx", "dy":
 		ok = element != "svg" && numeric.MatchString(v)
 	case "d":
@@ -150,6 +162,13 @@ func writeAttr(b *strings.Builder, element string, a xml.Attr, prefix string) {
 		fmt.Fprintf(b, ` %s="%s"`, a.Name.Local, attr(v))
 	}
 }
+
+// A diagram's labels are laid out at labelPt points and shown at labelPx
+// pixels.
+const (
+	labelPt = 11
+	labelPx = 12
+)
 
 func attr(s string) string {
 	var buf bytes.Buffer

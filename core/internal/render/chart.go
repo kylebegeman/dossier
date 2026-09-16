@@ -16,7 +16,8 @@ const (
 	chartPadB = 46
 	chartPadT = 24
 	chartPadR = 24
-	chartTick = 4
+	// chartMaxTicks caps the gridline intervals on the value axis.
+	chartMaxTicks = 6
 )
 
 // chartSVG draws a single-series bar, line, or area chart as inline SVG.
@@ -35,16 +36,11 @@ func chartSVG(title, variant string, data []model.Point) string {
 		maxV = math.Max(maxV, d.Value)
 		minV = math.Min(minV, d.Value)
 	}
-	top := maxV
-	if top == 0 {
-		top = 1
-	}
-	bottom := math.Min(0, minV)
+	bottom, top, step := axis(minV, maxV)
 	span := top - bottom
-	if span == 0 {
-		span = 1
-	}
-	y := func(v float64) float64 { return float64(chartPadT) + ih - ((v-bottom)/span)*ih }
+	// Explicit conversions keep the compiler from fusing a multiply and an
+	// add, so every platform rounds coordinates the same way.
+	y := func(v float64) float64 { return float64(chartPadT) + ih - float64((v-bottom)/span*ih) }
 	f := func(v float64) string { return strconv.FormatFloat(v, 'f', 1, 64) }
 	n := len(data)
 	y0 := y(0)
@@ -56,11 +52,12 @@ func chartSVG(title, variant string, data []model.Point) string {
 	b.WriteString(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ` + strconv.Itoa(chartW) + ` ` + strconv.Itoa(chartH) + `" role="img" aria-label="` + escape(label) + `">`)
 	b.WriteString(`<line x1="` + strconv.Itoa(chartPadL) + `" y1="` + strconv.Itoa(chartPadT) + `" x2="` + strconv.Itoa(chartPadL) + `" y2="` + strconv.Itoa(chartH-chartPadB) + `" stroke="var(--line)"/>`)
 	b.WriteString(`<line x1="` + strconv.Itoa(chartPadL) + `" y1="` + strconv.Itoa(chartH-chartPadB) + `" x2="` + strconv.Itoa(chartW-chartPadR) + `" y2="` + strconv.Itoa(chartH-chartPadB) + `" stroke="var(--line)"/>`)
-	for i := 0; i <= chartTick; i++ {
-		v := bottom + span*float64(i)/chartTick
+	ticks := int(math.Round(span / step))
+	for i := 0; i <= ticks; i++ {
+		v := roundTo(bottom+float64(step*float64(i)), step)
 		ty := y(v)
 		b.WriteString(`<line x1="` + strconv.Itoa(chartPadL) + `" y1="` + f(ty) + `" x2="` + strconv.Itoa(chartW-chartPadR) + `" y2="` + f(ty) + `" stroke="var(--line-soft)"/>`)
-		b.WriteString(`<text x="` + strconv.Itoa(chartPadL-9) + `" y="` + f(ty+4) + `" text-anchor="end" class="tick">` + escape(formatNumber(math.Round(v*100)/100)) + `</text>`)
+		b.WriteString(`<text x="` + strconv.Itoa(chartPadL-9) + `" y="` + f(ty+4) + `" text-anchor="end" class="tick">` + escape(formatNumber(v)) + `</text>`)
 	}
 	b.WriteString(`<line x1="` + strconv.Itoa(chartPadL) + `" y1="` + f(y0) + `" x2="` + strconv.Itoa(chartW-chartPadR) + `" y2="` + f(y0) + `" stroke="var(--muted)"/>`)
 	if variant == "bar" {
@@ -78,20 +75,20 @@ func chartSVG(title, variant string, data []model.Point) string {
 			b.WriteString(`<text x="` + f(cx) + `" y="` + strconv.Itoa(chartH-chartPadB+21) + `" text-anchor="middle">` + escape(d.Label) + `</text>`)
 		}
 	} else {
-		step := 0.0
-		if n > 1 {
-			step = iw / float64(n-1)
-		}
+		// Points sit at the centers of equal slots, as bars do, so the first
+		// value label never lands on the axis labels.
+		gap := iw / float64(n)
+		x := func(i int) float64 { return float64(chartPadL) + float64(gap*float64(i)) + gap/2 }
 		pts := make([]string, n)
 		for i, d := range data {
-			pts[i] = f(float64(chartPadL)+step*float64(i)) + "," + f(y(d.Value))
+			pts[i] = f(x(i)) + "," + f(y(d.Value))
 		}
 		if variant == "area" {
-			b.WriteString(`<polygon points="` + strconv.Itoa(chartPadL) + `,` + f(y0) + ` ` + strings.Join(pts, " ") + ` ` + f(float64(chartPadL)+step*float64(n-1)) + `,` + f(y0) + `" fill="var(--accent)" fill-opacity="0.12"/>`)
+			b.WriteString(`<polygon points="` + f(x(0)) + `,` + f(y0) + ` ` + strings.Join(pts, " ") + ` ` + f(x(n-1)) + `,` + f(y0) + `" fill="var(--accent)" fill-opacity="0.12"/>`)
 		}
 		b.WriteString(`<polyline points="` + strings.Join(pts, " ") + `" fill="none" stroke="var(--accent)" stroke-width="2"/>`)
 		for i, d := range data {
-			cx := float64(chartPadL) + step*float64(i)
+			cx := x(i)
 			cy := y(d.Value)
 			b.WriteString(`<circle cx="` + f(cx) + `" cy="` + f(cy) + `" r="3" fill="var(--accent)"><title>` + escape(d.Label) + `: ` + escape(formatNumber(d.Value)) + `</title></circle>`)
 			b.WriteString(`<text x="` + f(cx) + `" y="` + f(cy-8) + `" text-anchor="middle" class="value">` + escape(formatNumber(d.Value)) + `</text>`)
@@ -100,6 +97,49 @@ func chartSVG(title, variant string, data []model.Point) string {
 	}
 	b.WriteString("</svg>")
 	return b.String()
+}
+
+// axis picks round bounds and a round step for the value axis, so gridlines
+// fall on numbers like 0, 250, 500. Zero is always on the axis, and the
+// step is the smallest of 1, 2, 2.5, 5, and 10 times a power of ten that
+// needs at most chartMaxTicks intervals for positive data; 2.5 is kept for
+// steps of 25 and above, so small counts never get half-step labels.
+func axis(minV, maxV float64) (bottom, top, step float64) {
+	bottom, top = math.Min(0, minV), math.Max(0, maxV)
+	if top == bottom {
+		top = bottom + 1
+	}
+	raw := (top - bottom) / chartMaxTicks
+	mag := 1.0
+	for raw >= 10*mag {
+		mag *= 10
+	}
+	for raw < mag {
+		mag /= 10
+	}
+	step = 10 * mag
+	for _, m := range []float64{1, 2, 2.5, 5} {
+		if m == 2.5 && mag < 10 {
+			continue
+		}
+		if float64(m*mag) >= raw {
+			step = m * mag
+			break
+		}
+	}
+	bottom = roundTo(math.Floor(bottom/step)*step, step)
+	top = roundTo(math.Ceil(top/step)*step, step)
+	return bottom, top, step
+}
+
+// roundTo trims floating-point noise from a multiple of step, such as
+// 0.30000000000000004 for three steps of 0.1.
+func roundTo(v, step float64) float64 {
+	p := 1.0
+	for float64(step*p) != math.Trunc(step*p) && p < 1e9 {
+		p *= 10
+	}
+	return math.Round(v*p) / p
 }
 
 // formatNumber prints a value plainly, with thousands separators past 999.
