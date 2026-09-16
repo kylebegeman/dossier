@@ -61,6 +61,19 @@ type Part struct {
 	Note     string     `json:"note,omitempty"`
 	Lang     string     `json:"lang,omitempty"`
 	Code     string     `json:"code,omitempty"`
+	Src      string     `json:"src,omitempty"`
+	Alt      string     `json:"alt,omitempty"`
+	Caption  string     `json:"caption,omitempty"`
+	Source   string     `json:"source,omitempty"`
+	Format   string     `json:"format,omitempty"`
+	Variant  string     `json:"variant,omitempty"`
+	Data     []Point    `json:"data,omitempty"`
+}
+
+// Point is one labeled value in a chart part.
+type Point struct {
+	Label string  `json:"label"`
+	Value float64 `json:"value"`
 }
 
 // SpecRow is one label and text pair in a spec part.
@@ -110,12 +123,21 @@ type Problem struct {
 func (p Problem) String() string { return p.Path + ": " + p.Message }
 
 // PartTypes lists the content part types the renderer understands.
-var PartTypes = []string{"prose", "spec", "table", "callout", "code"}
+var PartTypes = []string{"prose", "spec", "table", "callout", "code", "figure", "diagram", "chart"}
+
+// DiagramFormats lists the diagram sources a diagram part may carry. Both are
+// emitted as source today; SVG rendering is a later adoption.
+var DiagramFormats = []string{"dot", "mermaid"}
+
+// ChartVariants lists the chart shapes a chart part may take.
+var ChartVariants = []string{"bar", "line", "area"}
 
 // BoardLayouts lists the board layouts the renderer understands.
 var BoardLayouts = []string{"articles", "rows"}
 
 var idPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)
+
+var schemePattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9+.-]*:`)
 
 // Decode reads a document strictly: bounded size, no unknown fields, no
 // trailing data.
@@ -298,7 +320,45 @@ func checkPart(path string, p Part, add func(string, string, ...any)) {
 		if p.Code == "" {
 			add(path+"/code", "is required for code")
 		}
+	case "figure":
+		if strings.TrimSpace(p.Src) == "" {
+			add(path+"/src", "is required for figure")
+		} else if !safeImageSrc(p.Src) {
+			add(path+"/src", "must be a relative path, a data:image URI, or an http(s) URL")
+		}
+	case "diagram":
+		if strings.TrimSpace(p.Source) == "" {
+			add(path+"/source", "is required for diagram")
+		}
+		if p.Format != "" && !contains(DiagramFormats, p.Format) {
+			add(path+"/format", "must be one of %s", strings.Join(DiagramFormats, ", "))
+		}
+	case "chart":
+		if len(p.Data) == 0 {
+			add(path+"/data", "at least one point is required")
+		}
+		for i, pt := range p.Data {
+			if strings.TrimSpace(pt.Label) == "" {
+				add(fmt.Sprintf("%s/data/%d/label", path, i), "is required")
+			}
+		}
+		if p.Variant != "" && !contains(ChartVariants, p.Variant) {
+			add(path+"/variant", "must be one of %s", strings.Join(ChartVariants, ", "))
+		}
 	}
+}
+
+// safeImageSrc accepts relative paths, image data URIs, and http(s) URLs. Any
+// other scheme, notably javascript:, is rejected.
+func safeImageSrc(src string) bool {
+	if strings.HasPrefix(src, "//") {
+		return false
+	}
+	if !schemePattern.MatchString(src) {
+		return true
+	}
+	lower := strings.ToLower(src)
+	return strings.HasPrefix(lower, "data:image/") || strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://")
 }
 
 func contains(list []string, v string) bool {
