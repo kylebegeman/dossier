@@ -1,0 +1,439 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Release 0.6.3 Evidence",
+    "slug": "release-0-6-3",
+    "kicker": "Release evidence",
+    "lede": "Evidence collected for changes from v0.6.2 to bc9a9df.",
+    "updated": "2026-06-30T15:21:19.000Z",
+    "status": "ready"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**Release 0.6.3**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "master · 1 commits · 3 files · clean tree"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "release automation"
+            },
+            {
+              "label": "Tags",
+              "text": "release, evidence, automation"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Version",
+              "text": "0.6.3"
+            },
+            {
+              "label": "Commits",
+              "text": "1"
+            },
+            {
+              "label": "Changed files",
+              "text": "3"
+            },
+            {
+              "label": "Checks",
+              "text": "3"
+            },
+            {
+              "label": "Dirty entries",
+              "text": "0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release-gates",
+      "title": "Release gates",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "version-resolved",
+            "title": "Package version resolved",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- 0.6.3"
+              }
+            ]
+          },
+          {
+            "id": "git-head-resolved",
+            "title": "Git HEAD resolved",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- bc9a9dfb0207232d68952fa650bf9337a3866936"
+              }
+            ]
+          },
+          {
+            "id": "working-tree-clean",
+            "title": "Working tree clean before evidence write",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- No git status entries before writing release evidence."
+              }
+            ]
+          },
+          {
+            "id": "commits-collected",
+            "title": "Release commits collected",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- 1 commit(s) from v0.6.2..HEAD"
+              }
+            ]
+          },
+          {
+            "id": "verification-recorded",
+            "title": "Verification commands recorded",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm test, npm pack --dry-run --json, npm publish --dry-run --access public"
+              }
+            ]
+          },
+          {
+            "id": "package-dry-run",
+            "title": "npm package dry run recorded",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** no"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm pack command listed in verification checks."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "verification-evidence",
+      "title": "Verification evidence",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Commands that completed before this evidence dossier was collected."
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "npm-test",
+            "title": "npm test",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `npm test`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+              }
+            ]
+          },
+          {
+            "id": "npm-pack-dry-run-json",
+            "title": "npm pack --dry-run --json",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `npm pack --dry-run --json`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+              }
+            ]
+          },
+          {
+            "id": "npm-publish-dry-run-access-public",
+            "title": "npm publish --dry-run --access public",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `npm publish --dry-run --access public`\n\n**Expected** Command completes before release evidence collection.\n\n**Actual** Completed before this release dossier was generated."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "commits",
+      "title": "Commits",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Commit",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "bc9a9df",
+              "Use conventional Homebrew tap naming"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "changed-files",
+      "title": "Changed files",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "File",
+            "Status"
+          ],
+          "rows": [
+            [
+              "README.md",
+              "changed"
+            ],
+            [
+              "package-lock.json",
+              "changed"
+            ],
+            [
+              "package.json",
+              "changed"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collected-provenance",
+      "title": "Collected provenance",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "git-head",
+            "title": "Git HEAD",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** command\n\n**Trust** high\n\n**Source** `git rev-parse HEAD`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "bc9a9dfb0207232d68952fa650bf9337a3866936"
+              }
+            ]
+          },
+          {
+            "id": "git-range",
+            "title": "Release range",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** command\n\n**Trust** high\n\n**Source** `git`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "v0.6.2..HEAD"
+              }
+            ]
+          },
+          {
+            "id": "git-status",
+            "title": "Working tree status",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** command\n\n**Trust** high\n\n**Source** `git status --short`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Clean before evidence write."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-trust-report",
+      "title": "Release trust report",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Claims downstream agents can consume before continuing a release."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "Git HEAD",
+              "command",
+              "high",
+              "bc9a9dfb0207232d68952fa650bf9337a3866936"
+            ],
+            [
+              "Git status",
+              "command",
+              "high",
+              "Clean"
+            ],
+            [
+              "Verification commands",
+              "command",
+              "high",
+              "npm test, npm pack --dry-run --json, npm publish --dry-run --access public"
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "claim-head-collected",
+            "title": "Release evidence was collected from bc9a9df.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- git-head"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- source-git-head"
+              }
+            ]
+          },
+          {
+            "id": "claim-tree-clean",
+            "title": "The working tree was clean before writing release evidence.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- git-status"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- source-git-status"
+              }
+            ]
+          },
+          {
+            "id": "claim-checks-passed",
+            "title": "Verification commands completed before evidence collection.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm-test\n- npm-pack-dry-run-json\n- npm-publish-dry-run-access-public"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- source-verification"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-evidence-receipt",
+      "title": "Release evidence receipt",
+      "parts": [
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Outcome",
+              "text": "ready-for-publish"
+            },
+            {
+              "label": "Owner",
+              "text": "release automation"
+            },
+            {
+              "label": "Date",
+              "text": "2026-06-30T15:21:19.000Z"
+            },
+            {
+              "label": "Changed files",
+              "text": "`README.md`, `package-lock.json`, `package.json`"
+            },
+            {
+              "label": "Commands",
+              "text": "`npm test`, `npm pack --dry-run --json`, `npm publish --dry-run --access public`"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

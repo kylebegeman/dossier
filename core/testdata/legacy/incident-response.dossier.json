@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/kylebegeman/dossier/next/schema/dossier.schema.json",
+  "dossierVersion": "1.0",
+  "kind": "incident",
+  "meta": {
+    "title": "Incident Response: API Latency",
+    "slug": "incident-response",
+    "eyebrow": "Incident example",
+    "crumbs": ["Examples", "Incident response"],
+    "status": "review",
+    "owner": "On-call",
+    "updated": "2026-06-29",
+    "tags": ["example", "incident", "operations"],
+    "theme": {
+      "accent": "#b45309",
+      "accent-2": "#92400e",
+      "accent-tint": "rgba(180,83,9,.12)"
+    },
+    "lifecycle": {
+      "stage": "review",
+      "note": "An incident timeline, evidence ledger, decisions, and closeout receipt."
+    }
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Operational packet",
+      "title": "A calm incident page for humans and agents",
+      "lede": "Use this shape during an incident or post-incident review. It keeps the timeline, evidence, decisions, mitigations, and follow-up work in one structured artifact.",
+      "pills": ["Timeline", "Evidence", "Decisions", "Follow-ups"],
+      "sideCards": [
+        { "label": "Severity", "value": "SEV-2" },
+        { "label": "Status", "value": "Mitigated" },
+        { "label": "Owner", "value": "On-call" }
+      ]
+    },
+    {
+      "type": "timeline",
+      "title": "Incident timeline",
+      "phases": [
+        { "label": "09:12", "body": "Latency alert fired for `/api/search` p95 above threshold.", "status": "done" },
+        { "label": "09:18", "body": "Traffic shifted away from the overloaded worker pool.", "status": "done" },
+        { "label": "09:31", "body": "Queue depth returned to normal range.", "status": "done" },
+        { "label": "10:20", "body": "Follow-up patch queued for backpressure and dashboard annotation.", "status": "planned" }
+      ]
+    },
+    {
+      "type": "evidence-log",
+      "title": "Evidence",
+      "items": [
+        { "id": "alert", "title": "Latency alert", "kind": "monitor", "source": "observability", "trust": "high", "body": "p95 latency rose above the paging threshold for 7 minutes." },
+        { "id": "logs", "title": "Worker logs", "kind": "log", "source": "api workers", "trust": "medium", "body": "Retries increased after the upstream search provider slowed down." },
+        { "id": "customer", "title": "Support sample", "kind": "ticket", "source": "support", "trust": "medium", "body": "Three customers reported slow searches during the window." }
+      ]
+    },
+    {
+      "type": "decision-log",
+      "title": "Decisions",
+      "decisions": [
+        { "id": "traffic-shift", "decision": "Shift traffic to warm pool", "owner": "On-call", "rationale": "Mitigates customer impact without changing application code during the incident." },
+        { "id": "defer-index-change", "decision": "Defer index tuning", "owner": "Incident lead", "rationale": "The tuning path needs replay testing and is safer as a follow-up." }
+      ]
+    },
+    {
+      "type": "process-board",
+      "title": "Remediation work",
+      "items": [
+        { "id": "backpressure", "title": "Add upstream backpressure", "summary": "Limit retry bursts when the search provider slows down.", "category": "Reliability", "status": "proposed", "owner": "API team", "priority": "P1", "impact": "High", "effort": "Medium", "verification": ["load test", "synthetic monitor"] },
+        { "id": "dashboard-marker", "title": "Annotate incident dashboard", "summary": "Mark the mitigation window so later analysis is clear.", "category": "Observability", "status": "proposed", "owner": "SRE", "priority": "P2", "impact": "Medium", "effort": "Small" }
+      ]
+    },
+    {
+      "type": "risk-register",
+      "title": "Remaining risks",
+      "risks": [
+        { "risk": "Retry storm returns", "likelihood": "medium", "impact": "high", "mitigation": "Ship backpressure and add a queue-depth alert." },
+        { "risk": "Support misses affected customers", "likelihood": "low", "impact": "medium", "mitigation": "Export affected-account list for support follow-up." }
+      ]
+    },
+    {
+      "type": "process-receipt",
+      "title": "Closeout receipt",
+      "outcome": "Customer impact mitigated, follow-up work queued",
+      "owner": "Incident lead",
+      "date": "2026-06-29",
+      "risks": ["Retry behavior still needs a tested code fix."],
+      "followUps": ["Approve remediation board.", "Attach load-test evidence after patch."]
+    }
+  ]
+}

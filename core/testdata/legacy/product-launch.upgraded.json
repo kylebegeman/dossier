@@ -1,0 +1,236 @@
+{
+  "dossier": "1.0",
+  "kind": "brief",
+  "meta": {
+    "title": "Northstar Notes Launch",
+    "slug": "product-launch",
+    "kicker": "Northstar Notes",
+    "lede": "Use Dossier as a product microsite, feature brief, or launch packet. The page reads like a public launch note, but agents can still inspect the embedded model, claims, and release gates.",
+    "updated": "2026-06-29",
+    "status": "durable"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**A calm product page that still carries structured launch state**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "Launch page · FAQ · Source-backed claims · Static HTML"
+            },
+            {
+              "label": "Audience",
+              "text": "Founders + teams"
+            },
+            {
+              "label": "Primary action",
+              "text": "Join beta"
+            },
+            {
+              "label": "Launch state",
+              "text": "Ready"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "Launch team"
+            },
+            {
+              "label": "Tags",
+              "text": "example, product, marketing"
+            }
+          ]
+        },
+        {
+          "type": "figure",
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='360' viewBox='0 0 900 360'%3E%3Crect width='900' height='360' rx='22' fill='%230f766e'/%3E%3Crect x='62' y='58' width='300' height='244' rx='18' fill='%23ffffff' opacity='.94'/%3E%3Crect x='396' y='78' width='440' height='50' rx='12' fill='%23ccfbf1' opacity='.92'/%3E%3Crect x='396' y='148' width='360' height='28' rx='9' fill='%23ffffff' opacity='.82'/%3E%3Crect x='396' y='192' width='410' height='28' rx='9' fill='%23ffffff' opacity='.68'/%3E%3Crect x='396' y='236' width='300' height='28' rx='9' fill='%23ffffff' opacity='.54'/%3E%3Ccircle cx='212' cy='144' r='52' fill='%23115e59'/%3E%3Cpath d='M178 151l24 24 52-68' fill='none' stroke='%23ccfbf1' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ctext x='212' y='246' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='28' font-weight='700' fill='%23115e59'%3ENorthstar%3C/text%3E%3C/svg%3E",
+          "alt": "Stylized product launch card",
+          "caption": "A product or venue page can use generated or inlined imagery and still remain a portable single file."
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Public-facing",
+              "text": "Hero, feature cards, social proof, FAQ, and a restrained visual system."
+            },
+            {
+              "label": "Agent-readable",
+              "text": "Release gates, source-backed claims, and next steps stay embedded for follow-up work."
+            },
+            {
+              "label": "Easy to host",
+              "text": "Drop the generated HTML into GitHub Pages, a docs site, or an iframe."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "launch-shape",
+      "title": "Launch shape",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "A product page can mix human copy with operational launch state."
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Launch audiences",
+              "text": "3 (sales support, agents)"
+            },
+            {
+              "label": "Beta workflows",
+              "text": "6 (all source backed)"
+            },
+            {
+              "label": "Runtime assets",
+              "text": "0 (offline ready)"
+            },
+            {
+              "label": "File to publish",
+              "text": "1 (portable)"
+            }
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Reader path"
+        },
+        {
+          "type": "prose",
+          "markdown": "1. **Scan** Understand the product promise from the hero and cards.\n2. **Compare** Use tables and FAQs to answer adoption questions.\n3. **Trust** Review source-backed claims and readiness gates.\n4. **Act** Send the generated page to users, reviewers, or agents."
+        }
+      ]
+    },
+    {
+      "id": "feature-snapshot",
+      "title": "Feature snapshot",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Feature",
+            "Why it matters",
+            "Launch status"
+          ],
+          "rows": [
+            [
+              "Offline page",
+              "Sales, support, and partners can open the artifact anywhere.",
+              "Ready"
+            ],
+            [
+              "Embedded model",
+              "Agents can inspect the same source humans approved.",
+              "Ready"
+            ],
+            [
+              "Trust report",
+              "Claims stay tied to sources and evidence.",
+              "Ready"
+            ],
+            [
+              "Export menu",
+              "Readers can download Markdown, JSON, or a digest.",
+              "Ready"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "launch-claims",
+      "title": "Launch claims",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Claims that appear in the page can be grounded in sources and evidence."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "Local build",
+              "command",
+              "high",
+              "The example was generated with the Dossier CLI."
+            ],
+            [
+              "Embedded model",
+              "artifact",
+              "high",
+              "The source model ships inside the generated HTML."
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "single-file",
+            "title": "The launch page is a self-contained HTML artifact.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- build\n- model"
+              }
+            ]
+          },
+          {
+            "id": "agent-readable",
+            "title": "Agents can recover the structured model without DOM scraping.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- model"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "launch-faq",
+      "title": "Launch FAQ",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**Can this replace a marketing site?**\n\nUse it for focused launches, product briefs, internal enablement, or campaign pages. Keep a full CMS for long-lived marketing operations.\n\n**Can the same model drive follow-up work?**\n\nYes. Agents can read the model, trust report, release gates, and notes through export packets or MCP."
+        }
+      ]
+    }
+  ]
+}

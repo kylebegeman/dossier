@@ -1,0 +1,110 @@
+{
+  "$schema": "https://raw.githubusercontent.com/kylebegeman/dossier/next/schema/dossier.schema.json",
+  "dossierVersion": "1.0",
+  "kind": "reader",
+  "meta": {
+    "title": "Northstar Notes Launch",
+    "slug": "product-launch",
+    "eyebrow": "Product launch",
+    "crumbs": ["Examples", "Product launch"],
+    "status": "durable",
+    "owner": "Launch team",
+    "updated": "2026-06-29",
+    "tags": ["example", "product", "marketing"],
+    "theme": {
+      "accent": "#0f766e",
+      "accent-2": "#115e59",
+      "accent-tint": "rgba(15,118,110,.1)"
+    },
+    "lifecycle": {
+      "stage": "durable",
+      "note": "A polished product page rendered from one model."
+    }
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Northstar Notes",
+      "title": "A calm product page that still carries structured launch state",
+      "lede": "Use Dossier as a product microsite, feature brief, or launch packet. The page reads like a public launch note, but agents can still inspect the embedded model, claims, and release gates.",
+      "pills": ["Launch page", "FAQ", "Source-backed claims", "Static HTML"],
+      "sideCards": [
+        { "label": "Audience", "value": "Founders + teams" },
+        { "label": "Primary action", "value": "Join beta" },
+        { "label": "Launch state", "value": "Ready" }
+      ]
+    },
+    {
+      "type": "figure",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='360' viewBox='0 0 900 360'%3E%3Crect width='900' height='360' rx='22' fill='%230f766e'/%3E%3Crect x='62' y='58' width='300' height='244' rx='18' fill='%23ffffff' opacity='.94'/%3E%3Crect x='396' y='78' width='440' height='50' rx='12' fill='%23ccfbf1' opacity='.92'/%3E%3Crect x='396' y='148' width='360' height='28' rx='9' fill='%23ffffff' opacity='.82'/%3E%3Crect x='396' y='192' width='410' height='28' rx='9' fill='%23ffffff' opacity='.68'/%3E%3Crect x='396' y='236' width='300' height='28' rx='9' fill='%23ffffff' opacity='.54'/%3E%3Ccircle cx='212' cy='144' r='52' fill='%23115e59'/%3E%3Cpath d='M178 151l24 24 52-68' fill='none' stroke='%23ccfbf1' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ctext x='212' y='246' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='28' font-weight='700' fill='%23115e59'%3ENorthstar%3C/text%3E%3C/svg%3E",
+      "alt": "Stylized product launch card",
+      "caption": "A product or venue page can use generated or inlined imagery and still remain a portable single file."
+    },
+    {
+      "type": "summary-cards",
+      "cards": [
+        { "title": "Public-facing", "body": "Hero, feature cards, social proof, FAQ, and a restrained visual system.", "tone": "accent" },
+        { "title": "Agent-readable", "body": "Release gates, source-backed claims, and next steps stay embedded for follow-up work.", "tone": "success" },
+        { "title": "Easy to host", "body": "Drop the generated HTML into GitHub Pages, a docs site, or an iframe.", "tone": "highlight" }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Launch shape",
+      "subtitle": "A product page can mix human copy with operational launch state.",
+      "blocks": [
+        {
+          "type": "stat-strip",
+          "stats": [
+            { "value": "3", "label": "Launch audiences", "delta": { "value": "sales", "label": "support, agents", "tone": "up" } },
+            { "value": "6", "label": "Beta workflows", "delta": { "value": "all", "label": "source backed", "tone": "good" } },
+            { "value": "0", "label": "Runtime assets", "delta": "offline ready" },
+            { "value": "1", "label": "File to publish", "delta": { "value": "portable", "tone": "neutral" } }
+          ]
+        },
+        {
+          "type": "flow",
+          "title": "Reader path",
+          "steps": [
+            { "title": "Scan", "body": "Understand the product promise from the hero and cards." },
+            { "title": "Compare", "body": "Use tables and FAQs to answer adoption questions." },
+            { "title": "Trust", "body": "Review source-backed claims and readiness gates." },
+            { "title": "Act", "body": "Send the generated page to users, reviewers, or agents." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Feature snapshot",
+      "columns": ["Feature", "Why it matters", "Launch status"],
+      "rows": [
+        ["Offline page", "Sales, support, and partners can open the artifact anywhere.", "Ready"],
+        ["Embedded model", "Agents can inspect the same source humans approved.", "Ready"],
+        ["Trust report", "Claims stay tied to sources and evidence.", "Ready"],
+        ["Export menu", "Readers can download Markdown, JSON, or a digest.", "Ready"]
+      ]
+    },
+    {
+      "type": "trust-report",
+      "title": "Launch claims",
+      "summary": "Claims that appear in the page can be grounded in sources and evidence.",
+      "sources": [
+        { "id": "build", "label": "Local build", "kind": "command", "trust": "high", "summary": "The example was generated with the Dossier CLI." },
+        { "id": "model", "label": "Embedded model", "kind": "artifact", "trust": "high", "summary": "The source model ships inside the generated HTML." }
+      ],
+      "claims": [
+        { "id": "single-file", "claim": "The launch page is a self-contained HTML artifact.", "status": "verified", "confidence": "high", "sources": ["build", "model"] },
+        { "id": "agent-readable", "claim": "Agents can recover the structured model without DOM scraping.", "status": "verified", "confidence": "high", "sources": ["model"] }
+      ]
+    },
+    {
+      "type": "faq",
+      "title": "Launch FAQ",
+      "items": [
+        { "q": "Can this replace a marketing site?", "a": "Use it for focused launches, product briefs, internal enablement, or campaign pages. Keep a full CMS for long-lived marketing operations." },
+        { "q": "Can the same model drive follow-up work?", "a": "Yes. Agents can read the model, trust report, release gates, and notes through export packets or MCP." }
+      ]
+    }
+  ]
+}
