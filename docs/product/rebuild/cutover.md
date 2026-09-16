@@ -14,8 +14,8 @@ steps when Kyle says go. Deleting and publishing are deliberately not done.
 
 | Criterion from the plan | Status |
 | --- | --- |
-| Every fixture builds with zero warnings other than alias deprecations | Met. `core/testdata/legacy` holds the eight examples, the process scope, and the eight release dossiers; conciseness advice skips upgraded documents. |
-| Budgets pass | Met. Reader 12 KB of 20, stylesheet 20 KB of 30, reference artifact 95 KB of 120. |
+| Every fixture builds with zero warnings other than alias deprecations | Met. `core/testdata/legacy` holds the eight examples, the process scope, and the eight release dossiers, and all 17 upgrade strictly onto their kinds. The seven showcase documents in `core/examples` build with no warnings at all. |
+| Budgets pass | Met. Reader 19.2 KB of 20, stylesheet 29.1 KB of 30, largest showcase page under 100 KB of 120. |
 | The React package wraps the new output | Met. `packages/react` is `@kylebegeman/dossier-react` 0.7.0. |
 | Homebrew and npm ship the binary | Packaged and dry-run with `make dist-check`. Not published. |
 | The README opens with one prompt and one screenshot | Met. |
@@ -47,11 +47,11 @@ steps when Kyle says go. Deleting and publishing are deliberately not done.
 
 - **Pages site.** The live demo builds from `src/`. Rebuild it from
   `dossier build`, or drop it and let the README screenshot carry the page.
-- **Git remote.** None is configured; nothing has been pushed.
-- **Facet vocabularies.** `plan`, `review`, `release`, `incident`, and `brief`
-  accept any labels until their vocabularies are designed.
-- **Diagrams.** DOT and Mermaid render as source. Graphviz through wasm is a
-  separate adoption.
-- **Studio editor.** The Model JSON editor is a textarea with server
-  validation. CodeMirror would mean vendoring a JavaScript bundle into the Go
-  module, which the no-Node rule forbids today.
+- **Connecting to GitHub.** This checkout is not connected to
+  `github.com/kylebegeman/dossier`, whose `master` holds the 0.6 history.
+  This checkout's history is unrelated, so how the two meet is part of
+  cutover. Nothing has been pushed.
+
+Settled since this list was first written: the five later kinds have designed
+vocabularies, diagrams render as SVG through Graphviz wasm, and the studio
+vendors CodeMirror.

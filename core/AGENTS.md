@@ -9,17 +9,32 @@ module follows its toolchain, HTTP, and view rules and records divergences here.
 ## Layout map
 
 - CLI entry, every subcommand is a door: `cmd/dossier`
-- model types, strict decode, aliases: `internal/model`
-- JSON Schemas and validation: `internal/schema`
-- kind presets (embedded JSON) and kind rules: `internal/kinds`
+- model types, strict decode, 0.6 aliases: `internal/model`
+- JSON Schemas for models, kinds, and envelopes: `internal/schema`
+- kind presets (embedded JSON), kind rules, and the registry that adds
+  custom `*.kind.json` kinds: `internal/kinds`
+- decision rules as values, the reply grammar, and decisions documents:
+  `internal/decisions`
 - the one read pipeline and atomic model writer: `internal/load`
-- templ components, markdown, highlighting: `internal/render`
+- templ components, markdown, highlighting, charts, the Markdown rendition:
+  `internal/render`
 - embedded stylesheet and reader runtime: `internal/render/assets`
+- the accent palette derived for both themes: `internal/theme`
+- diagrams: Graphviz SVG and the Mermaid flowchart translator:
+  `internal/diagram`, with go-graphviz vendored and patched in
+  `third_party/go-graphviz` by `scripts/graphviz`
 - doors, catalog, and the result envelope: `internal/doors`
-- the serve studio (handlers, watcher, island): `internal/serve`
+- the serve studio (handlers, watcher, island): `internal/serve`, with the
+  vendored CodeMirror bundle in `internal/serve/assets/vendor`, built by
+  `scripts/codemirror`
 - the studio store (goose migrations, sqlc queries): `internal/store`
-- release builds and dry runs: `internal/release`, `cmd/dossier-release`
-- fixtures and goldens: `examples`, `testdata`, `testdata/legacy`
+- release builds, dry runs, and third-party notices: `internal/release`,
+  `cmd/dossier-release`, licenses in `third_party/licenses`
+- the showcase, one team's document for every kind, and a custom kind:
+  `examples`, `examples/kinds`
+- goldens: `testdata/examples` (full builds of the showcase),
+  `testdata/legacy` (0.6 imports), `testdata/diagrams` (Mermaid to DOT),
+  `testdata/replies.json` (reply cases the React package also runs)
 - outside this module: `../packages/react` (the React wrapper, whose
   `src/model.ts` this module generates) and `../packages/dossier` (the npm
   launcher the release stamps)
@@ -51,20 +66,38 @@ only through `load.WriteModel`.
   server, and the skill all project from that catalog; never describe a
   command in two places.
 - The artifact ships zero external requests by default. Web fonts are opt-in.
-- Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB.
+- Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB,
+  and each showcase page at most 120 KB built.
+- The showcase in `examples` is a fixture set. Every document builds with no
+  findings or warnings and matches its HTML and Markdown goldens in
+  `testdata/examples`; after a deliberate change, review the output and run
+  `UPDATE_GOLDEN=1 go test ./internal/doors -run TestExamples`.
+- Replies have one grammar in two places: `internal/decisions` parses them
+  and the reader writes them. `testdata/replies.json` is written from Go and
+  run by `../packages/react`'s tests, so a grammar change updates both sides
+  and the cases together.
 - Unknown JSON fields are errors. A 0.6 document (`dossierVersion`,
   `blocks`) is rewritten onto the model by `internal/model/alias.go` before
   validation, with a warning per aliased block, never silently. A clean
-  rewrite is warnings and outcome `ok`, never findings. `testdata/legacy` is
-  the parity set; 0.8 removes the aliases.
-- Diagrams emit their DOT or Mermaid source under a format label. SVG
-  rendering through a wasm Graphviz is a later adoption, not a default.
+  rewrite is warnings and outcome `ok`, never findings. Each 0.6 family maps
+  onto its kind's fields and facets, and `dossier upgrade` writes only models
+  that pass the strict checks. `testdata/legacy` is the parity set; 0.8
+  removes the aliases.
+- Diagrams render at build time: DOT through Graphviz compiled to wasm, and
+  Mermaid flowcharts translated to DOT first. The wasm module loads lazily and
+  caches its compiled form in the user cache directory, so `validate`,
+  `describe`, and `render` never load it. The SVG is rebuilt from an
+  allowlist and styled by the tokens; other Mermaid types keep their source
+  with a warning. Change the vendored library only through
+  `scripts/graphviz/vendor.sh` and its patch.
 - Islands policy: the artifact carries one small vanilla JS reader runtime
-  (contents, theme, decisions, copy, and frame messages). Editing tools live
+  (contents, search, theme, decisions, copy, and frame messages). Editing tools live
   only in `serve`, as one studio island injected before the reader. The
   island is deliberate because the page it edits is the artifact itself; it
   holds no authority, and every write is validated by the server.
-- No Node dependencies in this module.
+- No Node dependencies in this module. The one exception is build tooling
+  outside the Go build: `scripts/codemirror` pins CodeMirror in a lockfile
+  and writes a committed bundle with its SHA-256, which a test checks.
 
 ## Content rules every kind enforces
 
