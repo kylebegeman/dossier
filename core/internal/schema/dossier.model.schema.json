@@ -22,6 +22,13 @@
         "updated": { "type": "string", "maxLength": 40 },
         "status": { "type": "string", "maxLength": 40 },
         "fonts": { "type": "string", "enum": ["google"], "description": "Opt in to web fonts. Omitted means the system stack and zero external requests." },
+        "theme": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "accent": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "The brand color as #rrggbb. Light and dark variants are derived so text stays readable; a color too light for text is darkened with a warning." }
+          }
+        },
         "facts": {
           "type": "array",
           "maxItems": 4,

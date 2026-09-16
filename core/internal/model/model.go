@@ -42,9 +42,17 @@ type Meta struct {
 	Updated  string `json:"updated,omitempty"`
 	Status   string `json:"status,omitempty"`
 	Fonts    string `json:"fonts,omitempty"`
+	// Theme holds the one presentation choice a document makes.
+	Theme *Theme `json:"theme,omitempty"`
 	// Facts are up to four document-level figures shown first in the
 	// masthead strip, such as an incident's severity or a release's version.
 	Facts []Fact `json:"facts,omitempty"`
+}
+
+// Theme is the document's brand color. The renderer derives light and dark
+// variants from it that keep text readable.
+type Theme struct {
+	Accent string `json:"accent,omitempty"`
 }
 
 // Fact is one labeled figure in the masthead strip.

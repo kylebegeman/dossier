@@ -78,3 +78,27 @@ func TestWriteModelIsAtomicAndKeepsMode(t *testing.T) {
 		t.Errorf("temporary files left behind: %v", entries)
 	}
 }
+
+func TestAccentTooLightForTextIsAWarning(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	withAccent := func(accent string) []byte {
+		return []byte(strings.Replace(string(data), `"status": "for-decision"`, `"status": "for-decision", "theme": {"accent": "`+accent+`"}`, 1))
+	}
+	doc, problems, err := Bytes("yellow.json", withAccent("#ffd400"))
+	if err != nil || len(problems) > 0 {
+		t.Fatalf("%v %v", err, problems)
+	}
+	found := false
+	for _, w := range doc.Warnings {
+		found = found || (w.Path == "yellow.json#/meta/theme/accent" && strings.Contains(w.Message, "too light to read"))
+	}
+	if !found {
+		t.Errorf("warnings: %v", doc.Warnings)
+	}
+	if _, problems, _ := Bytes("bad.json", withAccent("yellow")); len(problems) == 0 {
+		t.Error("an accent that is not #rrggbb is a finding")
+	}
+}

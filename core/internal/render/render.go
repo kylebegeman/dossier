@@ -21,6 +21,7 @@ import (
 	"dossier/internal/decisions"
 	"dossier/internal/kinds"
 	"dossier/internal/model"
+	"dossier/internal/theme"
 )
 
 //go:embed assets/tokens.css
@@ -282,7 +283,15 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	if strings.Contains(tokensCSS, "</style") || strings.Contains(readerJS, "</script") {
 		return nil, fmt.Errorf("embedded assets must not contain a closing style or script tag")
 	}
-	page.StyleHTML = "<style>\n" + tokensCSS + "</style>"
+	style := tokensCSS
+	if doc.Meta.Theme != nil && doc.Meta.Theme.Accent != "" {
+		palette, _, err := theme.Derive(doc.Meta.Theme.Accent)
+		if err != nil {
+			return nil, err
+		}
+		style += "/* accent from meta.theme.accent */\n" + palette.CSS()
+	}
+	page.StyleHTML = "<style>\n" + style + "</style>"
 	page.ModelScriptHTML = "<script type=\"application/json\" id=\"dossier-model\">" + modelJSON + "</script>"
 	page.ReaderScriptHTML = "<script>\n" + readerJS + "</script>"
 	page.TitleHTML = titleHTML(doc.Meta.Title, doc.Meta.Emphasis)

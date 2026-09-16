@@ -131,6 +131,7 @@ A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file
 - **Markdown** in prose, facets, table cells, and spec text. Raw HTML is escaped. Fenced code is highlighted.
 - **Figures** may use a path relative to the model file; `build` inlines it. Diagrams carry DOT or Mermaid source and render as source for now.
 - **Color is meaning.** Field values carry the kind's tones: teal for settled, violet for open, ochre for risk. Only the Risk facet is ochre.
+- **One brand color.** `meta.theme.accent` (`#rrggbb`) recolors the accent. Light and dark variants are derived to keep text readable, and a color too light for text is darkened with a warning.
 
 ## Workflow
 

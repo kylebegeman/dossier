@@ -510,3 +510,29 @@ func TestExampleRepliesFollowTheDocumentsChoice(t *testing.T) {
 		t.Errorf("an example that is only the kind's choice takes the document's: %q", got)
 	}
 }
+
+func TestAccentAddsTheDerivedPalette(t *testing.T) {
+	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+	plain, err := Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(plain), "meta.theme.accent") {
+		t.Error("no accent, no override")
+	}
+	doc.Meta.Theme = &model.Theme{Accent: "#2563eb"}
+	html, err := Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(html)
+	style := out[:strings.Index(out, "</style>")]
+	for _, want := range []string{"/* accent from meta.theme.accent */", ":root { --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e9f1ff; }", `:root[data-theme="dark"] { --accent: #73a2ff;`} {
+		if !strings.Contains(style, want) {
+			t.Errorf("the stylesheet lacks %q", want)
+		}
+	}
+	if strings.Index(style, "/* accent from meta.theme.accent */") < strings.Index(style, "/* Dossier tokens.") {
+		t.Error("the palette follows the tokens so it wins")
+	}
+}
