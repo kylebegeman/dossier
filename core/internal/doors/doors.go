@@ -185,6 +185,10 @@ func loadDocument(path string) (*loaded, []model.Problem, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	data, aliasWarnings, _, err := model.Normalize(data)
+	if err != nil {
+		return nil, nil, err
+	}
 	problems, err := schema.CheckModel(data)
 	if err != nil {
 		return nil, nil, err
@@ -208,7 +212,8 @@ func loadDocument(path string) (*loaded, []model.Problem, error) {
 	if len(problems) > 0 {
 		return nil, prefix(path, problems), nil
 	}
-	return &loaded{Path: path, Doc: doc, Kind: kind, Warnings: prefix(path, kind.Advise(doc))}, nil, nil
+	warnings := append(prefix(path, aliasWarnings), prefix(path, kind.Advise(doc))...)
+	return &loaded{Path: path, Doc: doc, Kind: kind, Warnings: warnings}, nil, nil
 }
 
 func prefix(path string, problems []model.Problem) []model.Problem {
