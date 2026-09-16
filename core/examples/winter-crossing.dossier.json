@@ -10,6 +10,21 @@
     "updated": "2026-09-16",
     "status": "for-decision"
   },
+  "choice": {
+    "question": "What should winter build for first?",
+    "options": [
+      {
+        "id": "storms",
+        "label": "Storm days",
+        "summary": "Rebooking, warnings, and refunds for the eleven worst days of the season."
+      },
+      {
+        "id": "midweeks",
+        "label": "Quiet midweeks",
+        "summary": "Fares and passes that fill the emptier Tuesday to Thursday boats."
+      }
+    ]
+  },
   "sections": [
     {
       "id": "thesis",

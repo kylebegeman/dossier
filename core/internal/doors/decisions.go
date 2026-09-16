@@ -57,8 +57,12 @@ func decisionsReadDoor(_ context.Context, in Input) Envelope {
 	if len(problems) > 0 {
 		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: problems, Error: &ErrorBody{Code: "invalid", Message: "model did not validate"}}
 	}
-	d := decisions.FromModel(l.Doc)
-	md, err := decisions.Markdown(d)
+	rules := l.Kind.Rules(l.Doc)
+	if rules.Mode == decisions.ModeNone {
+		return errorEnvelope(id, "nothing-to-decide", fmt.Errorf("%s is a %s, and the %s kind has nothing to decide", files[0], l.Kind.ID, l.Kind.ID))
+	}
+	d := decisions.FromModel(l.Doc, rules)
+	md, err := decisions.Markdown(d, rules)
 	if err != nil {
 		return errorEnvelope(id, "render", err)
 	}
@@ -106,9 +110,13 @@ func decisionsApplyDoor(_ context.Context, in Input) Envelope {
 	if len(problems) > 0 {
 		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: problems, Error: &ErrorBody{Code: "invalid", Message: "model did not validate"}}
 	}
+	rules := l.Kind.Rules(l.Doc)
+	if rules.Mode == decisions.ModeNone {
+		return errorEnvelope(id, "nothing-to-decide", fmt.Errorf("%s is a %s, and the %s kind has nothing to decide", files[0], l.Kind.ID, l.Kind.ID))
+	}
 	var d decisions.Document
 	if *reply != "" {
-		d, err = decisions.ParseReply(*reply, decisions.Items(l.Doc))
+		d, err = decisions.ParseReply(*reply, decisions.Items(l.Doc, rules), rules)
 		if err != nil {
 			return errorEnvelope(id, "reply", err)
 		}
@@ -130,8 +138,8 @@ func decisionsApplyDoor(_ context.Context, in Input) Envelope {
 	if l.Upgraded && (*out == "" || sameFile(*out, files[0])) {
 		return errorEnvelope(id, "legacy", fmt.Errorf("%s is a 0.6 document; run dossier upgrade on it first, or pass --out to write the upgraded model elsewhere", files[0]))
 	}
-	if problems := decisions.Apply(l.Doc, d); len(problems) > 0 {
-		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: load.Prefix("decisions", problems), Error: &ErrorBody{Code: "unknown-items", Message: "decisions name items the model does not have"}}
+	if problems := decisions.Apply(l.Doc, d, rules); len(problems) > 0 {
+		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: load.Prefix("decisions", problems), Error: &ErrorBody{Code: "misfit", Message: "the decisions do not fit the model's kind"}}
 	}
 	target := files[0]
 	if *out != "" {
@@ -140,10 +148,10 @@ func decisionsApplyDoor(_ context.Context, in Input) Envelope {
 	if err := load.WriteModel(target, l.Doc); err != nil {
 		return errorEnvelope(id, "write", err)
 	}
-	applied := decisions.FromModel(l.Doc)
+	applied := decisions.FromModel(l.Doc, rules)
 	result := DecisionsResult{SchemaVersion: "dossier.decisions-result/v1", Model: target, Written: []string{target}, Decisions: applied}
 	if *decisionsOut != "" {
-		data, err := decisions.Markdown(applied)
+		data, err := decisions.Markdown(applied, rules)
 		if err != nil {
 			return errorEnvelope(id, "render", err)
 		}
@@ -158,7 +166,8 @@ func decisionsApplyDoor(_ context.Context, in Input) Envelope {
 		}
 		result.Written = append(result.Written, *decisionsOut)
 	}
-	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Result: result}
+	warnings := load.Prefix(target, decisions.Warnings(l.Doc, rules))
+	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Result: result, Warnings: warnings}
 }
 
 // sameFile reports whether two paths name the same file on disk.

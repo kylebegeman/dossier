@@ -1,6 +1,8 @@
-// Package decisions is the reader's side of the loop: what was picked, the
-// path chosen, and notes by item, as one document that people and agents can
-// both read, plus the one-line reply a person types into a thread.
+// Package decisions is the reader's side of the loop: the choice made, picks
+// or verdicts on numbered items, and notes, as one document that people and
+// agents both read, plus the one-line reply a person types into a thread.
+// A document's kind sets the rules; this package takes them as a value and
+// never reads the kind presets itself.
 package decisions
 
 import (
@@ -19,39 +21,149 @@ import (
 // Schema names the decisions document contract.
 const Schema = "dossier.decisions/v1"
 
+// Decision modes.
+const (
+	ModePick    = "pick"
+	ModeVerdict = "verdict"
+	ModeNone    = "none"
+)
+
+// Reserved words cannot be verdict or choice ids, because replies use them.
+var Reserved = []string{"all", "and", "rest", "nothing", "none", "notes"}
+
+// Verdict is one ruling a reader can give an item.
+type Verdict struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+	Tone  string `json:"tone"`
+}
+
+// Guard warns when a choice is made while watched items lack a verdict, such
+// as shipping a release over a failed required gate that nobody waived.
+type Guard struct {
+	Choice string
+	Unless string
+	// Watch holds the ids of the items the guard applies to.
+	Watch map[string]bool
+	// Describe says what the watched items have in common: "failed and required".
+	Describe string
+}
+
+// Rules are what a document's kind says about deciding it.
+type Rules struct {
+	Kind   string
+	Noun   string
+	Plural string
+	Mode   string
+	// Verdicts are in the kind's order, which is also the reply's order.
+	Verdicts []Verdict
+	// Default is the verdict bare numbers take; empty means numbers need one.
+	Default string
+	// Eligible holds the ids of the numbered items that take a verdict. Nil
+	// means every numbered item does.
+	Eligible map[string]bool
+	// EligibleText finishes "only ... take a verdict".
+	EligibleText string
+	// Choice is the document's question, or the kind's default one.
+	Choice *model.Choice
+	Guard  *Guard
+}
+
+// CanDecide reports whether an item takes a verdict under the rules.
+func (r Rules) CanDecide(id string) bool { return r.Eligible == nil || r.Eligible[id] }
+
+// IsVerdict reports whether id is one of the rules' verdicts.
+func (r Rules) IsVerdict(id string) bool {
+	for _, v := range r.Verdicts {
+		if v.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// VerdictLabel is the display label of a verdict id.
+func (r Rules) VerdictLabel(id string) string {
+	for _, v := range r.Verdicts {
+		if v.ID == id {
+			return v.Label
+		}
+	}
+	return id
+}
+
+// Option returns the choice option with the given id.
+func (r Rules) Option(id string) (model.Option, bool) {
+	if r.Choice == nil {
+		return model.Option{}, false
+	}
+	for _, o := range r.Choice.Options {
+		if o.ID == id {
+			return o, true
+		}
+	}
+	return model.Option{}, false
+}
+
+func (r Rules) optionIDs() []string {
+	if r.Choice == nil {
+		return nil
+	}
+	ids := make([]string, len(r.Choice.Options))
+	for i, o := range r.Choice.Options {
+		ids[i] = o.ID
+	}
+	return ids
+}
+
+func (r Rules) verdictIDs() []string {
+	ids := make([]string, len(r.Verdicts))
+	for i, v := range r.Verdicts {
+		ids[i] = v.ID
+	}
+	return ids
+}
+
 // Document is dossier.decisions/v1.
 type Document struct {
-	Schema string            `json:"schema"`
-	Slug   string            `json:"slug"`
-	Title  string            `json:"title,omitempty"`
-	Path   string            `json:"path,omitempty"`
-	Picked []string          `json:"picked"`
-	Notes  map[string]string `json:"notes,omitempty"`
-	Reply  string            `json:"reply,omitempty"`
-	Items  []Item            `json:"items,omitempty"`
+	Schema   string            `json:"schema"`
+	Slug     string            `json:"slug"`
+	Title    string            `json:"title,omitempty"`
+	Kind     string            `json:"kind,omitempty"`
+	Path     string            `json:"path,omitempty"`
+	Picked   []string          `json:"picked"`
+	Verdicts map[string]string `json:"verdicts,omitempty"`
+	Notes    map[string]string `json:"notes,omitempty"`
+	Reply    string            `json:"reply,omitempty"`
+	Items    []Item            `json:"items,omitempty"`
 }
 
 // Item is one numbered item as the decisions document lists it.
 type Item struct {
-	ID     string `json:"id"`
-	N      int    `json:"n"`
-	Title  string `json:"title"`
-	Picked bool   `json:"picked"`
-	Note   string `json:"note,omitempty"`
+	ID      string `json:"id"`
+	N       int    `json:"n"`
+	Title   string `json:"title"`
+	Picked  bool   `json:"picked"`
+	Verdict string `json:"verdict,omitempty"`
+	Note    string `json:"note,omitempty"`
 }
 
-// Items lists the numbered items of a document in order, with the current
-// decisions applied.
-func Items(doc *model.Document) []Item {
-	var out []Item
-	picked := map[string]bool{}
-	notes := map[string]string{}
+// Items lists the numbered items of a document in order, with the model's
+// decisions applied. A kind without decisions numbers nothing.
+func Items(doc *model.Document, rules Rules) []Item {
+	if rules.Mode == ModeNone {
+		return nil
+	}
+	var picked map[string]bool
+	var verdicts, notes map[string]string
 	if doc.Decisions != nil {
+		picked = map[string]bool{}
 		for _, id := range doc.Decisions.Picked {
 			picked[id] = true
 		}
-		notes = doc.Decisions.Notes
+		verdicts, notes = doc.Decisions.Verdicts, doc.Decisions.Notes
 	}
+	var out []Item
 	n := 0
 	for _, s := range doc.Sections {
 		if s.Board == nil || s.Board.Layout == "rows" {
@@ -59,92 +171,143 @@ func Items(doc *model.Document) []Item {
 		}
 		for _, it := range s.Board.Items {
 			n++
-			out = append(out, Item{ID: it.ID, N: n, Title: it.Title, Picked: picked[it.ID], Note: notes[it.ID]})
+			out = append(out, Item{ID: it.ID, N: n, Title: it.Title, Picked: picked[it.ID], Verdict: verdicts[it.ID], Note: notes[it.ID]})
 		}
 	}
 	return out
 }
 
 // FromModel builds the decisions document from a model's own decisions.
-func FromModel(doc *model.Document) Document {
-	items := Items(doc)
-	d := Document{Schema: Schema, Slug: doc.Meta.Slug, Title: doc.Meta.Title, Picked: []string{}, Items: items}
+func FromModel(doc *model.Document, rules Rules) Document {
+	items := Items(doc, rules)
+	d := Document{Schema: Schema, Slug: doc.Meta.Slug, Title: doc.Meta.Title, Kind: rules.Kind, Picked: []string{}, Items: items}
 	if doc.Decisions != nil {
 		d.Path = doc.Decisions.Path
-		if len(doc.Decisions.Notes) > 0 {
-			d.Notes = map[string]string{}
-			for k, v := range doc.Decisions.Notes {
-				d.Notes[k] = v
-			}
-		}
+		d.Verdicts = copyMap(doc.Decisions.Verdicts)
+		d.Notes = copyMap(doc.Decisions.Notes)
 	}
 	for _, it := range items {
 		if it.Picked {
 			d.Picked = append(d.Picked, it.ID)
 		}
 	}
-	d.Reply = ReplyLine(d, items)
+	d.Reply = ReplyLine(d, items, rules)
 	return d
 }
 
-// ReplyLine renders the one line a person replies with:
-// "rebuild, 1, 3. Notes: 3: keep the blue accent."
-func ReplyLine(d Document, items []Item) string {
-	byID := map[string]Item{}
+func copyMap(m map[string]string) map[string]string {
+	if len(m) == 0 {
+		return nil
+	}
+	out := make(map[string]string, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}
+
+// ReplyLine renders the canonical reply: the choice, then picks or verdict
+// groups in the kind's verdict order with ascending numbers, then notes.
+//
+//	storms, 1, 3. Notes: 3: keep the blue accent.
+//	rework, fix 1, 2; later 4. Notes: 4: after the release.
+//
+// The reader writes exactly the same line; a shared test holds them together.
+func ReplyLine(d Document, items []Item, rules Rules) string {
+	number := make(map[string]int, len(items))
+	eligible := 0
 	for _, it := range items {
-		byID[it.ID] = it
-	}
-	var nums []int
-	for _, id := range d.Picked {
-		if it, ok := byID[id]; ok {
-			nums = append(nums, it.N)
+		number[it.ID] = it.N
+		if rules.CanDecide(it.ID) {
+			eligible++
 		}
 	}
-	sort.Ints(nums)
-	var b strings.Builder
-	if d.Path != "" {
-		b.WriteString(d.Path)
-		b.WriteString(", ")
-	}
-	switch {
-	case len(nums) == 0:
-		b.WriteString("nothing")
-	case len(nums) == len(items) && len(items) > 0:
-		b.WriteString("all")
-	default:
-		for i, n := range nums {
-			if i > 0 {
-				b.WriteString(", ")
+	var groups []string
+	switch rules.Mode {
+	case ModePick:
+		nums := numbersOf(d.Picked, number)
+		switch {
+		case len(nums) == 0:
+		case len(nums) == len(items):
+			groups = append(groups, "all")
+		default:
+			groups = append(groups, joinInts(nums))
+		}
+	case ModeVerdict:
+		for _, v := range rules.Verdicts {
+			var ids []string
+			for id, verdict := range d.Verdicts {
+				if verdict == v.ID && rules.CanDecide(id) {
+					ids = append(ids, id)
+				}
 			}
-			b.WriteString(strconv.Itoa(n))
+			nums := numbersOf(ids, number)
+			switch {
+			case len(nums) == 0:
+			case len(nums) == eligible:
+				groups = append(groups, v.ID+" all")
+			default:
+				groups = append(groups, v.ID+" "+joinInts(nums))
+			}
 		}
+	}
+	var b strings.Builder
+	switch {
+	case d.Path != "" && len(groups) > 0:
+		b.WriteString(d.Path + ", " + strings.Join(groups, "; "))
+	case d.Path != "":
+		b.WriteString(d.Path)
+	case len(groups) > 0:
+		b.WriteString(strings.Join(groups, "; "))
+	default:
+		b.WriteString("nothing")
 	}
 	b.WriteString(".")
-	var noteNums []int
-	noteByN := map[int]string{}
+	var noted []string
 	for id, text := range d.Notes {
-		if it, ok := byID[id]; ok && strings.TrimSpace(text) != "" {
-			noteNums = append(noteNums, it.N)
-			noteByN[it.N] = strings.Join(strings.Fields(text), " ")
+		if number[id] > 0 && strings.TrimSpace(text) != "" {
+			noted = append(noted, id)
 		}
 	}
-	if len(noteNums) > 0 {
-		sort.Ints(noteNums)
+	if len(noted) > 0 {
+		sort.Slice(noted, func(i, j int) bool { return number[noted[i]] < number[noted[j]] })
 		b.WriteString(" Notes: ")
-		for i, n := range noteNums {
+		for i, id := range noted {
 			if i > 0 {
 				b.WriteString("; ")
 			}
-			fmt.Fprintf(&b, "%d: %s", n, noteByN[n])
+			fmt.Fprintf(&b, "%d: %s", number[id], strings.Join(strings.Fields(d.Notes[id]), " "))
 		}
 		b.WriteString(".")
 	}
 	return b.String()
 }
 
-// Markdown renders the decisions document: a heading, the reply line, the
-// picked and unpicked lists, and the JSON as a fenced block agents parse.
-func Markdown(d Document) ([]byte, error) {
+func numbersOf(ids []string, number map[string]int) []int {
+	seen := map[int]bool{}
+	var nums []int
+	for _, id := range ids {
+		if n := number[id]; n > 0 && !seen[n] {
+			seen[n] = true
+			nums = append(nums, n)
+		}
+	}
+	sort.Ints(nums)
+	return nums
+}
+
+func joinInts(nums []int) string {
+	parts := make([]string, len(nums))
+	for i, n := range nums {
+		parts[i] = strconv.Itoa(n)
+	}
+	return strings.Join(parts, ", ")
+}
+
+// Markdown renders the decisions document for people: the reply line, the
+// choice, the items grouped by what was decided, and the JSON as a fenced
+// block agents parse.
+func Markdown(d Document, rules Rules) ([]byte, error) {
 	var b bytes.Buffer
 	title := d.Title
 	if title == "" {
@@ -153,23 +316,32 @@ func Markdown(d Document) ([]byte, error) {
 	fmt.Fprintf(&b, "# Decisions for %s\n\n", title)
 	fmt.Fprintf(&b, "Reply: %s\n\n", d.Reply)
 	if d.Path != "" {
-		fmt.Fprintf(&b, "Path: %s\n\n", d.Path)
-	}
-	b.WriteString("## Picked\n\n")
-	any := false
-	for _, it := range d.Items {
-		if it.Picked {
-			any = true
-			writeItem(&b, it)
+		if o, ok := rules.Option(d.Path); ok {
+			fmt.Fprintf(&b, "%s %s (`%s`)\n\n", rules.Choice.Question, o.Label, o.ID)
+		} else {
+			fmt.Fprintf(&b, "Path: %s\n\n", d.Path)
 		}
 	}
-	if !any {
-		b.WriteString("Nothing yet.\n")
-	}
-	b.WriteString("\n## Not picked\n\n")
-	for _, it := range d.Items {
-		if !it.Picked {
-			writeItem(&b, it)
+	switch rules.Mode {
+	case ModeVerdict:
+		writeVerdicts(&b, d, rules)
+	default:
+		b.WriteString("## Picked\n\n")
+		picked := false
+		for _, it := range d.Items {
+			if it.Picked {
+				picked = true
+				writeItem(&b, it)
+			}
+		}
+		if !picked {
+			b.WriteString("Nothing yet.\n")
+		}
+		b.WriteString("\n## Not picked\n\n")
+		for _, it := range d.Items {
+			if !it.Picked {
+				writeItem(&b, it)
+			}
 		}
 	}
 	b.WriteString("\n```json\n")
@@ -181,6 +353,64 @@ func Markdown(d Document) ([]byte, error) {
 	}
 	b.WriteString("```\n")
 	return b.Bytes(), nil
+}
+
+// writeVerdicts lists items under one heading per verdict given, then the
+// undecided items, then notes on items that take no verdict.
+func writeVerdicts(b *bytes.Buffer, d Document, rules Rules) {
+	decided := false
+	for _, v := range rules.Verdicts {
+		var group []Item
+		for _, it := range d.Items {
+			if d.Verdicts[it.ID] == v.ID && rules.CanDecide(it.ID) {
+				group = append(group, it)
+			}
+		}
+		if len(group) == 0 {
+			continue
+		}
+		decided = true
+		fmt.Fprintf(b, "## %s\n\n", v.Label)
+		for _, it := range group {
+			writeItem(b, withNote(it, d))
+		}
+		b.WriteString("\n")
+	}
+	if !decided {
+		b.WriteString("Nothing decided yet.\n\n")
+	}
+	var undecided, other []Item
+	for _, it := range d.Items {
+		switch {
+		case !rules.CanDecide(it.ID):
+			if d.Notes[it.ID] != "" {
+				other = append(other, it)
+			}
+		case !rules.IsVerdict(d.Verdicts[it.ID]):
+			undecided = append(undecided, it)
+		}
+	}
+	if len(undecided) > 0 {
+		b.WriteString("## Undecided\n\n")
+		for _, it := range undecided {
+			writeItem(b, withNote(it, d))
+		}
+		b.WriteString("\n")
+	}
+	if len(other) > 0 {
+		fmt.Fprintf(b, "## Notes on other %s\n\n", rules.Plural)
+		for _, it := range other {
+			writeItem(b, withNote(it, d))
+		}
+		b.WriteString("\n")
+	}
+}
+
+func withNote(it Item, d Document) Item {
+	if note := d.Notes[it.ID]; note != "" {
+		it.Note = note
+	}
+	return it
 }
 
 func writeItem(b *bytes.Buffer, it Item) {
@@ -219,120 +449,166 @@ func Parse(data []byte) (Document, error) {
 	return d, nil
 }
 
-var (
-	tokenPattern = regexp.MustCompile(`[A-Za-z-]+|\d+`)
-	notePattern  = regexp.MustCompile(`^\s*(\d+)\s*:\s*(.+?)\s*$`)
-)
+// Check applies the rules to a model's own decisions: picks only in pick
+// kinds, verdicts only in verdict kinds and only on items that take one, and
+// a path only among the choice's options. Ids the model does not have are
+// model.Check's to report.
+func Check(doc *model.Document, rules Rules) []model.Problem {
+	if doc.Decisions == nil {
+		return nil
+	}
+	dec := doc.Decisions
+	return check(dec.Path, dec.Picked, dec.Verdicts, dec.Notes, Items(doc, rules), rules, "/decisions", false)
+}
 
-// ParseReply turns a reply line back into decisions. Accepted shapes:
-// "1, 3, 7", "rebuild, all", "reshape, 2 4 6. Notes: 4: keep blue; 6: later."
-func ParseReply(text string, items []Item) (Document, error) {
-	d := Document{Schema: Schema, Picked: []string{}}
-	byN := map[int]Item{}
+// Warnings are advice about a model's decisions that never blocks a build: a
+// path with no choice to hold it, and a guard the choice runs over.
+func Warnings(doc *model.Document, rules Rules) []model.Problem {
+	dec := doc.Decisions
+	if dec == nil || rules.Mode == ModeNone {
+		return nil
+	}
+	var out []model.Problem
+	if dec.Path != "" && rules.Choice == nil {
+		out = append(out, model.Problem{Path: "/decisions/path", Message: fmt.Sprintf("the document has no choice, so readers never see the path %q; add a choice or remove the path", dec.Path)})
+	}
+	if g := rules.Guard; g != nil && dec.Path == g.Choice {
+		for _, it := range Items(doc, rules) {
+			if g.Watch[it.ID] && dec.Verdicts[it.ID] != g.Unless {
+				out = append(out, model.Problem{Path: "/decisions/path", Message: fmt.Sprintf("%s goes ahead over %s %d, %s, which is %s and has no %s verdict", g.Choice, rules.Noun, it.N, it.Title, g.Describe, g.Unless)})
+			}
+		}
+	}
+	return out
+}
+
+func check(path string, picked []string, verdicts, notes map[string]string, items []Item, rules Rules, prefix string, unknownIDs bool) []model.Problem {
+	var out []model.Problem
+	add := func(p, format string, args ...any) {
+		out = append(out, model.Problem{Path: prefix + p, Message: fmt.Sprintf(format, args...)})
+	}
+	if rules.Mode == ModeNone {
+		if path != "" || len(picked) > 0 || len(verdicts) > 0 || len(notes) > 0 {
+			add("", "the %s kind has nothing to decide", rules.Kind)
+		}
+		return out
+	}
+	number := make(map[string]int, len(items))
 	for _, it := range items {
-		byN[it.N] = it
+		number[it.ID] = it.N
 	}
-	head, notes := text, ""
-	if i := strings.Index(strings.ToLower(text), "notes:"); i >= 0 {
-		head, notes = text[:i], text[i+len("notes:"):]
+	switch {
+	case path == "":
+	case rules.Choice == nil:
+		if unknownIDs {
+			add("/path", "the document has no choice to make")
+		}
+	default:
+		if _, ok := rules.Option(path); !ok {
+			add("/path", "must be %s", orList(rules.optionIDs()))
+		}
 	}
-	seen := map[string]bool{}
-	for i, tok := range tokenPattern.FindAllString(head, -1) {
-		lower := strings.ToLower(tok)
-		if n, err := strconv.Atoi(tok); err == nil {
-			it, ok := byN[n]
-			if !ok {
-				return Document{}, fmt.Errorf("reply names item %d, but there are %d items", n, len(items))
+	if rules.Mode == ModeVerdict && len(picked) > 0 {
+		add("/picked", "the %s kind decides by verdict (%s), not by picks", rules.Kind, strings.Join(rules.verdictIDs(), ", "))
+	}
+	if rules.Mode == ModePick && len(verdicts) > 0 {
+		add("/verdicts", "the %s kind picks by number and has no verdicts", rules.Kind)
+	}
+	for i, id := range picked {
+		if unknownIDs && number[id] == 0 {
+			add(fmt.Sprintf("/picked/%d", i), "unknown item %q", id)
+		}
+	}
+	ids := make([]string, 0, len(verdicts))
+	for id := range verdicts {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		switch v := verdicts[id]; {
+		case number[id] == 0:
+			if unknownIDs {
+				add("/verdicts/"+id, "unknown item")
 			}
-			if !seen[it.ID] {
-				seen[it.ID] = true
-				d.Picked = append(d.Picked, it.ID)
-			}
-			continue
-		}
-		switch {
-		case lower == "all":
-			for _, it := range items {
-				if !seen[it.ID] {
-					seen[it.ID] = true
-					d.Picked = append(d.Picked, it.ID)
-				}
-			}
-		case lower == "nothing" || lower == "none":
-		case i == 0:
-			d.Path = lower
-		default:
-			return Document{}, fmt.Errorf("reply has an unexpected word %q; write a path first, then numbers, then the notes", tok)
+		case rules.Mode != ModeVerdict:
+		case !rules.IsVerdict(v):
+			add("/verdicts/"+id, "must be %s", orList(rules.verdictIDs()))
+		case !rules.CanDecide(id):
+			add("/verdicts/"+id, "%s %d takes no verdict; only %s do", rules.Noun, number[id], rules.EligibleText)
 		}
 	}
-	for _, entry := range strings.Split(strings.TrimSpace(notes), ";") {
-		entry = strings.TrimSuffix(strings.TrimSpace(entry), ".")
-		if entry == "" {
-			continue
+	if unknownIDs {
+		for _, id := range sortedKeys(notes) {
+			if number[id] == 0 {
+				add("/notes/"+id, "unknown item")
+			}
 		}
-		m := notePattern.FindStringSubmatch(entry)
-		if m == nil {
-			return Document{}, fmt.Errorf("note %q must look like \"3: text\"", entry)
-		}
-		n, _ := strconv.Atoi(m[1])
-		it, ok := byN[n]
-		if !ok {
-			return Document{}, fmt.Errorf("note names item %d, but there are %d items", n, len(items))
-		}
-		if d.Notes == nil {
-			d.Notes = map[string]string{}
-		}
-		d.Notes[it.ID] = m[2]
 	}
-	sortByNumber(&d, byN)
-	return d, nil
+	return out
 }
 
-func sortByNumber(d *Document, byN map[int]Item) {
-	nOf := map[string]int{}
-	for n, it := range byN {
-		nOf[it.ID] = n
-	}
-	sort.Slice(d.Picked, func(i, j int) bool { return nOf[d.Picked[i]] < nOf[d.Picked[j]] })
-}
-
-// Apply writes the decisions into the model. Unknown ids are findings and
-// leave the model untouched.
-func Apply(doc *model.Document, d Document) []model.Problem {
-	known := map[string]bool{}
-	for _, it := range Items(doc) {
-		known[it.ID] = true
-	}
-	var problems []model.Problem
-	for i, id := range d.Picked {
-		if !known[id] {
-			problems = append(problems, model.Problem{Path: fmt.Sprintf("/picked/%d", i), Message: fmt.Sprintf("unknown item %q", id)})
-		}
-	}
-	for id := range d.Notes {
-		if !known[id] {
-			problems = append(problems, model.Problem{Path: "/notes/" + id, Message: "unknown item"})
-		}
-	}
+// Apply writes the decisions into the model when they fit the rules.
+// Problems leave the model untouched.
+func Apply(doc *model.Document, d Document, rules Rules) []model.Problem {
+	items := Items(doc, rules)
+	problems := check(d.Path, d.Picked, d.Verdicts, d.Notes, items, rules, "", true)
 	if d.Slug != "" && d.Slug != doc.Meta.Slug {
 		problems = append(problems, model.Problem{Path: "/slug", Message: fmt.Sprintf("decisions are for %q, model is %q", d.Slug, doc.Meta.Slug)})
+	}
+	if d.Kind != "" && d.Kind != rules.Kind {
+		problems = append(problems, model.Problem{Path: "/kind", Message: fmt.Sprintf("decisions are for a %s, model is a %s", d.Kind, rules.Kind)})
 	}
 	if len(problems) > 0 {
 		return problems
 	}
-	next := &model.Decisions{Path: d.Path, Picked: append([]string{}, d.Picked...)}
-	if len(d.Notes) > 0 {
-		next.Notes = map[string]string{}
-		for k, v := range d.Notes {
-			if strings.TrimSpace(v) != "" {
-				next.Notes[k] = strings.TrimSpace(v)
-			}
+	number := make(map[string]int, len(items))
+	for _, it := range items {
+		number[it.ID] = it.N
+	}
+	next := &model.Decisions{Path: d.Path}
+	seen := map[string]bool{}
+	for _, id := range d.Picked {
+		if !seen[id] {
+			seen[id] = true
+			next.Picked = append(next.Picked, id)
 		}
 	}
-	if next.Path == "" && len(next.Picked) == 0 && len(next.Notes) == 0 {
+	sort.Slice(next.Picked, func(i, j int) bool { return number[next.Picked[i]] < number[next.Picked[j]] })
+	next.Verdicts = copyMap(d.Verdicts)
+	for id, v := range d.Notes {
+		if v = strings.TrimSpace(v); v != "" {
+			if next.Notes == nil {
+				next.Notes = map[string]string{}
+			}
+			next.Notes[id] = v
+		}
+	}
+	if next.Path == "" && len(next.Picked) == 0 && len(next.Verdicts) == 0 && len(next.Notes) == 0 {
 		doc.Decisions = nil
 		return nil
 	}
 	doc.Decisions = next
 	return nil
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// orList joins words for a message: "a", "a or b", "a, b, or c".
+func orList(words []string) string {
+	switch len(words) {
+	case 0:
+		return ""
+	case 1:
+		return words[0]
+	case 2:
+		return words[0] + " or " + words[1]
+	}
+	return strings.Join(words[:len(words)-1], ", ") + ", or " + words[len(words)-1]
 }

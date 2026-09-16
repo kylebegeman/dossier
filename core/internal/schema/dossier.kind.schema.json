@@ -101,6 +101,18 @@
         "default": { "type": "string", "pattern": "^[a-z]{1,24}$" },
         "when": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } } },
         "choice": { "$ref": "#/$defs/choice" },
+        "guard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["choice", "when", "unless"],
+          "description": "Warn when the reader picks this option while items matching when, and required when set, lack the verdict unless.",
+          "properties": {
+            "choice": { "type": "string", "pattern": "^[a-z]{1,24}$" },
+            "when": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "type": "string" } } },
+            "required": { "type": "boolean" },
+            "unless": { "type": "string", "pattern": "^[a-z]{1,24}$" }
+          }
+        },
         "title": { "type": "string", "maxLength": 60 },
         "markdown": { "type": "string", "maxLength": 600 },
         "example": { "type": "string", "maxLength": 200 }

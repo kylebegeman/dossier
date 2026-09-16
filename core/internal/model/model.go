@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -21,9 +22,12 @@ const MaxDocumentBytes = 4 << 20
 // Document is one dossier: a kind, metadata, ordered sections, and the
 // reader's decisions.
 type Document struct {
-	Dossier   string     `json:"dossier"`
-	Kind      string     `json:"kind"`
-	Meta      Meta       `json:"meta"`
+	Dossier string `json:"dossier"`
+	Kind    string `json:"kind"`
+	Meta    Meta   `json:"meta"`
+	// Choice is the one question asked before the items, replacing the kind's
+	// default question when set.
+	Choice    *Choice    `json:"choice,omitempty"`
 	Sections  []Section  `json:"sections"`
 	Decisions *Decisions `json:"decisions,omitempty"`
 }
@@ -140,11 +144,13 @@ type Facet struct {
 	Markdown string `json:"markdown"`
 }
 
-// Decisions is the only state a document carries.
+// Decisions is the only state a document carries: the option chosen, picked
+// item ids in a pick kind, verdicts by item id in a verdict kind, and notes.
 type Decisions struct {
-	Path   string            `json:"path,omitempty"`
-	Picked []string          `json:"picked,omitempty"`
-	Notes  map[string]string `json:"notes,omitempty"`
+	Path     string            `json:"path,omitempty"`
+	Picked   []string          `json:"picked,omitempty"`
+	Verdicts map[string]string `json:"verdicts,omitempty"`
+	Notes    map[string]string `json:"notes,omitempty"`
 }
 
 // Problem is one validation finding with a JSON-pointer style path.
@@ -317,7 +323,12 @@ func Check(doc *Document) []Problem {
 				add(fmt.Sprintf("/decisions/picked/%d", pi), "refers to unknown item %q", id)
 			}
 		}
-		for id := range doc.Decisions.Notes {
+		for _, id := range sortedKeys(doc.Decisions.Verdicts) {
+			if !itemIDs[id] {
+				add("/decisions/verdicts/"+id, "refers to unknown item")
+			}
+		}
+		for _, id := range sortedKeys(doc.Decisions.Notes) {
 			if !itemIDs[id] {
 				add("/decisions/notes/"+id, "refers to unknown item")
 			}
@@ -413,4 +424,13 @@ func contains(list []string, v string) bool {
 		}
 	}
 	return false
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }

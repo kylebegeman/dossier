@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dossier.dev/schemas/dossier.model/v1",
   "title": "dossier.model/v1",
-  "description": "One Dossier document: a kind, metadata, ordered sections with content parts or a board of items, and the reader's decisions.",
+  "description": "One Dossier document: a kind, metadata, an optional question for the reader, ordered sections with content parts or a board of items, and the reader's decisions.",
   "type": "object",
   "additionalProperties": false,
   "required": ["dossier", "kind", "meta", "sections"],
@@ -39,6 +39,7 @@
         }
       }
     },
+    "choice": { "$ref": "#/$defs/choice" },
     "sections": {
       "type": "array",
       "minItems": 1,
@@ -113,12 +114,37 @@
         "facets": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "markdown"], "properties": { "label": { "type": "string", "minLength": 1, "maxLength": 60 }, "markdown": { "type": "string", "minLength": 1 } } } }
       }
     },
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "options"],
+      "description": "One question the reader answers before the items, such as ship or hold. Option ids are single lowercase words that replies use.",
+      "properties": {
+        "question": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z]{1,24}$" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "summary": { "type": "string", "maxLength": 200 }
+            }
+          }
+        }
+      }
+    },
     "decisions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "path": { "type": "string", "maxLength": 40 },
-        "picked": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "path": { "type": "string", "maxLength": 40, "description": "The chosen option id." },
+        "picked": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "Picked item ids, in a pick kind." },
+        "verdicts": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-z]{1,24}$" }, "description": "Verdict ids by item id, in a verdict kind." },
         "notes": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 2000 } }
       }
     }

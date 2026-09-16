@@ -3,10 +3,15 @@
  * runs inside a frame. This is the contract DossierFrame listens for.
  */
 
-/** The reader's decisions: the path, picked item ids in item order, notes by id, and the reply line. */
+/**
+ * The reader's decisions: the chosen option id, picked item ids in item order
+ * (pick kinds), verdicts by item id (verdict kinds), notes by item id, and the
+ * reply line.
+ */
 export interface ReaderDecisions {
   path: string;
   picked: string[];
+  verdicts: Record<string, string>;
   notes: Record<string, string>;
   reply: string;
 }
@@ -17,6 +22,17 @@ export type ReaderMessage =
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Copies a record whose values are all strings, or returns null. */
+function stringRecord(value: unknown): Record<string, string> | null {
+  if (!isRecord(value)) return null;
+  const out: Record<string, string> = {};
+  for (const [key, text] of Object.entries(value)) {
+    if (typeof text !== "string") return null;
+    out[key] = text;
+  }
+  return out;
 }
 
 /**
@@ -34,12 +50,10 @@ export function readerMessage(data: unknown): ReaderMessage | null {
     const d = data.decisions;
     if (typeof d.path !== "string" || typeof d.reply !== "string" || !Array.isArray(d.picked) || !isRecord(d.notes)) return null;
     if (!d.picked.every((id): id is string => typeof id === "string")) return null;
-    const notes: Record<string, string> = {};
-    for (const [id, note] of Object.entries(d.notes)) {
-      if (typeof note !== "string") return null;
-      notes[id] = note;
-    }
-    return { type: "dossier:decisions", slug: data.slug, decisions: { path: d.path, picked: [...d.picked], notes, reply: d.reply } };
+    const notes = stringRecord(d.notes);
+    const verdicts = d.verdicts === undefined ? {} : stringRecord(d.verdicts);
+    if (!notes || !verdicts) return null;
+    return { type: "dossier:decisions", slug: data.slug, decisions: { path: d.path, picked: [...d.picked], verdicts, notes, reply: d.reply } };
   }
   return null;
 }

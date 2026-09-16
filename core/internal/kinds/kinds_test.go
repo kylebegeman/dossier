@@ -3,9 +3,11 @@ package kinds
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
+	"dossier/internal/decisions"
 	"dossier/internal/model"
 	"dossier/internal/schema"
 )
@@ -263,5 +265,134 @@ func TestOpenLoadsCustomKindsFromDirectories(t *testing.T) {
 	}
 	if got := SplitDirs("a" + string(os.PathListSeparator) + " " + string(os.PathListSeparator) + "b"); strings.Join(got, ",") != "a,b" {
 		t.Errorf("SplitDirs: %v", got)
+	}
+}
+
+// decidable builds a document of the kind with eight items that every rule
+// of the kind lets a reader decide.
+func decidable(k Kind) *model.Document {
+	var items []model.Item
+	for i := 1; i <= 8; i++ {
+		it := model.Item{ID: "item-" + string(rune('a'+i-1)), Title: "Item", Required: k.Fields.Required != nil}
+		for field, values := range k.Decision.When {
+			switch field {
+			case "size":
+				it.Size = values[0]
+			case "category":
+				it.Category = values[0]
+			case "severity":
+				it.Severity = values[0]
+			case "status":
+				it.Status = values[0]
+			}
+		}
+		items = append(items, it)
+	}
+	return doc(k.ID, items...)
+}
+
+func TestEveryExampleReplyParses(t *testing.T) {
+	all, err := All()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, k := range all {
+		if !k.Decides() {
+			continue
+		}
+		d := decidable(k)
+		rules := k.Rules(d)
+		items := decisions.Items(d, rules)
+		parsed, err := decisions.ParseReply(k.Decision.Example, items, rules)
+		if err != nil {
+			t.Errorf("%s: the example %q does not parse: %v", k.ID, k.Decision.Example, err)
+			continue
+		}
+		if len(parsed.Picked)+len(parsed.Verdicts) == 0 {
+			t.Errorf("%s: the example %q decides nothing", k.ID, k.Decision.Example)
+		}
+		if p := decisions.Apply(d, parsed, rules); len(p) > 0 {
+			t.Errorf("%s: the example does not apply: %v", k.ID, p)
+		}
+	}
+}
+
+func TestRulesFollowTheKindAndTheDocument(t *testing.T) {
+	release := load(t, "release")
+	d := doc("release",
+		model.Item{ID: "unit", Title: "Unit tests", Status: "passed", Required: true},
+		model.Item{ID: "arm", Title: "arm64 build", Status: "Failed", Required: true},
+		model.Item{ID: "docs", Title: "Docs preview", Status: "pending"},
+		model.Item{ID: "perf", Title: "Perf budget", Status: "failed"},
+	)
+	rules := release.Rules(d)
+	if rules.Mode != decisions.ModeVerdict || rules.Default != "" || rules.Choice == nil || rules.Choice.Options[0].ID != "ship" {
+		t.Errorf("release rules: %+v", rules)
+	}
+	if !reflect.DeepEqual(rules.Eligible, map[string]bool{"arm": true, "docs": true, "perf": true}) || rules.EligibleText != "gates with status failed or pending" {
+		t.Errorf("eligible: %v %q", rules.Eligible, rules.EligibleText)
+	}
+	if g := rules.Guard; g == nil || !reflect.DeepEqual(g.Watch, map[string]bool{"arm": true}) || g.Describe != "failed and required" {
+		t.Errorf("guard: %+v", rules.Guard)
+	}
+	d.Decisions = &model.Decisions{Path: "ship", Verdicts: map[string]string{"perf": "waive"}}
+	if got := joined(release.Advise(d)); !strings.Contains(got, "ship goes ahead over gate 2, arm64 build, which is failed and required and has no waive verdict") {
+		t.Errorf("the guard warns: %s", got)
+	}
+	d.Choice = &model.Choice{Question: "Which train?", Options: []model.Option{{ID: "stable", Label: "Stable"}, {ID: "beta", Label: "Beta"}}}
+	if rules := release.Rules(d); rules.Choice.Options[0].ID != "stable" || rules.Guard != nil {
+		t.Errorf("a document choice replaces the kind's, and a guard on a missing option lapses: %+v", rules)
+	}
+	if got := joined(release.Check(d)); !strings.Contains(got, "/decisions/path: must be stable or beta") {
+		t.Errorf("the path must answer the document's choice: %s", got)
+	}
+	if rules := load(t, "brief").Rules(d); rules.Mode != decisions.ModeNone {
+		t.Errorf("brief decides nothing: %+v", rules)
+	}
+}
+
+func TestCheckChoicesAndDecisions(t *testing.T) {
+	review := load(t, "review")
+	d := doc("review", model.Item{ID: "a", Title: "A", Severity: "minor", Facets: facets("Where", "Why it matters")})
+	d.Choice = &model.Choice{Question: "Merge?", Options: []model.Option{{ID: "fix", Label: "Fix it"}, {ID: "all", Label: "All"}}}
+	d.Decisions = &model.Decisions{Picked: []string{"a"}, Verdicts: map[string]string{"a": "merge"}}
+	got := joined(review.Check(d))
+	for _, want := range []string{
+		`/choice/options/1/id: "all" must be a unique lowercase word that is not reserved`,
+		`/choice/options/0/id: "fix" is also a verdict of the review kind`,
+		"/decisions/picked: the review kind decides by verdict (fix, later, skip), not by picks",
+		"/decisions/verdicts/a: must be fix, later, or skip",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want %q in:\n%s", want, got)
+		}
+	}
+	brief := load(t, "brief")
+	b := doc("brief", model.Item{ID: "a", Title: "A"})
+	b.Choice = &model.Choice{Question: "Q?", Options: []model.Option{{ID: "yes", Label: "Yes"}, {ID: "no", Label: "No"}}}
+	b.Decisions = &model.Decisions{Notes: map[string]string{"a": "x"}}
+	got = joined(brief.Check(b))
+	for _, want := range []string{"/choice: the brief kind has nothing to decide, so it asks no question", "/decisions: the brief kind has nothing to decide"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want %q in:\n%s", want, got)
+		}
+	}
+}
+
+func TestValidateGuards(t *testing.T) {
+	good := load(t, "release")
+	for name, mutate := range map[string]func(g *GuardRule){
+		"unless is not a verdict":   func(g *GuardRule) { g.Unless = "ignore" },
+		"choice is not an option":   func(g *GuardRule) { g.Choice = "launch" },
+		"when is not a value":       func(g *GuardRule) { g.When = map[string][]string{"status": {"broken"}} },
+		"when on a free-text field": func(g *GuardRule) { g.When = map[string][]string{"owner": {"x"}} },
+	} {
+		k := good
+		guard := *good.Decision.Guard
+		mutate(&guard)
+		k.Decision.Guard = &guard
+		if len(k.Validate()) == 0 {
+			t.Errorf("%s: accepted", name)
+		}
 	}
 }
