@@ -1,0 +1,35 @@
+{
+  "id": "review",
+  "title": "Review",
+  "summary": "Findings or candidates for one reviewer to accept or send back by number. Facet vocabulary arrives with the skill; any labels pass for now.",
+  "items": {
+    "numbered": true,
+    "effort": [
+      "S",
+      "M",
+      "L"
+    ],
+    "impact": {
+      "min": 1,
+      "max": 5
+    },
+    "limits": {
+      "summary": 160,
+      "facet": 420
+    }
+  },
+  "summary_table": {
+    "columns": [
+      "number",
+      "title",
+      "effort",
+      "impact"
+    ],
+    "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions."
+  },
+  "contents": {},
+  "pick": {
+    "title": "How to reply",
+    "markdown": "Reply with the numbers you approve, for example `1, 3`, and a note on anything to revise or block."
+  }
+}

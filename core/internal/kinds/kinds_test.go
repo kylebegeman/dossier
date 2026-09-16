@@ -19,16 +19,50 @@ func TestLoadAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(all) == 0 {
-		t.Fatal("no presets embedded")
-	}
+	var ids []string
 	for _, k := range all {
-		if k.Pick.Title == "" || len(k.Items.Facets) == 0 {
+		ids = append(ids, k.ID)
+		if k.Title == "" || k.Summary == "" || k.Items.Limits == nil {
 			t.Errorf("%s: preset is incomplete", k.ID)
 		}
+		if k.Items.Numbered && len(k.SummaryTable.Columns) == 0 {
+			t.Errorf("%s: a numbered kind needs summary table columns", k.ID)
+		}
+	}
+	if got := strings.Join(ids, ","); got != "brainstorm,brief,incident,plan,release,review" {
+		t.Errorf("unexpected preset set %s", got)
+	}
+	b, err := Load("brainstorm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b.Pick.Title == "" || len(b.Items.Facets) == 0 {
+		t.Error("brainstorm must carry a facet vocabulary and a pick block")
 	}
 	if _, err := Load("nope"); err == nil {
 		t.Error("unknown kind must fail")
+	}
+}
+
+func TestPermissiveKindsAcceptAnyFacets(t *testing.T) {
+	for _, id := range []string{"plan", "review", "release", "incident", "brief"} {
+		k, err := Load(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(k.Items.Facets) != 0 || len(k.Items.Size) != 0 {
+			t.Errorf("%s: expected no facet vocabulary or size list yet", id)
+		}
+		doc := brainstormDoc(model.Facet{Label: "Status", Markdown: "x"}, model.Facet{Label: "Anything", Markdown: "y"})
+		doc.Kind = id
+		doc.Sections[0].Board.Items[0].Size = ""
+		if p := k.Check(doc); len(p) != 0 {
+			t.Errorf("%s: permissive kind rejected facets: %v", id, p)
+		}
+		doc.Sections[0].Board.Items[0].Effort = "XL"
+		if p := k.Check(doc); len(p) != 1 {
+			t.Errorf("%s: effort outside S, M, L should be one problem, got %v", id, p)
+		}
 	}
 }
 
