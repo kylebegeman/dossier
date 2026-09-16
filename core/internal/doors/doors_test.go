@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"dossier/internal/decisions"
+	"dossier/internal/schema"
 )
 
 func copyExample(t *testing.T) string {
@@ -32,6 +33,12 @@ func run(t *testing.T, args ...string) (Envelope, int) {
 	var env Envelope
 	if err := json.Unmarshal(stdout.Bytes(), &env); err != nil {
 		t.Fatalf("envelope is not JSON: %v\nstdout: %s\nstderr: %s", err, stdout.String(), stderr.String())
+	}
+	if problems, err := schema.CheckEnvelope(stdout.Bytes()); err != nil || len(problems) > 0 {
+		t.Errorf("%v: envelope violates dossier.result/v1: %v %v", args, err, problems)
+	}
+	if code != env.ExitCode() {
+		t.Errorf("%v: exit code %d does not match outcome %s", args, code, env.Outcome)
 	}
 	return env, code
 }
@@ -168,5 +175,76 @@ func TestBuildLegacyDocument(t *testing.T) {
 	env, code = run(t, "validate", src)
 	if code != 0 || env.Outcome != OutcomeOK {
 		t.Errorf("legacy validate: %d %+v", code, env)
+	}
+}
+
+func TestInitWritesAValidStarterForEveryKind(t *testing.T) {
+	dir := t.TempDir()
+	for _, kind := range []string{"brainstorm", "plan", "review", "release", "incident", "brief"} {
+		env, code := run(t, "init", kind, "--out", dir, "--title", "Test "+kind)
+		if code != 0 || env.Outcome != OutcomeOK {
+			t.Fatalf("init %s: %d %+v", kind, code, env)
+		}
+		raw, _ := json.Marshal(env.Result)
+		var result InitResult
+		if err := json.Unmarshal(raw, &result); err != nil {
+			t.Fatal(err)
+		}
+		if result.Kind != kind || result.Slug != "test-"+kind || result.Model != filepath.Join(dir, "test-"+kind+".dossier.json") {
+			t.Errorf("init result: %+v", result)
+		}
+		env, code = run(t, "validate", result.Model)
+		if code != 0 || len(env.Warnings) != 0 {
+			t.Errorf("starter for %s does not validate cleanly: %d %+v", kind, code, env)
+		}
+		env, code = run(t, "build", result.Model, "--out", dir)
+		if code != 0 {
+			t.Errorf("starter for %s does not build: %+v", kind, env)
+		}
+	}
+	env, code := run(t, "init", "brainstorm", "--out", dir, "--title", "Test brainstorm")
+	if code != 1 || env.Error == nil || env.Error.Code != "exists" {
+		t.Errorf("init must refuse to overwrite without --force: %d %+v", code, env)
+	}
+	if _, code := run(t, "init", "brainstorm", "--out", dir, "--title", "Test brainstorm", "--force"); code != 0 {
+		t.Error("init --force must overwrite")
+	}
+	if env, code := run(t, "init", "nope"); code != 1 || env.Error == nil || !strings.Contains(env.Error.Message, "unknown kind") {
+		t.Errorf("unknown kind: %d %+v", code, env)
+	}
+	if _, code := run(t, "init"); code != 1 {
+		t.Error("init without a kind is a usage error")
+	}
+}
+
+func TestCatalogPositionalsMatchParameters(t *testing.T) {
+	c, err := LoadCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, cmd := range c.Commands {
+		if _, ok := registry[cmd.ID]; !ok {
+			t.Errorf("%s is in the catalog but has no door", cmd.ID)
+		}
+		var params struct {
+			Properties map[string]json.RawMessage `json:"properties"`
+		}
+		if err := json.Unmarshal(cmd.Parameters, &params); err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range cmd.Positional {
+			if _, ok := params.Properties[p]; !ok {
+				t.Errorf("%s: positional %q is not a parameter", cmd.ID, p)
+			}
+		}
+	}
+	for id := range registry {
+		found := false
+		for _, cmd := range c.Commands {
+			found = found || cmd.ID == id
+		}
+		if !found {
+			t.Errorf("door %s is not in the catalog", id)
+		}
 	}
 }
