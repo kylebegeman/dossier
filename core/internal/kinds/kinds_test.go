@@ -1,10 +1,13 @@
 package kinds
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"dossier/internal/model"
+	"dossier/internal/schema"
 )
 
 func load(t *testing.T, id string) Kind {
@@ -197,5 +200,68 @@ func TestSlug(t *testing.T) {
 		if got := Slug(in); got != want {
 			t.Errorf("Slug(%q) = %q", in, got)
 		}
+	}
+}
+
+func TestBuiltInKindsPassTheKindSchema(t *testing.T) {
+	for _, k := range Builtin().All() {
+		data, err := PresetJSON(k.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		problems, err := schema.CheckKind(data)
+		if err != nil || len(problems) > 0 {
+			t.Errorf("%s: %v %v", k.ID, err, problems)
+		}
+	}
+}
+
+func TestOpenLoadsCustomKindsFromDirectories(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name string, body string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	retro, err := PresetJSON("brief")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("retro.kind.json", strings.Replace(string(retro), `"id": "brief"`, `"id": "retro"`, 1))
+	write("shadow.kind.json", string(retro))
+	write("broken.kind.json", `{"id":"broken","title":"B"}`)
+	write("ignored.json", `{"not":"a kind"}`)
+	r, problems, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := joined(problems)
+	for _, want := range []string{"shadow.kind.json#/id: kind \"brief\" is built in", "broken.kind.json#"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want %q in:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "ignored.json") {
+		t.Error("only *.kind.json files are kinds")
+	}
+	k, err := r.Load("retro")
+	if err != nil || k.ID != "retro" || r.Source("retro") != filepath.Join(dir, "retro.kind.json") || r.Source("brief") != BuiltinSource {
+		t.Errorf("custom kind: %+v %v %s", k.ID, err, r.Source("retro"))
+	}
+	if len(r.All()) != 7 {
+		t.Errorf("six built-ins plus one custom kind, got %d", len(r.All()))
+	}
+	if Builtin().Stamp() != "" || r.Stamp() == "" {
+		t.Error("stamps cover custom kind files only")
+	}
+	if _, _, err := Open(filepath.Join(dir, "missing")); err == nil {
+		t.Error("a missing directory is an error")
+	}
+	if _, err := Builtin().Load("retro"); err == nil {
+		t.Error("custom kinds never leak into the built-in registry")
+	}
+	if got := SplitDirs("a" + string(os.PathListSeparator) + " " + string(os.PathListSeparator) + "b"); strings.Join(got, ",") != "a,b" {
+		t.Errorf("SplitDirs: %v", got)
 	}
 }

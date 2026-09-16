@@ -207,7 +207,7 @@ func (s *Server) putDraft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	applyDrafts(candidate, drafts)
-	if _, problems, err := load.Check(s.cfg.Model, candidate); err != nil || len(problems) > 0 {
+	if _, problems, err := s.loader().Check(s.cfg.Model, candidate); err != nil || len(problems) > 0 {
 		if err != nil {
 			problem(w, http.StatusUnprocessableEntity, "%v", err)
 			return
@@ -319,7 +319,7 @@ func (s *Server) commitDrafts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	fresh, problems, err := load.File(s.cfg.Model)
+	fresh, problems, err := s.loader().File(s.cfg.Model)
 	if err != nil || len(problems) > 0 {
 		writeJSON(w, http.StatusConflict, response{Error: "the model file changed and does not validate", Findings: problems})
 		return
@@ -335,7 +335,7 @@ func (s *Server) commitDrafts(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, response{OK: true, Conflicts: conflicts})
 		return
 	}
-	if _, problems, err := load.Check(s.cfg.Model, doc); err != nil || len(problems) > 0 {
+	if _, problems, err := s.loader().Check(s.cfg.Model, doc); err != nil || len(problems) > 0 {
 		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "the drafts together make the model invalid", Findings: problems, Conflicts: conflicts})
 		return
 	}
@@ -402,7 +402,7 @@ func (s *Server) applyDecisions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	fresh, problems, err := load.File(s.cfg.Model)
+	fresh, problems, err := s.loader().File(s.cfg.Model)
 	if err != nil || len(problems) > 0 {
 		writeJSON(w, http.StatusConflict, response{Error: "the model file changed and does not validate", Findings: problems})
 		return
@@ -417,7 +417,7 @@ func (s *Server) applyDecisions(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "the decisions do not fit the model", Findings: problems})
 		return
 	}
-	if _, problems, err := load.Check(s.cfg.Model, fresh.Doc); err != nil || len(problems) > 0 {
+	if _, problems, err := s.loader().Check(s.cfg.Model, fresh.Doc); err != nil || len(problems) > 0 {
 		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "the decided model does not validate", Findings: problems})
 		return
 	}
@@ -451,7 +451,7 @@ func (s *Server) putModel(w http.ResponseWriter, r *http.Request) {
 	}
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()
-	l, problems, err := load.Bytes(s.cfg.Model, data)
+	l, problems, err := s.loader().Bytes(s.cfg.Model, data)
 	if err != nil {
 		problem(w, http.StatusUnprocessableEntity, "%v", err)
 		return
@@ -477,7 +477,7 @@ func (s *Server) validate(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	l, problems, err := load.Bytes(s.cfg.Model, data)
+	l, problems, err := s.loader().Bytes(s.cfg.Model, data)
 	switch {
 	case err != nil:
 		writeJSON(w, http.StatusOK, response{OK: false, Outcome: "error", Error: err.Error()})

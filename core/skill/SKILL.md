@@ -114,6 +114,10 @@ Findings on one change for one reviewer to rule on. Items are **findings**, numb
 - **Decision:** verdicts fix, later, skip (bare numbers mean fix); choice approve or rework.
 - **Reply:** Choose approve or rework, then rule on findings by number. Numbers without a word mean fix. For example `rework, fix 1, 2; later 4; skip 6. Notes: 4: after the release.`
 
+### Custom kinds
+
+A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file per kind in a directory, starting from a preset that `dossier describe --json` prints and leaving out its `source`, and pass `--kinds DIR` to any command or list directories in `DOSSIER_KINDS`. Every command checks kind files first and answers with findings until they are valid; a custom kind cannot reuse a built-in id. `describe` shows where each kind came from, and `serve` and `mcp` pick up edits to kind files without a restart.
+
 ## Content rules
 
 - **Effort is agent time, never calendar time.** `S` is under an hour, `M` a few hours with review, `L` a day or more across sessions. Never write days-of-work or weeks-of-work.

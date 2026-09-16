@@ -193,13 +193,22 @@ func Parse(data []byte) (Kind, error) {
 		return Kind{}, err
 	}
 	if problems := k.Validate(); len(problems) > 0 {
-		var msgs []string
-		for _, p := range problems {
-			msgs = append(msgs, p.String())
-		}
-		return Kind{}, fmt.Errorf("invalid kind: %s", strings.Join(msgs, "; "))
+		return Kind{}, &InvalidError{Problems: problems}
 	}
 	return k, nil
+}
+
+// InvalidError reports a preset that decoded but broke the preset rules.
+type InvalidError struct {
+	Problems []model.Problem
+}
+
+func (e *InvalidError) Error() string {
+	var msgs []string
+	for _, p := range e.Problems {
+		msgs = append(msgs, p.String())
+	}
+	return "invalid kind: " + strings.Join(msgs, "; ")
 }
 
 // Validate checks a preset against the rules the JSON Schema cannot state.

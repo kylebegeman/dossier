@@ -56,7 +56,7 @@ func buildDoor(_ context.Context, in Input) Envelope {
 	var findings, warnings []model.Problem
 	for _, path := range files {
 		started := time.Now()
-		l, problems, err := load.File(path)
+		l, problems, err := in.loader().File(path)
 		if err != nil {
 			return errorEnvelope("build", "read", err)
 		}
@@ -143,7 +143,7 @@ func validateDoor(_ context.Context, in Input) Envelope {
 	result := ValidateResult{SchemaVersion: "dossier.validate-result/v1"}
 	var findings, warnings []model.Problem
 	for _, path := range files {
-		l, problems, err := load.File(path)
+		l, problems, err := in.loader().File(path)
 		if err != nil {
 			return errorEnvelope("validate", "read", err)
 		}

@@ -31,7 +31,7 @@ func start(t *testing.T, fixture string) *harness {
 	return startWith(t, data)
 }
 
-func startWith(t *testing.T, data []byte) *harness {
+func startWith(t *testing.T, data []byte, kindDirs ...string) *harness {
 	t.Helper()
 	dir := t.TempDir()
 	path := filepath.Join(dir, "doc.dossier.json")
@@ -39,7 +39,7 @@ func startWith(t *testing.T, data []byte) *harness {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	srv, err := New(ctx, Config{Model: path, Addr: "127.0.0.1:0", Poll: 20 * time.Millisecond, Version: "test"})
+	srv, err := New(ctx, Config{Model: path, Addr: "127.0.0.1:0", KindDirs: kindDirs, Poll: 20 * time.Millisecond, Version: "test"})
 	if err != nil {
 		cancel()
 		t.Fatal(err)
@@ -345,6 +345,46 @@ func TestExternalEditsPublishReload(t *testing.T) {
 	expect(t, lines, "event: reload")
 	if !strings.Contains(h.page(), "Changed outside the studio.") {
 		t.Error("the page must follow the file")
+	}
+}
+
+func TestCustomKindsReloadWithTheirFiles(t *testing.T) {
+	kindFile := filepath.Join(t.TempDir(), "retro.kind.json")
+	original, err := os.ReadFile("../../examples/kinds/retro.kind.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(kindFile, original, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	retro := `{"dossier":"1.0","kind":"retro","meta":{"title":"Sprint 14 retro","slug":"sprint-14"},"sections":[
+	{"id":"context","title":"Context","parts":[{"type":"prose","markdown":"Two weeks on the spring timetable."}]},
+	{"id":"kept","title":"Worth keeping","board":{"layout":"rows","items":[{"id":"pairing","title":"Pairing on releases"}]}},
+	{"id":"experiments","title":"Experiments","board":{"items":[{"id":"quiet-hours","title":"Quiet hours","summary":"Two meeting-free afternoons a week.","category":"people","owner":"Ines","effort":"S",
+	"facets":[{"label":"What we saw","markdown":"Reviews waited on meetings."},{"label":"Try","markdown":"Block Tuesday and Thursday afternoons."}]}]}}]}`
+	h := startWith(t, []byte(retro), filepath.Dir(kindFile))
+	if page := h.page(); !strings.Contains(page, `id="dossier-model"`) || !strings.Contains(page, "What we saw") {
+		t.Fatal("a custom kind renders in the studio")
+	}
+	lines := h.stream()
+	expect(t, lines, ": connected")
+	stricter := strings.Replace(string(original), `{"label": "We will know when", "hint"`, `{"label": "We will know when", "required": true, "hint"`, 1)
+	if stricter == string(original) {
+		t.Fatal("the fixture no longer has the facet this test tightens")
+	}
+	if err := os.WriteFile(kindFile, []byte(stricter), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	expect(t, lines, "event: reload")
+	if page := h.page(); !strings.Contains(page, "The model does not validate") || !strings.Contains(page, `missing facet \"We will know when\"`) {
+		t.Errorf("a stricter kind file reloads and the model gains findings:\n%s", page)
+	}
+	if err := os.WriteFile(kindFile, []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	expect(t, lines, "event: reload")
+	if page := h.page(); !strings.Contains(page, "retro.kind.json") {
+		t.Error("a broken kind file is a finding on the page")
 	}
 }
 

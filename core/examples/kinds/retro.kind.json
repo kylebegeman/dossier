@@ -1,0 +1,64 @@
+{
+  "id": "retro",
+  "title": "Retro",
+  "summary": "What a team learned from a stretch of work, and the experiments it will try next.",
+  "item": {"noun": "experiment", "plural": "experiments", "numbered": true},
+  "fields": {
+    "category": {
+      "label": "Theme",
+      "values": ["process", "tooling", "people"],
+      "tones": {"tooling": "violet", "people": "teal"}
+    },
+    "effort": {"values": ["S", "M", "L"]},
+    "owner": {"text": true}
+  },
+  "facets": [
+    {
+      "label": "What we saw",
+      "required": true,
+      "hint": "The moment or pattern that prompted this, in one or two sentences."
+    },
+    {
+      "label": "Try",
+      "required": true,
+      "hint": "The experiment, small enough to run before the next retro."
+    },
+    {"label": "We will know when", "hint": "The signal that says it worked."},
+    {"label": "Note", "hint": "Anything the team must know that fits nowhere else."}
+  ],
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context",
+      "hint": "The stretch of work in one paragraph: dates, goal, and how it went."
+    },
+    {
+      "id": "kept",
+      "title": "Worth keeping",
+      "layout": "rows",
+      "hint": "One line for each habit or tool that earned its place."
+    },
+    {
+      "id": "experiments",
+      "title": "Experiments",
+      "board": true,
+      "hint": "Each experiment the team could try before the next retro."
+    }
+  ],
+  "columns": ["number", "title", "category", "owner", "effort", "decision"],
+  "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.",
+  "group": "category",
+  "decision": {
+    "mode": "verdict",
+    "verdicts": [
+      {"id": "try", "label": "Try", "tone": "teal"},
+      {"id": "later", "label": "Later", "tone": "violet"},
+      {"id": "skip", "label": "Skip", "tone": "neutral"}
+    ],
+    "default": "try",
+    "title": "Choose the experiments",
+    "markdown": "Choose experiments by number. Numbers without a word mean try.",
+    "example": "try 1, 3; later 2. Notes: 3: pair on it first."
+  },
+  "limits": {"summary": 160, "facet": 420}
+}
