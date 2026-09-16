@@ -3,6 +3,7 @@ package render
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -24,26 +25,26 @@ func Markdown(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 	var b bytes.Buffer
 	w := func(format string, args ...any) { fmt.Fprintf(&b, format, args...) }
 
-	w("# %s\n\n", oneLine(doc.Meta.Title))
+	w("# %s\n\n", plain(doc.Meta.Title))
 	if doc.Meta.Kicker != "" {
-		w("*%s*\n\n", oneLine(doc.Meta.Kicker))
+		w("*%s*\n\n", plain(doc.Meta.Kicker))
 	}
 	if doc.Meta.Lede != "" {
-		w("%s\n\n", strings.TrimSpace(doc.Meta.Lede))
+		w("%s\n\n", paragraph(doc.Meta.Lede))
 	}
 	if len(page.Facts) > 0 {
 		var facts []string
 		for _, f := range page.Facts {
-			facts = append(facts, "**"+oneLine(f.Value)+"** "+oneLine(f.Label))
+			facts = append(facts, "**"+plain(f.Value)+"** "+plain(f.Label))
 		}
 		w("%s\n\n", strings.Join(facts, " · "))
 	}
 	if stamp := strings.Trim(strings.Join([]string{doc.Meta.Updated, doc.Meta.Status}, " · "), " ·"); stamp != "" {
-		w("%s\n\n", stamp)
+		w("%s\n\n", paragraph(stamp))
 	}
 
 	for si, s := range doc.Sections {
-		w("## %s\n\n", oneLine(s.Title))
+		w("## %s\n\n", plain(s.Title))
 		for _, p := range s.Parts {
 			markdownPart(&b, p)
 		}
@@ -58,7 +59,7 @@ func Markdown(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 		if view.Summary {
 			markdownSummary(&b, view, page)
 			if view.Legend != "" {
-				w("*%s*\n\n", oneLine(view.Legend))
+				w("*%s*\n\n", plain(view.Legend))
 			}
 		}
 		for i, it := range s.Board.Items {
@@ -67,16 +68,16 @@ func Markdown(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 	}
 
 	if page.Decides {
-		w("## %s\n\n", oneLine(kind.Decision.Title))
+		w("## %s\n\n", plain(kind.Decision.Title))
 		if md := strings.TrimSpace(kind.Decision.Markdown); md != "" {
 			w("%s\n\n", md)
 		}
 		if c := page.Choice; c != nil {
-			w("**%s**\n\n", oneLine(c.Question))
+			w("**%s**\n\n", plain(c.Question))
 			for _, o := range c.Options {
-				line := fmt.Sprintf("- `%s` **%s**", o.ID, oneLine(o.Label))
+				line := fmt.Sprintf("- `%s` **%s**", o.ID, plain(o.Label))
 				if o.Summary != "" {
-					line += ": " + oneLine(o.Summary)
+					line += ": " + plain(o.Summary)
 				}
 				if o.Checked {
 					line += " (chosen)"
@@ -84,6 +85,9 @@ func Markdown(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 				w("%s\n", line)
 			}
 			w("\n")
+		}
+		if g := page.Guard; g != nil && g.Text != "" {
+			w("**Warning:** %s\n\n", plain(g.Text))
 		}
 		if page.ReplyExample != "" {
 			w("For example: `%s`\n\n", page.ReplyExample)
@@ -108,7 +112,7 @@ func markdownPart(b *bytes.Buffer, p model.Part) {
 			title = "Risk"
 		}
 		if title != "" {
-			w("> **%s**\n>\n", oneLine(title))
+			w("> **%s**\n>\n", plain(title))
 		}
 		for _, line := range strings.Split(strings.TrimSpace(p.Markdown), "\n") {
 			w("%s\n", strings.TrimRight("> "+line, " "))
@@ -116,30 +120,34 @@ func markdownPart(b *bytes.Buffer, p model.Part) {
 		w("\n")
 	case "spec":
 		for _, r := range p.Spec {
-			w("- **%s**: %s\n", oneLine(r.Label), oneLine(r.Text))
+			w("- **%s**: %s\n", plain(r.Label), oneLine(r.Text))
 		}
 		w("\n")
 	case "table":
 		if p.Title != "" {
-			w("**%s**\n\n", oneLine(p.Title))
+			w("**%s**\n\n", plain(p.Title))
 		}
-		table(b, p.Columns, p.Rows)
+		columns := make([]string, len(p.Columns))
+		for i, c := range p.Columns {
+			columns[i] = plain(c)
+		}
+		table(b, columns, p.Rows)
 		if p.Note != "" {
-			w("*%s*\n\n", oneLine(p.Note))
+			w("*%s*\n\n", plain(p.Note))
 		}
 	case "code":
 		if p.Title != "" {
-			w("**%s**\n\n", oneLine(p.Title))
+			w("**%s**\n\n", plain(p.Title))
 		}
 		fence(b, p.Lang, p.Code)
 	case "figure":
-		w("![%s](%s)\n\n", oneLine(p.Alt), p.Src)
+		w("![%s](%s)\n\n", plain(p.Alt), markdownURL(p.Src))
 		if p.Caption != "" {
 			w("*%s*\n\n", oneLine(p.Caption))
 		}
 	case "diagram":
 		if p.Title != "" {
-			w("**%s**\n\n", oneLine(p.Title))
+			w("**%s**\n\n", plain(p.Title))
 		}
 		format := p.Format
 		if format == "" {
@@ -148,19 +156,19 @@ func markdownPart(b *bytes.Buffer, p model.Part) {
 		fence(b, format, p.Source)
 	case "chart":
 		if p.Title != "" {
-			w("**%s**\n\n", oneLine(p.Title))
+			w("**%s**\n\n", plain(p.Title))
 		}
 		var rows [][]string
 		for _, pt := range p.Data {
-			rows = append(rows, []string{pt.Label, strconv.FormatFloat(pt.Value, 'f', -1, 64)})
+			rows = append(rows, []string{plain(pt.Label), strconv.FormatFloat(pt.Value, 'f', -1, 64)})
 		}
 		table(b, []string{"", "Value"}, rows)
 	case "timeline":
 		if p.Title != "" {
-			w("**%s**\n\n", oneLine(p.Title))
+			w("**%s**\n\n", plain(p.Title))
 		}
 		for _, e := range p.Events {
-			w("- **%s** %s", oneLine(e.At), oneLine(e.Title))
+			w("- **%s** %s", plain(e.At), plain(e.Title))
 			if md := strings.TrimSpace(e.Markdown); md != "" {
 				// A trailing backslash breaks the line inside the list item.
 				w("\\\n  %s", oneLine(md))
@@ -191,7 +199,7 @@ func markdownSummary(b *bytes.Buffer, view *BoardView, page *Page) {
 				headers = append(headers, "Verdict")
 			}
 		default:
-			headers = append(headers, c.Header)
+			headers = append(headers, plain(c.Header))
 		}
 	}
 	var rows [][]string
@@ -202,7 +210,7 @@ func markdownSummary(b *bytes.Buffer, view *BoardView, page *Page) {
 			case "number":
 				row = append(row, strconv.Itoa(it.Number))
 			case "title":
-				row = append(row, it.Title)
+				row = append(row, plain(it.Title))
 			case "decision":
 				row = append(row, decisionText(it, page))
 			case "impact":
@@ -210,7 +218,7 @@ func markdownSummary(b *bytes.Buffer, view *BoardView, page *Page) {
 			case "dependsOn":
 				row = append(row, dependsText(it))
 			default:
-				row = append(row, it.Cells[c.Name].Text)
+				row = append(row, plain(it.Cells[c.Name].Text))
 			}
 		}
 		rows = append(rows, row)
@@ -221,17 +229,17 @@ func markdownSummary(b *bytes.Buffer, view *BoardView, page *Page) {
 func markdownItem(b *bytes.Buffer, it model.Item, view ItemView, page *Page, kind kinds.Kind, doc *model.Document) {
 	w := func(format string, args ...any) { fmt.Fprintf(b, format, args...) }
 	if view.Numbered {
-		w("### %d. %s\n\n", view.Number, oneLine(it.Title))
+		w("### %d. %s\n\n", view.Number, plain(it.Title))
 	} else {
-		w("### %s\n\n", oneLine(it.Title))
+		w("### %s\n\n", plain(it.Title))
 	}
 	var fields []string
 	for _, c := range view.Chips {
 		switch c.Tone {
 		case "owner":
-			fields = append(fields, c.Label+" "+c.Text)
+			fields = append(fields, plain(c.Label+" "+c.Text))
 		default:
-			fields = append(fields, c.Text)
+			fields = append(fields, plain(c.Text))
 		}
 	}
 	if view.Impact > 0 {
@@ -248,16 +256,16 @@ func markdownItem(b *bytes.Buffer, it model.Item, view ItemView, page *Page, kin
 		}
 	}
 	if len(fields) > 0 {
-		w("%s\n\n", strings.Join(fields, " · "))
+		w("%s\n\n", lineStart(strings.Join(fields, " · ")))
 	}
 	if it.Summary != "" {
-		w("%s\n\n", strings.TrimSpace(it.Summary))
+		w("%s\n\n", paragraph(it.Summary))
 	}
 	for _, f := range it.Facets {
-		w("#### %s\n\n%s\n\n", oneLine(f.Label), strings.TrimSpace(f.Markdown))
+		w("#### %s\n\n%s\n\n", plain(f.Label), strings.TrimSpace(f.Markdown))
 	}
 	if doc.Decisions != nil && strings.TrimSpace(doc.Decisions.Notes[it.ID]) != "" {
-		w("**Note:** %s\n\n", oneLine(doc.Decisions.Notes[it.ID]))
+		w("**Note:** %s\n\n", plain(doc.Decisions.Notes[it.ID]))
 	}
 }
 
@@ -265,20 +273,20 @@ func markdownItem(b *bytes.Buffer, it model.Item, view ItemView, page *Page, kin
 // under their entry.
 func markdownRows(b *bytes.Buffer, items []model.Item, view *BoardView) {
 	for i, it := range items {
-		line := "- **" + oneLine(it.Title) + "**"
+		line := "- **" + plain(it.Title) + "**"
 		var chips []string
 		for _, c := range view.Items[i].Chips {
-			chips = append(chips, c.Text)
+			chips = append(chips, plain(c.Text))
 		}
 		if len(chips) > 0 {
 			line += " (" + strings.Join(chips, ", ") + ")"
 		}
 		if it.Summary != "" {
-			line += "\\\n  " + oneLine(it.Summary)
+			line += "\\\n  " + paragraph(it.Summary)
 		}
 		fmt.Fprintf(b, "%s\n", line)
 		for _, f := range it.Facets {
-			fmt.Fprintf(b, "\n  *%s:* %s\n", oneLine(f.Label), oneLine(f.Markdown))
+			fmt.Fprintf(b, "\n  *%s:* %s\n", plain(f.Label), oneLine(f.Markdown))
 		}
 	}
 	b.WriteString("\n")
@@ -312,7 +320,7 @@ func dependsText(it ItemView) string {
 		if d.Number > 0 {
 			nums = append(nums, strconv.Itoa(d.Number))
 		} else {
-			nums = append(nums, d.Title)
+			nums = append(nums, plain(d.Title))
 		}
 	}
 	return strings.Join(nums, ", ")
@@ -347,6 +355,42 @@ func fence(b *bytes.Buffer, lang, code string) {
 	}
 	fmt.Fprintf(b, "%s%s\n%s\n%s\n\n", ticks, lang, strings.TrimRight(code, "\n"), ticks)
 }
+
+// plain sets a text field, which the page shows as typed, so Markdown shows
+// it the same way: whitespace folded and inline syntax escaped.
+func plain(s string) string {
+	return entity.ReplaceAllString(plainEscaper.Replace(oneLine(s)), `\$0`)
+}
+
+// paragraph is plain for text that starts a line.
+func paragraph(s string) string { return lineStart(plain(s)) }
+
+// lineStart escapes the first character of escaped text that starts a line,
+// where a heading mark, quote, list marker, or setext underline would read
+// as syntax.
+func lineStart(s string) string {
+	digits := 0
+	for digits < len(s) && s[digits] >= '0' && s[digits] <= '9' {
+		digits++
+	}
+	switch {
+	case digits > 0 && digits < len(s) && (s[digits] == '.' || s[digits] == ')') && (digits+1 == len(s) || s[digits+1] == ' '):
+		return s[:digits] + `\` + s[digits:]
+	case digits == 0 && s != "" && strings.ContainsRune("#>-+=", rune(s[0])):
+		return `\` + s
+	}
+	return s
+}
+
+// markdownURL keeps a link destination in one piece.
+func markdownURL(src string) string {
+	return strings.NewReplacer(" ", "%20", "(", "%28", ")", "%29").Replace(src)
+}
+
+var (
+	plainEscaper = strings.NewReplacer(`\`, `\\`, "`", "\\`", "*", `\*`, "_", `\_`, "[", `\[`, "]", `\]`, "<", `\<`, "~", `\~`)
+	entity       = regexp.MustCompile(`&(?:#[0-9]+|#[xX][0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]*);`)
+)
 
 // oneLine folds whitespace, including line breaks, into single spaces.
 func oneLine(s string) string { return strings.Join(strings.Fields(s), " ") }

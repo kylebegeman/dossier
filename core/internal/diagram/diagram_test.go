@@ -112,7 +112,7 @@ func TestRestyleKeepsGeometryAndDropsEverythingElse(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
-		`<svg class="dg" role="img" aria-label="Flow &#34;one&#34;" width="62pt" height="116pt" viewBox="0.00 0.00 62.00 116.00">`,
+		`<svg class="dg" role="img" aria-label="Flow &#34;one&#34;" width="67.6px" height="126.5px" viewBox="0.00 0.00 62.00 116.00">`,
 		`<g id="dabc-graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">`,
 		`<g id="dabc-node1" class="node teal"><ellipse cx="27" cy="-90" rx="27" ry="18"></ellipse><text text-anchor="middle" x="27" y="-85.8" font-weight="bold">x &amp; &lt;y&gt;</text></g>`,
 		`<path stroke-dasharray="5,2" d="M27,-71.7C27,-64.41 27,-55.73 27,-47.54"></path>`,

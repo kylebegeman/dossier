@@ -172,7 +172,11 @@ templ contentsNav(p *Page) {
 	<nav class="toc" aria-label="Contents">
 		<ol>
 			for _, g := range p.Contents {
-				<li class="group">{ g.Label }</li>
+				if g.ID != "" {
+					<li class="group"><a href={ templ.URL("#" + g.ID) }>{ g.Label }</a></li>
+				} else {
+					<li class="group">{ g.Label }</li>
+				}
 				for _, e := range g.Entries {
 					if e.Item {
 						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) } { toneAttr(e.Tone)... }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span>{ e.Label }<span class="sr">{ e.Decided }</span><span class="pip" aria-hidden="true"></span></a></li>
@@ -590,6 +594,9 @@ templ pick(p *Page) {
 				</div>
 				<button type="button" class="clear" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear the choice</button>
 			</fieldset>
+		}
+		if p.Guard != nil {
+			<p class="guard" role="status" data-guard={ p.Guard.Choice } data-unless={ p.Guard.Unless } data-watch={ p.Guard.Watch } data-one={ p.Guard.One } data-many={ p.Guard.Many } hidden?={ p.Guard.Text == "" }>{ p.Guard.Text }</p>
 		}
 		if p.ReplyExample != "" {
 			<p class="example">For example <code>{ p.ReplyExample }</code></p>

@@ -118,6 +118,7 @@
     choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
     $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
     say('[data-live="choice"]', chosen);
+    $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
     say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
     const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
     say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
@@ -214,7 +215,7 @@
       if (!h) shown++;
       if (a) a.parentNode.hidden = h;
     });
-    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any; });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any && (!$("a", g) || g.hidden); });
     $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
     const none = $("[data-no-hits]"), b = $("[data-hide]");
     if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
