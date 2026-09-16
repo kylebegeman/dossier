@@ -39,7 +39,8 @@ func (r BuildResult) human(w io.Writer) {
 	}
 }
 
-func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func buildDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	fs := flag.NewFlagSet("build", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	out := fs.String("out", "", "directory for the HTML output; default is beside each source")
@@ -128,7 +129,8 @@ func (r ValidateResult) human(w io.Writer) {
 	}
 }
 
-func validateDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func validateDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	files, err := parseInterspersed(fs, args)

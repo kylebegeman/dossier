@@ -28,7 +28,8 @@ func (r InitResult) human(w io.Writer) {
 	say(w, "wrote %s  (%s)\n", r.Model, r.Kind)
 }
 
-func initDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func initDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	const id = "init"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)

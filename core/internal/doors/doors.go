@@ -101,8 +101,17 @@ func errorEnvelope(command, code string, err error) Envelope {
 	return Envelope{SchemaVersion: SchemaVersion, Command: command, Outcome: OutcomeError, Error: &ErrorBody{Code: code, Message: err.Error()}}
 }
 
+// Input is what a door receives: its arguments without the command name,
+// stdin, and stderr for progress a long-running door reports before it
+// answers. Stdout belongs to the envelope.
+type Input struct {
+	Args   []string
+	Stdin  io.Reader
+	Stderr io.Writer
+}
+
 // door is one command implementation: it parses its own flags and answers.
-type door func(ctx context.Context, args []string, stdin io.Reader) Envelope
+type door func(ctx context.Context, in Input) Envelope
 
 var registry = map[string]door{}
 
@@ -136,7 +145,7 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 		}
 		rest = append(rest, a)
 	}
-	env := d(ctx, rest, stdin)
+	env := d(ctx, Input{Args: rest, Stdin: stdin, Stderr: stderr})
 	if asJSON {
 		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")

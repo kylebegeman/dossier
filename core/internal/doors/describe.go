@@ -37,7 +37,7 @@ func (r DescribeResult) human(w io.Writer) {
 	}
 }
 
-func describeDoor(_ context.Context, _ []string, _ io.Reader) Envelope {
+func describeDoor(_ context.Context, _ Input) Envelope {
 	c, err := LoadCatalog()
 	if err != nil {
 		return errorEnvelope("describe", "catalog", err)

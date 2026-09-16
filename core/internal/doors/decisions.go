@@ -37,7 +37,8 @@ func (r DecisionsResult) human(w io.Writer) {
 	}
 }
 
-func decisionsReadDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func decisionsReadDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	const id = "decisions.read"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -79,7 +80,8 @@ func decisionsReadDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 	return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Result: result}
 }
 
-func decisionsApplyDoor(_ context.Context, args []string, stdin io.Reader) Envelope {
+func decisionsApplyDoor(_ context.Context, in Input) Envelope {
+	args, stdin := in.Args, in.Stdin
 	const id = "decisions.apply"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
