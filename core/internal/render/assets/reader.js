@@ -28,18 +28,33 @@
   applyTheme(savedTheme);
   if (themeBtn) themeBtn.addEventListener("click", function () { applyTheme(modes[(modes.indexOf(themeBtn.getAttribute("data-mode")) + 1) % modes.length]); });
 
-  /* decisions: picks and notes, kept on this device */
-  var items = $$("[data-item]");
-  var numbers = {};
-  items.forEach(function (el) { numbers[el.getAttribute("data-item")] = +el.getAttribute("data-num"); });
-  var state = { path: null, picked: [], notes: {} };
-  try { var raw = localStorage.getItem(key + ":decisions"); if (raw) { var s = JSON.parse(raw); if (s && Array.isArray(s.picked)) state = { path: s.path || null, picked: s.picked.filter(function (id) { return numbers[id]; }), notes: s.notes || {} }; } } catch (e) {}
+  /* decisions: the embedded model is the baseline, this device may go further */
+  var items = $$("[data-item][data-num]");
+  var numbers = {}, titles = {};
+  items.forEach(function (el) { numbers[el.getAttribute("data-item")] = +el.getAttribute("data-num"); titles[el.getAttribute("data-item")] = el.getAttribute("data-title") || ""; });
+  var TOTAL = items.length;
+  function clean(s) {
+    var out = { path: "", picked: [], notes: {} };
+    if (!s || typeof s !== "object") return out;
+    if (typeof s.path === "string") out.path = s.path;
+    if (Array.isArray(s.picked)) out.picked = s.picked.filter(function (id, i, a) { return numbers[id] && a.indexOf(id) === i; });
+    if (s.notes && typeof s.notes === "object") Object.keys(s.notes).forEach(function (id) { var v = s.notes[id]; if (numbers[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    return out;
+  }
+  var state = clean(model.decisions);
+  try { var raw = localStorage.getItem(key + ":decisions"); if (raw) state = clean(JSON.parse(raw)); } catch (e) {}
   function save() { try { localStorage.setItem(key + ":decisions", JSON.stringify(state)); } catch (e) {} }
   function picked(id) { return state.picked.indexOf(id) >= 0; }
-  function reply() {
-    if (!state.picked.length) return "Nothing picked yet.";
-    var nums = state.picked.map(function (id) { return numbers[id]; }).sort(function (a, b) { return a - b; });
-    return (nums.length === items.length ? "all" : nums.join(", ")) + ".";
+  function byNumber(ids) { return ids.slice().sort(function (a, b) { return numbers[a] - numbers[b]; }); }
+  function replyLine() {
+    var nums = byNumber(state.picked).map(function (id) { return numbers[id]; });
+    var line = (state.path ? state.path + ", " : "") + (nums.length === 0 ? "nothing" : (nums.length === TOTAL ? "all" : nums.join(", "))) + ".";
+    var noted = byNumber(Object.keys(state.notes));
+    if (noted.length) line += " Notes: " + noted.map(function (id) { return numbers[id] + ": " + state.notes[id].replace(/\s+/g, " "); }).join("; ") + ".";
+    return line;
+  }
+  function decisionsJSON() {
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug: slug, title: (model.meta && model.meta.title) || "", path: state.path || undefined, picked: byNumber(state.picked), notes: Object.keys(state.notes).length ? state.notes : undefined, reply: replyLine() }, null, 2);
   }
   function render() {
     items.forEach(function (el) {
@@ -48,19 +63,30 @@
       var b = $("[data-pick]", el); if (b) { b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "Picked" : "Pick"; }
       var cb = $('input[data-pick-row="' + id + '"]'); if (cb) { cb.checked = on; var tr = cb.closest("tr"); if (tr) tr.classList.toggle("picked", on); }
       var li = $('.toc li[data-item="' + id + '"]'); if (li) li.classList.toggle("picked", on);
+      var note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
+      if (note && state.notes[id]) note.hidden = false;
+      if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
     });
-    var t = reply();
+    var empty = !state.picked.length && !state.path && !Object.keys(state.notes).length;
+    var t = empty ? "Nothing picked yet." : replyLine();
     $$("[data-reply]").forEach(function (el) { el.textContent = t; });
     $$("[data-pick-count]").forEach(function (el) { el.textContent = String(state.picked.length); });
   }
-  function toggle(id, on) { var has = picked(id); if (on === has) return; if (on) state.picked.push(id); else state.picked = state.picked.filter(function (x) { return x !== id; }); save(); render(); }
+  function toggle(id, on) { if (on === picked(id)) return; if (on) state.picked.push(id); else state.picked = state.picked.filter(function (x) { return x !== id; }); state.picked = byNumber(state.picked); save(); render(); }
+  function setNote(id, text) { var v = String(text || "").trim(); if ((state.notes[id] || "") === v) return; if (v) state.notes[id] = v; else delete state.notes[id]; save(); render(); }
+  var noteTimer;
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-pick]");
     if (b) { var id = b.closest("[data-item]").getAttribute("data-item"); toggle(id, !picked(id)); return; }
-    var c = e.target.closest("[data-copy-reply]");
-    if (c) copy(reply(), "Reply copied");
+    var n = e.target.closest("[data-note-toggle]");
+    if (n) { var wrap = $("[data-note-wrap]", n.closest("[data-item]")); if (wrap) { wrap.hidden = !wrap.hidden; render(); if (!wrap.hidden) $("textarea", wrap).focus(); } return; }
+    if (e.target.closest("[data-copy-reply]")) { copy(replyLine(), "Reply copied"); return; }
+    if (e.target.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
   });
   document.addEventListener("change", function (e) { var t = e.target; if (t.matches && t.matches("input[data-pick-row]")) toggle(t.getAttribute("data-pick-row"), t.checked); });
+  document.addEventListener("input", function (e) { var t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(function () { setNote(t.getAttribute("data-note"), t.value); }, 300); } });
+  document.addEventListener("focusout", function (e) { var t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(t.getAttribute("data-note"), t.value); } });
 
   /* copy and toast */
   var toastTimer;
