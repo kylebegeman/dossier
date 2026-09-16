@@ -31,3 +31,14 @@ The flow is door to model to kind rules to templ render to one byte slice.
 - Islands policy: the artifact carries one small vanilla JS reader runtime
   (contents, theme, decisions, copy). Editing tools live only in `serve`.
 - No Node dependencies in this module.
+
+## Content rules every kind enforces
+
+- Effort is agent time, never calendar time. `S` is under an hour, `M` a few
+  hours with review, `L` a day or more across sessions. No days-of-work or
+  weeks-of-work language anywhere in presets, examples, docs, or the skill.
+- Concise by default. A summary is one sentence. A facet is two or three
+  sentences. Kinds carry character limits and `validate` and `build` warn
+  past them without blocking.
+- Detail belongs behind a fold: items start collapsed, and readers expand
+  what they want to read.

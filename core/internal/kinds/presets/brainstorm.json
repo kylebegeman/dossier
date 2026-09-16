@@ -4,18 +4,54 @@
   "summary": "A set of proposed features for one decision-maker to read once and pick by number.",
   "items": {
     "numbered": true,
-    "size": ["minor", "major"],
-    "effort": ["S", "M", "L"],
-    "impact": { "min": 1, "max": 5 },
-    "facets": ["How it works", "Reader", "Agent", "Unlocks"],
-    "closers": ["Depends on", "Effort", "Risk", "Note"],
-    "riskFacets": ["Risk", "Note"]
+    "size": [
+      "minor",
+      "major"
+    ],
+    "effort": [
+      "S",
+      "M",
+      "L"
+    ],
+    "impact": {
+      "min": 1,
+      "max": 5
+    },
+    "facets": [
+      "How it works",
+      "Reader",
+      "Agent",
+      "Unlocks"
+    ],
+    "closers": [
+      "Depends on",
+      "Effort",
+      "Risk",
+      "Note"
+    ],
+    "riskFacets": [
+      "Risk",
+      "Note"
+    ],
+    "limits": {
+      "summary": 160,
+      "facet": 420
+    }
   },
   "summary_table": {
-    "columns": ["number", "title", "size", "effort", "impact", "dependsOn"],
-    "legend": "Effort: S is up to a day, M is two to four days, L is one to two weeks."
+    "columns": [
+      "number",
+      "title",
+      "size",
+      "effort",
+      "impact",
+      "dependsOn"
+    ],
+    "legend": "Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions."
   },
-  "contents": { "groupBy": "size" },
+  "contents": {
+    "groupBy": "size"
+  },
   "pick": {
     "title": "How to pick",
     "markdown": "Reply with the numbers you want, for example `1, 3, 4, 7`, plus any changes."

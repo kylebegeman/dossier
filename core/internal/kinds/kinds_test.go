@@ -69,3 +69,20 @@ func TestFieldRanges(t *testing.T) {
 		t.Errorf("expected size and impact problems, got %v", p)
 	}
 }
+
+func TestAdviseWarnsPastLimits(t *testing.T) {
+	k, err := Load("brainstorm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	long := strings.Repeat("word ", 120)
+	doc := brainstormDoc(model.Facet{Label: "How it works", Markdown: long}, model.Facet{Label: "Reader", Markdown: "x"}, model.Facet{Label: "Agent", Markdown: "x"}, model.Facet{Label: "Unlocks", Markdown: "x"})
+	doc.Sections[0].Board.Items[0].Summary = strings.Repeat("s", 200)
+	w := k.Advise(doc)
+	if len(w) != 2 {
+		t.Errorf("expected a summary and a facet warning, got %v", w)
+	}
+	if p := k.Check(doc); len(p) != 0 {
+		t.Errorf("length is advice, not a finding: %v", p)
+	}
+}

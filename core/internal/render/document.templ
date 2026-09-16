@@ -56,8 +56,11 @@ templ masthead(p *Page) {
 				<span></span>
 			}
 			<div class="tools">
+				if p.HasPick {
+					<button class="btn" type="button" data-hide-picked aria-pressed="false">Hide picked</button>
+				}
 				if len(p.Numbered) > 0 {
-					<button class="btn" type="button" data-collapse-toggle aria-expanded="true">Collapse all</button>
+					<button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button>
 				}
 				@themeToggle()
 			</div>
@@ -99,7 +102,7 @@ templ contentsNav(p *Page) {
 				<li class="group">{ g.Label }</li>
 				for _, e := range g.Entries {
 					if e.Item {
-						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
+						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }.</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
 					} else {
 						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
 					}
@@ -125,6 +128,10 @@ templ section(p *Page, s SectionView) {
 				for _, it := range s.Board.Items {
 					@itemArticle(it)
 				}
+				<div class="hidden-row" data-hidden-row hidden>
+					<span><b data-hidden-count>0</b> picked, hidden</span>
+					<button class="btn" type="button" data-show-picked>Show picked</button>
+				</div>
 			}
 		}
 	</section>
@@ -271,7 +278,7 @@ templ meter(value int, max int) {
 }
 
 templ itemArticle(it ItemView) {
-	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title } open>
+	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title }>
 		<summary class="item-head">
 			<div class="item-meta">
 				if it.Size != "" {

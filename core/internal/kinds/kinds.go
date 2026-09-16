@@ -39,6 +39,14 @@ type ItemRules struct {
 	Facets     []string `json:"facets,omitempty"`
 	Closers    []string `json:"closers,omitempty"`
 	RiskFacets []string `json:"riskFacets,omitempty"`
+	Limits     *Limits  `json:"limits,omitempty"`
+}
+
+// Limits are conciseness advice in characters. Exceeding them is a warning,
+// never an error: a document still builds, but the agent is told to tighten.
+type Limits struct {
+	Summary int `json:"summary,omitempty"`
+	Facet   int `json:"facet,omitempty"`
 }
 
 // Range is an inclusive integer range.
@@ -182,4 +190,30 @@ func has(list []string, v string) bool {
 		}
 	}
 	return false
+}
+
+// Advise returns conciseness warnings: summaries and facets longer than the
+// kind's limits. Warnings never block a build.
+func (k Kind) Advise(doc *model.Document) []model.Problem {
+	if k.Items.Limits == nil {
+		return nil
+	}
+	var out []model.Problem
+	for si, s := range doc.Sections {
+		if s.Board == nil || s.Board.Layout == "rows" {
+			continue
+		}
+		for ii, it := range s.Board.Items {
+			ip := fmt.Sprintf("/sections/%d/board/items/%d", si, ii)
+			if k.Items.Limits.Summary > 0 && len([]rune(it.Summary)) > k.Items.Limits.Summary {
+				out = append(out, model.Problem{Path: ip + "/summary", Message: fmt.Sprintf("summary is %d characters; keep it under %d", len([]rune(it.Summary)), k.Items.Limits.Summary)})
+			}
+			for fi, f := range it.Facets {
+				if k.Items.Limits.Facet > 0 && len([]rune(f.Markdown)) > k.Items.Limits.Facet {
+					out = append(out, model.Problem{Path: fmt.Sprintf("%s/facets/%d/markdown", ip, fi), Message: fmt.Sprintf("%q is %d characters; keep facets under %d, two or three sentences", f.Label, len([]rune(f.Markdown)), k.Items.Limits.Facet)})
+				}
+			}
+		}
+	}
+	return out
 }

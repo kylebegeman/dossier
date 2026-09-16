@@ -199,6 +199,14 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - M3 done: `internal/decisions` (dossier.decisions/v1 in Markdown and JSON, the reply line, a reply parser, apply with findings), `decisions read` and `decisions apply` doors, decided state rendered into the artifact, reader notes and copy-as-JSON. Round trip covered by a doors test: apply a reply, build, read back, apply the written document to a fresh model.
 - Next: M4 remaining sections (figure, diagram, chart, highlighted code) and the 0.6 alias mapping, then M5 doors (`init`, `mcp`, generated skill).
 
+## Content rules
+
+Effort is agent time, never calendar time: `S` is under an hour, `M` a few
+hours with review, `L` a day or more across sessions. Documents are concise
+by default: one-sentence summaries, two- or three-sentence facets, with
+character limits carried by each kind and reported as warnings. Detail sits
+behind a fold; items open collapsed.
+
 ## Non-goals for 0.7
 
 Math rendering, DOCX export, hosted multi-user auth, Monaco, plugin runtime
