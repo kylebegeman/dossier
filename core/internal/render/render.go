@@ -18,6 +18,7 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
 
+	"dossier/internal/decisions"
 	"dossier/internal/kinds"
 	"dossier/internal/model"
 )
@@ -87,6 +88,11 @@ type Page struct {
 	HasArticles  bool
 	PickHTML     string
 	ReplyExample string
+	// Reply is the reply line for the model's own decisions, which the
+	// reader keeps current. VerdictsJSON tells the reader the kind's verdicts.
+	Reply        string
+	VerdictsJSON string
+	Choice       *ChoiceView
 	// Studio only: the injected studio and the edit targets of the masthead.
 	StudioHTML string
 	EditTitle  string
@@ -132,6 +138,31 @@ type BoardView struct {
 	Items   []ItemView
 }
 
+// ChoiceView is the document's question with its options.
+type ChoiceView struct {
+	Question string
+	Options  []OptionView
+	Chosen   bool
+}
+
+// OptionView is one answer to the choice.
+type OptionView struct {
+	ID      string
+	Label   string
+	Summary string
+	Checked bool
+}
+
+// VerdictView is one verdict button in an item head.
+type VerdictView struct {
+	ID      string
+	Label   string
+	Tone    string
+	Checked bool
+	// Focus marks the one button in the group that takes the tab stop.
+	Focus bool
+}
+
 // Column is one summary table column.
 type Column struct {
 	Name   string
@@ -155,11 +186,17 @@ type Cell struct {
 
 // ItemView is one item with rendered facets.
 type ItemView struct {
-	ID          string
-	Number      int
-	Numbered    bool
-	Pickable    bool
-	Notes       bool
+	ID       string
+	Number   int
+	Numbered bool
+	Pickable bool
+	Notes    bool
+	// Decides marks an item the reader can decide on: every numbered item
+	// of a pick kind, and the items a verdict kind lets take a verdict.
+	Decides     bool
+	Verdicts    []VerdictView
+	Verdict     string
+	Tone        string
 	Title       string
 	Summary     string
 	Chips       []Chip
@@ -203,14 +240,19 @@ type TocEntry struct {
 	Number int
 	Item   bool
 	Picked bool
+	// Tone and Decided mark a verdict: the pip's color and its words for
+	// screen readers.
+	Tone    string
+	Decided string
 }
 
-// Fact is one cell of the masthead facts strip.
+// Fact is one cell of the masthead facts strip. Live names what the reader
+// keeps current: count for decisions made, choice for the option chosen.
 type Fact struct {
 	Value string
 	Label string
 	Tone  string
-	Live  bool
+	Live  string
 }
 
 // Render produces the complete HTML document.
@@ -271,14 +313,17 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	if kind.Fields.Impact != nil {
 		impactMax = kind.Fields.Impact.Max
 	}
-	page.Mode = kind.Decision.Mode
+	rules := kind.Rules(doc)
+	page.Mode = rules.Mode
 	pickedIDs := map[string]bool{}
 	notes := map[string]string{}
+	verdicts := map[string]string{}
 	if doc.Decisions != nil {
 		for _, id := range doc.Decisions.Picked {
 			pickedIDs[id] = true
 		}
 		notes = doc.Decisions.Notes
+		verdicts = doc.Decisions.Verdicts
 	}
 	var rows []rowCount
 	for _, s := range doc.Sections {
@@ -301,8 +346,19 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			for _, it := range s.Board.Items {
 				article := !bv.Rows
 				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Numbered: article && kind.Item.Numbered, Title: it.Title, Summary: it.Summary, Impact: it.Impact, ImpactMax: impactMax, ImpactLabel: strings.ToLower(kind.FieldLabel("impact")), Picked: pickedIDs[it.ID], Note: notes[it.ID]}
-				iv.Pickable = article && kind.Item.Numbered && kind.Decision.Mode == kinds.ModePick
+				iv.Pickable = article && kind.Item.Numbered && rules.Mode == decisions.ModePick
 				iv.Notes = article && kind.Decides()
+				iv.Decides = iv.Notes && (iv.Pickable || rules.CanDecide(it.ID))
+				if iv.Decides && rules.Mode == decisions.ModeVerdict {
+					iv.Verdict = verdicts[it.ID]
+					for i, v := range rules.Verdicts {
+						checked := v.ID == iv.Verdict
+						if checked {
+							iv.Tone = v.Tone
+						}
+						iv.Verdicts = append(iv.Verdicts, VerdictView{ID: v.ID, Label: v.Label, Tone: v.Tone, Checked: checked, Focus: checked || (iv.Verdict == "" && i == 0)})
+					}
+				}
 				iv.Chips, iv.Cells = fields(kind, it)
 				if studio {
 					iv.EditTitle, iv.EditSummary = "/items/"+it.ID+"/title", "/items/"+it.ID+"/summary"
@@ -336,18 +392,74 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 		}
 		page.Sections = append(page.Sections, sv)
 	}
-	page.Contents = contents(doc, kind, numbers, pickedIDs)
 	page.Decides = kind.Decides() && len(page.Numbered) > 0
+	marks := map[string]TocEntry{}
+	for _, it := range page.Numbered {
+		switch {
+		case it.Picked:
+			marks[it.ID] = TocEntry{Picked: true, Decided: ", picked"}
+		case it.Tone != "":
+			marks[it.ID] = TocEntry{Tone: it.Tone, Decided: ", " + rules.VerdictLabel(it.Verdict)}
+		}
+	}
+	page.Contents = contents(doc, kind, numbers, marks)
 	if page.Decides {
 		h, err := markdown(kind.Decision.Markdown)
 		if err != nil {
 			return nil, err
 		}
 		page.PickHTML = h
-		page.ReplyExample = kind.Decision.Example
+		page.ReplyExample = exampleReply(kind, rules)
+		verdictsJSON, err := json.Marshal(rules.Verdicts)
+		if err != nil {
+			return nil, err
+		}
+		page.VerdictsJSON = string(verdictsJSON)
+		d := decisions.FromModel(doc, rules)
+		page.Reply = "Nothing decided yet."
+		if d.Path != "" || len(d.Picked) > 0 || len(d.Verdicts) > 0 || len(d.Notes) > 0 {
+			page.Reply = d.Reply
+		}
+		if c := rules.Choice; c != nil {
+			cv := &ChoiceView{Question: c.Question}
+			for _, o := range c.Options {
+				checked := doc.Decisions != nil && doc.Decisions.Path == o.ID
+				cv.Chosen = cv.Chosen || checked
+				cv.Options = append(cv.Options, OptionView{ID: o.ID, Label: o.Label, Summary: o.Summary, Checked: checked})
+			}
+			page.Choice = cv
+		}
 	}
 	page.Facts = facts(doc, page, kind, rows)
 	return page, nil
+}
+
+// exampleReply is the kind's example reply, fitted to the document's choice:
+// a kind's answer to its own question becomes the document's first option,
+// and a document that asks a question the kind does not gets its first option
+// in front.
+func exampleReply(kind kinds.Kind, rules decisions.Rules) string {
+	example := kind.Decision.Example
+	if rules.Choice == nil || example == "" {
+		return example
+	}
+	first := rules.Choice.Options[0].ID
+	n := 0
+	for n < len(example) && (example[n]|0x20) >= 'a' && (example[n]|0x20) <= 'z' {
+		n++
+	}
+	word := strings.ToLower(example[:n])
+	if _, ok := rules.Option(word); ok {
+		return example
+	}
+	if c := kind.Decision.Choice; c != nil && word != "" {
+		for _, o := range c.Options {
+			if o.ID == word {
+				return first + example[n:]
+			}
+		}
+	}
+	return first + ", " + example
 }
 
 // rowCount remembers each rows entry's section, so the facts strip can name
@@ -355,7 +467,8 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 type rowCount struct{ title string }
 
 // columns resolves the kind's summary columns to headers. The decision
-// column is a pick checkbox and only exists for pick kinds.
+// column is a pick checkbox or a verdict menu, and only exists for kinds that
+// decide.
 func columns(kind kinds.Kind) []Column {
 	var out []Column
 	for _, name := range kind.Columns {
@@ -365,8 +478,12 @@ func columns(kind kinds.Kind) []Column {
 		case "title":
 			out = append(out, Column{Name: name, Header: kinds.Capitalize(kind.Item.Noun)})
 		case "decision":
-			if kind.Decision.Mode == kinds.ModePick {
+			switch {
+			case !kind.Decides():
+			case kind.Decision.Mode == kinds.ModePick:
 				out = append(out, Column{Name: name, Header: "Pick"})
+			default:
+				out = append(out, Column{Name: name, Header: "Verdict"})
 			}
 		default:
 			out = append(out, Column{Name: name, Header: kind.FieldLabel(name)})
@@ -548,12 +665,13 @@ func escape(s string) string {
 	return r.Replace(s)
 }
 
-func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, pickedIDs map[string]bool) []TocGroup {
+func contents(doc *model.Document, kind kinds.Kind, numbers map[string]int, marks map[string]TocEntry) []TocGroup {
 	var groups []TocGroup
 	current := &TocGroup{Label: "Frame"}
 	seenBoard := false
 	entry := func(it model.Item) TocEntry {
-		return TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: pickedIDs[it.ID]}
+		m := marks[it.ID]
+		return TocEntry{ID: it.ID, Label: it.Title, Number: numbers[it.ID], Item: true, Picked: m.Picked, Tone: m.Tone, Decided: m.Decided}
 	}
 	for _, s := range doc.Sections {
 		current.Entries = append(current.Entries, TocEntry{ID: s.ID, Label: s.Title})
@@ -648,16 +766,29 @@ func facts(doc *model.Document, page *Page, kind kinds.Kind, rows []rowCount) []
 	for _, title := range order {
 		out = append(out, Fact{Value: fmt.Sprint(counted[title]), Label: strings.ToLower(title)})
 	}
-	if page.Decides && page.Mode == kinds.ModePick {
-		c := 0
-		for _, it := range page.Numbered {
-			if it.Picked {
-				c++
+	if !page.Decides {
+		return out
+	}
+	if c := page.Choice; c != nil {
+		chosen := Fact{Value: "Open", Label: "choice", Live: "choice"}
+		for _, o := range c.Options {
+			if o.Checked {
+				chosen.Value = o.Label
 			}
 		}
-		out = append(out, Fact{Value: fmt.Sprint(c), Label: "picked", Live: true})
+		out = append(out, chosen)
 	}
-	return out
+	c := 0
+	for _, it := range page.Numbered {
+		if it.Picked || it.Verdict != "" {
+			c++
+		}
+	}
+	label := "picked"
+	if page.Mode == decisions.ModeVerdict {
+		label = "decided"
+	}
+	return append(out, Fact{Value: fmt.Sprint(c), Label: label, Live: "count"})
 }
 
 // embedJSON encodes the model for the data island. HTML-significant

@@ -46,21 +46,43 @@ templ document(p *Page) {
 // cellOf returns an item's summary cell for a field, empty when unset.
 func cellOf(it ItemView, name string) Cell { return it.Cells[name] }
 
-// numberAttr carries an item's number for the reader runtime; unnumbered
-// items carry none and take no part in decisions.
-func numberAttr(it ItemView) templ.Attributes {
-	if !it.Numbered {
-		return nil
-	}
-	return templ.Attributes{"data-num": strconv.Itoa(it.Number)}
-}
-
 // entryNumber is a contents entry's marker: its number, or a dash.
 func entryNumber(e TocEntry) string {
 	if e.Number == 0 {
 		return "–"
 	}
 	return strconv.Itoa(e.Number) + "."
+}
+
+// itemAttrs carries what the reader runtime needs on an item: its number,
+// whether the reader can decide on it, and the tone of its verdict.
+func itemAttrs(it ItemView) templ.Attributes {
+	a := templ.Attributes{}
+	if it.Numbered {
+		a["data-num"] = strconv.Itoa(it.Number)
+	}
+	if it.Decides {
+		a["data-decides"] = true
+	}
+	if it.Tone != "" {
+		a["data-tone"] = it.Tone
+	}
+	return a
+}
+
+// toneAttr sets data-tone only when there is a tone.
+func toneAttr(tone string) templ.Attributes {
+	if tone == "" {
+		return nil
+	}
+	return templ.Attributes{"data-tone": tone}
+}
+
+func tabIndex(focus bool) string {
+	if focus {
+		return "0"
+	}
+	return "-1"
 }
 
 // edit marks a field the serve studio can edit. Artifacts pass no target,
@@ -88,8 +110,8 @@ templ masthead(p *Page) {
 				<span></span>
 			}
 			<div class="tools">
-				if p.Decides && p.Mode == "pick" {
-					<button class="btn" type="button" data-hide-picked aria-pressed="false">Hide picked</button>
+				if p.Decides {
+					<button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button>
 				}
 				if p.HasArticles {
 					<button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button>
@@ -104,13 +126,17 @@ templ masthead(p *Page) {
 		if len(p.Facts) > 0 {
 			<div class="stats" aria-label="At a glance">
 				for _, f := range p.Facts {
-					<div class={ templ.KV("live", f.Live), templ.KV("t-"+f.Tone, f.Tone != "") }>
-						if f.Live {
-							<b data-pick-count>{ f.Value }</b>
+					<div class={ templ.KV("live", f.Live != ""), templ.KV("t-"+f.Tone, f.Tone != "") }>
+						if f.Live != "" {
+							<b data-live={ f.Live }>{ f.Value }</b>
 						} else {
 							<b>{ f.Value }</b>
 						}
-						<span>{ f.Label }</span>
+						if f.Live == "choice" {
+							<a href="#pick">{ f.Label }</a>
+						} else {
+							<span>{ f.Label }</span>
+						}
 					</div>
 				}
 			</div>
@@ -134,7 +160,7 @@ templ contentsNav(p *Page) {
 				<li class="group">{ g.Label }</li>
 				for _, e := range g.Entries {
 					if e.Item {
-						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
+						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) } { toneAttr(e.Tone)... }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span>{ e.Label }<span class="sr">{ e.Decided }</span><span class="pip" aria-hidden="true"></span></a></li>
 					} else {
 						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
 					}
@@ -161,8 +187,8 @@ templ section(p *Page, s SectionView) {
 					@itemArticle(it)
 				}
 				<div class="hidden-row" data-hidden-row hidden>
-					<span><b data-hidden-count>0</b> picked, hidden</span>
-					<button class="btn" type="button" data-show-picked>Show picked</button>
+					<span><b data-hidden-count>0</b> hidden</span>
+					<button class="btn" type="button" data-show-all>Show all</button>
 				</div>
 			}
 		}
@@ -260,7 +286,7 @@ templ summaryTable(p *Page, b *BoardView) {
 			</thead>
 			<tbody>
 				for _, it := range b.Items {
-					<tr data-item={ it.ID } class={ templ.KV("picked", it.Picked) }>
+					<tr data-item={ it.ID } class={ templ.KV("picked", it.Picked) } { toneAttr(it.Tone)... }>
 						for _, c := range b.Columns {
 							@summaryCell(c, it)
 						}
@@ -279,7 +305,11 @@ templ summaryHeader(c Column) {
 		case "number":
 			<th class="num">#</th>
 		case "decision":
-			<th class="ck"><span class="sr">{ c.Header }</span></th>
+			if c.Header == "Pick" {
+				<th class="ck"><span class="sr">{ c.Header }</span></th>
+			} else {
+				<th class="vd">{ c.Header }</th>
+			}
 		default:
 			<th>{ c.Header }</th>
 	}
@@ -292,7 +322,20 @@ templ summaryCell(c Column, it ItemView) {
 		case "title":
 			<td><a href={ templ.URL("#" + it.ID) }>{ it.Title }</a></td>
 		case "decision":
-			<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title } checked?={ it.Picked }/></td>
+			if it.Pickable {
+				<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title } checked?={ it.Picked }/></td>
+			} else if it.Decides {
+				<td class="vd">
+					<select class="verdict" data-verdict-row={ it.ID } aria-label={ "Verdict on " + strconv.Itoa(it.Number) + ", " + it.Title }>
+						<option value="">Undecided</option>
+						for _, v := range it.Verdicts {
+							<option value={ v.ID } selected?={ v.Checked }>{ v.Label }</option>
+						}
+					</select>
+				</td>
+			} else {
+				<td class="vd"><span class="none">No verdict needed</span></td>
+			}
 		case "impact":
 			<td>
 				if it.Impact > 0 {
@@ -333,7 +376,7 @@ templ meter(value int, max int) {
 }
 
 templ itemArticle(it ItemView) {
-	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-title={ it.Title } { numberAttr(it)... }>
+	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-title={ it.Title } { itemAttrs(it)... }>
 		<summary class="item-head">
 			<div class="item-meta">
 				for _, c := range it.Chips {
@@ -343,23 +386,32 @@ templ itemArticle(it ItemView) {
 					@meter(it.Impact, it.ImpactMax)
 					<span class="meter-label">{ it.ImpactLabel } { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
 				}
-				if it.Pickable {
-					<button class="btn pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
-						if it.Picked {
-							Picked
-						} else {
-							Pick
-						}
-					</button>
-				}
 				if it.Notes {
-					<button class="link-btn note-btn" type="button" data-note-toggle>
-						if it.Note != "" {
-							Edit note
-						} else {
-							Add a note
+					<span class="decide">
+						if len(it.Verdicts) > 0 {
+							<span class="verdicts" role="radiogroup" aria-label={ "Verdict on " + strconv.Itoa(it.Number) }>
+								for _, v := range it.Verdicts {
+									<button type="button" role="radio" class={ "t-" + v.Tone } data-verdict={ v.ID } aria-checked={ strconv.FormatBool(v.Checked) } tabindex={ tabIndex(v.Focus) }>{ v.Label }</button>
+								}
+							</span>
 						}
-					</button>
+						if it.Pickable {
+							<button class="btn pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
+								if it.Picked {
+									Picked
+								} else {
+									Pick
+								}
+							</button>
+						}
+						<button class="link-btn note-btn" type="button" data-note-toggle>
+							if it.Note != "" {
+								Edit note
+							} else {
+								Add a note
+							}
+						</button>
+					</span>
 				}
 			</div>
 			<h3 { edit(it.EditTitle)... }>
@@ -464,15 +516,33 @@ templ rowsBoard(b *BoardView) {
 }
 
 templ pick(p *Page) {
-	<div class="pick" id="pick">
+	<div class="pick" id="pick" data-mode={ p.Mode } data-verdicts={ p.VerdictsJSON }>
 		<b>{ p.Kind.Decision.Title }</b>
 		<div>
 			@templ.Raw(p.PickHTML)
 		</div>
+		if p.Choice != nil {
+			<fieldset class="choice">
+				<legend>{ p.Choice.Question }</legend>
+				<div class="options">
+					for _, o := range p.Choice.Options {
+						<label>
+							<input type="radio" name="dossier-choice" value={ o.ID } data-choice data-label={ o.Label } checked?={ o.Checked }/>
+							<span><span class="opt">{ o.Label }</span>
+								if o.Summary != "" {
+									<span class="sum">{ o.Summary }</span>
+								}
+							</span>
+						</label>
+					}
+				</div>
+				<button type="button" class="clear" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear the choice</button>
+			</fieldset>
+		}
 		if p.ReplyExample != "" {
 			<p class="example">For example <code>{ p.ReplyExample }</code></p>
 		}
-		<div class="reply" data-reply>Nothing picked yet.</div>
+		<div class="reply" data-reply>{ p.Reply }</div>
 		<div class="row">
 			<button class="solid" type="button" data-copy-reply>Copy reply</button>
 			<button type="button" data-copy-decisions>Copy decisions as JSON</button>
