@@ -348,7 +348,7 @@ dossier release collect \
   --checks "npm test,node bin/dossier.mjs build examples/*.dossier.json,npm pack --dry-run --json"
 ```
 
-By default it writes `docs/releases/<version>.dossier.json`, `release-<version>.html`, and `release-<version>.md`. The GitHub Actions workflow in [`.github/workflows/release-evidence.yml`](.github/workflows/release-evidence.yml) runs tests, validates and builds examples, runs `npm pack --dry-run --json`, generates the release dossier, and uploads the evidence as an artifact. Publishing packages or creating GitHub Releases stays an explicit human-controlled step.
+By default it writes `docs/releases/<version>.dossier.json`, `release-<version>.html`, and `release-<version>.md`. The GitHub Actions workflow in [`.github/workflows/release-evidence.yml`](.github/workflows/release-evidence.yml) runs tests, validates and builds examples, runs `npm pack --dry-run --json`, generates the release dossier, and uploads the evidence as an artifact. Publishing is a separate workflow: [`.github/workflows/release.yml`](.github/workflows/release.yml) runs on a `v*` tag (or manually through `workflow_dispatch`), verifies that the tag matches `package.json`, skips versions already on npm, publishes `@kylebegeman/dossier` through npm trusted publishing with provenance (an `NPM_TOKEN` secret is accepted as a fallback), and then creates or updates the GitHub Release for the tag with a link to the release evidence.
 
 ## Themes And Skins
 
@@ -654,7 +654,7 @@ Project map:
 | `examples/` | Gallery models, workspace manifest, plugins, and example packs. |
 | `docs/product/` | Durable product scope and QA docs. |
 | `docs/releases/` | Generated release evidence dossiers. |
-| `.github/workflows/` | CI, Pages demo deployment, and release evidence artifact workflow. |
+| `.github/workflows/` | CI, Pages demo deployment, release evidence artifact workflow, and the npm publish workflow. |
 
 Before opening a PR or cutting a release:
 
@@ -665,6 +665,11 @@ node bin/dossier.mjs build examples/*.dossier.json
 npm pack --dry-run --json
 cd react && npx tsc --noEmit
 ```
+
+To cut a release, bump `package.json`, commit, tag `vX.Y.Z` on `master`, and push
+the tag. The release workflow publishes to npm and creates the GitHub Release;
+if a tag already exists but was never published, run the workflow manually from
+the Actions tab against `master`.
 
 ## Requirements
 
