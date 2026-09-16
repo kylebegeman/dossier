@@ -22,10 +22,11 @@ type RenderResult struct {
 	Source        string `json:"source"`
 	Slug          string `json:"slug"`
 	Bytes         int    `json:"bytes"`
-	HTML          string `json:"html"`
+	HTML          string `json:"html,omitempty"`
+	Markdown      string `json:"markdown,omitempty"`
 }
 
-func (r RenderResult) human(w io.Writer) { say(w, "%s", r.HTML) }
+func (r RenderResult) human(w io.Writer) { say(w, "%s%s", r.HTML, r.Markdown) }
 
 // renderDoor renders one model, from a file or from stdin, and answers with
 // the HTML instead of writing it. Integrations such as the React wrapper
@@ -36,6 +37,7 @@ func renderDoor(ctx context.Context, in Input) Envelope {
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	base := fs.String("base", "", "directory that relative figure paths resolve against; default is the model's directory, or the working directory for stdin")
+	md := fs.Bool("md", false, "answer with the Markdown rendition instead of the HTML")
 	files, err := parseInterspersed(fs, args)
 	if err != nil {
 		return errorEnvelope(id, "usage", err)
@@ -67,6 +69,14 @@ func renderDoor(ctx context.Context, in Input) Envelope {
 	}
 	if len(problems) > 0 {
 		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: problems, Error: &ErrorBody{Code: "invalid", Message: "model did not validate"}}
+	}
+	if *md {
+		text, err := render.Markdown(l.Doc, l.Kind)
+		if err != nil {
+			return errorEnvelope(id, "render", err)
+		}
+		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeOK, Warnings: l.Warnings,
+			Result: RenderResult{SchemaVersion: "dossier.render-result/v1", Source: source, Slug: l.Doc.Meta.Slug, Bytes: len(text), Markdown: string(text)}}
 	}
 	figures, figureWarnings := render.InlineFigures(l.Doc, dir)
 	diagrams, diagramWarnings := diagram.Default.Document(ctx, l.Doc)

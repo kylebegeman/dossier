@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"dossier/internal/diagram"
@@ -26,17 +27,22 @@ type BuildResult struct {
 	Outputs       []BuildOutput `json:"outputs"`
 }
 
-// BuildOutput describes one written artifact.
+// BuildOutput describes one written artifact, and its Markdown rendition
+// when --md asked for one.
 type BuildOutput struct {
-	Source string `json:"source"`
-	HTML   string `json:"html"`
-	Bytes  int    `json:"bytes"`
-	Millis int64  `json:"millis"`
+	Source   string `json:"source"`
+	HTML     string `json:"html"`
+	Markdown string `json:"markdown,omitempty"`
+	Bytes    int    `json:"bytes"`
+	Millis   int64  `json:"millis"`
 }
 
 func (r BuildResult) human(w io.Writer) {
 	for _, o := range r.Outputs {
 		say(w, "%s  %s  %d bytes  %d ms\n", o.Source, o.HTML, o.Bytes, o.Millis)
+		if o.Markdown != "" {
+			say(w, "%s  %s\n", o.Source, o.Markdown)
+		}
 	}
 }
 
@@ -45,6 +51,7 @@ func buildDoor(ctx context.Context, in Input) Envelope {
 	fs := flag.NewFlagSet("build", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	out := fs.String("out", "", "directory for the HTML output; default is beside each source")
+	md := fs.Bool("md", false, "also write a Markdown rendition beside the HTML")
 	files, err := parseInterspersed(fs, args)
 	if err != nil {
 		return errorEnvelope("build", "usage", err)
@@ -81,7 +88,19 @@ func buildDoor(ctx context.Context, in Input) Envelope {
 		if err := os.WriteFile(target, html, 0o644); err != nil {
 			return errorEnvelope("build", "write", err)
 		}
-		result.Outputs = append(result.Outputs, BuildOutput{Source: path, HTML: target, Bytes: len(html), Millis: time.Since(started).Milliseconds()})
+		output := BuildOutput{Source: path, HTML: target, Bytes: len(html)}
+		if *md {
+			text, err := render.Markdown(l.Doc, l.Kind)
+			if err != nil {
+				return errorEnvelope("build", "render", fmt.Errorf("%s: %w", path, err))
+			}
+			output.Markdown = strings.TrimSuffix(target, ".html") + ".md"
+			if err := os.WriteFile(output.Markdown, text, 0o644); err != nil {
+				return errorEnvelope("build", "write", err)
+			}
+		}
+		output.Millis = time.Since(started).Milliseconds()
+		result.Outputs = append(result.Outputs, output)
 	}
 	env := Envelope{SchemaVersion: SchemaVersion, Command: "build", Outcome: OutcomeOK, Result: result, Warnings: warnings}
 	if len(findings) > 0 {

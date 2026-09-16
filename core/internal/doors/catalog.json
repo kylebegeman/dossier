@@ -89,7 +89,7 @@
     },
     {
       "id": "build",
-      "summary": "Render model files to self-contained HTML beside each source or into --out.",
+      "summary": "Render model files to self-contained HTML beside each source or into --out, with a Markdown rendition when asked.",
       "mutation": "writes-files",
       "surfaces": [
         "cli",
@@ -113,6 +113,10 @@
           "out": {
             "type": "string",
             "description": "Directory for the HTML output."
+          },
+          "md": {
+            "type": "boolean",
+            "description": "Also write a Markdown rendition beside each HTML file."
           }
         }
       },
@@ -122,7 +126,7 @@
     },
     {
       "id": "render",
-      "summary": "Render one model, or - for stdin, and answer with the HTML instead of writing a file.",
+      "summary": "Render one model, or - for stdin, and answer with the HTML, or with Markdown, instead of writing a file.",
       "mutation": "read-only",
       "surfaces": [
         "cli"
@@ -144,6 +148,10 @@
           "base": {
             "type": "string",
             "description": "Directory that relative figure paths resolve against."
+          },
+          "md": {
+            "type": "boolean",
+            "description": "Answer with the Markdown rendition instead of the HTML."
           }
         }
       }
