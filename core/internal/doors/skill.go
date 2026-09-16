@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -50,6 +51,9 @@ func skillDoor(_ context.Context, in Input) Envelope {
 		return errorEnvelope(id, "render", err)
 	}
 	if *write != "" {
+		if err := os.MkdirAll(filepath.Dir(*write), 0o755); err != nil {
+			return errorEnvelope(id, "write", err)
+		}
 		if err := os.WriteFile(*write, md, 0o644); err != nil {
 			return errorEnvelope(id, "write", err)
 		}

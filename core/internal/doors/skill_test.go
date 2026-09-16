@@ -35,7 +35,7 @@ func TestSkillIsCurrent(t *testing.T) {
 }
 
 func TestSkillDoorWrites(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "SKILL.md")
+	path := filepath.Join(t.TempDir(), "skills", "dossier", "SKILL.md")
 	env, code := run(t, "skill", "--write", path)
 	if code != 0 || env.Outcome != OutcomeOK {
 		t.Fatalf("skill: %d %+v", code, env)
