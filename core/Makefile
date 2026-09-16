@@ -1,6 +1,6 @@
 # Dossier core: tools are pinned in go.mod (tool directives).
 
-.PHONY: generate check build test clean
+.PHONY: generate check build test clean dist dist-check
 
 generate:
 	go tool templ generate >/dev/null
@@ -22,6 +22,15 @@ test:
 
 build: generate
 	CGO_ENABLED=0 go build -o bin/dossier ./cmd/dossier
+
+# dist cross-compiles every target and writes archives, checksums, the npm
+# packages, and the Homebrew formula into dist/. dist-check dry-runs them.
+# Neither publishes anything.
+dist:
+	go run ./cmd/dossier-release build --out dist
+
+dist-check: dist
+	go run ./cmd/dossier-release check --out dist
 
 clean:
 	rm -rf bin dist
