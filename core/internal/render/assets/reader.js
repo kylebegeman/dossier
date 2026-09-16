@@ -43,7 +43,16 @@
   }
   var state = clean(model.decisions);
   try { var raw = localStorage.getItem(key + ":decisions"); if (raw) state = clean(JSON.parse(raw)); } catch (e) {}
-  function save() { try { localStorage.setItem(key + ":decisions", JSON.stringify(state)); } catch (e) {} }
+  /* announce decisions to the page (the serve studio) and to an embedding parent */
+  var framed = true;
+  try { framed = window.parent !== window; } catch (e) {}
+  function tell(msg) { if (!framed) return; msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} }
+  function announce() {
+    var d = { path: state.path, picked: byNumber(state.picked), notes: state.notes, reply: replyLine() };
+    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    tell({ type: "dossier:decisions", decisions: d });
+  }
+  function save() { try { localStorage.setItem(key + ":decisions", JSON.stringify(state)); } catch (e) {} announce(); }
   function picked(id) { return state.picked.indexOf(id) >= 0; }
   function byNumber(ids) { return ids.slice().sort(function (a, b) { return numbers[a] - numbers[b]; }); }
   function replyLine() {
@@ -147,4 +156,14 @@
   }
 
   render();
+  announce();
+
+  /* embedded: keep the parent's frame as tall as the page */
+  if (framed) {
+    var lastHeight = -1;
+    var postHeight = function () { var h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
+    window.addEventListener("load", postHeight);
+    postHeight();
+  }
 })();

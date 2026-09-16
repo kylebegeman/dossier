@@ -35,9 +35,21 @@ templ document(p *Page) {
 			</div>
 			<div class="toast" role="status" aria-live="polite" data-toast></div>
 			@templ.Raw(p.ModelScriptHTML)
+			if p.StudioHTML != "" {
+				@templ.Raw(p.StudioHTML)
+			}
 			@templ.Raw(p.ReaderScriptHTML)
 		</body>
 	</html>
+}
+
+// edit marks a field the serve studio can edit. Artifacts pass no target,
+// which renders no attribute.
+func edit(target string) templ.Attributes {
+	if target == "" {
+		return nil
+	}
+	return templ.Attributes{"data-edit": target}
 }
 
 func updatedSuffix(p *Page) string {
@@ -51,7 +63,7 @@ templ masthead(p *Page) {
 	<header class="masthead">
 		<div class="mast-top">
 			if p.Doc.Meta.Kicker != "" {
-				<p class="kicker">{ p.Doc.Meta.Kicker }</p>
+				<p class="kicker" { edit(p.EditKicker)... }>{ p.Doc.Meta.Kicker }</p>
 			} else {
 				<span></span>
 			}
@@ -65,9 +77,9 @@ templ masthead(p *Page) {
 				@themeToggle()
 			</div>
 		</div>
-		<h1>@templ.Raw(p.TitleHTML)</h1>
+		<h1 { edit(p.EditTitle)... }>@templ.Raw(p.TitleHTML)</h1>
 		if p.Doc.Meta.Lede != "" {
-			<p class="lede">{ p.Doc.Meta.Lede }</p>
+			<p class="lede" { edit(p.EditLede)... }>{ p.Doc.Meta.Lede }</p>
 		}
 		if len(p.Facts) > 0 {
 			<div class="stats" aria-label="At a glance">
@@ -114,7 +126,7 @@ templ contentsNav(p *Page) {
 
 templ section(p *Page, s SectionView) {
 	<section class="section" id={ s.ID }>
-		<h2>{ s.Title }</h2>
+		<h2 { edit(s.EditTitle)... }>{ s.Title }</h2>
 		for _, part := range s.Parts {
 			@partView(part)
 		}
@@ -140,7 +152,7 @@ templ section(p *Page, s SectionView) {
 templ partView(part PartView) {
 	switch part.Type {
 		case "prose":
-			<div class="part prose">
+			<div class="part prose" { edit(part.Edit)... }>
 				@templ.Raw(part.HTML)
 			</div>
 		case "callout":
@@ -148,7 +160,7 @@ templ partView(part PartView) {
 				if part.Title != "" {
 					<b>{ part.Title }</b>
 				}
-				<div>
+				<div { edit(part.Edit)... }>
 					@templ.Raw(part.HTML)
 				</div>
 			</div>
@@ -335,13 +347,13 @@ templ itemArticle(it ItemView) {
 					}
 				</button>
 			</div>
-			<h3>
+			<h3 { edit(it.EditTitle)... }>
 				<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 				<span class="num">{ strconv.Itoa(it.Number) }</span>
 				{ it.Title }
 			</h3>
 			if it.Summary != "" {
-				<p class="one-line">{ it.Summary }</p>
+				<p class="one-line" { edit(it.EditSummary)... }>{ it.Summary }</p>
 			}
 		</summary>
 		<div class="item-body">
@@ -353,7 +365,7 @@ templ itemArticle(it ItemView) {
 				for _, f := range it.Facets {
 					<div class={ "facet", templ.KV("risk", f.Risk) }>
 						<dt>{ f.Label }</dt>
-						<dd>
+						<dd { edit(f.Edit)... }>
 							@templ.Raw(f.HTML)
 						</dd>
 					</div>
@@ -382,9 +394,9 @@ templ rowsBoard(b *BoardView) {
 				<details class="row" id={ it.ID }>
 					<summary>
 						<div>
-							<b>{ it.Title }</b>
+							<b { edit(it.EditTitle)... }>{ it.Title }</b>
 							if it.Summary != "" {
-								<p>{ it.Summary }</p>
+								<p { edit(it.EditSummary)... }>{ it.Summary }</p>
 							}
 						</div>
 						if it.Effort != "" {
@@ -396,7 +408,7 @@ templ rowsBoard(b *BoardView) {
 						for _, f := range it.Facets {
 							<div class={ "facet", templ.KV("risk", f.Risk) }>
 								<dt>{ f.Label }</dt>
-								<dd>
+								<dd { edit(f.Edit)... }>
 									@templ.Raw(f.HTML)
 								</dd>
 							</div>
@@ -406,9 +418,9 @@ templ rowsBoard(b *BoardView) {
 			} else {
 				<div id={ it.ID }>
 					<div>
-						<b>{ it.Title }</b>
+						<b { edit(it.EditTitle)... }>{ it.Title }</b>
 						if it.Summary != "" {
-							<p>{ it.Summary }</p>
+							<p { edit(it.EditSummary)... }>{ it.Summary }</p>
 						}
 					</div>
 					if it.Effort != "" {
