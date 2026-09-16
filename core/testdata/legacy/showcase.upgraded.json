@@ -1,0 +1,1055 @@
+{
+  "dossier": "1.0",
+  "kind": "brief",
+  "meta": {
+    "title": "Dossier, capabilities showcase",
+    "slug": "showcase",
+    "kicker": "Live demo",
+    "lede": "Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].",
+    "updated": "2026-06-29",
+    "status": "durable"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**One JSON file becomes this**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "43 block types · Self-contained · Agent-readable · Light + dark"
+            },
+            {
+              "label": "Source",
+              "text": "one .dossier.json"
+            },
+            {
+              "label": "Output",
+              "text": "one .html"
+            },
+            {
+              "label": "Runtime deps",
+              "text": "0"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "Kyle"
+            },
+            {
+              "label": "Tags",
+              "text": "demo, blocks"
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "Use the full-page toolbar.",
+          "tone": "note",
+          "markdown": "In the full HTML artifact, **Edit** changes text in place, the color swatch restyles live in the **Theme Studio**, and **Export** gives you Markdown, JSON, or the agent digest. From the CLI, `dossier export` also writes **Word** (charts and diagrams embedded as images) or **PDF**."
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Block types",
+              "text": "43 (+1 citation block)"
+            },
+            {
+              "label": "Runtime deps",
+              "text": "0 (view-time network free)"
+            },
+            {
+              "label": "Renderers (Node + React)",
+              "text": "2 (same model)"
+            },
+            {
+              "label": "Self-contained",
+              "text": "100% (HTML + source)"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "For humans",
+              "text": "A navigable, searchable, themeable page, not a wall of Markdown."
+            },
+            {
+              "label": "For agents",
+              "text": "The full model is embedded as `#dossier-model`; read one block, no scraping."
+            },
+            {
+              "label": "For your wiki",
+              "text": "One portable file, link it, email it, or `<iframe>` it anywhere."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "structure-prose",
+      "title": "Structure & prose",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Sections nest other blocks; text fields take inline markdown."
+        },
+        {
+          "type": "prose",
+          "markdown": "This is a **prose** block with `inline code`, a [link](https://github.com/kylebegeman/dossier), and a footnote.[^island]\n\n- Bullet lists render as real lists.\n- Inline markdown still works inside list items.\n\n1. Numbered lists work too.\n2. Paragraph rhythm stays intact.\n\nA second paragraph to show vertical rhythm."
+        },
+        {
+          "type": "prose",
+          "markdown": "### How it's built"
+        },
+        {
+          "type": "prose",
+          "markdown": "1. **Author** An agent writes a `*.dossier.json`.\n2. **Validate** `dossier build` validates and lints.\n3. **Render** JSON becomes HTML + the data island + Markdown.\n4. **Use** Read, decide, export, embed."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Roadmap"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Phase",
+            "Status",
+            "Notes"
+          ],
+          "rows": [
+            [
+              "0.1",
+              "done",
+              "Generator, catalog, features."
+            ],
+            [
+              "0.2",
+              "done",
+              "MCP, plugins, new blocks."
+            ],
+            [
+              "0.5",
+              "done",
+              "Process workflows, publishing, embed output, and live editor hooks."
+            ],
+            [
+              "0.6",
+              "done",
+              "Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution."
+            ],
+            [
+              "0.7",
+              "planned",
+              "Leaner reader shell, one export contract, fewer block families, and a new default theme."
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "Composable.",
+          "tone": "note",
+          "markdown": "Sections, two-col, and tabs nest other blocks."
+        },
+        {
+          "type": "callout",
+          "title": "Self-contained.",
+          "tone": "risk",
+          "markdown": "No external fonts, scripts, or images. Works offline."
+        }
+      ]
+    },
+    {
+      "id": "reference-blocks",
+      "title": "Reference blocks",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Code"
+        },
+        {
+          "type": "code",
+          "title": "render.ts",
+          "lang": "ts",
+          "code": "import { renderDossier } from \"@kylebegeman/dossier-react\";\nconst { html, md } = await renderDossier(model); // one self-contained file"
+        },
+        {
+          "type": "prose",
+          "markdown": "### Shell"
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "code": "dossier init my-doc\ndossier build my-doc.dossier.json && open my-doc.html"
+        },
+        {
+          "type": "diagram",
+          "title": "Pipeline",
+          "source": "digraph { rankdir=LR; bgcolor=\"transparent\"; node [shape=box style=rounded fontname=\"Inter\" fontsize=12 color=\"#c81e4a\" fontcolor=\"#1a1822\"]; edge [color=\"#8b8698\"]; \"doc.json\" -> \"build\" -> \"doc.html\"; \"build\" -> \"doc.md\"; }",
+          "format": "dot"
+        },
+        {
+          "type": "diagram",
+          "title": "The loop (Mermaid)",
+          "source": "flowchart LR\n  A([Ask your AI]) --> B[Dossier JSON]\n  B --> C{Render}\n  C --> D[Self-contained HTML]\n  C --> E[Word / PDF]\n  D --> F([You triage]) --> G([Agent implements])",
+          "format": "mermaid"
+        },
+        {
+          "type": "prose",
+          "markdown": "### Exports"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Format",
+            "Use"
+          ],
+          "rows": [
+            [
+              "HTML",
+              "The page humans open"
+            ],
+            [
+              "Markdown",
+              "Plain-text copy"
+            ],
+            [
+              "JSON / digest",
+              "What agents read"
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### References"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Signal",
+            "Use"
+          ],
+          "rows": [
+            [
+              "[Repository](https://github.com/kylebegeman/dossier)",
+              "Source + docs",
+              "Clone, star, contribute"
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### FAQ"
+        },
+        {
+          "type": "prose",
+          "markdown": "**Does it replace my docs site?**\n\nNo, it's a companion: linkable, embeddable, exportable artifacts."
+        }
+      ]
+    },
+    {
+      "id": "media-data",
+      "title": "Media & data",
+      "parts": [
+        {
+          "type": "chart",
+          "title": "Adoption (bar)",
+          "variant": "bar",
+          "data": [
+            {
+              "label": "Q1",
+              "value": 12
+            },
+            {
+              "label": "Q2",
+              "value": 19
+            },
+            {
+              "label": "Q3",
+              "value": 30
+            },
+            {
+              "label": "Q4",
+              "value": 42
+            }
+          ]
+        },
+        {
+          "type": "chart",
+          "title": "Trend (area)",
+          "variant": "area",
+          "data": [
+            {
+              "label": "Jan",
+              "value": 4
+            },
+            {
+              "label": "Feb",
+              "value": 9
+            },
+            {
+              "label": "Mar",
+              "value": 7
+            },
+            {
+              "label": "Apr",
+              "value": 15
+            }
+          ]
+        },
+        {
+          "type": "code",
+          "lang": "latex",
+          "code": "E = mc^2 \\quad\\text{and}\\quad \\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}"
+        },
+        {
+          "type": "figure",
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='90'%3E%3Crect width='320' height='90' rx='10' fill='%23c81e4a'/%3E%3Ctext x='160' y='54' font-family='Inter,sans-serif' font-size='22' fill='white' text-anchor='middle'%3EFigure block%3C/text%3E%3C/svg%3E",
+          "caption": "Images are inlined as data URIs at build time."
+        }
+      ]
+    },
+    {
+      "id": "decisions-trust",
+      "title": "Decisions & trust",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Where it lives"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Option",
+            "Cross-project",
+            "Public later"
+          ],
+          "rows": [
+            [
+              "Standalone repo (recommended)",
+              "Yes",
+              "One-line flip"
+            ],
+            [
+              "Inside a monorepo",
+              "No",
+              "Hard"
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Risks"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Risk",
+            "Likelihood",
+            "Impact",
+            "Mitigation"
+          ],
+          "rows": [
+            [
+              "Scope creep",
+              "medium",
+              "medium",
+              "Freeze the schema, then build."
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Try it"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Item",
+            "Owner",
+            "Status",
+            "Note"
+          ],
+          "rows": [
+            [
+              "Install: npm i -g github:kylebegeman/dossier",
+              "",
+              "todo",
+              ""
+            ],
+            [
+              "Run: dossier init demo && dossier build demo.dossier.json",
+              "",
+              "todo",
+              ""
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Assumptions and open questions"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Statement",
+            "Kind",
+            "Status"
+          ],
+          "rows": [
+            [
+              "One file beats a folder of assets for sharing.",
+              "assumption",
+              "verified"
+            ]
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Provenance"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Generated by",
+              "text": "Dossier"
+            },
+            {
+              "label": "Model",
+              "text": "n/a"
+            },
+            {
+              "label": "Date",
+              "text": "2026-06-26"
+            },
+            {
+              "label": "Confidence",
+              "text": "high"
+            },
+            {
+              "label": "Tools",
+              "text": "shiki, graphviz, katex"
+            },
+            {
+              "label": "Notes",
+              "text": "Rendered entirely at build time; nothing loads at view time."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interactive-review-board-try-it",
+      "title": "Interactive review board, try it",
+      "board": {
+        "layout": "articles",
+        "items": [
+          {
+            "id": "navigation",
+            "title": "Navigation",
+            "summary": "Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** shipped\n\n**Category** Reader\n\n**Impact** High"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Expand a row, tick the checkbox, leave a note, then **Export JSON**, that decisions packet is what an agent reads back."
+              },
+              {
+                "label": "Details",
+                "markdown": "**Shortcut** Cmd/Ctrl-K"
+              }
+            ]
+          },
+          {
+            "id": "themeable",
+            "title": "Themeable",
+            "summary": "Light + dark, per-project token overrides, fully responsive to mobile.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** shipped\n\n**Category** Design\n\n**Impact** High"
+              },
+              {
+                "label": "Notes",
+                "markdown": "The whole design is a small token system; one accent, near-monochrome neutrals."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "process-board-implementation-loop",
+      "title": "Process board, implementation loop",
+      "board": {
+        "layout": "articles",
+        "items": [
+          {
+            "id": "extract-work-item",
+            "title": "Extract a work item",
+            "summary": "Use verdicts and notes to steer actual implementation work.",
+            "effort": "S",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Category** Implementation\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Pick a verdict, leave notes, then export process JSON. An agent reads that packet with `dossier_read_process` and acts on the accepted work.\n\n```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n@@ -1 +1 @@\n-// plan-only surface\n+// process-aware surface\n```"
+              },
+              {
+                "label": "Details",
+                "markdown": "**Packet** `dossier.process/v1`\n\n**Verdicts** approve, revise, skip, defer, split, retry, block"
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/generate.mjs`\n- `src/runtime/runtime.mjs`"
+              },
+              {
+                "label": "Verification",
+                "markdown": "- npm test"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "patch-set-proposed-edits",
+      "title": "Patch set, proposed edits",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification."
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "patch-process-aware-surface",
+            "title": "Patch process-aware surface",
+            "summary": "Move the artifact from a plan-only surface to a process-aware one.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Operation** modify\n\n**Risk** low"
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/generate.mjs`"
+              },
+              {
+                "label": "Verification",
+                "markdown": "- npm test"
+              },
+              {
+                "label": "Work items",
+                "markdown": "- `extract-work-item`"
+              },
+              {
+                "label": "Diff",
+                "markdown": "```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n--- a/src/generate.mjs\n+++ b/src/generate.mjs\n@@ -1,2 +1,2 @@\n-// plan-only surface\n+// process-aware surface\n```"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "code-editor-editable-snippet",
+      "title": "Code editor, editable snippet",
+      "parts": [
+        {
+          "type": "callout",
+          "title": "Editor",
+          "markdown": "Small edits can round-trip as `dossier.edits/v1` without turning the artifact into a full IDE.\n\nTarget: `src/runtime/runtime.mjs`\n\nWork items: extract-work-item"
+        },
+        {
+          "type": "code",
+          "title": "runtime.mjs",
+          "lang": "js",
+          "code": "function exportEdits(state) {\n  return { schema: \"dossier.edits/v1\", edits: state.editors || {} };\n}"
+        }
+      ]
+    },
+    {
+      "id": "diff-view-file-first-review",
+      "title": "Diff view, file-first review",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "A standalone unified diff renders with file summaries, hunks, additions, and deletions."
+        },
+        {
+          "type": "code",
+          "lang": "diff",
+          "code": "diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs\n--- a/src/runtime/runtime.mjs\n+++ b/src/runtime/runtime.mjs\n@@ -1,3 +1,4 @@\n const state = loadState();\n+state.process = state.process || {};\n \n exportProcess(state);"
+        }
+      ]
+    },
+    {
+      "id": "process-closeout-blocks",
+      "title": "Process closeout blocks",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "The same artifact now covers implementation, review, integration, release, and incident loops."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Verification run"
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "test-suite",
+            "title": "Test suite",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `npm test`\n\n**Expected** All tests pass.\n\n**Actual** 17 passing."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "evidence-log",
+      "title": "Evidence log",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "build-log",
+            "title": "Build log",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** command\n\n**Trust** high\n\n**Source** `local`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "`npm test` completed successfully."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "trust-report",
+      "title": "Trust report",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "A provenance layer ties claims to source ids and verification evidence for agent readback."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "npm test",
+              "command",
+              "high",
+              "Local test command recorded in the verification run."
+            ],
+            [
+              "[Public manual QA guide](../docs/product/public-manual-qa.md)",
+              "doc",
+              "medium",
+              "Manual browser, live serve, MCP, export, and release gate checklist."
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "tests-pass",
+            "title": "Automated tests pass for the process block family.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Agents can read this with `dossier_read_trust`."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- test-suite"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- npm-test"
+              }
+            ]
+          },
+          {
+            "id": "manual-qa-ready",
+            "title": "The feature set is ready for public manual QA.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** partial\n\n**Confidence** medium"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Manual QA still needs a human browser pass before broad announcement."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- build-log"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- manual-qa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "trust-report-continued",
+      "title": "Trust report, continued",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Apply gate"
+        },
+        {
+          "type": "callout",
+          "title": "Apply gate",
+          "markdown": "Approve, revise, skip, defer, split, retry, or block this process packet."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Review findings"
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "missing-evidence",
+            "title": "Missing evidence link",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Severity** medium"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Attach the verification run to the work item before closeout."
+              },
+              {
+                "label": "Recommendation",
+                "markdown": "Link the finding to a `verification-run` id."
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/starters/review.dossier.json`"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-thread",
+      "title": "Review thread",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "thread-agent-access",
+            "title": "Agent access",
+            "facets": [
+              {
+                "label": "Notes",
+                "markdown": "**Kyle** Make the packet readable without DOM scraping.\n\n**Agent** Use MCP readback and versioned export packets."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "integration-cycles",
+      "title": "Integration cycles",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "producer-consumer",
+            "title": "Producer to consumer",
+            "summary": "Consumer project accepted the packet shape.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** done"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "integration-report",
+      "title": "Integration report",
+      "parts": [
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Producer",
+              "text": "dossier"
+            },
+            {
+              "label": "Consumer",
+              "text": "lumen"
+            },
+            {
+              "label": "Status",
+              "text": "accepted"
+            },
+            {
+              "label": "Version",
+              "text": "0.5.5"
+            },
+            {
+              "label": "Next step",
+              "text": "Dogfood against a live dependency change."
+            }
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "process-packets",
+            "title": "Process packets",
+            "summary": "Verdicts, releases, edits, and process state all export as structured packets."
+          }
+        ]
+      }
+    },
+    {
+      "id": "integration-report-continued",
+      "title": "Integration report, continued",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Upstream response"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Upstream",
+              "text": "CodeMirror host adapter"
+            },
+            {
+              "label": "Status",
+              "text": "accepted"
+            },
+            {
+              "label": "Request",
+              "text": "Enhance \\`data-code-editor\\` hooks in the local serve runtime."
+            },
+            {
+              "label": "Response",
+              "text": "\\`dossier serve\\` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact."
+            },
+            {
+              "label": "Next step",
+              "text": "Keep Monaco reserved for hosted Studio or Lumen integrations."
+            }
+          ]
+        },
+        {
+          "type": "prose",
+          "markdown": "### Release checklist"
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "tests",
+            "title": "Tests pass",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm test"
+              }
+            ]
+          },
+          {
+            "id": "docs",
+            "title": "Docs regenerated",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- README and public manual QA guide refreshed."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "decision-log",
+      "title": "Decision log",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "host-runtime",
+            "title": "Keep execution in host tools",
+            "summary": "Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Owner** Kyle + Codex"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "decision-log-continued",
+      "title": "Decision log, continued",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Process receipt"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Outcome",
+              "text": "functionality closeout ready for public manual QA"
+            },
+            {
+              "label": "Owner",
+              "text": "Codex"
+            },
+            {
+              "label": "Date",
+              "text": "2026-06-29"
+            },
+            {
+              "label": "Changed files",
+              "text": "`src/generate.mjs`, `src/runtime/runtime.mjs`, `schema/packets/trust.schema.json`, `mcp/server.mjs`"
+            },
+            {
+              "label": "Commands",
+              "text": "`npm test`"
+            },
+            {
+              "label": "Follow-ups",
+              "text": "Run the public manual QA guide before broad announcement."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glossary",
+      "title": "Glossary",
+      "parts": [
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "island",
+              "text": "The embedded `#dossier-model` JSON that is the source of truth for the page."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "1. Reference a note inline with a bracketed caret id; it links here and back."
+        }
+      ]
+    },
+    {
+      "id": "citations",
+      "title": "Citations",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Citation",
+            "Authors",
+            "Source",
+            "Year",
+            "Note"
+          ],
+          "rows": [
+            [
+              "[Dossier README](https://github.com/kylebegeman/dossier)",
+              "Kyle Begeman",
+              "GitHub",
+              "2026",
+              "Canonical feature and workflow overview for the Dossier project."
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

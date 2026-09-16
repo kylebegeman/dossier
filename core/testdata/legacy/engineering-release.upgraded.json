@@ -1,0 +1,331 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Release Readiness: 0.5.5",
+    "slug": "engineering-release",
+    "kicker": "Release control room",
+    "lede": "Use this shape when a team needs public QA readiness, release notes, command receipts, and a durable closeout packet for agents.",
+    "updated": "2026-06-29",
+    "status": "review"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**A release page that keeps gates, evidence, and claims together**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "Release gates · Verification · Manual QA · Closeout"
+            },
+            {
+              "label": "Release",
+              "text": "0.5.5"
+            },
+            {
+              "label": "Required gates",
+              "text": "6"
+            },
+            {
+              "label": "State",
+              "text": "Manual QA"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "Release captain"
+            },
+            {
+              "label": "Tags",
+              "text": "example, release, qa"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release-gates",
+      "title": "Release gates",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "tests",
+            "title": "Automated tests pass",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm test"
+              }
+            ]
+          },
+          {
+            "id": "react",
+            "title": "React renderer typecheck passes",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- cd react && npx tsc --noEmit"
+              }
+            ]
+          },
+          {
+            "id": "docs",
+            "title": "README and examples regenerated",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- node bin/dossier.mjs build examples/\\*.dossier.json"
+              }
+            ]
+          },
+          {
+            "id": "live-editor",
+            "title": "Live CodeMirror editor smoke passes",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- Playwright smoke edited a CodeMirror-backed code-editor and saved back to source JSON"
+              }
+            ]
+          },
+          {
+            "id": "manual",
+            "title": "Manual browser pass complete",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** todo\n\n**Required** yes"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- Run docs/product/public-manual-qa.md"
+              }
+            ]
+          },
+          {
+            "id": "npm",
+            "title": "npm publish credential available",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** blocked\n\n**Required** no"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- npm whoami if publishing to registry"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "command-receipts",
+      "title": "Command receipts",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "unit-tests",
+            "title": "Unit tests",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `npm test`\n\n**Expected** All node tests pass.\n\n**Actual** Process, trust, export, and render tests passed."
+              }
+            ]
+          },
+          {
+            "id": "example-build",
+            "title": "Example build",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `node bin/dossier.mjs build examples/*.dossier.json`\n\n**Expected** Every example emits HTML and Markdown.\n\n**Actual** Generated showcase, overview, and focused example pages."
+              }
+            ]
+          },
+          {
+            "id": "codemirror-smoke",
+            "title": "Live editor smoke",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** passed\n\n**Command** `dossier serve examples/implementation-packet.dossier.json`\n\n**Expected** CodeMirror mounts, edits sync, and save-back writes the source model.\n\n**Actual** Playwright verified desktop and mobile CodeMirror mounting, textarea sync, and save-back."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-assets",
+      "title": "Release assets",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Asset",
+            "Audience",
+            "Use"
+          ],
+          "rows": [
+            [
+              "README.md",
+              "New users",
+              "Install, choose examples, learn block and packet model."
+            ],
+            [
+              "examples/showcase.html",
+              "Evaluators",
+              "Inspect the full block catalog."
+            ],
+            [
+              "docs/product/public-manual-qa.md",
+              "Release reviewer",
+              "Run browser, live serve, MCP, and export checks."
+            ],
+            [
+              "schema/packets/trust.schema.json",
+              "Agents",
+              "Validate trust packets and recorded claims."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release-confidence",
+      "title": "Release confidence",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "Automated tests",
+              "command",
+              "high",
+              "Narrow verification for render, schema, MCP, and packets."
+            ],
+            [
+              "Manual QA guide",
+              "checklist",
+              "medium",
+              "Human browser pass still required before broad announcement."
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "ready-for-manual-qa",
+            "title": "Release is ready for public manual QA.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Evidence",
+                "markdown": "- unit-tests\n- example-build"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- tests\n- manual"
+              }
+            ]
+          },
+          {
+            "id": "registry-publish",
+            "title": "Registry publishing requires npm credentials.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** external\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- manual"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-receipt",
+      "title": "Release receipt",
+      "parts": [
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Outcome",
+              "text": "Ready for public manual QA"
+            },
+            {
+              "label": "Owner",
+              "text": "Release captain"
+            },
+            {
+              "label": "Date",
+              "text": "2026-06-29"
+            },
+            {
+              "label": "Commands",
+              "text": "`npm test`, `node bin/dossier.mjs build examples/*.dossier.json`, `dossier serve CodeMirror smoke`"
+            },
+            {
+              "label": "Risks",
+              "text": "Manual QA is not a substitute for production telemetry.; Registry publishing depends on credentials."
+            },
+            {
+              "label": "Follow-ups",
+              "text": "Run public manual QA guide.; Confirm Pages deployment after push."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

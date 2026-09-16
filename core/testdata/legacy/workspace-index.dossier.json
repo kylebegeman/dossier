@@ -1,0 +1,473 @@
+{
+  "dossierVersion": "1.0",
+  "kind": "dossier",
+  "meta": {
+    "title": "Dossier Examples Workspace",
+    "slug": "workspace-index",
+    "eyebrow": "Workspace",
+    "status": "generated",
+    "updated": "2026-06-29T00:00:00.000Z",
+    "tags": [
+      "workspace",
+      "agent-status"
+    ],
+    "skin": "console-slate"
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Workspace",
+      "title": "Dossier Examples Workspace",
+      "lede": "Gallery workspace for the built-in examples, process packets, release evidence, and agent-readable handoff surfaces."
+    },
+    {
+      "type": "stat-strip",
+      "stats": [
+        {
+          "value": "7",
+          "label": "Dossiers"
+        },
+        {
+          "value": "5",
+          "label": "Open process"
+        },
+        {
+          "value": "1",
+          "label": "Release gaps"
+        },
+        {
+          "value": "4",
+          "label": "Trust gaps"
+        },
+        {
+          "value": "2",
+          "label": "Missing links"
+        },
+        {
+          "value": "0",
+          "label": "Invalid docs"
+        }
+      ]
+    },
+    {
+      "type": "release-checklist",
+      "title": "Workspace readiness",
+      "gates": [
+        {
+          "id": "valid-docs",
+          "title": "All workspace dossiers validate",
+          "status": "passed",
+          "required": true,
+          "evidence": "0 invalid dossier(s)"
+        },
+        {
+          "id": "process-queue-clear",
+          "title": "No open process items",
+          "status": "pending",
+          "required": true,
+          "evidence": "5 open item(s)"
+        },
+        {
+          "id": "release-gates-clear",
+          "title": "Required release gates passed",
+          "status": "pending",
+          "required": true,
+          "evidence": "1 open gate(s)"
+        },
+        {
+          "id": "trust-gaps-clear",
+          "title": "Trust claims verified",
+          "status": "pending",
+          "required": true,
+          "evidence": "4 trust gap(s)"
+        },
+        {
+          "id": "links-resolve",
+          "title": "Cross-document links resolve",
+          "status": "pending",
+          "required": false,
+          "evidence": "2 missing link(s)"
+        }
+      ]
+    },
+    {
+      "type": "process-board",
+      "title": "Agent work queue",
+      "items": [
+        {
+          "id": "process-showcase-extract-work-item",
+          "title": "Dossier, capabilities showcase: Extract a work item",
+          "summary": "Use verdicts and notes to steer actual implementation work.",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P1",
+          "verdict": "undecided",
+          "files": [
+            "showcase.dossier.json"
+          ]
+        },
+        {
+          "id": "process-implementation-packet-filter-state",
+          "title": "Implementation Packet: Search Filter: Persist selected filter",
+          "summary": "Save the active search filter in the URL query so refresh and share links preserve state.",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P1",
+          "verdict": "undecided",
+          "files": [
+            "implementation-packet.dossier.json"
+          ]
+        },
+        {
+          "id": "process-implementation-packet-empty-state",
+          "title": "Implementation Packet: Search Filter: Improve empty results state",
+          "summary": "Show the active filter and a clear reset action when no results match.",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P2",
+          "verdict": "undecided",
+          "files": [
+            "implementation-packet.dossier.json"
+          ]
+        },
+        {
+          "id": "process-incident-response-backpressure",
+          "title": "Incident Response: API Latency: Add upstream backpressure",
+          "summary": "Limit retry bursts when the search provider slows down.",
+          "status": "proposed",
+          "owner": "API team",
+          "priority": "P1",
+          "verdict": "undecided",
+          "files": [
+            "incident-response.dossier.json"
+          ]
+        },
+        {
+          "id": "process-incident-response-dashboard-marker",
+          "title": "Incident Response: API Latency: Annotate incident dashboard",
+          "summary": "Mark the mitigation window so later analysis is clear.",
+          "status": "proposed",
+          "owner": "SRE",
+          "priority": "P2",
+          "verdict": "undecided",
+          "files": [
+            "incident-response.dossier.json"
+          ]
+        },
+        {
+          "id": "release-engineering-release-manual",
+          "title": "Release Readiness: 0.5.5: Manual browser pass complete",
+          "summary": "Run docs/product/public-manual-qa.md",
+          "status": "todo",
+          "owner": "Release captain",
+          "priority": "P1",
+          "verdict": "block",
+          "files": [
+            "engineering-release.dossier.json"
+          ]
+        },
+        {
+          "id": "trust-showcase-manual-qa-ready",
+          "title": "Dossier, capabilities showcase: The feature set is ready for public manual QA.",
+          "summary": "Trust report",
+          "status": "partial",
+          "owner": "Kyle",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "showcase.dossier.json"
+          ]
+        },
+        {
+          "id": "trust-implementation-packet-not-merged",
+          "title": "Implementation Packet: Search Filter: The patch is not verified or merged until host commands pass.",
+          "summary": "Implementation trust",
+          "status": "guardrail",
+          "owner": "Engineering",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "implementation-packet.dossier.json"
+          ]
+        },
+        {
+          "id": "trust-research-brief-public-claims",
+          "title": "Market Scan: AI Documentation Tools: Public market or pricing statements should be rechecked before publication.",
+          "summary": "Claim ledger",
+          "status": "policy",
+          "owner": "Research team",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "research-brief.dossier.json"
+          ]
+        },
+        {
+          "id": "trust-engineering-release-registry-publish",
+          "title": "Release Readiness: 0.5.5: Registry publishing requires npm credentials.",
+          "summary": "Release confidence",
+          "status": "external",
+          "owner": "Release captain",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "engineering-release.dossier.json"
+          ]
+        },
+        {
+          "id": "link-dossier-overview-dossier-model",
+          "title": "Dossier, System Overview: missing [[dossier-model]]",
+          "summary": "Cross-document link does not resolve in this workspace.",
+          "status": "open",
+          "owner": "Kyle",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "sample.dossier.json"
+          ]
+        },
+        {
+          "id": "link-dossier-overview-slug",
+          "title": "Dossier, System Overview: missing [[slug]]",
+          "summary": "Cross-document link does not resolve in this workspace.",
+          "status": "open",
+          "owner": "Kyle",
+          "priority": "P2",
+          "verdict": "revise",
+          "files": [
+            "sample.dossier.json"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Workspace dossiers",
+      "columns": [
+        "Title",
+        "Kind",
+        "Status",
+        "Tags",
+        "Updated",
+        "Open process",
+        "Release gaps",
+        "Trust gaps"
+      ],
+      "rows": [
+        [
+          "[[showcase]]",
+          "dossier",
+          "durable",
+          "demo, blocks",
+          "2026-06-29",
+          "1",
+          "0",
+          "1"
+        ],
+        [
+          "[[dossier-overview]]",
+          "dossier",
+          "ready",
+          "docs, tooling, design-system",
+          "2026-06-29",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "[[implementation-packet]]",
+          "implementation",
+          "review",
+          "example, implementation, agent",
+          "2026-06-29",
+          "2",
+          "0",
+          "1"
+        ],
+        [
+          "[[incident-response]]",
+          "incident",
+          "review",
+          "example, incident, operations",
+          "2026-06-29",
+          "2",
+          "0",
+          "0"
+        ],
+        [
+          "[[research-brief]]",
+          "research",
+          "review",
+          "example, research, trust",
+          "2026-06-29",
+          "0",
+          "0",
+          "1"
+        ],
+        [
+          "[[product-launch]]",
+          "reader",
+          "durable",
+          "example, product, marketing",
+          "2026-06-29",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "[[engineering-release]]",
+          "release",
+          "review",
+          "example, release, qa",
+          "2026-06-29",
+          "0",
+          "1",
+          "1"
+        ]
+      ]
+    },
+    {
+      "type": "release-checklist",
+      "title": "Required release gaps",
+      "gates": [
+        {
+          "id": "engineering-release-manual",
+          "title": "Release Readiness: 0.5.5: Manual browser pass complete",
+          "status": "todo",
+          "required": true,
+          "evidence": "Run docs/product/public-manual-qa.md"
+        }
+      ]
+    },
+    {
+      "type": "trust-report",
+      "title": "Trust gaps",
+      "summary": "Claims that still need verification before downstream agents should rely on them.",
+      "sources": [
+        {
+          "id": "doc-showcase",
+          "label": "Dossier, capabilities showcase",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "showcase.dossier.json"
+        },
+        {
+          "id": "doc-dossier-overview",
+          "label": "Dossier, System Overview",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "sample.dossier.json"
+        },
+        {
+          "id": "doc-implementation-packet",
+          "label": "Implementation Packet: Search Filter",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "implementation-packet.dossier.json"
+        },
+        {
+          "id": "doc-incident-response",
+          "label": "Incident Response: API Latency",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "incident-response.dossier.json"
+        },
+        {
+          "id": "doc-research-brief",
+          "label": "Market Scan: AI Documentation Tools",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "research-brief.dossier.json"
+        },
+        {
+          "id": "doc-product-launch",
+          "label": "Northstar Notes Launch",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "product-launch.dossier.json"
+        },
+        {
+          "id": "doc-engineering-release",
+          "label": "Release Readiness: 0.5.5",
+          "kind": "dossier",
+          "trust": "medium",
+          "summary": "engineering-release.dossier.json"
+        }
+      ],
+      "claims": [
+        {
+          "id": "showcase-manual-qa-ready",
+          "claim": "Dossier, capabilities showcase: The feature set is ready for public manual QA.",
+          "status": "partial",
+          "confidence": "medium",
+          "sources": [
+            "doc-showcase"
+          ]
+        },
+        {
+          "id": "implementation-packet-not-merged",
+          "claim": "Implementation Packet: Search Filter: The patch is not verified or merged until host commands pass.",
+          "status": "guardrail",
+          "confidence": "high",
+          "sources": [
+            "doc-implementation-packet"
+          ]
+        },
+        {
+          "id": "research-brief-public-claims",
+          "claim": "Market Scan: AI Documentation Tools: Public market or pricing statements should be rechecked before publication.",
+          "status": "policy",
+          "confidence": "high",
+          "sources": [
+            "doc-research-brief"
+          ]
+        },
+        {
+          "id": "engineering-release-registry-publish",
+          "claim": "Release Readiness: 0.5.5: Registry publishing requires npm credentials.",
+          "status": "external",
+          "confidence": "high",
+          "sources": [
+            "doc-engineering-release"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Missing cross-links",
+      "columns": [
+        "Document",
+        "Missing slug"
+      ],
+      "rows": [
+        [
+          "[[dossier-overview]]",
+          "dossier-model"
+        ],
+        [
+          "[[dossier-overview]]",
+          "slug"
+        ]
+      ]
+    },
+    {
+      "type": "process-receipt",
+      "title": "Workspace scan receipt",
+      "outcome": "needs-attention",
+      "owner": "dossier workspace",
+      "changedFiles": [
+        "showcase.dossier.json",
+        "sample.dossier.json",
+        "implementation-packet.dossier.json",
+        "incident-response.dossier.json",
+        "research-brief.dossier.json",
+        "product-launch.dossier.json",
+        "engineering-release.dossier.json"
+      ],
+      "commands": [
+        "dossier workspace index"
+      ]
+    }
+  ]
+}

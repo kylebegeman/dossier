@@ -1,0 +1,226 @@
+{
+  "dossierVersion": "1.0",
+  "schema": "dossier/v1",
+  "kind": "dossier",
+  "meta": {
+    "title": "Dossier, System Overview",
+    "slug": "dossier-overview",
+    "crumbs": ["Dossier", "Overview"],
+    "status": "ready",
+    "owner": "Kyle",
+    "project": "Dossier",
+    "updated": "2026-06-29",
+    "version": "0.5.5",
+    "tags": ["docs", "tooling", "design-system"],
+    "lifecycle": { "stage": "durable", "note": "Overview of the public Dossier surface after the process workflow closeout.", "promoteTo": "durable" },
+    "changelog": [
+      { "version": "0.5.5", "date": "2026-06-29", "summary": "Live CodeMirror editor adapter and process roadmap closeout", "changes": ["CodeMirror live editor", "Local CodeMirror module serving", "Roadmap closeout docs", "Updated overview and release examples"] },
+      { "version": "0.5.4", "date": "2026-06-29", "summary": "Process dossiers, gallery examples, and public QA docs", "changes": ["Process blocks", "MCP packets", "Release and incident workflows"] },
+      { "version": "0.1.0", "date": "2026-06-26", "summary": "Initial generator and catalog", "changes": ["Schema", "Generator", "Catalog", "Selected features"] }
+    ]
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Documentation kit",
+      "title": "One JSON file in, a beautiful agent-readable page out",
+      "lede": "Dossier renders a single document model into a self-contained, themed, interactive HTML artifact. The page you see is a projection of the embedded **[[dossier-model]]** data island, so agents read one block while humans get the rendered view.",
+      "pills": ["Self-contained", "Light + dark", "Markdown + JSON export", "Embeddable", "Agent-readable"],
+      "sideCards": [
+        { "label": "Status", "value": "Ready", "note": "Process workflows, gallery examples, and QA docs are in place." },
+        { "label": "Render model", "value": "Hybrid", "note": "Static HTML + JSON island + minimal JS." },
+        { "label": "Static artifact", "value": "Offline", "note": "Generated HTML has no external network dependency." }
+      ]
+    },
+    {
+      "type": "stat-strip",
+      "stats": [
+        { "value": "42", "label": "Block types" },
+        { "value": "18", "label": "Selected features" },
+        { "value": "1", "label": "JSON file to author" },
+        { "value": "0", "label": "Runtime dependencies" }
+      ]
+    },
+    {
+      "type": "summary-cards",
+      "cards": [
+        { "title": "For humans", "body": "A polished, themed reading surface with TOC, search, command palette, and one-click export.", "tone": "accent" },
+        { "title": "For agents", "body": "The full structured model lives in `#dossier-model`, read one block, no DOM scraping.", "tone": "highlight" },
+        { "title": "For your wiki", "body": "Self-contained files embed via iframe and link with `[[slug]]` cross-references.", "tone": "success" }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "How a Dossier is produced",
+      "subtitle": "The agent writes JSON; the generator owns all design and interactivity.",
+      "blocks": [
+        {
+          "type": "flow",
+          "steps": [
+            { "title": "Author", "body": "An agent emits a `*.dossier.json` model conforming to the schema." },
+            { "title": "Validate", "body": "The generator lints the model and assigns stable block ids." },
+            { "title": "Render", "body": "JSON becomes HTML + the embedded data island + Markdown." },
+            { "title": "Use", "body": "Read, review, export, embed, or round-trip back to an agent." }
+          ]
+        },
+        {
+          "type": "two-col",
+          "left": [
+            { "type": "callout", "tone": "tip", "title": "Composable.", "body": "Sections, two-col, and tabs nest other blocks, so layouts build up from the same primitives." }
+          ],
+          "right": [
+            { "type": "callout", "tone": "warn", "title": "Self-contained.", "body": "No external network calls; everything inlines so the file works offline and emails cleanly." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Roadmap",
+      "blocks": [
+        {
+          "type": "timeline",
+          "phases": [
+            { "label": "Phase 1", "body": "Schema + tokens/themes.", "status": "done" },
+            { "label": "Phase 2", "body": "Generator engine + data island + Markdown export.", "status": "done" },
+            { "label": "Phase 3", "body": "Full static catalog.", "status": "done" },
+            { "label": "Phase 4", "body": "Process dossier closeout.", "status": "done" },
+            { "label": "Phase 5", "body": "Bug bash, release polish, gallery examples, and public QA guide.", "status": "done" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Reference",
+      "blocks": [
+        {
+          "type": "tabs",
+          "tabs": [
+            {
+              "label": "Authoring",
+              "blocks": [
+                { "type": "code", "lang": "bash", "filename": "build a dossier", "code": "node bin/dossier.mjs build examples/sample.dossier.json\n# -> writes dossier-overview.html + .md" }
+              ]
+            },
+            {
+              "label": "FAQ",
+              "blocks": [
+                { "type": "faq", "items": [
+                  { "q": "Does it replace my docs site?", "a": "No. It is a companion: linkable, embeddable, exportable artifacts alongside your normal wiki." },
+                  { "q": "How do agents read it?", "a": "They parse the `#dossier-model` JSON island, or consume the Markdown / agent-digest exports." }
+                ] }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "decision-matrix",
+          "title": "Where it lives",
+          "criteria": ["Cross-project", "Public later", "Reusable"],
+          "options": [
+            { "name": "Standalone repo", "scores": ["Yes", "One-line flip", "Consumes as pack"], "recommended": true },
+            { "name": "Inside a monorepo", "scores": ["No", "Hard", "Native but coupled"] }
+          ]
+        },
+        {
+          "type": "risk-register",
+          "title": "Risks",
+          "risks": [
+            { "risk": "Scope creep across 18 features", "likelihood": "medium", "impact": "medium", "mitigation": "Build catalog first, then features against a frozen schema." },
+            { "risk": "Borrowed code complicates open-sourcing", "likelihood": "low", "impact": "high", "mitigation": "Write 100% original, zero-dep code." }
+          ]
+        },
+        {
+          "type": "references",
+          "items": [
+            { "label": "Deep-dive reference", "signal": "Static reader pattern", "use": "Baseline for the read-only Dossier layout." },
+            { "label": "Review board reference", "signal": "Interactive decision surface", "use": "Basis for the review-board block." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "action-items",
+      "title": "Implementation closeout",
+      "items": [
+        { "title": "Bug bash process dossier workflows.", "owner": "agent", "status": "done" },
+        { "title": "Polish release artifacts, README, examples, and manual QA guide.", "owner": "agent", "status": "done" },
+        { "title": "Dogfood MCP process packets through example workflows.", "owner": "agent", "status": "done" }
+      ]
+    },
+    {
+      "type": "assumptions",
+      "items": [
+        { "statement": "Dossiers can sit in the same folder, so relative [[slug]] links suffice for local catalogs.", "kind": "assumption", "status": "verified" },
+        { "statement": "Catalog generation is available through `dossier catalog` and `dossier publish`.", "kind": "decision", "status": "verified" }
+      ]
+    },
+    {
+      "type": "glossary",
+      "terms": [
+        { "term": "dossier-model", "definition": "The embedded JSON data island that is the source of truth for the rendered page." },
+        { "term": "agent digest", "definition": "A compact, token-efficient text summary of the Dossier for downstream agents." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "Pipeline",
+      "format": "dot",
+      "spec": "digraph { rankdir=LR; bgcolor=\"transparent\"; node [shape=box style=rounded fontname=\"Inter\" fontsize=12 color=\"#c81e4a\" fontcolor=\"#1a1822\"]; edge [color=\"#8b8698\"]; \"dossier.json\" -> \"generator\"; \"generator\" -> \"dossier.html\"; \"generator\" -> \"dossier.md\"; \"dossier.html\" -> \"#dossier-model island\"; }"
+    },
+    {
+      "type": "review-board",
+      "title": "Optional features, triage and decide",
+      "candidates": [
+        {
+          "id": "command-palette",
+          "title": "Command palette",
+          "summary": "Cmd-K to jump to sections and run document actions.",
+          "category": "Navigation",
+          "status": "shipped",
+          "impact": "High",
+          "effort": "Small",
+          "body": "Opens with **Cmd/Ctrl-K**. Lists every section heading plus document actions (toggle theme, copy Markdown, download JSON, view source). Arrow keys move, Enter activates, Esc closes.\n\nThe command list is built at render time from the table of contents, so it stays in sync with the document automatically.",
+          "blocks": [
+            { "type": "code", "lang": "ts", "code": "// commands are derived from the embedded model\nconst commands = toc.map(t => ({ label: t.label, run: () => jump(t.id) }))" }
+          ],
+          "details": { "Shortcut": "Cmd/Ctrl-K", "Source": "Built from TOC" }
+        },
+        {
+          "id": "version-diff",
+          "title": "Changelog / version diff",
+          "summary": "Diff two dossier models structurally from the CLI.",
+          "category": "Trust",
+          "status": "shipped",
+          "impact": "Medium",
+          "effort": "Medium",
+          "body": "Because every Dossier embeds its full source model, two versions can be compared structurally rather than as text. Run `dossier diff old.dossier.json new.dossier.json` to see added, removed, and changed blocks.",
+          "blocks": [
+            { "type": "table", "columns": ["Change", "Block", "Detail"], "rows": [["Added", "risk-register", "New risks section"], ["Changed", "timeline", "Phase 3 set to in-progress"]] }
+          ]
+        },
+        {
+          "id": "syntax-highlighting",
+          "title": "Syntax highlighting (Shiki)",
+          "summary": "Build-time, theme-aware highlighting with zero client JS.",
+          "category": "Content",
+          "status": "shipped",
+          "impact": "High",
+          "effort": "Medium",
+          "body": "Run Shiki at generate time to emit pre-highlighted, inline-styled code with light and dark variants driven by CSS variables. No client runtime and no network: the highlighted HTML is baked into the file."
+        },
+        {
+          "id": "diagram-svg",
+          "title": "Diagram to inline SVG",
+          "summary": "Render Graphviz DOT and Mermaid to static SVG at build time.",
+          "category": "Content",
+          "status": "shipped",
+          "impact": "Medium",
+          "effort": "Large",
+          "body": "DOT diagrams render through Graphviz WASM, and Mermaid diagrams render through the optional headless browser path when available. The resulting SVG is inlined into the artifact so view-time loading stays self-contained."
+        }
+      ]
+    }
+  ]
+}

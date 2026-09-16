@@ -226,3 +226,52 @@ func TestFormatNumber(t *testing.T) {
 		}
 	}
 }
+
+// TestGoldenShowcase renders the full-coverage 0.6 fixture through the alias
+// pass and compares it to its golden.
+func TestGoldenShowcase(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", "showcase.dossier.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	upgraded, _, ok, err := model.Normalize(data)
+	if err != nil || !ok {
+		t.Fatalf("normalize: %v %v", err, ok)
+	}
+	doc, err := model.Decode(bytes.NewReader(upgraded))
+	if err != nil {
+		t.Fatal(err)
+	}
+	kind, err := kinds.Load(doc.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	html, err := Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(html)
+	for _, want := range []string{`<figure class="part figure">`, `data-format="mermaid"`, `data-format="dot"`, `<polygon points=`, `<rect x=`, `<span class="hl-`, `<details class="row" id=`, `class="part callout"`} {
+		if !strings.Contains(out, want) {
+			t.Errorf("showcase lacks %q", want)
+		}
+	}
+	for _, forbidden := range []string{"https://cdn", "<script src="} {
+		if strings.Contains(out, forbidden) {
+			t.Errorf("showcase must not reference external resources, found %q", forbidden)
+		}
+	}
+	golden := filepath.Join("..", "..", "testdata", "showcase.html")
+	if os.Getenv("UPDATE_GOLDEN") != "" {
+		if err := os.WriteFile(golden, html, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want, err := os.ReadFile(golden)
+	if err != nil {
+		t.Skipf("no golden yet: %v (run with UPDATE_GOLDEN=1)", err)
+	}
+	if !bytes.Equal(html, want) {
+		t.Errorf("showcase differs from golden; run with UPDATE_GOLDEN=1 after reviewing the change")
+	}
+}

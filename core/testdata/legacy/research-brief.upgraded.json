@@ -1,0 +1,276 @@
+{
+  "dossier": "1.0",
+  "kind": "brief",
+  "meta": {
+    "title": "Market Scan: AI Documentation Tools",
+    "slug": "research-brief",
+    "kicker": "Research packet",
+    "lede": "Use Dossier for research synthesis, competitive scans, vendor comparisons, or decision support. The important part is not just prose, it is claims tied to sources, assumptions, and next verification steps.",
+    "updated": "2026-06-29",
+    "status": "review"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**A source-backed brief an agent can update safely**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "Research · Decision support · Claims · Sources"
+            },
+            {
+              "label": "Confidence",
+              "text": "Medium"
+            },
+            {
+              "label": "Sources",
+              "text": "4"
+            },
+            {
+              "label": "Next step",
+              "text": "Verify pricing"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "Research team"
+            },
+            {
+              "label": "Tags",
+              "text": "example, research, trust"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "What changed",
+              "text": "Teams want docs that double as stateful workflows for agents."
+            },
+            {
+              "label": "What to verify",
+              "text": "Pricing, licensing, and current hosted editor integrations should be checked against official sources."
+            },
+            {
+              "label": "What to decide",
+              "text": "Pick whether this artifact is a handoff, a decision record, or a living operating surface."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "format-comparison",
+      "title": "Format comparison",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Option",
+            "Readable",
+            "Agent state",
+            "Offline",
+            "Reviewable"
+          ],
+          "rows": [
+            [
+              "Dossier (recommended)",
+              "High",
+              "High",
+              "High",
+              "High"
+            ],
+            [
+              "Markdown file",
+              "High",
+              "Low",
+              "High",
+              "Medium"
+            ],
+            [
+              "Chat transcript",
+              "Medium",
+              "Low",
+              "Low",
+              "Low"
+            ],
+            [
+              "Docs CMS page",
+              "High",
+              "Medium",
+              "Medium",
+              "Medium"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assumptions-and-open-questions",
+      "title": "Assumptions and open questions",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Statement",
+            "Kind",
+            "Status"
+          ],
+          "rows": [
+            [
+              "Research briefs are more reusable when claims are structured separately from prose.",
+              "assumption",
+              "verified"
+            ],
+            [
+              "Pricing and vendor claims require a fresh source check before publication.",
+              "risk",
+              "open"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claim-ledger",
+      "title": "Claim ledger",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "[Dossier repository](https://github.com/kylebegeman/dossier) (MIT)",
+              "source",
+              "high",
+              "Source, examples, schemas, and package metadata."
+            ],
+            [
+              "Example gallery",
+              "artifact",
+              "medium",
+              "Local examples demonstrate multiple use cases."
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "portable",
+            "title": "A dossier can package prose, tables, charts, claims, and packet state in one file.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- repo\n- examples"
+              }
+            ]
+          },
+          {
+            "id": "public-claims",
+            "title": "Public market or pricing statements should be rechecked before publication.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** policy\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- repo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "research-workflow",
+      "title": "Research workflow",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "1. **Gather** Collect official docs, changelogs, repos, and source URLs.\n2. **Separate** Keep observations, assumptions, and claims in different blocks.\n3. **Decide** Use the matrix and risk register to make tradeoffs explicit.\n4. **Refresh** Agents update only stale claims and preserve prior evidence."
+        },
+        {
+          "type": "prose",
+          "markdown": "### Research risks"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Risk",
+            "Likelihood",
+            "Impact",
+            "Mitigation"
+          ],
+          "rows": [
+            [
+              "Stale vendor information",
+              "medium",
+              "high",
+              "Use official sources and record retrieval dates."
+            ],
+            [
+              "Unclear confidence",
+              "medium",
+              "medium",
+              "Use trust-report status and confidence per claim."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "source-queue",
+      "title": "Source queue",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Signal",
+            "Use"
+          ],
+          "rows": [
+            [
+              "[Repository](https://github.com/kylebegeman/dossier)",
+              "Primary source",
+              "Confirm schema, examples, and release notes."
+            ],
+            [
+              "[Manual QA guide](../docs/product/public-manual-qa.md)",
+              "Release confidence",
+              "Check public-readiness gates."
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

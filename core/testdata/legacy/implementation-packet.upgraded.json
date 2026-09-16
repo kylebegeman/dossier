@@ -1,0 +1,272 @@
+{
+  "dossier": "1.0",
+  "kind": "plan",
+  "meta": {
+    "title": "Implementation Packet: Search Filter",
+    "slug": "implementation-packet",
+    "kicker": "Implementation packet",
+    "lede": "This example shows the process Dossier shape for coding work: work items, editable snippets, patch proposals, diff review, verification receipts, trust claims, and closeout.",
+    "updated": "2026-06-29",
+    "status": "review"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**A code editing handoff that agents can actually consume**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "Work items · Patch review · Diff review · MCP packets"
+            },
+            {
+              "label": "Packet schemas",
+              "text": "edits + process + trust"
+            },
+            {
+              "label": "Human input",
+              "text": "verdicts + notes"
+            },
+            {
+              "label": "Agent readback",
+              "text": "MCP tools"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "Engineering"
+            },
+            {
+              "label": "Tags",
+              "text": "example, implementation, agent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "work-plan",
+      "title": "Work plan",
+      "board": {
+        "layout": "articles",
+        "items": [
+          {
+            "id": "filter-state",
+            "title": "Persist selected filter",
+            "summary": "Save the active search filter in the URL query so refresh and share links preserve state.",
+            "effort": "S",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Category** Frontend\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/search/filter-state.ts`\n- `src/search/SearchPanel.tsx`"
+              },
+              {
+                "label": "Verification",
+                "markdown": "- npm test\n- npx tsc --noEmit"
+              }
+            ]
+          },
+          {
+            "id": "empty-state",
+            "title": "Improve empty results state",
+            "summary": "Show the active filter and a clear reset action when no results match.",
+            "effort": "S",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Category** UX\n\n**Owner** agent\n\n**Priority** P2\n\n**Impact** Medium"
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/search/SearchResults.tsx`"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "editable-helper-proposal",
+      "title": "Editable helper proposal",
+      "parts": [
+        {
+          "type": "callout",
+          "title": "Editor",
+          "markdown": "`dossier serve` enhances this textarea with CodeMirror 6 while Dossier still exports plain `dossier.edits/v1`.\n\nTarget: `src/search/filter-state.ts`\n\nWork items: filter-state"
+        },
+        {
+          "type": "code",
+          "title": "filter-state.ts",
+          "lang": "ts",
+          "code": "export function readFilter(search: string): string {\n  const params = new URLSearchParams(search);\n  return params.get(\"filter\") || \"all\";\n}\n\nexport function writeFilter(search: string, filter: string): string {\n  const params = new URLSearchParams(search);\n  if (filter === \"all\") params.delete(\"filter\");\n  else params.set(\"filter\", filter);\n  return params.toString();\n}"
+        }
+      ]
+    },
+    {
+      "id": "proposed-patches",
+      "title": "Proposed patches",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "A patch set groups intent, touched files, risk, verification, and optional unified diffs."
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "persist-filter",
+            "title": "Persist filter in query string",
+            "summary": "Add a small helper and wire the search panel to update the URL.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Operation** add\n\n**Risk** low"
+              },
+              {
+                "label": "Files",
+                "markdown": "- `src/search/filter-state.ts`\n- `src/search/SearchPanel.tsx`"
+              },
+              {
+                "label": "Verification",
+                "markdown": "- npm test\n- npx tsc --noEmit"
+              },
+              {
+                "label": "Work items",
+                "markdown": "- `filter-state`"
+              },
+              {
+                "label": "Diff",
+                "markdown": "```diff\ndiff --git a/src/search/filter-state.ts b/src/search/filter-state.ts\nnew file mode 100644\n--- /dev/null\n+++ b/src/search/filter-state.ts\n@@ -0,0 +1,4 @@\n+export function readFilter(search: string): string {\n+  const params = new URLSearchParams(search);\n+  return params.get(\"filter\") || \"all\";\n+}\n```"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "standalone-diff-review",
+      "title": "Standalone diff review",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Diff review packets can capture file-level and hunk-level comments."
+        },
+        {
+          "type": "code",
+          "lang": "diff",
+          "code": "diff --git a/src/search/SearchResults.tsx b/src/search/SearchResults.tsx\n--- a/src/search/SearchResults.tsx\n+++ b/src/search/SearchResults.tsx\n@@ -8,6 +8,7 @@ export function SearchResults({ results, filter }) {\n   if (!results.length) {\n+    return <EmptyResults activeFilter={filter} />;\n-    return <p>No results</p>;\n   }\n   return <ResultList results={results} />;\n }"
+        }
+      ]
+    },
+    {
+      "id": "verification-plan",
+      "title": "Verification plan",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "unit",
+            "title": "Unit tests",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** planned\n\n**Command** `npm test`\n\n**Expected** Filter helper and empty state tests pass."
+              }
+            ]
+          },
+          {
+            "id": "typecheck",
+            "title": "Typecheck",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** planned\n\n**Command** `npx tsc --noEmit`\n\n**Expected** No TypeScript errors."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "implementation-trust",
+      "title": "Implementation trust",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "### Sources"
+        },
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "Kind",
+            "Trust",
+            "Summary"
+          ],
+          "rows": [
+            [
+              "Work plan",
+              "dossier block",
+              "medium",
+              "Human-reviewed proposed work items."
+            ],
+            [
+              "Verification plan",
+              "command queue",
+              "pending",
+              "Commands still need to be run in the host repo."
+            ]
+          ]
+        }
+      ],
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "ready-to-edit",
+            "title": "The packet contains enough information for an agent to start implementation.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** verified\n\n**Confidence** medium"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- work-plan"
+              }
+            ]
+          },
+          {
+            "id": "not-merged",
+            "title": "The patch is not verified or merged until host commands pass.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** guardrail\n\n**Confidence** high"
+              },
+              {
+                "label": "Sources",
+                "markdown": "- verification"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -145,3 +145,28 @@ func inputTag(html, marker string) string {
 	}
 	return html[start : i+end+1]
 }
+
+func TestBuildLegacyDocument(t *testing.T) {
+	src := filepath.Join("..", "..", "testdata", "legacy", "release-0-6-7.dossier.json")
+	dir := t.TempDir()
+	env, code := run(t, "build", src, "--out", dir)
+	if code != 0 || env.Outcome != OutcomeOK {
+		t.Fatalf("legacy build: %d %+v", code, env)
+	}
+	if len(env.Warnings) == 0 || !strings.Contains(env.Warnings[0].Path, "#/dossierVersion") {
+		t.Errorf("expected the upgrade warning first, got %+v", env.Warnings)
+	}
+	html, err := os.ReadFile(filepath.Join(dir, "release-0-6-7.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`<title>Release 0.6.7 Evidence</title>`, `id="release-gates"`, `<details class="row" id="npm-test">`, `<dt>Status</dt>`} {
+		if !strings.Contains(string(html), want) {
+			t.Errorf("legacy artifact lacks %q", want)
+		}
+	}
+	env, code = run(t, "validate", src)
+	if code != 0 || env.Outcome != OutcomeOK {
+		t.Errorf("legacy validate: %d %+v", code, env)
+	}
+}

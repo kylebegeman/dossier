@@ -1,0 +1,273 @@
+{
+  "dossier": "1.0",
+  "kind": "incident",
+  "meta": {
+    "title": "Incident Response: API Latency",
+    "slug": "incident-response",
+    "kicker": "Operational packet",
+    "lede": "Use this shape during an incident or post-incident review. It keeps the timeline, evidence, decisions, mitigations, and follow-up work in one structured artifact.",
+    "updated": "2026-06-29",
+    "status": "review"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "**A calm incident page for humans and agents**"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Highlights",
+              "text": "Timeline · Evidence · Decisions · Follow-ups"
+            },
+            {
+              "label": "Severity",
+              "text": "SEV-2"
+            },
+            {
+              "label": "Status",
+              "text": "Mitigated"
+            },
+            {
+              "label": "Owner",
+              "text": "On-call"
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Owner",
+              "text": "On-call"
+            },
+            {
+              "label": "Tags",
+              "text": "example, incident, operations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "incident-timeline",
+      "title": "Incident timeline",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Phase",
+            "Status",
+            "Notes"
+          ],
+          "rows": [
+            [
+              "09:12",
+              "done",
+              "Latency alert fired for `/api/search` p95 above threshold."
+            ],
+            [
+              "09:18",
+              "done",
+              "Traffic shifted away from the overloaded worker pool."
+            ],
+            [
+              "09:31",
+              "done",
+              "Queue depth returned to normal range."
+            ],
+            [
+              "10:20",
+              "planned",
+              "Follow-up patch queued for backpressure and dashboard annotation."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "alert",
+            "title": "Latency alert",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** monitor\n\n**Trust** high\n\n**Source** `observability`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "p95 latency rose above the paging threshold for 7 minutes."
+              }
+            ]
+          },
+          {
+            "id": "logs",
+            "title": "Worker logs",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** log\n\n**Trust** medium\n\n**Source** `api workers`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Retries increased after the upstream search provider slowed down."
+              }
+            ]
+          },
+          {
+            "id": "customer",
+            "title": "Support sample",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Kind** ticket\n\n**Trust** medium\n\n**Source** `support`"
+              },
+              {
+                "label": "Notes",
+                "markdown": "Three customers reported slow searches during the window."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "decisions",
+      "title": "Decisions",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "traffic-shift",
+            "title": "Shift traffic to warm pool",
+            "summary": "Mitigates customer impact without changing application code during the incident.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Owner** On-call"
+              }
+            ]
+          },
+          {
+            "id": "defer-index-change",
+            "title": "Defer index tuning",
+            "summary": "The tuning path needs replay testing and is safer as a follow-up.",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Owner** Incident lead"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "remediation-work",
+      "title": "Remediation work",
+      "board": {
+        "layout": "articles",
+        "items": [
+          {
+            "id": "backpressure",
+            "title": "Add upstream backpressure",
+            "summary": "Limit retry bursts when the search provider slows down.",
+            "effort": "M",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Category** Reliability\n\n**Owner** API team\n\n**Priority** P1\n\n**Impact** High"
+              },
+              {
+                "label": "Verification",
+                "markdown": "- load test\n- synthetic monitor"
+              }
+            ]
+          },
+          {
+            "id": "dashboard-marker",
+            "title": "Annotate incident dashboard",
+            "summary": "Mark the mitigation window so later analysis is clear.",
+            "effort": "S",
+            "facets": [
+              {
+                "label": "Status",
+                "markdown": "**Status** proposed\n\n**Category** Observability\n\n**Owner** SRE\n\n**Priority** P2\n\n**Impact** Medium"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "remaining-risks",
+      "title": "Remaining risks",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Risk",
+            "Likelihood",
+            "Impact",
+            "Mitigation"
+          ],
+          "rows": [
+            [
+              "Retry storm returns",
+              "medium",
+              "high",
+              "Ship backpressure and add a queue-depth alert."
+            ],
+            [
+              "Support misses affected customers",
+              "low",
+              "medium",
+              "Export affected-account list for support follow-up."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "closeout-receipt",
+      "title": "Closeout receipt",
+      "parts": [
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Outcome",
+              "text": "Customer impact mitigated, follow-up work queued"
+            },
+            {
+              "label": "Owner",
+              "text": "Incident lead"
+            },
+            {
+              "label": "Date",
+              "text": "2026-06-29"
+            },
+            {
+              "label": "Risks",
+              "text": "Retry behavior still needs a tested code fix."
+            },
+            {
+              "label": "Follow-ups",
+              "text": "Approve remediation board.; Attach load-test evidence after patch."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
