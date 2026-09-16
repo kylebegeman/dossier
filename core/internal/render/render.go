@@ -129,16 +129,16 @@ type BoardView struct {
 
 // ItemView is one item with rendered facets.
 type ItemView struct {
-	ID        string
-	Number    int
-	Title     string
-	Summary   string
-	Size      string
-	Effort    string
-	Impact    int
-	ImpactMax int
-	DependsOn []DepView
-	Facets    []FacetView
+	ID          string
+	Number      int
+	Title       string
+	Summary     string
+	Size        string
+	Effort      string
+	Impact      int
+	ImpactMax   int
+	DependsOn   []DepView
+	Facets      []FacetView
 	Picked      bool
 	Note        string
 	EditTitle   string
