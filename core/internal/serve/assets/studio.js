@@ -33,6 +33,7 @@
     for (const kid of kids) if (kid != null && kid !== false) n.append(kid);
     return n;
   };
+  const drafts = (n) => n + (n === 1 ? " draft" : " drafts");
   const button = (label, onclick, attrs) => h("button", Object.assign({ class: "btn", type: "button", onclick }, attrs), label);
 
   async function api(method, path, body, text) {
@@ -107,7 +108,7 @@
     const warned = (cfg.warnings || []).length;
     if (warned) bar.append(button(warned + (warned === 1 ? " warning" : " warnings"), () => report("Warnings", { findings: cfg.warnings }), { class: "btn studio-warned" }));
     if (cfg.upgraded) bar.append(h("span", { class: "studio-note", title: "dossier upgrade " + cfg.model }, "0.6 document: upgrade to edit"));
-    if ((cfg.conflicts || []).length) bar.append(h("span", { class: "studio-note" }, cfg.conflicts.length + " draft(s) conflict with the file"));
+    if ((cfg.conflicts || []).length) bar.append(h("span", { class: "studio-note" }, drafts(cfg.conflicts.length) + (cfg.conflicts.length === 1 ? " conflicts" : " conflict") + " with the file"));
   }
   document.body.append(bar);
 
@@ -148,19 +149,30 @@
     const foot = h("footer", { role: "status", "aria-live": "polite" }, "Paste the line the reader sent, or a decisions document. It replaces the stored decisions.");
     const dialog = h("dialog", { class: "studio-dialog studio-small", "aria-label": "Import a reply" },
       h("div", null,
-        h("header", null, h("b", null, "Import a reply"), button("Import", submit), button("Close", () => dialog.close())),
+        h("header", null, h("b", null, "Import a reply"), button("Import", submit), button("Close", () => close())),
         h("div", { class: "studio-pad" }, area), foot));
     async function submit() {
       const r = await api("POST", "/_/decisions/import", area.value, true);
-      if (r.ok) { dialog.close(); toast("Imported: " + (r.data.reply || "")); return; }
+      if (r.ok) { close(); toast("Imported: " + (r.data.reply || "")); return; }
       foot.replaceChildren(h("span", null, (r.data && r.data.error) || "Not imported"), problemsList(r.data) || "");
     }
     area.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(); } });
-    dialog.addEventListener("close", () => { dialog.remove(); settle(); });
+    const close = modal(dialog);
+    area.focus();
+  }
+
+  // modal shows a dialog and holds reloads until it closes. Closing from the
+  // studio settles at once rather than waiting for the close event, which a
+  // browser may hold back while the tab is in the background; Esc still
+  // closes through the event.
+  function modal(dialog, cleanup) {
+    let done = false;
+    const finish = () => { if (done) return; done = true; if (cleanup) cleanup(); dialog.remove(); settle(); };
+    dialog.addEventListener("close", finish);
     document.body.append(dialog);
     busy = true;
     dialog.showModal();
-    area.focus();
+    return () => { if (dialog.open) dialog.close(); finish(); };
   }
 
   /* drafts */
@@ -173,10 +185,10 @@
     const res = await api("POST", "/_/drafts/commit");
     if (!res.ok) { report("Drafts not saved", res.data); return; }
     const c = (res.data.conflicts || []).length;
-    toast(c ? "Saved; " + c + " draft(s) conflict with the file and were kept" : "Drafts written to the model");
+    toast(c ? "Saved; " + drafts(c) + (c === 1 ? " conflicts with the file and was kept" : " conflict with the file and were kept") : "Drafts written to the model");
   }
   async function discard() {
-    if (!window.confirm("Discard " + draftCount + " draft(s)? The model file is not touched.")) return;
+    if (!window.confirm("Discard " + drafts(draftCount) + "? The model file is not touched.")) return;
     const res = await api("POST", "/_/drafts/discard");
     if (!res.ok) report("Drafts not discarded", res.data);
   }
@@ -319,7 +331,7 @@
     const foot = h("footer", { role: "status", "aria-live": "polite" }, "Validate checks the text; Save writes the file only when it validates. Cmd or Ctrl+S saves.");
     const dialog = h("dialog", { class: "studio-dialog", "aria-label": "Model JSON" },
       h("div", null,
-        h("header", null, h("b", { title: cfg.model }, cfg.model.split(/[\\/]/).pop()), button("Validate", validate), button("Save", save), button("Close", () => dialog.close())),
+        h("header", null, h("b", { title: cfg.model }, cfg.model.split(/[\\/]/).pop()), button("Validate", validate), button("Save", save), button("Close", () => close())),
         host, foot));
     let editor = null;
     const area = h("textarea", { spellcheck: "false", "aria-label": "Model JSON" });
@@ -337,13 +349,10 @@
     }
     async function save() {
       const r = await api("PUT", "/_/model", value(), true);
-      if (r.ok) { dialog.close(); toast("Model saved"); }
+      if (r.ok) { close(); toast("Model saved"); }
       else show((r.data && r.data.error) || "Not saved", r.data, false);
     }
-    dialog.addEventListener("close", () => { if (editor) editor.destroy(); dialog.remove(); settle(); });
-    document.body.append(dialog);
-    busy = true;
-    dialog.showModal();
+    const close = modal(dialog, () => { if (editor) editor.destroy(); });
     const lib = await loadEditor();
     if (lib && dialog.open) {
       editor = lib.create(host, text, { onSave: save });
@@ -362,12 +371,9 @@
   function report(title, data) {
     const dialog = h("dialog", { class: "studio-dialog", style: "height:auto;max-height:70vh", "aria-label": title },
       h("div", { style: "grid-template-rows:auto auto" },
-        h("header", null, h("b", null, title), button("Close", () => dialog.close())),
+        h("header", null, h("b", null, title), button("Close", () => close())),
         h("footer", null, h("span", null, (data && data.error) || ""), problemsList(data) || "")));
-    dialog.addEventListener("close", () => { dialog.remove(); settle(); });
-    document.body.append(dialog);
-    busy = true;
-    dialog.showModal();
+    const close = modal(dialog);
   }
 
   /* accent: preview a brand color with the palette an artifact would derive
