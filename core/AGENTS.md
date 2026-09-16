@@ -23,7 +23,13 @@ The flow is door to model to kind rules to templ render to one byte slice.
 
 - Tools are pinned in `go.mod` tool directives; use `go tool templ`, never an
   unpinned install. `make check` is the one verdict.
-- Generated `*_templ.go` is committed. Edit the `.templ` source and regenerate.
+- Generated `*_templ.go` and `skill/SKILL.md` are committed. Edit the `.templ`
+  source, the catalog, or a preset, then `make generate`; the drift script and
+  a test fail when either is stale.
+- Every door is one file in `internal/doors`, one catalog entry with a
+  parameter schema and its positional names, and one test. The CLI, the MCP
+  server, and the skill all project from that catalog; never describe a
+  command in two places.
 - The artifact ships zero external requests by default. Web fonts are opt-in.
 - Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB.
 - Unknown JSON fields are errors. A 0.6 document (`dossierVersion`,
