@@ -46,6 +46,7 @@ type Command struct {
 	Summary    string          `json:"summary"`
 	Mutation   string          `json:"mutation"`
 	Surfaces   []string        `json:"surfaces"`
+	Positional []string        `json:"positional,omitempty"`
 	Parameters json.RawMessage `json:"parameters"`
 }
 

@@ -61,3 +61,33 @@ func TestMediaPartsValidate(t *testing.T) {
 		t.Errorf("expected variant and value problems, got %v", problems)
 	}
 }
+
+func TestEnvelopeSchema(t *testing.T) {
+	good := []string{
+		`{"schema_version":"dossier.result/v1","command":"build","outcome":"ok","result":{"schema_version":"dossier.build-result/v1","outputs":[]},"warnings":[{"path":"a#/b","message":"m"}]}`,
+		`{"schema_version":"dossier.result/v1","command":"validate","outcome":"findings","findings":[{"path":"x","message":"y"}],"error":{"code":"invalid","message":"1 model(s) did not validate"}}`,
+		`{"schema_version":"dossier.result/v1","command":"decisions.apply","outcome":"error","error":{"code":"usage","message":"nope"}}`,
+	}
+	for _, g := range good {
+		problems, err := CheckEnvelope([]byte(g))
+		if err != nil || len(problems) > 0 {
+			t.Errorf("valid envelope rejected: %v %v\n%s", err, problems, g)
+		}
+	}
+	bad := []string{
+		`{"schema_version":"dossier.result/v1","command":"build","outcome":"error"}`,
+		`{"schema_version":"dossier.result/v1","command":"build","outcome":"ok","error":{"code":"x","message":"y"}}`,
+		`{"schema_version":"dossier.result/v1","command":"build","outcome":"findings"}`,
+		`{"schema_version":"dossier.result/v2","command":"build","outcome":"ok"}`,
+		`{"schema_version":"dossier.result/v1","command":"build","outcome":"ok","result":{"outputs":[]}}`,
+	}
+	for _, b := range bad {
+		problems, err := CheckEnvelope([]byte(b))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(problems) == 0 {
+			t.Errorf("invalid envelope accepted: %s", b)
+		}
+	}
+}

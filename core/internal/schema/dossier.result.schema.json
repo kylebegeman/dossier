@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dossier.dev/schemas/dossier.result/v1",
+  "title": "dossier.result/v1",
+  "description": "The one envelope every door returns on every surface: an outcome, a result, findings that block, warnings that do not, and an error body.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "command", "outcome"],
+  "properties": {
+    "schema_version": { "const": "dossier.result/v1" },
+    "command": { "type": "string", "pattern": "^[a-z][a-z.]*$" },
+    "outcome": { "type": "string", "enum": ["ok", "findings", "error"] },
+    "result": {
+      "type": "object",
+      "required": ["schema_version"],
+      "properties": { "schema_version": { "type": "string", "pattern": "^dossier\\.[a-z-]+/v[0-9]+$" } }
+    },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/problem" } },
+    "warnings": { "type": "array", "items": { "$ref": "#/$defs/problem" } },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "outcome": { "const": "error" } } }, "then": { "required": ["error"] } },
+    { "if": { "properties": { "outcome": { "const": "findings" } } }, "then": { "required": ["findings"] } },
+    { "if": { "properties": { "outcome": { "const": "ok" } } }, "then": { "not": { "required": ["error"] } } }
+  ],
+  "$defs": {
+    "problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "message"],
+      "properties": {
+        "path": { "type": "string" },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

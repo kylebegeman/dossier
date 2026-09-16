@@ -20,28 +20,54 @@ import (
 //go:embed dossier.model.schema.json
 var modelSchema []byte
 
+//go:embed dossier.result.schema.json
+var resultSchema []byte
+
 // ModelSchemaJSON returns the embedded dossier.model/v1 schema.
 func ModelSchemaJSON() []byte { return append([]byte(nil), modelSchema...) }
 
-const modelSchemaURL = "https://dossier.dev/schemas/dossier.model/v1"
+// ResultSchemaJSON returns the embedded dossier.result/v1 envelope schema.
+func ResultSchemaJSON() []byte { return append([]byte(nil), resultSchema...) }
 
-var compiled = sync.OnceValues(func() (*jsonschema.Schema, error) {
-	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(modelSchema))
-	if err != nil {
-		return nil, fmt.Errorf("model schema: %w", err)
-	}
-	c := jsonschema.NewCompiler()
-	if err := c.AddResource(modelSchemaURL, doc); err != nil {
-		return nil, err
-	}
-	return c.Compile(modelSchemaURL)
-})
+const (
+	modelSchemaURL  = "https://dossier.dev/schemas/dossier.model/v1"
+	resultSchemaURL = "https://dossier.dev/schemas/dossier.result/v1"
+)
+
+func compile(url string, raw []byte) func() (*jsonschema.Schema, error) {
+	return sync.OnceValues(func() (*jsonschema.Schema, error) {
+		doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(raw))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", url, err)
+		}
+		c := jsonschema.NewCompiler()
+		if err := c.AddResource(url, doc); err != nil {
+			return nil, err
+		}
+		return c.Compile(url)
+	})
+}
+
+var (
+	compiledModel  = compile(modelSchemaURL, modelSchema)
+	compiledResult = compile(resultSchemaURL, resultSchema)
+)
 
 var printer = message.NewPrinter(language.English)
 
-// CheckModel validates raw JSON. Schema violations come back as problems;
-// an error means the input was not JSON at all or the schema failed to load.
+// CheckModel validates raw model JSON. Schema violations come back as
+// problems; an error means the input was not JSON at all or the schema
+// failed to load.
 func CheckModel(data []byte) ([]model.Problem, error) {
+	return check(compiledModel, data)
+}
+
+// CheckEnvelope validates a dossier.result/v1 envelope the same way.
+func CheckEnvelope(data []byte) ([]model.Problem, error) {
+	return check(compiledResult, data)
+}
+
+func check(compiled func() (*jsonschema.Schema, error), data []byte) ([]model.Problem, error) {
 	sch, err := compiled()
 	if err != nil {
 		return nil, err
