@@ -3,8 +3,8 @@
 .PHONY: generate check build test clean
 
 generate:
-	go tool templ generate
-	go run ./cmd/dossier skill --write skill/SKILL.md
+	go tool templ generate >/dev/null
+	go run ./cmd/dossier skill --write skill/SKILL.md >/dev/null
 
 check:
 	@sh scripts/check-generated.sh

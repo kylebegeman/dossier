@@ -283,3 +283,98 @@ func TestDecisionsApplyRefusesToOverwriteALegacyFile(t *testing.T) {
 		}
 	}
 }
+
+func TestUpgradeWritesLegacyFilesAsModels(t *testing.T) {
+	dir := t.TempDir()
+	var sources []string
+	for _, name := range []string{"release-0-6-7.dossier.json", "showcase.dossier.json"} {
+		data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "legacy", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		path := filepath.Join(dir, name)
+		if err := os.WriteFile(path, data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		sources = append(sources, path)
+	}
+	modern := copyExample(t)
+	before, err := os.ReadFile(modern)
+	if err != nil {
+		t.Fatal(err)
+	}
+	env, code := run(t, append([]string{"upgrade"}, append(sources, modern)...)...)
+	if code != 0 || env.Outcome != OutcomeOK || len(env.Warnings) == 0 {
+		t.Fatalf("upgrade: %d %+v", code, env)
+	}
+	var result UpgradeResult
+	if err := json.Unmarshal(mustJSON(env.Result), &result); err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Files) != 3 || !result.Files[0].Upgraded || !result.Files[1].Upgraded || result.Files[2].Upgraded {
+		t.Errorf("result: %+v", result.Files)
+	}
+	for _, src := range sources {
+		env, code := run(t, "validate", src)
+		if code != 0 {
+			t.Errorf("%s does not validate after upgrade: %+v", src, env)
+		}
+		for _, w := range env.Warnings {
+			if strings.Contains(w.Message, "0.6") {
+				t.Errorf("%s still carries alias warnings: %s", src, w)
+			}
+		}
+	}
+	after, err := os.ReadFile(modern)
+	if err != nil || string(after) != string(before) {
+		t.Error("a 0.7 model must be left untouched")
+	}
+	out := t.TempDir()
+	env, code = run(t, "upgrade", filepath.Join("..", "..", "testdata", "legacy", "sample.dossier.json"), "--out", out)
+	if code != 0 {
+		t.Fatalf("upgrade --out: %+v", env)
+	}
+	if _, err := os.Stat(filepath.Join(out, "sample.dossier.json")); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestRenderAnswersWithHTML(t *testing.T) {
+	model := copyExample(t)
+	env, code := run(t, "render", model)
+	if code != 0 {
+		t.Fatalf("render: %+v", env)
+	}
+	var result RenderResult
+	if err := json.Unmarshal(mustJSON(env.Result), &result); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(strings.ToLower(result.HTML), "<!doctype html>") || result.Bytes != len(result.HTML) || result.Slug != "dossier-0-7-brainstorm" {
+		t.Errorf("render result: slug=%s bytes=%d", result.Slug, result.Bytes)
+	}
+	data, err := os.ReadFile(model)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	code = Run(context.Background(), []string{"render", "-", "--json"}, bytes.NewReader(data), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("render from stdin: %d %s", code, stderr.String())
+	}
+	var fromStdin Envelope
+	if err := json.Unmarshal(stdout.Bytes(), &fromStdin); err != nil {
+		t.Fatal(err)
+	}
+	var stdinResult RenderResult
+	if err := json.Unmarshal(mustJSON(fromStdin.Result), &stdinResult); err != nil {
+		t.Fatal(err)
+	}
+	if stdinResult.Source != "stdin" || stdinResult.HTML != result.HTML {
+		t.Error("stdin and file renders differ")
+	}
+	stdout.Reset()
+	code = Run(context.Background(), []string{"render", "-"}, strings.NewReader(`{"dossier":"1.0","kind":"brainstorm","meta":{"title":"T","slug":"t"},"sections":[]}`), &stdout, &stderr)
+	if code != 2 || stdout.Len() != 0 {
+		t.Errorf("an invalid model must be findings with nothing on stdout: %d %q", code, stdout.String())
+	}
+}

@@ -51,7 +51,7 @@ func exerciseServer(t *testing.T, cs *mcp.ClientSession) {
 			t.Errorf("%s: tool needs a description and an input schema", tool.Name)
 		}
 	}
-	if got := strings.Join(names, ","); got != "build,decisions_apply,decisions_read,describe,init,validate" {
+	if got := strings.Join(names, ","); got != "build,decisions_apply,decisions_read,describe,init,upgrade,validate" {
 		t.Errorf("tools: %s", got)
 	}
 
@@ -120,8 +120,8 @@ func TestMCPInMemory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(tools) != 6 {
-		t.Errorf("expected six tools, got %v", tools)
+	if len(tools) != 7 {
+		t.Errorf("expected seven tools, got %v", tools)
 	}
 	clientT, serverT := mcp.NewInMemoryTransports()
 	ctx := context.Background()
