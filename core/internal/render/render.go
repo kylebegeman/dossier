@@ -455,7 +455,11 @@ func facts(page *Page, kind kinds.Kind, rowsCount int) []Fact {
 		out = append(out, Fact{Value: fmt.Sprint(len(page.Numbered)), Label: "items"})
 	}
 	if rowsCount > 0 {
-		out = append(out, Fact{Value: fmt.Sprint(rowsCount), Label: "also considered"})
+		label := "entries"
+		if page.HasPick {
+			label = "also considered"
+		}
+		out = append(out, Fact{Value: fmt.Sprint(rowsCount), Label: label})
 	}
 	if page.HasPick {
 		c := 0

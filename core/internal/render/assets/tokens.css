@@ -230,10 +230,17 @@ tbody tr.picked { background: var(--accent-soft); }
 .hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
 .hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .rows { display: grid; gap: 8px; }
-.rows > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
+.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
 .rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
 .rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
-@media (max-width: 520px) { .rows > div { grid-template-columns: 1fr; } }
+.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
+.rows > .row > summary::-webkit-details-marker { display: none; }
+.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.rows > .row[open] > summary .chev { transform: rotate(90deg); }
+.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
+.rows > .row > .facets .facet:first-child { padding-top: 8px; }
+@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: 1fr; } }
 
 /* the one saturated block */
 .pick { margin-top: 28px; padding: 18px 20px; border-radius: var(--r-l); background: var(--accent); color: var(--accent-ink); display: grid; gap: 10px; }
