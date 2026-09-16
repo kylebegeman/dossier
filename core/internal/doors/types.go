@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"dossier/internal/schema"
@@ -51,6 +52,9 @@ func typesDoor(_ context.Context, in Input) Envelope {
 	if *write == "" {
 		result.TypeScript = string(ts)
 	} else {
+		if err := os.MkdirAll(filepath.Dir(*write), 0o755); err != nil {
+			return errorEnvelope(id, "write", err)
+		}
 		if err := os.WriteFile(*write, ts, 0o644); err != nil {
 			return errorEnvelope(id, "write", err)
 		}
