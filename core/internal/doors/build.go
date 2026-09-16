@@ -51,7 +51,7 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 	}
 	var result BuildResult
 	result.SchemaVersion = "dossier.build-result/v1"
-	var findings []model.Problem
+	var findings, warnings []model.Problem
 	for _, path := range files {
 		started := time.Now()
 		l, problems, err := loadDocument(path)
@@ -62,6 +62,7 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 			findings = append(findings, problems...)
 			continue
 		}
+		warnings = append(warnings, l.Warnings...)
 		html, err := render.Render(l.Doc, l.Kind)
 		if err != nil {
 			return errorEnvelope("build", "render", fmt.Errorf("%s: %w", path, err))
@@ -75,7 +76,7 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 		}
 		result.Outputs = append(result.Outputs, BuildOutput{Source: path, HTML: target, Bytes: len(html), Millis: time.Since(started).Milliseconds()})
 	}
-	env := Envelope{SchemaVersion: SchemaVersion, Command: "build", Outcome: OutcomeOK, Result: result}
+	env := Envelope{SchemaVersion: SchemaVersion, Command: "build", Outcome: OutcomeOK, Result: result, Warnings: warnings}
 	if len(findings) > 0 {
 		env.Outcome = OutcomeFindings
 		env.Findings = findings
@@ -135,7 +136,7 @@ func validateDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 		return errorEnvelope("validate", "usage", fmt.Errorf("validate needs at least one model file"))
 	}
 	result := ValidateResult{SchemaVersion: "dossier.validate-result/v1"}
-	var findings []model.Problem
+	var findings, warnings []model.Problem
 	for _, path := range files {
 		l, problems, err := loadDocument(path)
 		if err != nil {
@@ -146,9 +147,10 @@ func validateDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 			result.Files = append(result.Files, ValidatedFile{Path: path, OK: false})
 			continue
 		}
+		warnings = append(warnings, l.Warnings...)
 		result.Files = append(result.Files, ValidatedFile{Path: path, Kind: l.Kind.ID, OK: true})
 	}
-	env := Envelope{SchemaVersion: SchemaVersion, Command: "validate", Outcome: OutcomeOK, Result: result}
+	env := Envelope{SchemaVersion: SchemaVersion, Command: "validate", Outcome: OutcomeOK, Result: result, Warnings: warnings}
 	if len(findings) > 0 {
 		env.Outcome = OutcomeFindings
 		env.Findings = findings

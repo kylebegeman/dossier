@@ -104,7 +104,7 @@ button { font: inherit; color: inherit; }
 .toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
 .toc li a:hover { color: var(--ink); background: var(--paper); }
 .toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
-.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 1.7em; text-align: right; color: var(--muted); flex: none; }
+.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
 .toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
 .toc li.picked .pip { opacity: 1; }
 .toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
@@ -200,6 +200,8 @@ tbody tr.picked { background: var(--accent-soft); }
 .facet.risk dt { color: var(--coral); }
 @media (max-width: 720px) { .facet { grid-template-columns: 1fr; gap: 4px; } }
 
+.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
+.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .rows { display: grid; gap: 8px; }
 .rows > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
 .rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
@@ -220,6 +222,7 @@ tbody tr.picked { background: var(--accent-soft); }
 
 .toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.main { padding-bottom: 40px; }
 .foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
 
 @media print {

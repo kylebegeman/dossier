@@ -77,6 +77,7 @@ type Envelope struct {
 	Outcome       string          `json:"outcome"`
 	Result        any             `json:"result,omitempty"`
 	Findings      []model.Problem `json:"findings,omitempty"`
+	Warnings      []model.Problem `json:"warnings,omitempty"`
 	Error         *ErrorBody      `json:"error,omitempty"`
 }
 
@@ -171,9 +172,10 @@ func Usage() string {
 
 // loaded is a document that passed schema, structure, and kind checks.
 type loaded struct {
-	Path string
-	Doc  *model.Document
-	Kind kinds.Kind
+	Path     string
+	Doc      *model.Document
+	Kind     kinds.Kind
+	Warnings []model.Problem
 }
 
 // loadDocument reads and fully validates one model file. Problems are
@@ -206,7 +208,7 @@ func loadDocument(path string) (*loaded, []model.Problem, error) {
 	if len(problems) > 0 {
 		return nil, prefix(path, problems), nil
 	}
-	return &loaded{Path: path, Doc: doc, Kind: kind}, nil, nil
+	return &loaded{Path: path, Doc: doc, Kind: kind, Warnings: prefix(path, kind.Advise(doc))}, nil, nil
 }
 
 func prefix(path string, problems []model.Problem) []model.Problem {
@@ -218,6 +220,9 @@ func prefix(path string, problems []model.Problem) []model.Problem {
 }
 
 func renderHuman(env Envelope, stdout, stderr io.Writer) {
+	for _, w := range env.Warnings {
+		say(stderr, "warning %s: %s\n", w.Path, w.Message)
+	}
 	switch env.Outcome {
 	case OutcomeError:
 		say(stderr, "dossier %s: %s\n", env.Command, env.Error.Message)

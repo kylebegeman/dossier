@@ -92,12 +92,12 @@
 
   /* collapsing: remembered per item on this device */
   var details = $$("details.item[id]");
-  var closed = {};
-  try { (JSON.parse(localStorage.getItem(key + ":closed") || "[]") || []).forEach(function (id) { closed[id] = true; }); } catch (e) {}
+  var opened = {};
+  try { (JSON.parse(localStorage.getItem(key + ":open") || "[]") || []).forEach(function (id) { opened[id] = true; }); } catch (e) {}
   var printing = false, beforePrint = null;
   details.forEach(function (d) {
-    if (closed[d.id]) d.open = false;
-    d.addEventListener("toggle", function () { if (!printing) { if (d.open) delete closed[d.id]; else closed[d.id] = true; try { localStorage.setItem(key + ":closed", JSON.stringify(Object.keys(closed))); } catch (e) {} } renderCollapse(); });
+    if (opened[d.id]) d.open = true;
+    d.addEventListener("toggle", function () { if (!printing) { if (d.open) opened[d.id] = true; else delete opened[d.id]; try { localStorage.setItem(key + ":open", JSON.stringify(Object.keys(opened))); } catch (e) {} } renderCollapse(); });
   });
   function anyOpen() { return details.some(function (d) { return d.open; }); }
   function setAllOpen(open) { details.forEach(function (d) { d.open = open; }); }
@@ -107,6 +107,25 @@
   if (location.hash) { var target = document.getElementById(location.hash.slice(1)); if (target && target.tagName === "DETAILS") target.open = true; }
   window.addEventListener("hashchange", function () { var t = document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; });
   renderCollapse();
+
+  /* hide picked: keep the list to what is still undecided */
+  var hidePicked = false;
+  try { hidePicked = localStorage.getItem(key + ":hide-picked") === "1"; } catch (e) {}
+  function applyHide() {
+    var hiddenCount = 0;
+    details.forEach(function (d) { var h = hidePicked && picked(d.id); d.hidden = h; if (h) hiddenCount++; });
+    $$("[data-hidden-row]").forEach(function (row) { row.hidden = !(hidePicked && hiddenCount > 0); });
+    $$("[data-hidden-count]").forEach(function (el) { el.textContent = String(hiddenCount); });
+    var b = $("[data-hide-picked]"); if (b) { b.setAttribute("aria-pressed", String(hidePicked)); b.textContent = hidePicked ? "Showing unpicked" : "Hide picked"; }
+  }
+  function setHide(on) { hidePicked = !!on; try { localStorage.setItem(key + ":hide-picked", hidePicked ? "1" : "0"); } catch (e) {} applyHide(); }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-hide-picked]")) setHide(!hidePicked);
+    else if (e.target.closest("[data-show-picked]")) setHide(false);
+  });
+  var renderBase = render;
+  render = function () { renderBase(); applyHide(); };
+  applyHide();
 
   /* copy and toast */
   var toastTimer;

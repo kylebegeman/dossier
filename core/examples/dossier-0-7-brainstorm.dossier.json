@@ -6,33 +6,32 @@
     "emphasis": "leaner",
     "slug": "dossier-0-7-brainstorm",
     "kicker": "Dossier 0.6.7 to 0.7, a reset",
-    "lede": "Six small and six large, and one decision before any of them: reshape the current code or rebuild the core from its pieces. Each move says how it works, what the reader gets, what the agent does, what it unlocks, and what it costs. The theme is subtraction: fewer controls, fewer blocks, one export, one look. Pick by number.",
+    "lede": "Six small moves and six large ones, plus one decision first: reshape the current code or rebuild the core from its pieces. The theme is subtraction: fewer controls, fewer blocks, one export, one look. Pick by number.",
     "updated": "2026-09-16",
     "status": "for-decision"
   },
   "sections": [
     {
       "id": "thesis",
-      "title": "What Dossier is, zoomed out",
+      "title": "What Dossier is",
       "parts": [
-        { "type": "prose", "markdown": "Strip away the 43 blocks, the packs, the workspaces, and the release evidence, and Dossier does three things. An agent turns a prompt into a structured document. A person reads that document and decides inside it. The agent reads the decisions back and acts. Everything else in the codebase exists to serve one of those three, and anything that serves none of them is weight.\n\nThe strongest use today is the one you described: ask an agent for a plan with minor and major features, get a page you can skim and pick from, reply with numbers. That loop is Dossier's front door. 0.7 should make that loop excellent first, then let the same skeleton carry plans, reviews, releases, and incidents without changing how the page feels.\n\nFour principles for the release:\n\n1. The static file is for reading and deciding. Authoring, editing, and studio tools live in `dossier serve`.\n2. One page shape, many kinds. A brainstorm and an incident review share the same shell, table of contents, facets, and summary table.\n3. Every control on the page must be explainable in one sentence to someone who opened the file cold.\n4. Budgets are features. The runtime, the stylesheet, and the block catalog each get a number, and the number goes down." }
+        { "type": "prose", "markdown": "Dossier does three things. An agent turns a prompt into a structured document. A person reads it and decides inside it. The agent reads the decisions back and acts. Everything else is weight.\n\nThe strongest use is the brainstorm loop: ask for minor and major features, skim, pick by number. 0.7 makes that loop excellent first, then carries plans, reviews, releases, and incidents on the same skeleton.\n\n1. The static file is for reading and deciding. Editing lives in `dossier serve`.\n2. One page shape, many kinds.\n3. Every control is explainable in one sentence.\n4. Budgets are tests, and the numbers go down." }
       ]
     },
     {
       "id": "diagnosis",
       "title": "Where it fractured",
       "parts": [
-        { "type": "prose", "markdown": "The 0.5 and 0.6 arcs shipped every idea from the June brainstorm. Each one made sense alone. Together they produced a reader shell that carries authoring tools, six overlapping export concepts, and a runtime that every artifact pays for whether it uses it or not. Measured on the showcase example:" },
+        { "type": "prose", "markdown": "Every idea from the June brainstorm shipped. Together they produced a reader shell that carries authoring tools, six overlapping exports, and a runtime every artifact pays for. Measured on the showcase example:" },
         { "type": "spec", "spec": [
-          { "label": "7 controls", "text": "In the top bar: search, Edit, Blocks, Evidence, Theme Studio, theme toggle, Export. Four of them change the document rather than read it." },
-          { "label": "11 items", "text": "In the Export menu, plus 14 more buttons inside the Export Center. Source, state, merged, handoff, prompt, digest, and Markdown are seven names for two ideas." },
-          { "label": "5 modals", "text": "Export Center, block editor, evidence form, source viewer, shortcuts, and the palette ship in every file, including read-only briefs." },
-          { "label": "74 KB", "text": "Runtime JavaScript inlined into every artifact. Most of it handles state packets, imports, and the block editor." },
-          { "label": "67 KB", "text": "Inlined CSS: base tokens, the skin layer, theme packs, and per-block styles for all 43 blocks regardless of which appear." },
-          { "label": "43 blocks", "text": "Fifteen of them are process variants that overlap: four kinds of board, four kinds of evidence, two kinds of diff, two kinds of gate." },
-          { "label": "385 KB", "text": "The showcase file. The typical example lands near 145 KB, of which the document model is under 20 KB." },
-          { "label": "28 tools", "text": "On the MCP server, reading and writing ten packet schemas. The June brainstorm asked for four: create, render, read decisions, apply decisions." },
-          { "label": "2 renderers", "text": "A 1,600-line string renderer and a 1,350-line React port that must stay in step for every block." }
+          { "label": "7 controls", "text": "In the top bar. Four of them edit the document rather than read it." },
+          { "label": "11 exports", "text": "In the Export menu, plus 14 buttons in the Export Center, for two ideas." },
+          { "label": "5 modals", "text": "Shipped in every file, including read-only briefs." },
+          { "label": "74 KB", "text": "Runtime JavaScript in every artifact, mostly state packets and the block editor." },
+          { "label": "67 KB", "text": "CSS for all 43 blocks, skins, and theme packs, whether or not they appear." },
+          { "label": "43 blocks", "text": "Fifteen are overlapping process variants." },
+          { "label": "28 tools", "text": "On the MCP server over ten packet schemas. The brainstorm asked for four." },
+          { "label": "2 renderers", "text": "A string renderer and a React port kept in step by hand." }
         ] }
       ]
     },
@@ -40,47 +39,46 @@
       "id": "rebuild",
       "title": "Rebuild or reshape",
       "parts": [
-        { "type": "prose", "markdown": "Taken together, the twelve moves below are a rebuild. The honest question is whether to do that rebuild inside the current tree, one subtraction at a time, or to stand up a new core beside it from the pieces worth keeping and cut over when the examples build. Both paths end at the same product. They differ in how long the code is in a half state and in what we let ourselves keep by accident.\n\nA clean core would rest on five concepts, and nothing on the page would exist outside them:\n\n1. **Kind.** A preset naming the sections a document has, the facets its items carry, and how the reader replies.\n2. **Section.** Prose, a table, code, a diagram, a figure, a chart, a callout, or a board. Content blocks, no state.\n3. **Item.** A numbered thing inside a board with a title, a one-line summary, size, effort, impact, dependencies, and facets.\n4. **Facet.** A labeled paragraph on an item, in the fixed order the kind defines.\n5. **Decision.** What the reader said about an item: picked or not, a verdict, a note. The only state the file ever holds.\n\nEverything the current product does maps onto these. A release checklist is a board whose items are gates and whose decision is done or not. An incident review is a board of findings with a timeline section in front. A patch review is a board of files whose facet is a diff. The concepts do not grow with the use cases; the kinds do, and a kind is forty lines." },
+        { "type": "prose", "markdown": "Together, the twelve moves are a rebuild. The question is whether to do it inside the current tree one subtraction at a time, or to stand up a new core beside it and cut over when the examples build. Same destination; the difference is how long the code sits half-broken and what survives by accident.\n\nA clean core rests on five concepts:\n\n1. **Kind.** A preset: sections, facets, how the reader replies.\n2. **Section.** Content parts, no state.\n3. **Item.** A numbered thing in a board with size, effort, impact, dependencies, and facets.\n4. **Facet.** A labeled paragraph on an item, in fixed order.\n5. **Decision.** What the reader said: picked, a verdict, a note. The only state.\n\nA release checklist is a board of gates. An incident review is a board of findings with a timeline in front. A patch review is a board of files whose facet is a diff. The concepts stay put; the kinds grow, and a kind is forty lines." },
         { "type": "spec", "spec": [
-          { "label": "model", "text": "One JSON schema for kind, meta, sections, items, facets, and decisions. Stable ids everywhere. Old block type names accepted as aliases so every existing file still builds." },
-          { "label": "kinds", "text": "Six presets shipped, custom kinds loadable from a pack. Each one is a small readable file, not code." },
-          { "label": "renderer", "text": "One string renderer, zero runtime dependencies. The React package becomes a typed wrapper that embeds the rendered document, so there is one renderer to keep correct." },
-          { "label": "reader", "text": "The runtime that ships in the file: table of contents, search, palette, theme, collapse, copy, decisions, pick. Under 20 KB, assembled from the modules the page needs." },
-          { "label": "studio", "text": "Everything that edits: in-place text, block order, evidence, accent preview, patch import, CodeMirror. Injected by serve, never in the file." },
-          { "label": "agent", "text": "The skill plus four MCP tools: create from a kind, render, read decisions, apply decisions. Workspaces, release evidence, and packs keep their commands and consume the same two output files." },
-          { "label": "build-time", "text": "Kept as is: Shiki, Graphviz, KaTeX, the unified diff parser, DOCX and PDF export, the CLI, the test suite, and the examples as parity fixtures." }
+          { "label": "model", "text": "One schema for kind, meta, sections, items, facets, decisions. Old block names accepted as aliases." },
+          { "label": "kinds", "text": "Six presets shipped, custom kinds from a pack. Small readable files, not code." },
+          { "label": "renderer", "text": "One string renderer, zero runtime dependencies. React becomes a typed wrapper around its output." },
+          { "label": "reader", "text": "Contents, search, theme, collapse, copy, decisions, pick. Under 20 KB." },
+          { "label": "studio", "text": "Everything that edits, injected by serve, never in the file." },
+          { "label": "agent", "text": "The skill plus four MCP tools: create, render, read decisions, apply decisions." },
+          { "label": "build-time", "text": "Kept: highlighting, diagrams, math, diff parser, DOCX and PDF, CLI, tests, examples as fixtures." }
         ] },
-        { "type": "prose", "markdown": "The rebuild path in practice: create the new core beside the old one, port content blocks first against the examples, then boards and decisions, then the reader runtime, then serve. Cut over when every example builds and renders through the new core, delete the old tree, and ship that as 0.7. The old tree stays readable in git as reference the whole time. Expect three to four weeks against roughly the same for the twelve moves done in place, with less time spent half-broken." }
+        { "type": "prose", "markdown": "In practice: new core beside the old, port content blocks against the examples, then boards and decisions, then the reader, then serve. Cut over when every example builds through the new core. Either path is days of agent time; the rebuild spends fewer of them half-broken." }
       ]
     },
     {
       "id": "format",
       "title": "The merged format",
       "parts": [
-        { "type": "prose", "markdown": "Two documents describe the target. The June brainstorm gave each idea a how-it-works, an experience, a why, and an unlocks line inside a review board. The front door page gave each feature fixed facets, a size chip, an effort chip, an impact meter, a summary table, and a closing call to pick by number. Merged, they become the `brainstorm` kind, and the facet vocabulary generalizes to every kind." },
+        { "type": "prose", "markdown": "The June brainstorm gave each idea a how-it-works, an experience, a why, and an unlocks line. The front door page gave each feature fixed facets, size and effort chips, an impact meter, a summary table, and a closing pick. Merged, they are the `brainstorm` kind, and the facet vocabulary generalizes." },
         { "type": "table", "columns": ["June brainstorm", "Front door page", "Dossier 0.7 facet", "Used by"], "rows": [
           ["How it works", "How it works", "**How it works**", "every kind"],
-          ["Experience", "Visitors", "**Reader**, what the person deciding sees and does", "every kind"],
-          ["Why", "Owner", "**Agent**, what the model does to author or act on it", "brainstorm, plan, implementation"],
+          ["Experience", "Visitors", "**Reader**, what the person deciding sees", "every kind"],
+          ["Why", "Owner", "**Agent**, what the model does with it", "brainstorm, plan"],
           ["Unlocks", "Unlocks", "**Unlocks**", "brainstorm, plan"],
           ["Depends on", "Dependencies column", "**Depends on**, by item number", "brainstorm, plan, release"],
-          ["Minor or major", "Size chip, effort chip, impact meter", "**size**, **effort**, **impact** fields on the item", "brainstorm, plan, review"],
-          ["Tick and note", "Reply with numbers", "**Pick** block: numbers plus notes, copied as text and JSON", "every kind with decisions"],
+          ["Minor or major", "Size, effort, impact", "**size**, **effort**, **impact** fields", "brainstorm, plan, review"],
+          ["Tick and note", "Reply with numbers", "**Pick** block: numbers plus notes", "every kind with decisions"],
           ["Callout", "Risk or Note facet", "**Risk** facet, colored, never decorative", "every kind"]
-        ], "note": "This page is the merged format, now rendered by Dossier from JSON." }
+        ], "note": "This page is the merged format, rendered by Dossier from JSON." }
       ]
     },
     {
       "id": "layout",
       "title": "The new shell",
       "parts": [
-        { "type": "prose", "markdown": "The front door layout becomes Dossier's shell. The table of contents moves to the left and goes sticky, the content column keeps a 68ch measure, features are separated by hairlines rather than boxed, and only four things on a page are objects: the facts tile, the layout list, the summary table, and the also-considered rows. The saturated block is the closing pick action." },
+        { "type": "prose", "markdown": "The contents column sits left and sticky. Items are separated by hairlines, not boxes. Four things on a page are objects: the stat strip, spec lists, tables, and the also-considered rows. The one saturated block is the closing pick." },
         { "type": "spec", "spec": [
-          { "label": "≥ 1100px", "text": "Two columns: 224px sticky table of contents, content column, 56px gap, 1180px frame. No right rail, no progress bar, no back-to-top button." },
-          { "label": "820 to 1099px", "text": "One column. The table of contents becomes a wrapping row of chip links under the masthead. Masthead keeps two columns." },
-          { "label": "720 to 819px", "text": "Masthead stacks. Facets keep the 148px label column." },
-          { "label": "≤ 719px", "text": "Facet labels stack above their text. The summary table scrolls inside its own wrapper. Nothing else scrolls sideways." },
-          { "label": "print", "text": "Table of contents hidden, hairlines kept, page breaks before each feature article." }
+          { "label": "≥ 1100px", "text": "Two columns: 208px contents rail, content column, 1360px frame." },
+          { "label": "820 to 1099px", "text": "One column. Contents become a wrapping row of chips." },
+          { "label": "≤ 719px", "text": "Facet labels stack above their text. Tables scroll in their own box." },
+          { "label": "print", "text": "Contents and controls hidden, every item expanded, hairlines kept." }
         ] }
       ]
     },
@@ -90,84 +88,84 @@
       "board": {
         "summary": true,
         "items": [
-          { "id": "shell-reset", "title": "Shell reset", "summary": "The static artifact's top bar drops to four things: where you are, search, theme, and one export.", "size": "minor", "effort": "M", "impact": 5, "facets": [
-            { "label": "How it works", "markdown": "The generated shell keeps crumbs, the search field, the theme toggle, and a single Export menu with three entries: Copy for agent, Download JSON, Print. Edit, Blocks, Evidence, Theme Studio, the dirty-state pill, the reading progress bar, the back-to-top button, and the Export Center all leave the static build. They are reachable only when the file is served from `dossier serve`, which injects them the way it already injects CodeMirror.\n\nThe command palette stays, but its command list is built from what is actually on the page, so a brief without decisions never offers \"export decisions.\"" },
-            { "label": "Reader", "markdown": "Opens the file and sees a document, not a workbench. Every visible control does something a reader would want. The keyboard shortcuts list shrinks to five entries that all work." },
-            { "label": "Agent", "markdown": "Nothing changes in authoring. The skill stops describing the Export Center and describes one action: copy for agent." },
-            { "label": "Unlocks", "markdown": "Item 8 becomes a refactor of code that is already out of the artifact, rather than a rewrite done under the reader's feet." },
-            { "label": "Risk", "markdown": "People who attach evidence or edit text inside a shared file lose that until they open it in serve. The README should say so in the first paragraph of Live Editing." }
+          { "id": "shell-reset", "title": "Shell reset", "summary": "The top bar drops to four things: where you are, search, theme, one export.", "size": "minor", "effort": "M", "impact": 5, "facets": [
+            { "label": "How it works", "markdown": "Edit, Blocks, Evidence, Theme Studio, the progress bar, back-to-top, and the Export Center leave the static build and live only under `dossier serve`. The palette lists only what the page has." },
+            { "label": "Reader", "markdown": "Opens a document, not a workbench. Every control does something a reader wants." },
+            { "label": "Agent", "markdown": "Authoring is unchanged. The skill describes one action: copy for agent." },
+            { "label": "Unlocks", "markdown": "Item 8 becomes a refactor of code already outside the artifact." },
+            { "label": "Risk", "markdown": "Editing inside a shared file stops working until it is opened in serve. Say so in the README." }
           ] },
-          { "id": "left-contents", "title": "Left table of contents", "summary": "The right rail becomes a sticky left column with grouped, numbered entries, and collapses to a chip row on narrow screens.", "size": "minor", "effort": "S", "impact": 4, "dependsOn": ["shell-reset"], "facets": [
-            { "label": "How it works", "markdown": "The existing table-of-contents builder already knows heading levels. It gains groups: kinds declare which sections are frame, which are pickable items, and which are the rest. Pickable items show their number in mono; frame entries show an en dash. Below 1100px the list turns into wrapping chip links and the group labels hide." },
-            { "label": "Reader", "markdown": "Sees the shape of the document before reading it: how many items, which are minor, which are major. Jumps by number. Scroll-spy still highlights the active entry." },
-            { "label": "Agent", "markdown": "Numbers come from item order in the board, so the agent never assigns them by hand." },
-            { "label": "Unlocks", "markdown": "The layout in the section above. Also frees the right side of the page, which is why the measure can widen to 68ch without the content column feeling cramped." }
+          { "id": "left-contents", "title": "Left table of contents", "summary": "A sticky left column with grouped, numbered entries; a chip row on narrow screens.", "size": "minor", "effort": "S", "impact": 4, "dependsOn": ["shell-reset"], "facets": [
+            { "label": "How it works", "markdown": "Kinds declare which sections are frame, which are items, and which are the rest. Numbers come from board order. Below 1100px the list becomes chips." },
+            { "label": "Reader", "markdown": "Sees the shape of the document before reading it and jumps by number." },
+            { "label": "Agent", "markdown": "Never assigns numbers by hand." },
+            { "label": "Unlocks", "markdown": "The new shell, and a wider measure without a cramped column." }
           ] },
-          { "id": "type-tokens", "title": "Type and token swap", "summary": "The front door tokens become Dossier's tokens, with the accent moved to Dossier crimson and a light and a dark palette tuned separately.", "size": "minor", "effort": "S", "impact": 4, "facets": [
-            { "label": "How it works", "markdown": "The token file is rewritten to the thirteen names on this page: bg, paper, ink, muted, line, line-soft, accent, accent-ink, teal, violet, coral, plus the three font stacks. Three-state theming stays exactly as it is here. Body type is Figtree, one italic serif word in the title uses Instrument Serif, and identifiers use JetBrains Mono, each with a real fallback stack.\n\nWeb fonts are opt-in with `meta.fonts: \"google\"` so the default artifact keeps its no-external-assets promise. Without the flag the same scale and spacing render in the system stack, which carries most of the look." },
-            { "label": "Reader", "markdown": "The page reads as this one does. Light mode is the base, dark mode is retuned rather than inverted, and the toggle wins over the system setting in both directions." },
-            { "label": "Agent", "markdown": "Sets the accent with one field, `meta.theme.accent`, and nothing else. The fifty-token override surface goes away." },
-            { "label": "Unlocks", "markdown": "Item 11. Once the tokens are this small, skins and theme packs have nothing left to override." },
-            { "label": "Risk", "markdown": "Crimson as the accent sits close to a coral risk label, so the risk color moves to Dossier's ochre, which is what this page does. Confirm you like the crimson accent here before it becomes the default; blue as on the front door page is the alternative." }
+          { "id": "type-tokens", "title": "Type and token swap", "summary": "The front door tokens become Dossier's, with the accent moved to crimson and dark tuned separately.", "size": "minor", "effort": "S", "impact": 4, "facets": [
+            { "label": "How it works", "markdown": "Thirteen color roles plus three font stacks. Three-state theming. Web fonts are opt-in with `meta.fonts: \"google\"`; the system stack carries the look without them." },
+            { "label": "Reader", "markdown": "Light is the base, dark is retuned, and the toggle wins over the system setting." },
+            { "label": "Agent", "markdown": "Sets one field, `meta.theme.accent`, and nothing else." },
+            { "label": "Unlocks", "markdown": "Item 11. With tokens this small, skins have nothing left to override." },
+            { "label": "Risk", "markdown": "Crimson sits close to a coral risk label, so risk moves to ochre. Blue remains the alternative accent." }
           ] },
-          { "id": "facets-block", "title": "Facets block", "summary": "A definition-list block with a fixed label order, plus size, effort, and impact fields that render as chips and meters.", "size": "minor", "effort": "S", "impact": 4, "facets": [
-            { "label": "How it works", "markdown": "A new `facets` block takes an ordered list of label and body pairs. Board items gain optional `size`, `effort`, and `impact` fields and an optional `facets` array. The renderer draws the meta row, the numbered title, the one-line summary, and the facet list exactly as the articles on this page. A facet labeled Risk or Note takes the colored label." },
-            { "label": "Reader", "markdown": "Every item on every page has the same facets in the same order, so items can be compared by scanning down one label column." },
-            { "label": "Agent", "markdown": "The skill gives the agent the facet vocabulary per kind and the rule that order never changes. Less prose freedom, more useful output." },
-            { "label": "Unlocks", "markdown": "Items 5 and 7. The summary table and the kinds are both derived from these fields." }
+          { "id": "facets-block", "title": "Facets block", "summary": "A labeled-paragraph list in fixed order, plus size, effort, and impact rendered as chips and meters.", "size": "minor", "effort": "S", "impact": 4, "facets": [
+            { "label": "How it works", "markdown": "Items carry `size`, `effort`, `impact`, and a `facets` array. The renderer draws the meta row, the numbered title, the one-line summary, and the facets. Risk and Note take the colored label." },
+            { "label": "Reader", "markdown": "Every item has the same facets in the same order, so items compare by scanning one label column." },
+            { "label": "Agent", "markdown": "Gets the vocabulary per kind and the rule that order never changes." },
+            { "label": "Unlocks", "markdown": "Items 5 and 7 derive from these fields." }
           ] },
-          { "id": "summary-table", "title": "Summary table from the board", "summary": "The board emits its own summary table above the items: number, title, size, effort, impact, depends on.", "size": "minor", "effort": "S", "impact": 4, "dependsOn": ["facets-block"], "facets": [
-            { "label": "How it works", "markdown": "A board with `summary: true` renders a table before its items, with the legend line generated from whichever fields are present. Titles link to the item anchors. Depends-on values are item numbers and are validated against the board, so a dangling reference fails the build." },
-            { "label": "Reader", "markdown": "Skims one table, decides what to read in full, and jumps. This is the single biggest reading improvement for long plans." },
-            { "label": "Agent", "markdown": "Never writes the table. It comes from the items, so it cannot drift from them." },
-            { "label": "Unlocks", "markdown": "Item 6, and a facts tile in the masthead that counts minor, major, and also-considered items automatically." }
+          { "id": "summary-table", "title": "Summary table from the board", "summary": "The board emits its own table above the items: number, title, size, effort, impact, depends on.", "size": "minor", "effort": "S", "impact": 4, "dependsOn": ["facets-block"], "facets": [
+            { "label": "How it works", "markdown": "`summary: true` renders the table with a generated legend. Depends-on values are validated, so a dangling reference fails the build." },
+            { "label": "Reader", "markdown": "Skims one table, then jumps. The biggest reading improvement for long plans." },
+            { "label": "Agent", "markdown": "Never writes the table, so it cannot drift from the items." },
+            { "label": "Unlocks", "markdown": "Item 6, and the stat strip that counts sizes automatically." }
           ] },
-          { "id": "pick-by-number", "title": "Pick by number", "summary": "The closing action copies your selection as one line of text an agent can act on, with JSON behind it.", "size": "minor", "effort": "S", "impact": 3, "dependsOn": ["summary-table"], "facets": [
-            { "label": "How it works", "markdown": "A `pick` block closes any board-carrying kind. It renders as the saturated block at the end of this page. Ticking items and leaving notes anywhere above fills it in. Its button copies text like `Picked 1, 3, 4, 7. Notes: 3 keep blue accent.` and the same content as a small JSON object. This replaces the decisions export, the handoff packet, and the prompt export for the reading case." },
-            { "label": "Reader", "markdown": "Reads, ticks, copies one line, pastes it into the thread. No menu, no packet name to learn." },
-            { "label": "Agent", "markdown": "Parses numbers and notes from the line or reads the JSON from the MCP tool. Both say the same thing." },
-            { "label": "Unlocks", "markdown": "Item 10. Once the reader's output is one line, the export contract can be one shape." }
+          { "id": "pick-by-number", "title": "Pick by number", "summary": "The closing action copies the selection as one line an agent can act on, with JSON behind it.", "size": "minor", "effort": "S", "impact": 3, "dependsOn": ["summary-table"], "facets": [
+            { "label": "How it works", "markdown": "Ticks and notes anywhere on the page fill the closing block. Copy gives `1, 3, 4, 7. Notes: 3: keep blue.` or the same as JSON. This replaces the decisions, handoff, and prompt exports." },
+            { "label": "Reader", "markdown": "Reads, ticks, copies one line, pastes it into the thread." },
+            { "label": "Agent", "markdown": "Parses the line or reads the JSON through MCP. Both say the same thing." },
+            { "label": "Unlocks", "markdown": "Item 10. One reader output means one export contract." }
           ] },
-          { "id": "kinds-presets", "title": "Kinds as presets", "summary": "A kind fixes the section order, the facet vocabulary, the summary table, and the closing action, so \"make me a brainstorm\" produces this page.", "size": "major", "effort": "M", "impact": 5, "dependsOn": ["facets-block", "summary-table", "pick-by-number"], "facets": [
-            { "label": "How it works", "markdown": "Six kinds ship in 0.7: `brainstorm`, `plan`, `review`, `release`, `incident`, and `brief`. Each is a small preset file: the frame sections it expects, the facet labels for its items, whether items are numbered, which fields feed the summary table, and what the pick block says. The generator validates a document against its kind and fills defaults, so a brainstorm with no pick block still gets one.\n\nThe existing process kinds map onto these: implementation and debug become `plan` with a different facet set; integration-loop becomes `review`." },
-            { "label": "Reader", "markdown": "Opens any Dossier and already knows where the summary is, where the items are, and how to reply. A release checklist and a feature brainstorm feel like the same product." },
-            { "label": "Agent", "markdown": "The prompt becomes the product. \"Create a brainstorm dossier for X with six minor and four major features\" is enough because the kind supplies everything else. The skill teaches six sentences, not forty-three blocks." },
-            { "label": "Unlocks", "markdown": "Item 12. It also makes the block catalog cut in item 9 safe, since kinds tell you which blocks matter." },
-            { "label": "Risk", "markdown": "Kinds can become a second, hidden block catalog. Keep each preset under 40 lines and readable by a person." }
+          { "id": "kinds-presets", "title": "Kinds as presets", "summary": "A kind fixes section order, facet vocabulary, the summary table, and the closing action.", "size": "major", "effort": "M", "impact": 5, "dependsOn": ["facets-block", "summary-table", "pick-by-number"], "facets": [
+            { "label": "How it works", "markdown": "Six kinds ship: `brainstorm`, `plan`, `review`, `release`, `incident`, `brief`. Each is a preset under forty lines. Implementation and debug fold into `plan`; integration-loop into `review`." },
+            { "label": "Reader", "markdown": "Every Dossier has the summary, the items, and the reply in the same places." },
+            { "label": "Agent", "markdown": "\"Create a brainstorm dossier for X with six minor and four major features\" is the whole prompt." },
+            { "label": "Unlocks", "markdown": "Item 12, and makes the block cut in item 9 safe." },
+            { "label": "Risk", "markdown": "Kinds can become a hidden second catalog. Keep each preset short and readable." }
           ] },
-          { "id": "two-tier-runtime", "title": "Two-tier runtime", "summary": "The static file carries a reader runtime under 20 KB; everything that edits the document moves to the served studio.", "size": "major", "effort": "L", "impact": 5, "dependsOn": ["shell-reset", "one-export"], "facets": [
-            { "label": "How it works", "markdown": "The runtime splits into a core and per-block modules. Core: table of contents and scroll-spy, search, palette, theme toggle, collapse, per-block copy, and the pick block. Block modules: checkboxes for action items, verdict and notes controls for boards, gate toggles for release checklists. The generator includes a module only when its block appears. Everything else, meaning in-place text editing, the block editor, evidence forms, state import, revision compare, Theme Studio, and CodeMirror, becomes the studio bundle that `dossier serve` injects.\n\nBudgets are enforced by a test: core plus all block modules stays under 20 KB, base CSS under 30 KB, and the test fails when a change crosses the line." },
-            { "label": "Reader", "markdown": "Files open instantly and behave the same everywhere. A brief has no state machinery at all." },
-            { "label": "Agent", "markdown": "Unchanged for authoring. For editing round-trips it targets serve, where the full toolset lives." },
-            { "label": "Unlocks", "markdown": "A React port that only has to match the reader runtime. A plugin rule that plugins ship CSS and markup but no runtime, which keeps packs from re-bloating the file." },
-            { "label": "Risk", "markdown": "The largest change in the release and the one most likely to regress the existing examples. Do it after item 1 has already hidden the surfaces, so the split is mechanical." }
+          { "id": "two-tier-runtime", "title": "Two-tier runtime", "summary": "The static file carries a reader runtime under 20 KB; everything that edits moves to serve.", "size": "major", "effort": "L", "impact": 5, "dependsOn": ["shell-reset", "one-export"], "facets": [
+            { "label": "How it works", "markdown": "A core (contents, search, theme, collapse, copy, pick) plus per-block modules included only when the block appears. Editing, evidence, imports, Theme Studio, and CodeMirror become the studio bundle serve injects. Budgets are tests." },
+            { "label": "Reader", "markdown": "Files open instantly and behave the same everywhere." },
+            { "label": "Agent", "markdown": "Authoring is unchanged; editing round-trips target serve." },
+            { "label": "Unlocks", "markdown": "A React wrapper that only matches the reader, and a rule that plugins ship no runtime." },
+            { "label": "Risk", "markdown": "The largest change. Do it after item 1 has hidden the surfaces, so the split is mechanical." }
           ] },
-          { "id": "block-consolidation", "title": "Block consolidation", "summary": "Forty-three blocks become about twenty-two by folding the overlapping process families into one block each, with the old names kept as aliases.", "size": "major", "effort": "L", "impact": 5, "dependsOn": ["facets-block"], "facets": [
-            { "label": "How it works", "markdown": "Five families collapse. `board` absorbs review-board, process-board, finding-list, and cycle-board; the item schema carries verdict options and the facets from item 4. `evidence` absorbs evidence-log, verification-run, trust-report, and process-receipt, with an item kind of run, claim, observation, or receipt. `diff` absorbs patch-set and diff-view. `gates` absorbs release-checklist and verdict-gate. `log` absorbs decision-log, comment-thread, upstream-response, and integration-report.\n\nValidation maps the old type names to the new ones with a deprecation warning and rewrites the model, so every existing example builds unchanged. 0.8 removes the aliases." },
-            { "label": "Reader", "markdown": "Fewer visual idioms to learn. A board looks like a board whether it holds features, findings, or work items." },
-            { "label": "Agent", "markdown": "Chooses from a catalog it can hold in context. The cheat sheet fits on one screen." },
-            { "label": "Unlocks", "markdown": "Roughly a third of the CSS and of the render code goes away. The React port gets smaller by the same amount." },
-            { "label": "Risk", "markdown": "The MCP tools and packet schemas name the old blocks. Do item 10 first so there is one contract to update instead of seven." }
+          { "id": "block-consolidation", "title": "Block consolidation", "summary": "Forty-three blocks become about twenty-two by folding overlapping families, with old names kept as aliases.", "size": "major", "effort": "L", "impact": 5, "dependsOn": ["facets-block"], "facets": [
+            { "label": "How it works", "markdown": "`board` absorbs four board kinds, `evidence` four evidence kinds, `diff` two, `gates` two, `log` four. Validation maps old names with a deprecation warning; 0.8 removes the aliases." },
+            { "label": "Reader", "markdown": "Fewer idioms to learn. A board looks like a board whatever it holds." },
+            { "label": "Agent", "markdown": "Chooses from a catalog that fits on one screen." },
+            { "label": "Unlocks", "markdown": "A third of the CSS and render code goes away." },
+            { "label": "Risk", "markdown": "MCP tools and packet schemas name the old blocks. Do item 10 first." }
           ] },
-          { "id": "one-export", "title": "One export contract", "summary": "Seven export shapes become two files: the model with decisions merged in, and a decisions document both people and agents can read.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["pick-by-number"], "facets": [
-            { "label": "How it works", "markdown": "`slug.dossier.json` is the model with the reader's state already applied, which is what \"merged JSON\" is today. `slug.decisions.md` is the pick line, the notes, and the verdicts as Markdown with a small JSON front matter. Source, state packet, handoff, prompt, digest, and Markdown export go away as separate names. Copy for agent copies the decisions document. The MCP server exposes two read tools and one write tool over the same two shapes." },
-            { "label": "Reader", "markdown": "Never has to choose between five kinds of JSON. There is the document and there is what they decided." },
-            { "label": "Agent", "markdown": "Reads one Markdown document to learn what was decided and one JSON file to rebuild. The packet schemas shrink to two." },
-            { "label": "Unlocks", "markdown": "Items 8 and 9 become tractable, and the CLI's export subcommand loses most of its flags." },
-            { "label": "Risk", "markdown": "Workspaces and release evidence consume the state and handoff packets today. Give them the decisions document and a compatibility reader for old packets in 0.7." }
+          { "id": "one-export", "title": "One export contract", "summary": "Seven export shapes become two files: the decided model and a decisions document.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["pick-by-number"], "facets": [
+            { "label": "How it works", "markdown": "`slug.dossier.json` is the model with decisions applied. `slug.decisions.md` is the reply, notes, and verdicts as Markdown with JSON inside. Source, state, merged, handoff, prompt, and digest go away as names." },
+            { "label": "Reader", "markdown": "There is the document and there is what they decided." },
+            { "label": "Agent", "markdown": "Reads one Markdown document to learn the decisions and one JSON file to rebuild." },
+            { "label": "Unlocks", "markdown": "Items 8 and 9, and a CLI with far fewer flags." },
+            { "label": "Risk", "markdown": "Workspaces and release evidence consume the old packets. Give them the decisions document plus a compatibility reader." }
           ] },
-          { "id": "one-theme", "title": "One theme", "summary": "Skins, theme packs, and the in-artifact Theme Studio retire in favor of one default look with light and dark, and a single accent override.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["type-tokens"], "facets": [
-            { "label": "How it works", "markdown": "The skin layer and the theme pack list are removed from the generator. The new default look is the one on this page. `meta.theme.accent` and `meta.fonts` are the only presentation fields. Theme Studio survives only inside serve, as a way to preview an accent and copy the one line into the JSON." },
-            { "label": "Reader", "markdown": "Every Dossier they open looks like the same product, which is what a document format should do." },
-            { "label": "Agent", "markdown": "Stops choosing between berry, forest, console-slate, and studio presets. There is nothing to get wrong." },
-            { "label": "Unlocks", "markdown": "Around 20 KB of CSS and the whole of the skins module disappear. The design record shrinks to one page." },
-            { "label": "Risk", "markdown": "Console Slate was built for dense process pages and this look is airier. Test the implementation-packet and incident examples in the new shell before retiring the skin." }
+          { "id": "one-theme", "title": "One theme", "summary": "Skins, theme packs, and the in-artifact Theme Studio retire in favor of one look with one accent override.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["type-tokens"], "facets": [
+            { "label": "How it works", "markdown": "The skin layer and theme packs are removed. `meta.theme.accent` and `meta.fonts` are the only presentation fields. Theme Studio survives only in serve, as an accent preview." },
+            { "label": "Reader", "markdown": "Every Dossier looks like the same product." },
+            { "label": "Agent", "markdown": "Nothing to choose, nothing to get wrong." },
+            { "label": "Unlocks", "markdown": "About 20 KB of CSS and the skins module disappear." },
+            { "label": "Risk", "markdown": "Console Slate was built for dense process pages. Test the implementation and incident examples in the new shell first." }
           ] },
-          { "id": "skill-rewrite", "title": "Skill and starters rewrite", "summary": "The skill teaches kinds and facets instead of a block catalog, and every starter is regenerated in the new format.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["kinds-presets", "block-consolidation", "one-export"], "facets": [
-            { "label": "How it works", "markdown": "SKILL.md is rewritten around one sentence per kind, the facet vocabulary, and the rule set for items: numbered, sized, with effort and impact, facets in fixed order. The blocks reference shrinks to the consolidated catalog. Starters for the six kinds are regenerated and each one builds to a page shaped like this one. The MCP server gains a tool that lists kinds and their facets, so agents that do not load the skill still author correctly." },
-            { "label": "Reader", "markdown": "Gets consistent documents from any agent, because the instructions the agent followed are short enough to be followed." },
-            { "label": "Agent", "markdown": "Loads a skill it can hold entirely in context. The first draft is right more often, which is the whole loop." },
-            { "label": "Unlocks", "markdown": "The README opens with one prompt and one screenshot instead of a feature map." }
+          { "id": "skill-rewrite", "title": "Skill and starters rewrite", "summary": "The skill teaches kinds and facets instead of a block catalog, and every starter is regenerated.", "size": "major", "effort": "M", "impact": 4, "dependsOn": ["kinds-presets", "block-consolidation", "one-export"], "facets": [
+            { "label": "How it works", "markdown": "SKILL.md becomes one sentence per kind, the facet vocabulary, and the item rules. Starters for six kinds are regenerated. An MCP tool lists kinds and facets for agents that skip the skill." },
+            { "label": "Reader", "markdown": "Consistent documents from any agent, because the instructions are short enough to follow." },
+            { "label": "Agent", "markdown": "Holds the whole skill in context. The first draft is right more often." },
+            { "label": "Unlocks", "markdown": "A README that opens with one prompt and one screenshot." }
           ] }
         ]
       }
@@ -178,11 +176,11 @@
       "board": {
         "layout": "rows",
         "items": [
-          { "id": "react-parity", "title": "React port parity", "summary": "Keep it, but it follows items 8 and 9 rather than leading them. Its job in 0.7 is to render the reader runtime and nothing more.", "effort": "M" },
-          { "id": "workspaces", "title": "Workspaces and release evidence", "summary": "Untouched in 0.7 beyond consuming the decisions document from item 10. They are not part of the fractured feeling.", "effort": "S" },
-          { "id": "packs-plugins", "title": "Packs and plugins", "summary": "Keep. Add one rule: a plugin ships markup and CSS, never runtime JavaScript, so packs cannot undo item 8.", "effort": "S" },
-          { "id": "mermaid-playwright", "title": "Mermaid and Playwright optionals", "summary": "Keep as install-on-demand. The degrade-to-hint behavior already matches the spirit of the release.", "effort": "S" },
-          { "id": "hosted-studio", "title": "Hosted Studio with Monaco", "summary": "Still deferred, as the design record says. Item 8 makes it possible later without touching the artifact.", "effort": "L" }
+          { "id": "react-parity", "title": "React port parity", "summary": "Keep it, but it follows items 8 and 9. Its job is to render the reader runtime and nothing more.", "effort": "M" },
+          { "id": "workspaces", "title": "Workspaces and release evidence", "summary": "Untouched beyond consuming the decisions document from item 10.", "effort": "S" },
+          { "id": "packs-plugins", "title": "Packs and plugins", "summary": "Keep, with one rule: a plugin ships markup and CSS, never runtime JavaScript.", "effort": "S" },
+          { "id": "mermaid-playwright", "title": "Mermaid and Playwright optionals", "summary": "Keep as install-on-demand. Degrade-to-hint already fits.", "effort": "S" },
+          { "id": "hosted-studio", "title": "Hosted Studio with Monaco", "summary": "Still deferred. Item 8 makes it possible later without touching the artifact.", "effort": "L" }
         ]
       }
     }
