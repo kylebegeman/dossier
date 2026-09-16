@@ -378,17 +378,44 @@ templ itemArticle(it ItemView) {
 templ rowsBoard(b *BoardView) {
 	<div class="part rows">
 		for _, it := range b.Items {
-			<div>
-				<div>
-					<b>{ it.Title }</b>
-					if it.Summary != "" {
-						<p>{ it.Summary }</p>
+			if len(it.Facets) > 0 {
+				<details class="row" id={ it.ID }>
+					<summary>
+						<div>
+							<b>{ it.Title }</b>
+							if it.Summary != "" {
+								<p>{ it.Summary }</p>
+							}
+						</div>
+						if it.Effort != "" {
+							<span class="chip effort">{ it.Effort }</span>
+						}
+						<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+					</summary>
+					<dl class="facets">
+						for _, f := range it.Facets {
+							<div class={ "facet", templ.KV("risk", f.Risk) }>
+								<dt>{ f.Label }</dt>
+								<dd>
+									@templ.Raw(f.HTML)
+								</dd>
+							</div>
+						}
+					</dl>
+				</details>
+			} else {
+				<div id={ it.ID }>
+					<div>
+						<b>{ it.Title }</b>
+						if it.Summary != "" {
+							<p>{ it.Summary }</p>
+						}
+					</div>
+					if it.Effort != "" {
+						<span class="chip effort">{ it.Effort }</span>
 					}
 				</div>
-				if it.Effort != "" {
-					<span class="chip effort">{ it.Effort }</span>
-				}
-			</div>
+			}
 		}
 	</div>
 }
