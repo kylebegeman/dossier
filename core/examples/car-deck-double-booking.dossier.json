@@ -1,0 +1,334 @@
+{
+  "dossier": "1.0",
+  "kind": "incident",
+  "meta": {
+    "title": "Double-booked car deck on the 07:40",
+    "slug": "car-deck-double-booking",
+    "kicker": "Tidewright · Wenlow Islands ferries",
+    "emphasis": "Double-booked",
+    "lede": "Eleven car spaces on the Gannet's 07:40 from Varre to Holm were sold twice. Every driver crossed that morning, eleven of them on a relief sailing. What happened, why, and six follow-ups to commit to by number.",
+    "updated": "2026-09-15",
+    "status": "resolved",
+    "facts": [
+      {
+        "label": "severity",
+        "value": "SEV-2",
+        "tone": "risk"
+      },
+      {
+        "label": "drivers moved",
+        "value": "11"
+      },
+      {
+        "label": "longest wait",
+        "value": "1 h 30"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "impact",
+      "title": "Impact",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "On Wednesday 9 September, the Gannet's 07:40 to Holm had 53 cars booked for 42 spaces. Crew caught it at the ramp check at 06:12. Every driver crossed that morning: 42 on the 07:40, and the 11 who booked last on a relief sailing at 09:10.\n\nTwo drivers missed the start of their shifts on Holm, and the harbour office took 64 calls before 09:00."
+        },
+        {
+          "type": "chart",
+          "title": "Cars booked on the 07:40 through the evening before, against 42 spaces",
+          "variant": "area",
+          "data": [
+            {
+              "label": "18:00",
+              "value": 31
+            },
+            {
+              "label": "19:00",
+              "value": 38
+            },
+            {
+              "label": "20:00",
+              "value": 41
+            },
+            {
+              "label": "20:30",
+              "value": 42
+            },
+            {
+              "label": "21:00",
+              "value": 53
+            },
+            {
+              "label": "22:00",
+              "value": 53
+            }
+          ]
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "Drivers moved",
+              "text": "11, to a relief sailing at 09:10, each with a full refund and a free return."
+            },
+            {
+              "label": "Longest wait",
+              "text": "1 hour 30 minutes at the Varre ramp."
+            },
+            {
+              "label": "Office calls",
+              "text": "64 before 09:00, against 9 on a normal Wednesday."
+            },
+            {
+              "label": "Bookings lost",
+              "text": "None. Every double sale traces to one office terminal."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "timeline",
+      "title": "Timeline",
+      "parts": [
+        {
+          "type": "timeline",
+          "events": [
+            {
+              "at": "Tue 20:04",
+              "title": "The 07:40 sells its last car space",
+              "markdown": "Online sales reach 42 of 42 cars, and the app shows the deck as full.",
+              "tone": "neutral"
+            },
+            {
+              "at": "Tue 20:31",
+              "title": "The harbour office terminal reconnects",
+              "markdown": "After a restart for an update, the terminal replays eleven car holds it had kept offline since the afternoon. The booking service accepts all eleven.",
+              "tone": "risk"
+            },
+            {
+              "at": "Wed 06:12",
+              "title": "Crew count 53 cars booked for 42 spaces",
+              "markdown": "The ramp check at Varre compares the loading list with the deck plan, and it does not add up.",
+              "tone": "risk"
+            },
+            {
+              "at": "Wed 06:20",
+              "title": "Incident declared at SEV-2",
+              "markdown": "Joss is paged and joins from home. Ines takes the office phones.",
+              "tone": "violet"
+            },
+            {
+              "at": "Wed 06:48",
+              "title": "A relief sailing is agreed for 09:10",
+              "markdown": "The Gannet's master agrees a second crossing, and the office texts the eleven drivers who booked last.",
+              "tone": "teal"
+            },
+            {
+              "at": "Wed 07:40",
+              "title": "The Gannet sails full",
+              "tone": "neutral"
+            },
+            {
+              "at": "Wed 08:17",
+              "title": "Every moved driver refunded",
+              "markdown": "Eleven refunds and free returns go out, and offline holds are switched off on the terminal.",
+              "tone": "teal"
+            },
+            {
+              "at": "Wed 09:10",
+              "title": "The relief sailing leaves with all eleven cars",
+              "tone": "teal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "factors",
+      "title": "Contributing factors",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "replay-skips-capacity",
+            "title": "Offline holds were replayed without a capacity check",
+            "summary": "The terminal's replay path writes holds straight to the bookings table, past the check every other sale goes through.",
+            "facets": [
+              {
+                "label": "Evidence",
+                "markdown": "The booking log has eleven `hold.replay` events between 20:31:07 and 20:31:09, and none of them has a `capacity.check` span."
+              }
+            ]
+          },
+          {
+            "id": "no-oversell-alert",
+            "title": "Nothing alerts when a sailing sells past capacity",
+            "summary": "The oversale was in the data from 20:31, and nobody saw it for ten hours.",
+            "facets": [
+              {
+                "label": "Evidence",
+                "markdown": "The capacity dashboard showed 53 of 42 all night. Its alerts only cover payment failures."
+              }
+            ]
+          },
+          {
+            "id": "holds-never-expire",
+            "title": "Offline holds never expire",
+            "summary": "The terminal had held those eleven places since 14:05, and would have replayed them days later."
+          }
+        ]
+      }
+    },
+    {
+      "id": "followups",
+      "title": "Follow-ups",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "oversell-alert",
+            "title": "Alert when any sailing sells past capacity",
+            "summary": "A check every minute pages whoever is on call when bookings exceed spaces on any sailing.",
+            "category": "detect",
+            "status": "open",
+            "owner": "Joss",
+            "effort": "S",
+            "impact": 5,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "Nothing alerts when a sailing sells past capacity, and ten hours passed between the double sale and the ramp check."
+              },
+              {
+                "label": "What changes",
+                "markdown": "A query compares bookings with deck spaces for every sailing in the next 72 hours, once a minute, and pages on any excess."
+              },
+              {
+                "label": "Done when",
+                "markdown": "Replaying the 9 September data in staging pages within two minutes."
+              }
+            ]
+          },
+          {
+            "id": "loading-list-count",
+            "title": "Show cars sold against spaces on the loading list",
+            "summary": "The crew's loading list opens with cars sold against spaces, in ochre when they do not fit.",
+            "category": "detect",
+            "status": "done",
+            "owner": "Mira",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "Crew found the problem at 06:12 by counting the list against the deck plan."
+              },
+              {
+                "label": "What changes",
+                "markdown": "The list header shows the count, such as 53 of 42, and marks each car sold after the deck was full."
+              },
+              {
+                "label": "Note",
+                "markdown": "Shipped on 11 September in crew app 2.8.1."
+              }
+            ]
+          },
+          {
+            "id": "overbooking-runbook",
+            "title": "A runbook for an overbooked sailing",
+            "summary": "One page on who to call, how to arrange a relief sailing, and what to offer the drivers moved.",
+            "category": "mitigate",
+            "status": "open",
+            "owner": "Ines",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "The 28 minutes from 06:20 to 06:48, spent finding out who could approve a relief sailing."
+              },
+              {
+                "label": "What changes",
+                "markdown": "A page in the office handbook with the masters' numbers, the relief sailing checklist, and the standard offer of a refund and a free return."
+              }
+            ]
+          },
+          {
+            "id": "warn-last-bookers",
+            "title": "Tell the last drivers before they set off",
+            "summary": "When a sailing is oversold, the drivers who booked last get a message and a held place on the next sailing.",
+            "category": "mitigate",
+            "status": "open",
+            "owner": "Tomas",
+            "effort": "M",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "Eleven drivers learned at the ramp, some after a long drive to Varre."
+              },
+              {
+                "label": "What changes",
+                "markdown": "The oversale alert messages each driver past capacity, in booking order, with a held place on the next sailing and a free cancellation."
+              },
+              {
+                "label": "Done when",
+                "markdown": "In staging, an oversold sailing sends every message within five minutes of the alert."
+              }
+            ]
+          },
+          {
+            "id": "replay-checks-capacity",
+            "title": "Check capacity when the terminal replays holds",
+            "summary": "Replayed holds go through the same capacity check as every other sale, and fail in plain sight when a deck is full.",
+            "category": "prevent",
+            "status": "open",
+            "owner": "Tomas",
+            "effort": "M",
+            "impact": 5,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "Offline holds were replayed without a capacity check."
+              },
+              {
+                "label": "What changes",
+                "markdown": "The replay path calls `booking.Hold` instead of inserting rows, and the terminal lists each refused hold with the next sailing that has room."
+              },
+              {
+                "label": "Done when",
+                "markdown": "A replay test against a full sailing refuses every hold, and the terminal lists them all."
+              }
+            ]
+          },
+          {
+            "id": "expire-offline-holds",
+            "title": "Expire offline holds after ten minutes",
+            "summary": "A hold made offline lapses after ten minutes, the same as a hold made in the app.",
+            "category": "prevent",
+            "status": "open",
+            "owner": "Mira",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "Addresses",
+                "markdown": "Offline holds never expire, and these were six hours old when they replayed."
+              },
+              {
+                "label": "What changes",
+                "markdown": "The terminal stamps each offline hold with its time, drops it after ten minutes, and tells the clerk which holds lapsed."
+              },
+              {
+                "label": "Note",
+                "markdown": "The office asked for twenty minutes on busy mornings. Ten matches the app, and a clerk can always hold again."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
