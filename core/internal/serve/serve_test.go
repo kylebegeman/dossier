@@ -3,6 +3,8 @@ package serve
 import (
 	"bufio"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -12,8 +14,10 @@ import (
 	"testing"
 	"time"
 
+	"dossier/internal/kinds"
 	"dossier/internal/load"
 	"dossier/internal/model"
+	"dossier/internal/render"
 )
 
 type harness struct {
@@ -704,5 +708,38 @@ func TestAccentPreviewDerivesAndKeepsInTheModel(t *testing.T) {
 	}
 	if page := h.page(); !strings.Contains(page, `"modelAccent":"#2563eb"`) || !strings.Contains(page, "/* accent from meta.theme.accent */") {
 		t.Error("the page renders the model's accent and tells the studio about it")
+	}
+}
+
+func TestEditorBundleIsPinnedServedAndNeverInArtifacts(t *testing.T) {
+	sum := sha256.Sum256(editorJS)
+	if hex.EncodeToString(sum[:]) != EditorHash() {
+		t.Fatalf("assets/vendor/codemirror.js does not match its pinned hash; rebuild it with scripts/codemirror")
+	}
+	if len(editorJS) > MaxEditorBytes {
+		t.Errorf("editor bundle is %d bytes, over %d", len(editorJS), MaxEditorBytes)
+	}
+	h := start(t, brainstorm)
+	res, body := h.request("GET", "/_/vendor/codemirror.js?v="+EditorHash()[:12], "", nil)
+	if res.StatusCode != 200 || !strings.HasPrefix(res.Header.Get("Content-Type"), "text/javascript") || !strings.Contains(res.Header.Get("Cache-Control"), "immutable") || len(body) != len(editorJS) {
+		t.Errorf("serve the editor: %d %v", res.StatusCode, res.Header)
+	}
+	if res, _ := h.request("GET", "/_/vendor/codemirror.js", "", map[string]string{"Host": "evil.example"}); res.StatusCode == 200 {
+		t.Error("the editor is served only to the studio's own host")
+	}
+	if !strings.Contains(h.page(), `"editor":"`+EditorHash()[:12]+`"`) {
+		t.Error("the studio learns the editor's version")
+	}
+	doc := h.file()
+	kind, err := kinds.Load(doc.Kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, err := render.Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lower := strings.ToLower(string(artifact)); strings.Contains(lower, "codemirror") || strings.Contains(lower, "/_/vendor") {
+		t.Error("an artifact never references the studio's editor")
 	}
 }

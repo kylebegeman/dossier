@@ -92,33 +92,44 @@ func Notices(ctx context.Context, cfg Config) ([]byte, error) {
 		}
 	}
 
-	dir := filepath.Join(cfg.Core, "third_party", "licenses")
-	readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
+	// Software the binary embeds outside Go modules keeps its licenses in
+	// third_party/licenses: one directory per bundle, with a README first.
+	licenses := filepath.Join(cfg.Core, "third_party", "licenses")
+	bundles, err := os.ReadDir(licenses)
 	if err != nil {
 		return nil, err
 	}
-	b.WriteString("\n## Libraries inside graphviz.wasm\n\n")
-	b.Write(bytes.TrimSpace(bytes.TrimPrefix(readme, []byte("# Licenses of code inside graphviz.wasm"))))
-	b.WriteString("\n")
-	var files []string
-	err = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
-		if err == nil && !d.IsDir() && d.Name() != "README.md" {
-			files = append(files, path)
+	for _, bundle := range bundles {
+		if !bundle.IsDir() {
+			continue
 		}
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Strings(files)
-	for _, f := range files {
-		rel, _ := filepath.Rel(dir, f)
-		data, err := os.ReadFile(f)
+		dir := filepath.Join(licenses, bundle.Name())
+		readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
+		if err != nil {
+			return nil, fmt.Errorf("third_party/licenses/%s: %w", bundle.Name(), err)
+		}
+		title, body, _ := strings.Cut(strings.TrimSpace(string(readme)), "\n")
+		fmt.Fprintf(&b, "\n## %s\n\n%s\n", strings.TrimSpace(strings.TrimPrefix(title, "#")), strings.TrimSpace(body))
+		var files []string
+		err = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+			if err == nil && !d.IsDir() && path != filepath.Join(dir, "README.md") {
+				files = append(files, path)
+			}
+			return err
+		})
 		if err != nil {
 			return nil, err
 		}
-		fmt.Fprintf(&b, "\n### %s\n", filepath.ToSlash(rel))
-		writeText(&b, data)
+		sort.Strings(files)
+		for _, f := range files {
+			rel, _ := filepath.Rel(dir, f)
+			data, err := os.ReadFile(f)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Fprintf(&b, "\n### %s\n", strings.ReplaceAll(filepath.ToSlash(rel), "__", "/"))
+			writeText(&b, data)
+		}
 	}
 	return b.Bytes(), nil
 }
