@@ -1,5 +1,5 @@
 # The Go core, the React wrapper, and a distribution dry run. Nothing here
-# publishes: releases to npm, Homebrew, and GitHub stay a deliberate step.
+# publishes; release.yml does that when a version tag is pushed.
 name: core
 
 on:

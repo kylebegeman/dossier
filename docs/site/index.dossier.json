@@ -1,0 +1,101 @@
+{
+  "dossier": "1.0",
+  "kind": "brief",
+  "meta": {
+    "title": "Dossier, by example",
+    "slug": "index",
+    "kicker": "Dossier 0.7",
+    "emphasis": "example",
+    "lede": "Seven documents from one invented ferry ticketing team, covering every kind Dossier ships. Open any of them to read, search, and decide the way a reader would.",
+    "status": "live"
+  },
+  "sections": [
+    {
+      "id": "answer",
+      "title": "One model in, one page out",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Dossier turns one JSON model into one self-contained HTML page. An agent writes the model, a person reads the page once and decides by number, and the agent reads the decisions back.\n\nEvery page here was built from a model in the repository, and none of them makes a request to anywhere else."
+        },
+        {
+          "type": "table",
+          "title": "The examples",
+          "columns": [
+            "Document",
+            "Kind",
+            "Try this"
+          ],
+          "rows": [
+            [
+              "[Ten moves for a calmer winter crossing](winter-crossing.html)",
+              "brainstorm",
+              "Answer the choice, pick a few ideas, and copy the reply."
+            ],
+            [
+              "[Small fixes before the spring timetable](spring-fixes.html)",
+              "brainstorm",
+              "Pick by number, then turn on Hide decided."
+            ],
+            [
+              "[Offline boarding passes](offline-boarding-passes.html)",
+              "plan",
+              "Say go, revise, or skip for each step, and open the diagram's source."
+            ],
+            [
+              "[Tide-aware cancellations](tide-aware-cancellations.html)",
+              "review",
+              "Rule on findings from the keyboard with the arrow keys."
+            ],
+            [
+              "[Release 3.4.0](release-3-4-0.html)",
+              "release",
+              "Choose Ship, then waive gate 1 and watch the warning clear."
+            ],
+            [
+              "[Double-booked car deck on the 07:40](car-deck-double-booking.html)",
+              "incident",
+              "Read the timeline, then commit to follow-ups."
+            ],
+            [
+              "[Why riders abandon checkout](checkout-abandonment.html)",
+              "brief",
+              "Search for vehicle. A brief has nothing to decide."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sources",
+      "title": "Get Dossier",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Where",
+            "What you get"
+          ],
+          "rows": [
+            [
+              "[github.com/kylebegeman/dossier](https://github.com/kylebegeman/dossier)",
+              "The source, the README, and every release with its archives."
+            ],
+            [
+              "`brew install kylebegeman/tap/dossier`",
+              "The binary through Homebrew."
+            ],
+            [
+              "[@kylebegeman/dossier on npm](https://www.npmjs.com/package/@kylebegeman/dossier)",
+              "The binary for your platform, for Node projects."
+            ],
+            [
+              "[@kylebegeman/dossier-react on npm](https://www.npmjs.com/package/@kylebegeman/dossier-react)",
+              "A React wrapper that renders a model and reports decisions."
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,12 +3,8 @@ dist/
 *.log
 .DS_Store
 
-# generated example output (regenerate with: dossier build examples/*.json)
-examples/*.html
-examples/*.md
+# the Pages site, built from the showcase by .github/workflows/pages.yml
+/site/
 
-# built demo site (deployed by Actions)
-site/
-
-# transient MCP / playwright screenshots
+# transient MCP and Playwright screenshots
 .playwright-mcp/

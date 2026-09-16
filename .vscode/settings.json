@@ -1,8 +1,12 @@
 {
   "json.schemas": [
     {
-      "fileMatch": ["*.dossier.json"],
-      "url": "./schema/dossier.schema.json"
+      "fileMatch": ["*.dossier.json", "!core/testdata/legacy/*.dossier.json", "!docs/releases/0.6.*.dossier.json"],
+      "url": "./core/internal/schema/dossier.model.schema.json"
+    },
+    {
+      "fileMatch": ["*.kind.json"],
+      "url": "./core/internal/schema/dossier.kind.schema.json"
     }
   ]
 }

@@ -1,8 +1,11 @@
-name: Deploy demo to Pages
+# Publishes the showcase to GitHub Pages: an index and the example documents,
+# each built by the dossier binary from this commit.
+name: Pages
 
 on:
   push:
     branches: [master]
+    paths: ["core/**", "docs/site/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -19,12 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-go@v5
         with:
-          node-version: 20
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium # for Mermaid rendering in the demo
-      - run: npm run site
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - name: Build the showcase
+        working-directory: core
+        run: make site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
