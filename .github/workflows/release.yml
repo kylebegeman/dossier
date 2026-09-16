@@ -1,0 +1,126 @@
+# Publishes a release when a version tag such as v0.7.0 is pushed: the checks,
+# the archives and checksums as a GitHub release, the npm packages with
+# provenance, and the Homebrew formula when a tap token is configured.
+# Every publish step skips what is already published, so a failed run can be
+# rerun from the Actions page.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The existing version tag to release, such as v0.7.0
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      HAS_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Use an npm that supports trusted publishing
+        run: npm install -g npm@^11.5.1
+
+      - name: Match the tag to VERSION
+        run: |
+          version="$(cat core/VERSION)"
+          if [ "$TAG" != "v$version" ]; then
+            echo "Tag $TAG does not match core/VERSION $version." >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Check
+        working-directory: core
+        run: make check
+
+      - name: Build the distribution and dry-run it
+        working-directory: core
+        run: make dist-check
+
+      - name: Build the release page
+        working-directory: core
+        run: go run ./cmd/dossier build "../docs/releases/${VERSION}.dossier.json" --out dist/page
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          assets=(core/dist/*.tar.gz core/dist/*.zip core/dist/checksums.txt core/dist/homebrew/dossier.rb core/dist/page/*.html)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${assets[@]}" --clobber
+          else
+            gh release create "$TAG" "${assets[@]}" --verify-tag \
+              --title "Dossier $VERSION" \
+              --notes-file "docs/releases/${VERSION}.md"
+          fi
+
+      - name: Publish to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "$NPM_TOKEN" ]; then
+            npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          else
+            echo "No NPM_TOKEN secret; publishing through npm trusted publishing."
+          fi
+          publish() {
+            name="$(node -p "require('./$1/package.json').name")"
+            if npm view "$name@$VERSION" version >/dev/null 2>&1; then
+              echo "$name@$VERSION is already on npm."
+              return
+            fi
+            (cd "$1" && npm publish --provenance --access public)
+          }
+          # Platform packages first, so the launcher never names a package
+          # that is not there yet.
+          for dir in core/dist/npm/dossier-*; do publish "$dir"; done
+          publish core/dist/npm/dossier
+          (cd packages/react && npm ci)
+          publish packages/react
+
+      - name: Update the Homebrew tap
+        if: env.HAS_TAP_TOKEN == 'true'
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/kylebegeman/homebrew-tap.git" tap
+          cp core/dist/homebrew/dossier.rb tap/Formula/dossier.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/dossier.rb
+          if git diff --cached --quiet; then
+            echo "The tap already has dossier $VERSION."
+          else
+            git commit -m "dossier ${VERSION}"
+            git push
+          fi

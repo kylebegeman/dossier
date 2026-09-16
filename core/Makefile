@@ -1,6 +1,6 @@
 # Dossier core: tools are pinned in go.mod (tool directives).
 
-.PHONY: generate check build test clean dist dist-check
+.PHONY: generate check build test clean dist dist-check site
 
 generate:
 	go tool templ generate >/dev/null
@@ -32,6 +32,13 @@ dist:
 
 dist-check: dist
 	go run ./cmd/dossier-release check --out dist
+
+# site builds the Pages site into ../site: the index in ../docs/site and every
+# showcase document, the way .github/workflows/pages.yml publishes it.
+site:
+	rm -rf ../site
+	go run ./cmd/dossier build ../docs/site/index.dossier.json examples/*.dossier.json --out ../site
+	touch ../site/.nojekyll
 
 clean:
 	rm -rf bin dist
