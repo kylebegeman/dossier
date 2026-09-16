@@ -52,3 +52,31 @@ func TestCheckParts(t *testing.T) {
 		t.Errorf("expected 3 part problems, got %v", p)
 	}
 }
+
+func TestCheckMediaParts(t *testing.T) {
+	good := &Document{Dossier: "1.0", Kind: "k", Meta: Meta{Title: "T", Slug: "t"}, Sections: []Section{{ID: "s", Title: "S", Parts: []Part{
+		{Type: "figure", Src: "images/flow.png", Alt: "Flow", Caption: "The flow."},
+		{Type: "figure", Src: "data:image/svg+xml,%3Csvg%3E"},
+		{Type: "figure", Src: "https://example.test/a.png"},
+		{Type: "diagram", Source: "digraph { a -> b }"},
+		{Type: "diagram", Source: "flowchart LR", Format: "mermaid"},
+		{Type: "chart", Data: []Point{{Label: "Q1", Value: 1}}},
+		{Type: "chart", Variant: "area", Data: []Point{{Label: "Q1", Value: 1}, {Label: "Q2", Value: -2.5}}},
+	}}}}
+	if p := Check(good); len(p) > 0 {
+		t.Errorf("media parts have problems: %v", p)
+	}
+	bad := &Document{Dossier: "1.0", Kind: "k", Meta: Meta{Title: "T", Slug: "t"}, Sections: []Section{{ID: "s", Title: "S", Parts: []Part{
+		{Type: "figure"},
+		{Type: "figure", Src: "javascript:alert(1)"},
+		{Type: "figure", Src: "data:text/html,hi"},
+		{Type: "diagram", Format: "dot"},
+		{Type: "diagram", Source: "x", Format: "plantuml"},
+		{Type: "chart"},
+		{Type: "chart", Variant: "pie", Data: []Point{{Label: "", Value: 1}}},
+	}}}}
+	p := Check(bad)
+	if len(p) != 8 {
+		t.Errorf("expected 8 media part problems, got %d: %v", len(p), p)
+	}
+}

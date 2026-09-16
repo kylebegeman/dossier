@@ -39,3 +39,25 @@ func TestRejectsUnknownAndBadValues(t *testing.T) {
 		t.Error("non-JSON must be an error")
 	}
 }
+
+func TestMediaPartsValidate(t *testing.T) {
+	doc := `{"dossier":"1.0","kind":"brief","meta":{"title":"T","slug":"t"},"sections":[{"id":"s","title":"S","parts":[
+		{"type":"figure","src":"a.png","alt":"A","caption":"Cap"},
+		{"type":"diagram","source":"digraph {}","format":"dot"},
+		{"type":"chart","variant":"bar","data":[{"label":"Q1","value":1.5}]},
+		{"type":"code","lang":"go","code":"package x","title":"x.go"}]}]}`
+	problems, err := CheckModel([]byte(doc))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(problems) > 0 {
+		t.Errorf("media parts have schema problems: %v", problems)
+	}
+	problems, err = CheckModel([]byte(`{"dossier":"1.0","kind":"brief","meta":{"title":"T","slug":"t"},"sections":[{"id":"s","title":"S","parts":[{"type":"chart","variant":"pie","data":[{"label":"a","value":"1"}]}]}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(problems) < 2 {
+		t.Errorf("expected variant and value problems, got %v", problems)
+	}
+}
