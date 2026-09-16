@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 
+	"dossier/internal/decisions"
 	"dossier/internal/model"
 )
 
@@ -105,16 +106,23 @@ type Decision struct {
 	Default  string              `json:"default,omitempty"`
 	When     map[string][]string `json:"when,omitempty"`
 	Choice   *model.Choice       `json:"choice,omitempty"`
+	Guard    *GuardRule          `json:"guard,omitempty"`
 	Title    string              `json:"title,omitempty"`
 	Markdown string              `json:"markdown,omitempty"`
 	Example  string              `json:"example,omitempty"`
 }
 
 // Verdict is one ruling a reader can give an item.
-type Verdict struct {
-	ID    string `json:"id"`
-	Label string `json:"label"`
-	Tone  string `json:"tone"`
+type Verdict = decisions.Verdict
+
+// GuardRule warns when the reader makes a choice while items matching When
+// (and marked required, when Required is set) lack the verdict Unless: a
+// release shipped over a failed required gate nobody waived.
+type GuardRule struct {
+	Choice   string              `json:"choice"`
+	When     map[string][]string `json:"when"`
+	Required bool                `json:"required,omitempty"`
+	Unless   string              `json:"unless"`
 }
 
 // Limits are conciseness advice in characters. Exceeding them is a warning,
@@ -139,7 +147,7 @@ var FieldNames = []string{"size", "category", "severity", "status", "effort", "i
 var ColumnNames = []string{"number", "title", "size", "category", "severity", "status", "effort", "impact", "owner", "required", "dependsOn", "decision"}
 
 // Reserved words cannot be verdict or choice ids, because replies use them.
-var Reserved = []string{"all", "rest", "nothing", "none", "notes"}
+var Reserved = decisions.Reserved
 
 var (
 	idPattern   = regexp.MustCompile(`^[a-z][a-z0-9-]{0,63}$`)
@@ -378,18 +386,7 @@ func (k Kind) validateDecision(add func(string, string, ...any)) {
 	if d.Default != "" && !k.IsVerdict(d.Default) {
 		add(dp+"/default", "%q is not one of the verdicts", d.Default)
 	}
-	for field, values := range d.When {
-		f := k.field(field)
-		if f == nil || len(f.Values) == 0 {
-			add(dp+"/when/"+field, "is not an enumerated field of the kind")
-			continue
-		}
-		for _, v := range values {
-			if !containsFold(f.Values, v) {
-				add(dp+"/when/"+field, "%q is not one of its values", v)
-			}
-		}
-	}
+	k.checkWhen(dp+"/when", d.When, add)
 	if d.Choice != nil {
 		for _, p := range CheckChoice(d.Choice) {
 			add(dp+"/choice"+p.Path, "%s", p.Message)
@@ -398,6 +395,55 @@ func (k Kind) validateDecision(add func(string, string, ...any)) {
 			claim(fmt.Sprintf("%s/choice/options/%d/id", dp, i), o.ID)
 		}
 	}
+	if g := d.Guard; g != nil {
+		gp := dp + "/guard"
+		if !k.IsVerdict(g.Unless) {
+			add(gp+"/unless", "%q is not one of the verdicts", g.Unless)
+		}
+		if d.Choice == nil || !hasOption(d.Choice, g.Choice) {
+			add(gp+"/choice", "%q is not an option of the kind's choice", g.Choice)
+		}
+		if len(g.When) == 0 {
+			add(gp+"/when", "a guard names the field values it watches")
+		}
+		k.checkWhen(gp+"/when", g.When, add)
+		if g.Required && k.Fields.Required == nil {
+			add(gp+"/required", "the kind has no required field")
+		}
+	}
+}
+
+func (k Kind) checkWhen(path string, when map[string][]string, add func(string, string, ...any)) {
+	for _, field := range sortedFields(when) {
+		f := k.field(field)
+		if f == nil || len(f.Values) == 0 {
+			add(path+"/"+field, "is not an enumerated field of the kind")
+			continue
+		}
+		for _, v := range when[field] {
+			if !containsFold(f.Values, v) {
+				add(path+"/"+field, "%q is not one of its values", v)
+			}
+		}
+	}
+}
+
+func sortedFields(when map[string][]string) []string {
+	fields := make([]string, 0, len(when))
+	for f := range when {
+		fields = append(fields, f)
+	}
+	sort.Strings(fields)
+	return fields
+}
+
+func hasOption(c *model.Choice, id string) bool {
+	for _, o := range c.Options {
+		if o.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // CheckChoice validates a choice's shape: a question and two to six options
@@ -559,6 +605,80 @@ func (k Kind) IsVerdict(id string) bool {
 // Decides reports whether readers decide on this kind's items.
 func (k Kind) Decides() bool { return k.Decision.Mode != ModeNone && k.Item.Numbered }
 
+// Rules are the kind's decision rules for one document: the mode and
+// verdicts, which items take a verdict, the effective choice, and the guard.
+// Package decisions applies them without knowing the kinds.
+func (k Kind) Rules(doc *model.Document) decisions.Rules {
+	d := k.Decision
+	r := decisions.Rules{Kind: k.ID, Noun: k.Item.Noun, Plural: k.Item.Plural, Mode: d.Mode, Verdicts: d.Verdicts, Default: d.Default, Choice: d.Choice}
+	if !k.Decides() {
+		return decisions.Rules{Kind: k.ID, Noun: k.Item.Noun, Plural: k.Item.Plural, Mode: decisions.ModeNone}
+	}
+	if doc.Choice != nil {
+		r.Choice = doc.Choice
+	}
+	if len(d.When) > 0 {
+		r.Eligible = map[string]bool{}
+		r.EligibleText = k.Item.Plural + " with " + k.describeWhen(d.When, " ")
+	}
+	var guard *decisions.Guard
+	if g := d.Guard; g != nil && r.Choice != nil && hasOption(r.Choice, g.Choice) && k.IsVerdict(g.Unless) {
+		describe := k.describeWhen(g.When, "")
+		if g.Required {
+			describe += " and " + strings.ToLower(k.FieldLabel("required"))
+		}
+		guard = &decisions.Guard{Choice: g.Choice, Unless: g.Unless, Watch: map[string]bool{}, Describe: describe}
+	}
+	for _, s := range doc.Sections {
+		if s.Board == nil || s.Board.Layout == "rows" {
+			continue
+		}
+		for _, it := range s.Board.Items {
+			if r.Eligible != nil && matches(it, d.When) {
+				r.Eligible[it.ID] = true
+			}
+			if guard != nil && matches(it, d.Guard.When) && (!d.Guard.Required || it.Required) {
+				guard.Watch[it.ID] = true
+			}
+		}
+	}
+	r.Guard = guard
+	return r
+}
+
+// describeWhen words a when rule: "status failed or pending". With an empty
+// separator the field names are left out: "failed or pending".
+func (k Kind) describeWhen(when map[string][]string, sep string) string {
+	var parts []string
+	for _, field := range sortedFields(when) {
+		values := orWords(when[field])
+		if sep != "" {
+			values = strings.ToLower(k.FieldLabel(field)) + sep + values
+		}
+		parts = append(parts, values)
+	}
+	return strings.Join(parts, " and ")
+}
+
+func matches(it model.Item, when map[string][]string) bool {
+	for field, values := range when {
+		if !containsFold(values, Value(it, field)) {
+			return false
+		}
+	}
+	return true
+}
+
+func orWords(words []string) string {
+	switch len(words) {
+	case 0:
+		return ""
+	case 1:
+		return words[0]
+	}
+	return strings.Join(words[:len(words)-1], ", ") + " or " + words[len(words)-1]
+}
+
 // Check applies the kind's rules to every article board item: fields must be
 // the kind's and within its vocabularies, and facets must follow its order.
 // Rows boards are free-form.
@@ -577,7 +697,20 @@ func (k Kind) Check(doc *model.Document) []model.Problem {
 			k.checkFacets(ip, it, add)
 		}
 	}
-	return out
+	if c := doc.Choice; c != nil {
+		if !k.Decides() {
+			add("/choice", "the %s kind has nothing to decide, so it asks no question", k.ID)
+		}
+		for _, p := range CheckChoice(c) {
+			add("/choice"+p.Path, "%s", p.Message)
+		}
+		for i, o := range c.Options {
+			if k.IsVerdict(o.ID) {
+				add(fmt.Sprintf("/choice/options/%d/id", i), "%q is also a verdict of the %s kind; choose another word", o.ID, k.ID)
+			}
+		}
+	}
+	return append(out, decisions.Check(doc, k.Rules(doc))...)
 }
 
 func (k Kind) checkFields(path string, it model.Item, add func(string, string, ...any)) {
@@ -649,9 +782,10 @@ func (k Kind) checkFacets(path string, it model.Item, add func(string, string, .
 }
 
 // Advise returns warnings that never block a build: expected sections that are
-// missing, and summaries and facets longer than the kind's limits.
+// missing, decisions the reader cannot see or a guard runs over, and
+// summaries and facets longer than the kind's limits.
 func (k Kind) Advise(doc *model.Document) []model.Problem {
-	var out []model.Problem
+	out := decisions.Warnings(doc, k.Rules(doc))
 	ids := map[string]bool{}
 	boards, rows := 0, 0
 	for _, s := range doc.Sections {

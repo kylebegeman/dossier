@@ -283,7 +283,7 @@ func TestMoveDraftsAnOrder(t *testing.T) {
 func TestDecisionsSyncToTheStoreAndApply(t *testing.T) {
 	h := start(t, brainstorm)
 	first := h.file().Sections[2].Board.Items[0].ID
-	code, res := h.api("PUT", "/_/decisions", decisionsRequest{Path: "rebuild", Picked: []string{first, "not-an-item"}, Notes: map[string]string{first: "keep it", "ghost": "x"}})
+	code, res := h.api("PUT", "/_/decisions", decisionsRequest{Path: "storms", Picked: []string{first, "not-an-item"}, Notes: map[string]string{first: "keep it", "ghost": "x"}})
 	if code != 200 || !res.OK {
 		t.Fatalf("put decisions: %d %+v", code, res)
 	}
@@ -295,11 +295,11 @@ func TestDecisionsSyncToTheStoreAndApply(t *testing.T) {
 		t.Error("syncing decisions must not touch the file")
 	}
 	code, res = h.api("POST", "/_/decisions/apply", nil)
-	if code != 200 || !strings.Contains(res.Reply, "rebuild, 1.") {
+	if code != 200 || !strings.Contains(res.Reply, "storms, 1.") {
 		t.Fatalf("apply: %d %+v", code, res)
 	}
 	d := h.file().Decisions
-	if d == nil || d.Path != "rebuild" || strings.Join(d.Picked, ",") != first || d.Notes[first] != "keep it" || len(d.Notes) != 1 {
+	if d == nil || d.Path != "storms" || strings.Join(d.Picked, ",") != first || d.Notes[first] != "keep it" || len(d.Notes) != 1 {
 		t.Errorf("file decisions: %+v", d)
 	}
 }

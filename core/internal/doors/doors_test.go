@@ -65,7 +65,7 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	dir := filepath.Dir(model)
 
 	// Apply a reply line: the model gains decisions and a decisions document is written.
-	env, code := run(t, "decisions", "apply", model, "--reply", "rebuild, 1, 3. Notes: 3: keep the blue accent.", "--decisions", filepath.Join(dir, "moves.decisions.md"))
+	env, code := run(t, "decisions", "apply", model, "--reply", "storms, 1, 3. Notes: 3: keep the blue accent.", "--decisions", filepath.Join(dir, "moves.decisions.md"))
 	if code != 0 || env.Outcome != OutcomeOK {
 		t.Fatalf("apply failed: %d %+v", code, env)
 	}
@@ -73,7 +73,7 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(md), "Reply: rebuild, 1, 3. Notes: 3: keep the blue accent.") {
+	if !strings.Contains(string(md), "Reply: storms, 1, 3. Notes: 3: keep the blue accent.") {
 		t.Errorf("decisions document lacks the reply line:\n%s", md)
 	}
 
@@ -110,7 +110,7 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(raw, &result); err != nil {
 		t.Fatal(err)
 	}
-	if result.Decisions.Path != "rebuild" || strings.Join(result.Decisions.Picked, ",") != "storm-rebook,car-waitlist" || result.Decisions.Notes["car-waitlist"] != "keep the blue accent" {
+	if result.Decisions.Path != "storms" || strings.Join(result.Decisions.Picked, ",") != "storm-rebook,car-waitlist" || result.Decisions.Notes["car-waitlist"] != "keep the blue accent" {
 		t.Errorf("read back %+v", result.Decisions)
 	}
 
@@ -125,7 +125,7 @@ func TestDecisionsRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(raw, &result); err != nil {
 		t.Fatal(err)
 	}
-	if result.Decisions.Reply != "rebuild, 1, 3. Notes: 3: keep the blue accent." {
+	if result.Decisions.Reply != "storms, 1, 3. Notes: 3: keep the blue accent." {
 		t.Errorf("reply after file apply: %q", result.Decisions.Reply)
 	}
 }
@@ -480,5 +480,53 @@ func TestTypesMatchTheReactPackage(t *testing.T) {
 	}
 	if data, err := os.ReadFile(path); err != nil || string(data) != string(want) {
 		t.Errorf("written types differ: %v", err)
+	}
+}
+
+func TestVerdictDecisionsForEveryVerdictKind(t *testing.T) {
+	for kind, c := range map[string]struct{ reply, want string }{
+		"plan":     {"go 1; revise 2. Notes: 2: split it.", "go 1; revise 2. Notes: 2: split it."},
+		"review":   {"rework, 1; later 2", "rework, fix 1; later 2."},
+		"incident": {"do all", "do all."},
+		"release":  {"hold, rerun 1-2", "hold, rerun all."},
+	} {
+		dir := t.TempDir()
+		if env, code := run(t, "init", kind, "--out", dir, "--title", "Starter"); code != 0 {
+			t.Fatalf("%s init: %+v", kind, env)
+		}
+		model := filepath.Join(dir, "starter.dossier.json")
+		env, code := run(t, "decisions", "apply", model, "--reply", c.reply, "--decisions", filepath.Join(dir, "starter.decisions.md"))
+		if code != 0 {
+			t.Errorf("%s apply: %+v %+v", kind, env, env.Error)
+			continue
+		}
+		env, _ = run(t, "decisions", "read", model)
+		raw, _ := json.Marshal(env.Result)
+		var result struct {
+			Decisions decisions.Document `json:"decisions"`
+		}
+		if err := json.Unmarshal(raw, &result); err != nil {
+			t.Fatal(err)
+		}
+		if result.Decisions.Reply != c.want || result.Decisions.Kind != kind || len(result.Decisions.Verdicts) == 0 || len(result.Decisions.Picked) != 0 {
+			t.Errorf("%s read back %+v", kind, result.Decisions)
+		}
+		if env, code := run(t, "validate", model); code != 0 {
+			t.Errorf("%s: the decided model validates: %+v", kind, env)
+		}
+		md, _ := os.ReadFile(filepath.Join(dir, "starter.decisions.md"))
+		if !strings.Contains(string(md), "Reply: "+c.want) {
+			t.Errorf("%s decisions document:\n%s", kind, md)
+		}
+	}
+	dir := t.TempDir()
+	run(t, "init", "brief", "--out", dir, "--title", "Starter")
+	if env, code := run(t, "decisions", "read", filepath.Join(dir, "starter.dossier.json")); code != 1 || env.Error == nil || env.Error.Code != "nothing-to-decide" {
+		t.Errorf("a brief has nothing to decide: %+v", env)
+	}
+	model := copyExample(t)
+	env, code := run(t, "decisions", "apply", model, "--reply", "fix 1")
+	if code != 1 || env.Error == nil || !strings.Contains(env.Error.Message, `unexpected word "fix"; write the choice (storms or midweeks), then numbers to pick`) {
+		t.Errorf("a pick kind refuses verdicts and names the way forward: %+v", env.Error)
 	}
 }

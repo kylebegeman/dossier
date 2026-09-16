@@ -432,8 +432,9 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
-	if d, ok := knownDecisions(doc, stored); ok {
-		if problems := decisions.Apply(doc, d); len(problems) > 0 {
+	rules := snap.loaded.Kind.Rules(doc)
+	if d, ok := knownDecisions(doc, stored, rules); ok {
+		if problems := decisions.Apply(doc, d, rules); len(problems) > 0 {
 			s.log.Warn("stored decisions do not fit the model", "problems", problems)
 		}
 	}
@@ -457,13 +458,19 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 
 // knownDecisions keeps the stored decisions that still name numbered items,
 // with picks in item order. ok is false when nothing is stored.
-func knownDecisions(doc *model.Document, stored store.Decisions) (decisions.Document, bool) {
-	items := decisions.Items(doc)
+func knownDecisions(doc *model.Document, stored store.Decisions, rules decisions.Rules) (decisions.Document, bool) {
+	items := decisions.Items(doc, rules)
 	number := make(map[string]int, len(items))
 	for _, it := range items {
 		number[it.ID] = it.N
 	}
-	d := decisions.Document{Path: stored.Path, Notes: map[string]string{}}
+	d := decisions.Document{Notes: map[string]string{}}
+	if _, ok := rules.Option(stored.Path); ok {
+		d.Path = stored.Path
+	}
+	if rules.Mode != decisions.ModePick {
+		stored.Picked = nil
+	}
 	for _, id := range stored.Picked {
 		if number[id] > 0 {
 			d.Picked = append(d.Picked, id)

@@ -59,6 +59,7 @@
         }
       ]
     },
+    "guard": {"choice": "ship", "when": {"status": ["failed"]}, "required": true, "unless": "waive"},
     "title": "How to decide",
     "markdown": "Choose ship or hold, then waive or rerun any gate that did not pass.",
     "example": "ship, waive 6. Notes: 6: known arm64 flake."

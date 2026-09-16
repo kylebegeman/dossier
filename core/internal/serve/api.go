@@ -384,7 +384,7 @@ func (s *Server) putDecisions(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	d, _ := knownDecisions(l.Doc, store.Decisions{Path: strings.TrimSpace(req.Path), Picked: req.Picked, Notes: req.Notes})
+	d, _ := knownDecisions(l.Doc, store.Decisions{Path: strings.TrimSpace(req.Path), Picked: req.Picked, Notes: req.Notes}, l.Kind.Rules(l.Doc))
 	if err := s.store.ReplaceDecisions(r.Context(), docID, store.Decisions{Path: d.Path, Picked: d.Picked, Notes: d.Notes}); err != nil {
 		s.fail(w, err)
 		return
@@ -412,8 +412,9 @@ func (s *Server) applyDecisions(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
-	d, _ := knownDecisions(fresh.Doc, stored)
-	if problems := decisions.Apply(fresh.Doc, d); len(problems) > 0 {
+	rules := fresh.Kind.Rules(fresh.Doc)
+	d, _ := knownDecisions(fresh.Doc, stored, rules)
+	if problems := decisions.Apply(fresh.Doc, d, rules); len(problems) > 0 {
 		writeJSON(w, http.StatusUnprocessableEntity, response{Error: "the decisions do not fit the model", Findings: problems})
 		return
 	}
@@ -427,7 +428,7 @@ func (s *Server) applyDecisions(w http.ResponseWriter, r *http.Request) {
 	}
 	s.refresh()
 	s.hub.publish("reload", "decisions")
-	written := decisions.FromModel(fresh.Doc)
+	written := decisions.FromModel(fresh.Doc, rules)
 	writeJSON(w, http.StatusOK, response{OK: true, Written: s.cfg.Model, Reply: written.Reply})
 }
 
