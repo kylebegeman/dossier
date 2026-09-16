@@ -8,17 +8,23 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"dossier/internal/doors"
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
 	args := os.Args[1:]
 	if len(args) > 0 && (args[0] == "help" || args[0] == "-h" || args[0] == "--help") {
 		_, _ = fmt.Fprint(os.Stdout, doors.Usage())
 		os.Exit(0)
 	}
-	os.Exit(doors.Run(ctx, args, os.Stdin, os.Stdout, os.Stderr))
+	if len(args) > 0 && (args[0] == "version" || args[0] == "--version") {
+		_, _ = fmt.Fprintf(os.Stdout, "dossier %s\n", doors.Version)
+		os.Exit(0)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	code := doors.Run(ctx, args, os.Stdin, os.Stdout, os.Stderr)
+	stop()
+	os.Exit(code)
 }

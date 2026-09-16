@@ -14,8 +14,9 @@ import (
 
 func init() { register("mcp", mcpDoor) }
 
-// Version names the binary to MCP clients.
-const Version = "0.7.0"
+// Version is the binary's version. Release builds set it with
+// -ldflags "-X dossier/internal/doors.Version=0.7.0".
+var Version = "0.7.0-dev"
 
 // MCPResult is dossier.mcp-result/v1, returned when the server stops.
 type MCPResult struct {

@@ -13,11 +13,13 @@ func init() { register("describe", describeDoor) }
 // DescribeResult is dossier.describe-result/v1: the catalog and the kinds.
 type DescribeResult struct {
 	SchemaVersion string       `json:"schema_version"`
+	Version       string       `json:"version"`
 	Commands      []Command    `json:"commands"`
 	Kinds         []kinds.Kind `json:"kinds"`
 }
 
 func (r DescribeResult) human(w io.Writer) {
+	say(w, "dossier %s\n\n", r.Version)
 	sayln(w, "Commands")
 	for _, c := range r.Commands {
 		say(w, "  %-10s %s  [%s]\n", c.ID, c.Summary, strings.Join(c.Surfaces, ", "))
@@ -44,5 +46,5 @@ func describeDoor(_ context.Context, _ []string, _ io.Reader) Envelope {
 	if err != nil {
 		return errorEnvelope("describe", "kinds", err)
 	}
-	return Envelope{SchemaVersion: SchemaVersion, Command: "describe", Outcome: OutcomeOK, Result: DescribeResult{SchemaVersion: "dossier.describe-result/v1", Commands: c.Commands, Kinds: all}}
+	return Envelope{SchemaVersion: SchemaVersion, Command: "describe", Outcome: OutcomeOK, Result: DescribeResult{SchemaVersion: "dossier.describe-result/v1", Version: Version, Commands: c.Commands, Kinds: all}}
 }

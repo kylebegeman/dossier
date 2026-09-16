@@ -60,10 +60,11 @@ Pass `--json` to any command for the `dossier.result/v1` envelope: `outcome` is 
 | `dossier init KIND [--force] [--out OUT] [--slug SLUG] [--title TITLE]` | Write a starter model for a kind, with the kind's facets in order, ready to fill in. | `force`: Overwrite an existing file; `kind` (required): A kind id from describe, such as brainstorm or plan; `out`: Directory for the model file; default is the working directory; `slug`: File and anchor slug; default derives from the title; `title`: Document title; default names the kind |
 | `dossier validate FILES...` | Check model files against the schema, the structure rules, and their kind. | `files` (required): one or more model files |
 | `dossier build FILES... [--out OUT]` | Render model files to self-contained HTML beside each source or into --out. | `files` (required): one or more model files; `out`: Directory for the HTML output |
+| `dossier upgrade FILES... [--out OUT]` | Write 0.6 documents as 0.7 models, in place or into --out; 0.7 models are left alone. | `files` (required): one or more model files; `out`: Directory for the upgraded models; default replaces each source |
 | `dossier decisions read MODEL [--out OUT]` | Read a model's decisions as a decisions document, optionally writing it to a file. | `model` (required); `out`: Write the decisions document here, .md or .json |
 | `dossier decisions apply MODEL [--decisions DECISIONS] [--from FROM] [--out OUT] [--reply REPLY]` | Apply a reply line or a decisions document to a model and write the model back. | `decisions`: Also write the decisions document here; `from`: A decisions document, .md or .json; `model` (required); `out`: Write the updated model here instead of in place; `reply`: A reply line such as "rebuild, 1, 3. Notes: 3: keep blue." |
 
-`dossier mcp` serves the same commands as MCP tools over stdio, named `build`, `decisions_apply`, `decisions_read`, `describe`, `init`, `validate`, with the parameters above as their input schema and the same envelope as their answer.
+`dossier mcp` serves the same commands as MCP tools over stdio, named `build`, `decisions_apply`, `decisions_read`, `describe`, `init`, `upgrade`, `validate`, with the parameters above as their input schema and the same envelope as their answer.
 
 ## A starter model
 

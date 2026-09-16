@@ -121,6 +121,67 @@
       ]
     },
     {
+      "id": "render",
+      "summary": "Render one model, or - for stdin, and answer with the HTML instead of writing a file.",
+      "mutation": "read-only",
+      "surfaces": [
+        "cli"
+      ],
+      "positional": [
+        "model"
+      ],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model"
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "A model file, or - to read the model from stdin."
+          },
+          "base": {
+            "type": "string",
+            "description": "Directory that relative figure paths resolve against."
+          }
+        }
+      }
+    },
+    {
+      "id": "upgrade",
+      "summary": "Write 0.6 documents as 0.7 models, in place or into --out; 0.7 models are left alone.",
+      "mutation": "writes-files",
+      "surfaces": [
+        "cli",
+        "mcp",
+        "skill"
+      ],
+      "positional": [
+        "files"
+      ],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "files"
+        ],
+        "properties": {
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "out": {
+            "type": "string",
+            "description": "Directory for the upgraded models; default replaces each source."
+          }
+        }
+      }
+    },
+    {
       "id": "decisions.read",
       "summary": "Read a model's decisions as a decisions document, optionally writing it to a file.",
       "mutation": "read-only",
