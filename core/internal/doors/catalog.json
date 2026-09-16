@@ -189,6 +189,19 @@
       "positional": [
         "model"
       ]
+    },
+    {
+      "id": "mcp",
+      "summary": "Serve the mcp-surfaced commands as tools over stdio for an agent client.",
+      "mutation": "serves",
+      "surfaces": [
+        "cli"
+      ],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
     }
   ]
 }
