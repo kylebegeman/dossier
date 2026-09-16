@@ -3,7 +3,7 @@
 A typed React wrapper around the artifact Dossier renders. Dossier turns one
 JSON model into one self-contained HTML file; this package renders that model
 on the server with the `dossier` binary and shows the artifact in an isolated
-frame that sizes itself and reports the reader's picks.
+frame that sizes itself and reports the reader's decisions.
 
 ```sh
 npm install @kylebegeman/dossier-react @kylebegeman/dossier
@@ -42,8 +42,8 @@ export function Moves({ html }: { html: string }) {
 | Export | What it does |
 | --- | --- |
 | `renderDossier(model, options)` from `/server` | Runs `dossier render` and resolves `{ html, slug, warnings }`. A model with findings rejects with a `DossierRenderError` carrying them. |
-| `DossierFrame` | Shows the HTML in a sandboxed frame that grows to the page's height. `onDecisions` receives `{ path, picked, notes, reply }` on load and on every change. |
-| `DEFAULT_SANDBOX` | The frame's sandbox. Its origin is opaque, so picks last for the session; add `allow-same-origin` for trusted artifacts whose picks should persist. |
+| `DossierFrame` | Shows the HTML in a sandboxed frame that grows to the page's height. `onDecisions` receives `{ path, picked, verdicts, notes, reply }` on load and on every change: the chosen option, picks or verdicts by item id, notes, and the reply line. |
+| `DEFAULT_SANDBOX` | The frame's sandbox. Its origin is opaque, so decisions last for the session; add `allow-same-origin` for trusted artifacts whose decisions should persist. |
 | `readerMessage(data)` | Validates a message the reader posts, for hosts that frame artifacts themselves. |
 | `DossierModel`, `DossierResult`, and the rest | Types generated from Dossier's JSON Schemas. |
 

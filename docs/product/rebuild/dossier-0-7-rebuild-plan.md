@@ -45,8 +45,12 @@ concepts; kore's `docs/conventions.md` is the stack rulebook; corbelo's
 - `github.com/santhosh-tekuri/jsonschema/v6` for schema validation.
 - `modernc.org/sqlite`, `pressly/goose`, `sqlc` for serve and the future server.
 - The official Go MCP SDK for the `mcp` door, stdio transport.
-- Diagrams: Graphviz through a wasm binding when adopted; Mermaid stays a
-  browser-side optional. Math is deferred (no mature pure-Go renderer).
+- Diagrams: Graphviz compiled to wasm through `goccy/go-graphviz`, vendored
+  with a patch that loads it lazily and caches the compiled module; Mermaid
+  flowcharts translate to DOT at build time. Math is deferred (no mature
+  pure-Go renderer).
+- The studio's Model JSON editor is a vendored CodeMirror 6 bundle, built
+  outside the Go build from a lockfile and pinned by hash.
 - Tools pinned with `go.mod` `tool` directives. `make check` is the one verdict.
 
 Not adopted from kore: the composer, registry, plugin machinery, and
@@ -55,6 +59,9 @@ convention reference and, when self-hosting needs auth or teams, a source of
 copy-in capabilities.
 
 ## Layout of `core/`
+
+The layout as planned. The module as built, with the packages M7 added, is
+mapped in `core/AGENTS.md`.
 
 ```
 core/
@@ -76,6 +83,9 @@ core/
 ```
 
 ## The model: five concepts
+
+The shape as planned. The model as built is `core/internal/schema/dossier.model.schema.json`,
+and `core/examples` shows it for every kind.
 
 ```json
 {
@@ -118,7 +128,7 @@ aliases.
 `brainstorm`, `plan`, `review`, `release`, `incident`, `brief`. Each is a
 JSON preset under 40 lines: sections expected, item facets in order, numbered
 or not, summary fields, verdict options, pick text. Custom kinds load from a
-directory or a pack.
+directory.
 
 ## The artifact
 
@@ -162,8 +172,11 @@ do not exist as separate names.
 ## Serve and the server
 
 `dossier serve` starts a stdlib server on loopback, watches the model file,
-rebuilds on change, and injects the studio bundle: in-place text editing, item
-reorder, evidence attachment, accent preview, CodeMirror. Decisions and drafts
+rebuilds on change, and injects the studio bundle: in-place text editing,
+facets added and removed by name, item reorder, decisions kept in step across
+tabs, reply import, an accent preview that can be kept in the model, and
+CodeMirror for the model's JSON. Evidence lives in facets, so it needs no
+attachment feature of its own. Decisions and drafts
 persist in a SQLite file beside the model, through goose migrations and sqlc
 queries, so the same store serves a hosted deployment later. Sessions, auth,
 and teams arrive as kore capabilities when self-hosting is real work, not
@@ -171,9 +184,12 @@ before.
 
 ## Parity and cutover
 
-The eight examples plus the process scope and release dossiers are the
-fixtures. Each is aliased into the new model, built through the new core, and
-compared against a golden output committed under `testdata/`. Cutover
+The eight 0.6 examples plus the process scope and release dossiers are the
+import fixtures. Each is aliased into the new model, upgraded strictly onto
+its kind's vocabulary, and compared against a golden under
+`core/testdata/legacy`. The 0.7 showcase in `core/examples`, seven documents
+covering every kind, builds with no warnings against HTML and Markdown goldens
+under `core/testdata/examples`. Cutover
 criteria: every fixture builds with zero warnings other than alias
 deprecations, budgets pass, the React package wraps the new output, Homebrew
 and npm ship the binary, and the README opens with one prompt and one
@@ -201,8 +217,9 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - Decided in M4: diagrams emit DOT or Mermaid source under a format label until a wasm Graphviz is adopted as its own decision; `math` imports as a latex code part; the permissive presets get their facet vocabularies in M5 with the skill.
 - M5 done: `init` writes a validated starter for any kind; `dossier.result/v1` is an embedded schema checked on every envelope the door tests produce; catalog entries carry their positional parameters; `mcp` serves the mcp-surfaced commands as tools over stdio with the official Go SDK, tested in memory and against the built binary; `skill` generates `core/skill/SKILL.md` from the catalog and the presets, with a drift test and a `make generate` hook.
 - M6 done except deleting the 0.6 tree and publishing, which wait for Kyle: `serve` with the studio island over a kore-style SQLite store (goose, sqlc); `upgrade`, `render`, and `types` doors; the React wrapper in `packages/react` with generated model types; reproducible release builds with npm, Homebrew, and archive dry runs in `make dist-check`; the README with one prompt and one screenshot; `manual-qa-0-7.md` and `cutover.md` beside this plan.
-- Deferred in M6: CodeMirror in the studio (the Model JSON editor is a textarea with server validation, because CodeMirror would mean vendoring a bundle into the Go module), and evidence attachment (0.7 has no evidence concept; facets carry it and the studio edits them).
-- Next: cutover per `cutover.md` when Kyle says go.
+- Deferred in M6, then settled in M7: CodeMirror is vendored as one bundle, and evidence stays in facets, which the studio edits.
+- M7, the finishing plan, done. Kyle set the bar that nothing merges, pushes, or releases until the whole product is finished, and an audit against this plan and the 0.7 brainstorm found the gaps. Fourteen steps closed them, each committed with `make check` green: kind schema v1 and six designed kinds; custom kinds from a directory; verdicts, the document choice, and one reply grammar shared with the reader; verdict controls; search; the accent derived for both themes; the timeline part; diagrams as SVG through Graphviz wasm with Mermaid flowcharts translated; `build --md`; the studio's verdict sync, facets by name, reply import, and kept accent; CodeMirror; 0.6 imports onto the vocabularies with all 17 fixtures upgrading strictly; a seven-document showcase with goldens, the README, and screenshots; and these docs.
+- Next: cutover and publishing follow `cutover.md` and stay with Kyle.
 
 ## Content rules
 
