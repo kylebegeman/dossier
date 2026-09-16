@@ -323,6 +323,24 @@
           }
         }
       }
+    },
+    {
+      "id": "types",
+      "summary": "Print TypeScript declarations for the model and the result envelope, generated from the JSON Schemas, or write them with --write.",
+      "mutation": "read-only",
+      "surfaces": [
+        "cli"
+      ],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "write": {
+            "type": "string",
+            "description": "Write the declarations here instead of printing them."
+          }
+        }
+      }
     }
   ]
 }
