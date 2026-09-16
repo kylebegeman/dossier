@@ -275,3 +275,37 @@ func TestGoldenShowcase(t *testing.T) {
 		t.Errorf("showcase differs from golden; run with UPDATE_GOLDEN=1 after reviewing the change")
 	}
 }
+
+func TestStudioMarksEditableFieldsAndInjectsFirst(t *testing.T) {
+	doc, kind := loadExample(t, "dossier-0-7-brainstorm.dossier.json")
+	html, err := RenderWith(doc, kind, Options{Studio: &Studio{Inject: `<script id="studio-probe"></script>`}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(html)
+	for _, want := range []string{
+		`<h1 data-edit="/meta/title">`,
+		`<p class="lede" data-edit="/meta/lede">`,
+		`<h2 data-edit="/sections/thesis/title">`,
+		`<div class="part prose" data-edit="/sections/thesis/parts/0/markdown">`,
+		`<h3 data-edit="/items/shell-reset/title">`,
+		`<p class="one-line" data-edit="/items/shell-reset/summary">`,
+		`<dd data-edit="/items/shell-reset/facets/0/markdown">`,
+		`<b data-edit="/items/react-parity/title">`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("studio render lacks %q", want)
+		}
+	}
+	probe, model, reader := strings.Index(out, `id="studio-probe"`), strings.Index(out, `id="dossier-model"`), strings.LastIndex(out, "<script>\n")
+	if !(model < probe && probe < reader) {
+		t.Errorf("studio must be injected after the model island and before the reader: model=%d studio=%d reader=%d", model, probe, reader)
+	}
+	plain, err := Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(plain), "data-edit") || strings.Contains(string(plain), "studio-probe") {
+		t.Error("an artifact must carry no studio hooks")
+	}
+}

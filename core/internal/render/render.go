@@ -48,7 +48,19 @@ type Options struct {
 	// InlineFigures so relative image paths ship inside the artifact while the
 	// model island keeps the original path.
 	Figures map[string]string
+	// Studio is set only by the serve studio. Artifacts never carry it.
+	Studio *Studio
 }
+
+// Studio marks editable fields with data-edit targets and injects the
+// studio's HTML before the reader runtime, so the studio runs first.
+type Studio struct {
+	Inject string
+}
+
+// Stylesheet returns the embedded design tokens and component styles, for
+// pages the serve studio renders itself.
+func Stylesheet() string { return tokensCSS }
 
 // Page is the view model handed to the templ components.
 type Page struct {
@@ -70,14 +82,20 @@ type Page struct {
 	Fonts            bool
 	HasPick          bool
 	PickHTML         string
+	// Studio only: the injected studio and the edit targets of the masthead.
+	StudioHTML string
+	EditTitle  string
+	EditKicker string
+	EditLede   string
 }
 
 // SectionView is one section with its parts rendered.
 type SectionView struct {
-	ID    string
-	Title string
-	Parts []PartView
-	Board *BoardView
+	ID        string
+	Title     string
+	Parts     []PartView
+	Board     *BoardView
+	EditTitle string
 }
 
 // PartView is one rendered content part.
@@ -97,6 +115,7 @@ type PartView struct {
 	Caption string
 	Format  string
 	SVG     string
+	Edit    string
 }
 
 // BoardView is a board with numbered or row items.
@@ -120,8 +139,10 @@ type ItemView struct {
 	ImpactMax int
 	DependsOn []DepView
 	Facets    []FacetView
-	Picked    bool
-	Note      string
+	Picked      bool
+	Note        string
+	EditTitle   string
+	EditSummary string
 }
 
 // DepView links a dependency by number.
@@ -136,6 +157,7 @@ type FacetView struct {
 	Label string
 	HTML  string
 	Risk  bool
+	Edit  string
 }
 
 // TocGroup is one labeled group in the contents column.
@@ -191,6 +213,11 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	page.ModelScriptHTML = "<script type=\"application/json\" id=\"dossier-model\">" + modelJSON + "</script>"
 	page.ReaderScriptHTML = "<script>\n" + readerJS + "</script>"
 	page.TitleHTML = titleHTML(doc.Meta.Title, doc.Meta.Emphasis)
+	studio := opts.Studio != nil
+	if studio {
+		page.StudioHTML = opts.Studio.Inject
+		page.EditTitle, page.EditKicker, page.EditLede = "/meta/title", "/meta/kicker", "/meta/lede"
+	}
 
 	// Number items across every article board, in document order.
 	numbers := map[string]int{}
@@ -221,10 +248,16 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	var rowsCount int
 	for _, s := range doc.Sections {
 		sv := SectionView{ID: s.ID, Title: s.Title}
-		for _, p := range s.Parts {
+		if studio {
+			sv.EditTitle = "/sections/" + s.ID + "/title"
+		}
+		for pi, p := range s.Parts {
 			pv, err := renderPart(p, opts)
 			if err != nil {
 				return nil, fmt.Errorf("section %s: %w", s.ID, err)
+			}
+			if studio && (p.Type == "prose" || p.Type == "callout") {
+				pv.Edit = fmt.Sprintf("/sections/%s/parts/%d/markdown", s.ID, pi)
 			}
 			sv.Parts = append(sv.Parts, pv)
 		}
@@ -232,15 +265,22 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 			bv := &BoardView{Summary: s.Board.Summary, Rows: s.Board.Layout == "rows", Columns: kind.SummaryTable.Columns, Legend: kind.SummaryTable.Legend}
 			for _, it := range s.Board.Items {
 				iv := ItemView{ID: it.ID, Number: numbers[it.ID], Title: it.Title, Summary: it.Summary, Size: it.Size, Effort: it.Effort, Impact: it.Impact, ImpactMax: impactMax, Picked: pickedIDs[it.ID], Note: notes[it.ID]}
+				if studio {
+					iv.EditTitle, iv.EditSummary = "/items/"+it.ID+"/title", "/items/"+it.ID+"/summary"
+				}
 				for _, dep := range it.DependsOn {
 					iv.DependsOn = append(iv.DependsOn, DepView{ID: dep, Number: numbers[dep], Title: titles[dep]})
 				}
-				for _, f := range it.Facets {
+				for fi, f := range it.Facets {
 					h, err := markdown(f.Markdown)
 					if err != nil {
 						return nil, fmt.Errorf("item %s facet %q: %w", it.ID, f.Label, err)
 					}
-					iv.Facets = append(iv.Facets, FacetView{Label: f.Label, HTML: h, Risk: kind.IsRisk(f.Label)})
+					fv := FacetView{Label: f.Label, HTML: h, Risk: kind.IsRisk(f.Label)}
+					if studio {
+						fv.Edit = fmt.Sprintf("/items/%s/facets/%d/markdown", it.ID, fi)
+					}
+					iv.Facets = append(iv.Facets, fv)
 				}
 				bv.Items = append(bv.Items, iv)
 				if bv.Rows {
