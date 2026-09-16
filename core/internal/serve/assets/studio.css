@@ -41,6 +41,8 @@ textarea.studio-input { min-height: 132px; resize: vertical; font-family: var(--
 .studio-dialog header b { margin-right: auto; font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; }
 .studio-dialog textarea { width: 100%; height: 100%; padding: 12px 14px; border: 0; resize: none; background: var(--paper); color: var(--ink); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; tab-size: 2; }
 .studio-dialog textarea:focus-visible { outline: none; }
+.studio-code { min-height: 0; overflow: hidden; background: var(--paper); }
+.studio-code .cm-editor { height: 100%; }
 .studio-dialog footer { max-height: 32vh; overflow: auto; padding: 10px 12px; border-top: 1px solid var(--line); display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .studio-dialog footer.ok { color: var(--teal); }
 .studio-findings { max-width: 880px; margin: 0 auto; padding-block: 48px 120px; display: grid; gap: 12px; }

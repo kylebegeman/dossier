@@ -295,40 +295,67 @@
   }
   if (recall("dossier-studio:editing") === "1") setEditing(true);
 
-  /* the model as JSON, validated by the server before it is written */
+  /* the model as JSON, validated by the server before it is written. The
+     CodeMirror editor loads on first use; a plain textarea stands in when it
+     cannot. */
+  let editorLoad = null;
+  function loadEditor() {
+    if (window.DossierEditor) return Promise.resolve(window.DossierEditor);
+    if (!editorLoad) {
+      editorLoad = new Promise((resolve) => {
+        const script = h("script", { src: "/_/vendor/codemirror.js?v=" + cfg.editor });
+        script.onload = () => resolve(window.DossierEditor || null);
+        script.onerror = () => { editorLoad = null; resolve(null); };
+        document.head.append(script);
+      });
+    }
+    return editorLoad;
+  }
   async function openModel() {
     const res = await api("GET", "/_/model");
     if (!res.ok) { report("Cannot read the model", res.data); return; }
-    const area = h("textarea", { spellcheck: "false", "aria-label": "Model JSON" });
-    area.value = typeof res.data === "string" ? res.data : "";
+    const text = typeof res.data === "string" ? res.data : "";
+    const host = h("div", { class: "studio-code" });
     const foot = h("footer", { role: "status", "aria-live": "polite" }, "Validate checks the text; Save writes the file only when it validates. Cmd or Ctrl+S saves.");
     const dialog = h("dialog", { class: "studio-dialog", "aria-label": "Model JSON" },
       h("div", null,
         h("header", null, h("b", { title: cfg.model }, cfg.model.split(/[\\/]/).pop()), button("Validate", validate), button("Save", save), button("Close", () => dialog.close())),
-        area, foot));
+        host, foot));
+    let editor = null;
+    const area = h("textarea", { spellcheck: "false", "aria-label": "Model JSON" });
+    const value = () => (editor ? editor.value : area.value);
     function show(title, data, good) {
       foot.className = good ? "ok" : "";
       const warnings = ((data && data.warnings) || []).length;
       foot.replaceChildren(h("span", null, title + (warnings ? " (" + warnings + " warning" + (warnings === 1 ? "" : "s") + ")" : "")), problemsList(data) || "");
+      if (editor) editor.showFindings((data && data.findings) || []);
     }
     async function validate() {
-      const r = await api("POST", "/_/validate", area.value, true);
+      const r = await api("POST", "/_/validate", value(), true);
       if (r.data && r.data.outcome === "ok") show("Valid", r.data, true);
       else show((r.data && r.data.error) || "The model has findings", r.data, false);
     }
     async function save() {
-      const r = await api("PUT", "/_/model", area.value, true);
+      const r = await api("PUT", "/_/model", value(), true);
       if (r.ok) { dialog.close(); toast("Model saved"); }
       else show((r.data && r.data.error) || "Not saved", r.data, false);
     }
+    dialog.addEventListener("close", () => { if (editor) editor.destroy(); dialog.remove(); settle(); });
+    document.body.append(dialog);
+    busy = true;
+    dialog.showModal();
+    const lib = await loadEditor();
+    if (lib && dialog.open) {
+      editor = lib.create(host, text, { onSave: save });
+      editor.focus();
+      return;
+    }
+    area.value = text;
     area.addEventListener("keydown", (e) => {
       if (e.key === "Tab") { e.preventDefault(); area.setRangeText("  ", area.selectionStart, area.selectionEnd, "end"); }
       else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
     });
-    dialog.addEventListener("close", () => { dialog.remove(); settle(); });
-    document.body.append(dialog);
-    busy = true;
-    dialog.showModal();
+    host.append(area);
     area.focus();
   }
 

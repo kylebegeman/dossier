@@ -191,6 +191,7 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 	mux.HandleFunc("PUT /_/model", s.guard(true, s.putModel))
 	mux.HandleFunc("POST /_/validate", s.guard(true, s.validate))
 	mux.HandleFunc("PUT /_/settings", s.guard(true, s.putSettings))
+	mux.HandleFunc("GET /_/vendor/codemirror.js", s.guard(false, s.editor))
 	s.http = &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -386,6 +387,8 @@ type studioConfig struct {
 	Decides    bool        `json:"decides"`
 	// ModelAccent is the accent the model file already keeps.
 	ModelAccent string `json:"modelAccent,omitempty"`
+	// Editor versions the Model JSON editor's URL.
+	Editor string `json:"editor"`
 }
 
 type facetWord struct {
@@ -396,7 +399,7 @@ type facetWord struct {
 }
 
 func (s *Server) baseConfig() studioConfig {
-	return studioConfig{Token: s.token, Version: s.cfg.Version, Model: s.cfg.Model, Store: s.cfg.Store,
+	return studioConfig{Token: s.token, Version: s.cfg.Version, Model: s.cfg.Model, Store: s.cfg.Store, Editor: EditorHash()[:12],
 		Drafts: []string{}, Conflicts: []string{}, Orders: []string{}, Reshaped: []string{}, Vocabulary: []facetWord{}, Warnings: []model.Problem{}, Findings: []model.Problem{}}
 }
 
