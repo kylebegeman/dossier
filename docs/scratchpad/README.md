@@ -35,9 +35,13 @@ pills · full status-chip color map · summary-card tonal grounds · process ver
 tint) · trust-claim status tints · tighter mono detail grids · **release-checklist collision bug fixed** ·
 TOC active pill (replaces left-rail indicator).
 
-## Deferred — needs generator MARKUP changes (do at implementation, not CSS)
-- Chart axes, gridlines, and per-bar value labels (chart SVG renderer in `generate.mjs`).
-- Mono row-ID scan anchors (e.g. `ITEM-014`) on review/process rows.
-- KPI delta lines (needs a new optional `stat.delta` schema field).
-- `prose` `-` bullet lists render inline (prose markdown supports paragraphs + inline only).
-- Optional: flow/timeline continuous connector rail.
+## Landed after the CSS pass (generator markup changes)
+All of the items deferred from the CSS pass shipped in later 0.6.x releases: chart axes,
+gridlines, and value labels in the SVG chart renderer; mono row-ID anchors on review and process
+rows; `stat.delta` KPI delta lines; and real `-` bullet lists in `prose`. The one optional idea
+still open is a continuous connector rail for `timeline` (`flow` already draws one).
+
+## Status
+This lab produced the Console Slate skin that ships as `--skin console-slate`. It is kept as a
+reference for how the skin was derived. The 0.7 visual direction is being planned separately in
+`dossier-0-7-brainstorm.html` in this folder.

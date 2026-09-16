@@ -63,12 +63,20 @@
         {
           "value": "43",
           "label": "Block types",
-          "delta": { "value": "+1", "label": "citation block", "tone": "up" }
+          "delta": {
+            "value": "+1",
+            "label": "citation block",
+            "tone": "up"
+          }
         },
         {
           "value": "0",
           "label": "Runtime deps",
-          "delta": { "value": "view-time", "label": "network free", "tone": "good" }
+          "delta": {
+            "value": "view-time",
+            "label": "network free",
+            "tone": "good"
+          }
         },
         {
           "value": "2",
@@ -78,7 +86,10 @@
         {
           "value": "100%",
           "label": "Self-contained",
-          "delta": { "value": "HTML + source", "tone": "neutral" }
+          "delta": {
+            "value": "HTML + source",
+            "tone": "neutral"
+          }
         }
       ]
     },
@@ -151,6 +162,16 @@
               "label": "0.5",
               "body": "Process workflows, publishing, embed output, and live editor hooks.",
               "status": "done"
+            },
+            {
+              "label": "0.6",
+              "body": "Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution.",
+              "status": "done"
+            },
+            {
+              "label": "0.7",
+              "body": "Leaner reader shell, one export contract, fewer block families, and a new default theme.",
+              "status": "planned"
             }
           ]
         },
@@ -574,8 +595,12 @@
               "claim": "Automated tests pass for the process block family.",
               "status": "verified",
               "confidence": "high",
-              "sources": ["npm-test"],
-              "evidence": ["test-suite"],
+              "sources": [
+                "npm-test"
+              ],
+              "evidence": [
+                "test-suite"
+              ],
               "notes": "Agents can read this with `dossier_read_trust`."
             },
             {
@@ -583,8 +608,12 @@
               "claim": "The feature set is ready for public manual QA.",
               "status": "partial",
               "confidence": "medium",
-              "sources": ["manual-qa"],
-              "evidence": ["build-log"],
+              "sources": [
+                "manual-qa"
+              ],
+              "evidence": [
+                "build-log"
+              ],
               "notes": "Manual QA still needs a human browser pass before broad announcement."
             }
           ]
@@ -605,7 +634,9 @@
               "title": "Missing evidence link",
               "severity": "medium",
               "body": "Attach the verification run to the work item before closeout.",
-              "files": ["src/starters/review.dossier.json"],
+              "files": [
+                "src/starters/review.dossier.json"
+              ],
               "recommendation": "Link the finding to a `verification-run` id."
             }
           ]
@@ -618,8 +649,14 @@
               "id": "thread-agent-access",
               "subject": "Agent access",
               "comments": [
-                { "author": "Kyle", "body": "Make the packet readable without DOM scraping." },
-                { "author": "Agent", "body": "Use MCP readback and versioned export packets." }
+                {
+                  "author": "Kyle",
+                  "body": "Make the packet readable without DOM scraping."
+                },
+                {
+                  "author": "Agent",
+                  "body": "Use MCP readback and versioned export packets."
+                }
               ]
             }
           ]
@@ -705,8 +742,12 @@
             "schema/packets/trust.schema.json",
             "mcp/server.mjs"
           ],
-          "commands": ["npm test"],
-          "followUps": ["Run the public manual QA guide before broad announcement."]
+          "commands": [
+            "npm test"
+          ],
+          "followUps": [
+            "Run the public manual QA guide before broad announcement."
+          ]
         }
       ]
     },
@@ -735,7 +776,9 @@
         {
           "id": "dossier-readme",
           "title": "Dossier README",
-          "authors": ["Kyle Begeman"],
+          "authors": [
+            "Kyle Begeman"
+          ],
           "year": "2026",
           "source": "GitHub",
           "url": "https://github.com/kylebegeman/dossier",

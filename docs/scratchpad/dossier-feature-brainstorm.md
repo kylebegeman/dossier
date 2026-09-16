@@ -1,8 +1,8 @@
 ---
 title: "Dossier, feature & improvement brainstorm"
 slug: "dossier-feature-brainstorm"
-status: "review"
-updated: "2026-06-26"
+status: "closed"
+updated: "2026-09-15"
 ---
 # Where Dossier goes next
 
@@ -301,4 +301,4 @@ If you only chase a few, chase these.
 > **Quick wins (low effort, noticeable).** Copy-for-LLM controls (M6), kind-specific starters (M7), $schema editor autocomplete (M8), accessibility + shortcuts polish (M11), and authoring lint (M3). Each is a day or less and immediately felt.
 
 
-> **Next.** Tick the items worth pursuing, add notes on any you want to discuss, and export the decisions, then we turn the selected set into a build plan.
+> **Closed.** This board was never triaged in place because the work went straight into releases. As of 0.6.7 every minor and major item here has shipped: serve and watch, schema validation, lint, print and PDF, figure and math blocks, copy-for-agent controls, kind starters, $schema autocomplete, footnotes and citations, accessibility polish, tests and CI, the MCP server, catalog and publish, the block editor, plugins, chart blocks, structural diff, the trust layer, multi-format export, and Theme Studio. Kept as a record of the 0.5 to 0.6 arc.

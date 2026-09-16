@@ -1,0 +1,23 @@
+# Dossier core: tools are pinned in go.mod (tool directives).
+
+.PHONY: generate check build test clean
+
+generate:
+	go tool templ generate
+
+check:
+	@sh scripts/check-generated.sh
+	go vet ./...
+	go tool staticcheck ./...
+	go tool errcheck -ignoregenerated ./...
+	go test -race ./...
+	CGO_ENABLED=0 go build -o /dev/null ./...
+
+test:
+	go test ./...
+
+build: generate
+	CGO_ENABLED=0 go build -o bin/dossier ./cmd/dossier
+
+clean:
+	rm -rf bin
