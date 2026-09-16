@@ -103,6 +103,16 @@ type Part struct {
 	Format   string     `json:"format,omitempty"`
 	Variant  string     `json:"variant,omitempty"`
 	Data     []Point    `json:"data,omitempty"`
+	Events   []Event    `json:"events,omitempty"`
+}
+
+// Event is one moment on a timeline: when, what happened, optional detail in
+// Markdown, and a tone for its dot.
+type Event struct {
+	At       string `json:"at"`
+	Title    string `json:"title"`
+	Markdown string `json:"markdown,omitempty"`
+	Tone     string `json:"tone,omitempty"`
 }
 
 // Point is one labeled value in a chart part.
@@ -170,7 +180,7 @@ type Problem struct {
 func (p Problem) String() string { return p.Path + ": " + p.Message }
 
 // PartTypes lists the content part types the renderer understands.
-var PartTypes = []string{"prose", "spec", "table", "callout", "code", "figure", "diagram", "chart"}
+var PartTypes = []string{"prose", "spec", "table", "callout", "code", "figure", "diagram", "chart", "timeline"}
 
 // DiagramFormats lists the diagram sources a diagram part may carry. Both are
 // emitted as source today; SVG rendering is a later adoption.
@@ -408,6 +418,19 @@ func checkPart(path string, p Part, add func(string, string, ...any)) {
 		}
 		if p.Variant != "" && !contains(ChartVariants, p.Variant) {
 			add(path+"/variant", "must be one of %s", strings.Join(ChartVariants, ", "))
+		}
+	case "timeline":
+		if len(p.Events) == 0 {
+			add(path+"/events", "at least one event is required")
+		}
+		for i, e := range p.Events {
+			ep := fmt.Sprintf("%s/events/%d", path, i)
+			if strings.TrimSpace(e.At) == "" || strings.TrimSpace(e.Title) == "" {
+				add(ep, "at and title are required")
+			}
+			if e.Tone != "" && !contains(Tones, e.Tone) {
+				add(ep+"/tone", "must be one of %s", strings.Join(Tones, ", "))
+			}
 		}
 	}
 }

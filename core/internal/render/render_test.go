@@ -536,3 +536,34 @@ func TestAccentAddsTheDerivedPalette(t *testing.T) {
 		t.Error("the palette follows the tokens so it wins")
 	}
 }
+
+func TestTimelineRendersTimesTonesAndMarkdown(t *testing.T) {
+	kind, err := kinds.Load("incident")
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := &model.Document{Dossier: "1.0", Kind: "incident", Meta: model.Meta{Title: "Incident", Slug: "i"}, Sections: []model.Section{{ID: "timeline", Title: "Timeline", Parts: []model.Part{{Type: "timeline", Events: []model.Event{
+		{At: "07:40", Title: "Two cars booked into one space", Markdown: "The **07:40** sailing sold space 14 twice.", Tone: "risk"},
+		{At: "Day 2", Title: "Refunds sent"},
+		{At: "2026-01-14 09:05", Title: "Fix deployed", Tone: "teal"},
+	}}}}}}
+	html, err := Render(doc, kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := markupOnly(string(html))
+	for _, want := range []string{
+		`<ol class="part timeline"><li data-tone="risk"><time class="at" datetime="07:40">07:40</time><div class="ev"><b>Two cars booked into one space</b> <div class="md"><p>The <strong>07:40</strong> sailing sold space 14 twice.</p></div></div></li>`,
+		`<li><span class="at">Day 2</span><div class="ev"><b>Refunds sent</b> </div></li>`,
+		`<time class="at" datetime="2026-01-14T09:05">2026-01-14 09:05</time>`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("timeline lacks %q", want)
+		}
+	}
+	for at, want := range map[string]string{"07:40": "07:40", "7:40": "07:40", "2026-01-14": "2026-01-14", "2026-01-14T09:05": "2026-01-14T09:05", "2026-01-14T09:05:00Z": "2026-01-14T09:05:00Z", "Tuesday": ""} {
+		if got := dateTime(at); got != want {
+			t.Errorf("dateTime(%q) = %q, want %q", at, got, want)
+		}
+	}
+}

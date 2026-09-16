@@ -14,7 +14,7 @@ Dossier turns **one JSON model** into **one self-contained HTML file**: no serve
 ## Five concepts
 
 - **Kind** is a preset: what its items are, the fields and facets they carry, the sections a document has, and how the reader decides. Choose one below.
-- **Section** has a title and either content parts or a board. Part types: prose, spec, table, callout, code, figure, diagram, chart.
+- **Section** has a title and either content parts or a board. Part types: prose, spec, table, callout, code, figure, diagram, chart, timeline.
 - **Item** is a thing on a board: id, title, a one-sentence summary, the fields its kind declares, and facets. A board with `"layout": "rows"` lists unnumbered, free-form entries.
 - **Facet** is a labeled Markdown body on an item. Labels come from the kind, in its order; required facets must be present.
 - **Decision** is the only state: the option chosen, picked ids or verdicts by id, and notes by id. A kind may ask one question first, and a document's top-level `choice` (a question and two to six options with one-word ids) replaces it.

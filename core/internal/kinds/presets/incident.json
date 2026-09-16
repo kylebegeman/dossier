@@ -29,7 +29,12 @@
   ],
   "sections": [
     {"id": "impact", "title": "Impact", "hint": "Who was affected, how badly, and for how long."},
-    {"id": "timeline", "title": "Timeline", "hint": "The events in order, with times."},
+    {
+      "id": "timeline",
+      "title": "Timeline",
+      "part": "timeline",
+      "hint": "The events in order, each with its time and one or two sentences."
+    },
     {
       "id": "factors",
       "title": "Contributing factors",

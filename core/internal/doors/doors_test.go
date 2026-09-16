@@ -218,6 +218,9 @@ func TestInitWritesAValidStarterForEveryKind(t *testing.T) {
 		if code != 0 {
 			t.Errorf("starter for %s does not build: %+v", kind, env)
 		}
+		if data, _ := os.ReadFile(result.Model); kind == "incident" && !strings.Contains(string(data), `"type": "timeline"`) {
+			t.Error("the incident starter's timeline section holds a timeline part")
+		}
 	}
 	env, code := run(t, "init", "brainstorm", "--out", dir, "--title", "Test brainstorm")
 	if code != 1 || env.Error == nil || env.Error.Code != "exists" {

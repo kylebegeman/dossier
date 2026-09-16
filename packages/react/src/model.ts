@@ -44,7 +44,7 @@ export interface Section {
 }
 
 export interface Part {
-  type: "prose" | "spec" | "table" | "callout" | "code" | "figure" | "diagram" | "chart";
+  type: "prose" | "spec" | "table" | "callout" | "code" | "figure" | "diagram" | "chart" | "timeline";
   title?: string;
   tone?: "note" | "risk";
   markdown?: string;
@@ -68,6 +68,13 @@ export interface Part {
   data?: Array<{
     label: string;
     value: number;
+  }>;
+  /** Timeline events in order. at is a time or date as written, such as 07:40 or 2026-01-14. */
+  events?: Array<{
+    at: string;
+    title: string;
+    markdown?: string;
+    tone?: "teal" | "violet" | "risk" | "neutral";
   }>;
 }
 

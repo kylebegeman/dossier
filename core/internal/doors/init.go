@@ -94,6 +94,11 @@ func Starter(kind kinds.Kind, title, slug, updated string) *model.Document {
 			section.Board = &model.Board{Summary: kind.Item.Numbered, Items: []model.Item{first, second}}
 		case rule.Layout == "rows":
 			section.Board = &model.Board{Layout: "rows", Items: []model.Item{{ID: rule.ID + "-first", Title: "First entry", Summary: rule.Hint}}}
+		case rule.Part == "timeline":
+			section.Parts = []model.Part{{Type: "timeline", Events: []model.Event{
+				{At: "09:00", Title: "The first thing that happened", Markdown: rule.Hint, Tone: "risk"},
+				{At: "09:20", Title: "The next thing that happened"},
+			}}}
 		default:
 			section.Parts = []model.Part{{Type: "prose", Markdown: rule.Hint}}
 		}

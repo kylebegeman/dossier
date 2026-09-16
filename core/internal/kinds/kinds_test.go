@@ -396,3 +396,25 @@ func TestValidateGuards(t *testing.T) {
 		}
 	}
 }
+
+func TestTimelineAdviceAndSectionParts(t *testing.T) {
+	incident := load(t, "incident")
+	d := &model.Document{Dossier: "1.0", Kind: "incident", Meta: model.Meta{Title: "t", Slug: "t"}, Sections: []model.Section{
+		{ID: "timeline", Title: "Timeline", Parts: []model.Part{{Type: "timeline", Events: []model.Event{{At: "07:40", Title: "Long", Markdown: strings.Repeat("word ", 70)}}}}},
+	}}
+	if got := joined(incident.Advise(d)); !strings.Contains(got, `/sections/0/parts/0/events/0/markdown: event "Long" is 350 characters; keep timeline events under 280`) {
+		t.Errorf("event advice: %s", got)
+	}
+	for name, mutate := range map[string]func(s *SectionRule){
+		"unknown part":    func(s *SectionRule) { s.Part = "chart" },
+		"part on a board": func(s *SectionRule) { s.Part = "timeline"; s.Board = true },
+		"part on rows":    func(s *SectionRule) { s.Part = "timeline"; s.Layout = "rows" },
+	} {
+		k := incident
+		k.Sections = append([]SectionRule(nil), incident.Sections...)
+		mutate(&k.Sections[0])
+		if len(k.Validate()) == 0 {
+			t.Errorf("%s: accepted", name)
+		}
+	}
+}
