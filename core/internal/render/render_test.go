@@ -76,8 +76,8 @@ func TestRenderBrainstorm(t *testing.T) {
 			t.Errorf("artifact must not reference external resources, found %q", forbidden)
 		}
 	}
-	if strings.Count(out, `<article class="item"`) != 12 {
-		t.Errorf("expected 12 item articles, got %d", strings.Count(out, `<article class="item"`))
+	if strings.Count(out, `<details class="item"`) != 12 {
+		t.Errorf("expected 12 item details, got %d", strings.Count(out, `<details class="item"`))
 	}
 	if strings.Count(out, `class="part rows"`) != 1 {
 		t.Errorf("expected one rows board")

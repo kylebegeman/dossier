@@ -49,18 +49,25 @@ func updatedSuffix(p *Page) string {
 
 templ masthead(p *Page) {
 	<header class="masthead">
-		<div class="intro">
+		<div class="mast-top">
 			if p.Doc.Meta.Kicker != "" {
 				<p class="kicker">{ p.Doc.Meta.Kicker }</p>
+			} else {
+				<span></span>
 			}
-			<h1>@templ.Raw(p.TitleHTML)</h1>
-			if p.Doc.Meta.Lede != "" {
-				<p class="lede">{ p.Doc.Meta.Lede }</p>
-			}
+			<div class="tools">
+				if len(p.Numbered) > 0 {
+					<button class="btn" type="button" data-collapse-toggle aria-expanded="true">Collapse all</button>
+				}
+				@themeToggle()
+			</div>
 		</div>
-		@themeToggle()
+		<h1>@templ.Raw(p.TitleHTML)</h1>
+		if p.Doc.Meta.Lede != "" {
+			<p class="lede">{ p.Doc.Meta.Lede }</p>
+		}
 		if len(p.Facts) > 0 {
-			<div class="facts" aria-label="At a glance">
+			<div class="stats" aria-label="At a glance">
 				for _, f := range p.Facts {
 					<div class={ templ.KV("live", f.Live) }>
 						if f.Live {
@@ -77,7 +84,7 @@ templ masthead(p *Page) {
 }
 
 templ themeToggle() {
-	<button class="theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system">
+	<button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system">
 		<svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg>
 		<svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg>
 		<svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg>
@@ -264,8 +271,8 @@ templ meter(value int, max int) {
 }
 
 templ itemArticle(it ItemView) {
-	<article class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title }>
-		<div class="item-head">
+	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) } data-title={ it.Title } open>
+		<summary class="item-head">
 			<div class="item-meta">
 				if it.Size != "" {
 					<span class={ "chip", it.Size }>{ it.Size }</span>
@@ -277,14 +284,14 @@ templ itemArticle(it ItemView) {
 					@meter(it.Impact, it.ImpactMax)
 					<span class="meter-label">impact { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
 				}
-				<button class="pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
+				<button class="btn pick-btn" type="button" aria-pressed={ strconv.FormatBool(it.Picked) } data-pick>
 					if it.Picked {
 						Picked
 					} else {
 						Pick
 					}
 				</button>
-				<button class="note-btn" type="button" data-note-toggle>
+				<button class="link-btn note-btn" type="button" data-note-toggle>
 					if it.Note != "" {
 						Edit note
 					} else {
@@ -292,39 +299,44 @@ templ itemArticle(it ItemView) {
 					}
 				</button>
 			</div>
-			<h3><span class="num">{ strconv.Itoa(it.Number) }</span>{ it.Title }</h3>
+			<h3>
+				<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+				<span class="num">{ strconv.Itoa(it.Number) }</span>
+				{ it.Title }
+			</h3>
 			if it.Summary != "" {
 				<p class="one-line">{ it.Summary }</p>
 			}
+		</summary>
+		<div class="item-body">
+			<div class="note" data-note-wrap hidden?={ it.Note == "" }>
+				<label for={ "note-" + it.ID }>Your note on { strconv.Itoa(it.Number) }</label>
+				<textarea id={ "note-" + it.ID } data-note={ it.ID } rows="2" placeholder="Changes, conditions, or why not">{ it.Note }</textarea>
+			</div>
+			<dl class="facets">
+				for _, f := range it.Facets {
+					<div class={ "facet", templ.KV("risk", f.Risk) }>
+						<dt>{ f.Label }</dt>
+						<dd>
+							@templ.Raw(f.HTML)
+						</dd>
+					</div>
+				}
+				if len(it.DependsOn) > 0 {
+					<div class="facet">
+						<dt>Depends on</dt>
+						<dd>
+							<p>
+								for _, d := range it.DependsOn {
+									<a class="dep" href={ templ.URL("#" + d.ID) }>{ strconv.Itoa(d.Number) }</a>
+								}
+							</p>
+						</dd>
+					</div>
+				}
+			</dl>
 		</div>
-		<div class="note" data-note-wrap hidden?={ it.Note == "" }>
-			<label for={ "note-" + it.ID }>Your note on { strconv.Itoa(it.Number) }</label>
-			<textarea id={ "note-" + it.ID } data-note={ it.ID } rows="2" placeholder="Changes, conditions, or why not">{ it.Note }</textarea>
-		</div>
-		<dl class="facets">
-			for _, f := range it.Facets {
-				<div class={ "facet", templ.KV("risk", f.Risk) }>
-					<dt>{ f.Label }</dt>
-					<dd>
-						@templ.Raw(f.HTML)
-					</dd>
-				</div>
-			}
-			if len(it.DependsOn) > 0 {
-				<div class="facet">
-					<dt>Depends on</dt>
-					<dd>
-						<p>
-							for _, d := range it.DependsOn {
-								<a class="dep" href={ templ.URL("#" + d.ID) }>{ strconv.Itoa(d.Number) }</a>
-								{ " " }
-							}
-						</p>
-					</dd>
-				</div>
-			}
-		</dl>
-	</article>
+	</details>
 }
 
 templ rowsBoard(b *BoardView) {
