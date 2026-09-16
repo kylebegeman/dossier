@@ -1,0 +1,76 @@
+{
+  "dossierVersion": "1.0",
+  "kind": "implementation",
+  "meta": {
+    "title": "Implementation closeout",
+    "slug": "replace-with-slug",
+    "status": "draft",
+    "owner": "agent",
+    "tags": ["implementation", "closeout"]
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Implementation",
+      "title": "Replace with the completed change",
+      "lede": "A closeout packet for code changes, verification evidence, release gates, and residual risks."
+    },
+    {
+      "type": "process-board",
+      "title": "Remaining work",
+      "items": [
+        {
+          "id": "close-verification",
+          "title": "Close verification evidence",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P1",
+          "verdict": "undecided",
+          "summary": "Attach commands, outputs, and any manual QA notes."
+        }
+      ]
+    },
+    {
+      "type": "verification-run",
+      "title": "Verification",
+      "runs": [
+        {
+          "id": "test-suite",
+          "title": "Test suite",
+          "command": "npm test",
+          "status": "pending",
+          "expected": "All tests pass.",
+          "actual": "Replace after running."
+        }
+      ]
+    },
+    {
+      "type": "release-checklist",
+      "title": "Release gates",
+      "gates": [
+        {
+          "id": "tests",
+          "title": "Tests pass",
+          "status": "pending",
+          "required": true,
+          "evidence": "Replace with command output."
+        },
+        {
+          "id": "manual-qa",
+          "title": "Manual QA complete",
+          "status": "pending",
+          "required": true,
+          "evidence": "Replace with QA notes."
+        }
+      ]
+    },
+    {
+      "type": "process-receipt",
+      "title": "Closeout receipt",
+      "outcome": "draft",
+      "owner": "agent",
+      "commands": ["npm test"],
+      "followUps": ["Replace with unresolved work or post-release monitoring."]
+    }
+  ]
+}

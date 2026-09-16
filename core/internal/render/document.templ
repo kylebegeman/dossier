@@ -1,0 +1,342 @@
+package render
+
+import "strconv"
+
+templ document(p *Page) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="generator" content="dossier"/>
+			<title>{ p.Doc.Meta.Title }</title>
+			if p.Fonts {
+				<link rel="preconnect" href="https://fonts.googleapis.com"/>
+				<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap"/>
+			}
+			@templ.Raw(p.StyleHTML)
+		</head>
+		<body>
+			<div class="page">
+				@masthead(p)
+				@contentsNav(p)
+				<main class="main" id="main">
+					for _, s := range p.Sections {
+						@section(p, s)
+					}
+					if p.HasPick {
+						@pick(p)
+					}
+				</main>
+				<footer class="foot">
+					<span>{ p.Doc.Meta.Title }</span>
+					<span>Generated with Dossier{ updatedSuffix(p) }</span>
+				</footer>
+			</div>
+			<div class="toast" role="status" aria-live="polite" data-toast></div>
+			@templ.Raw(p.ModelScriptHTML)
+			@templ.Raw(p.ReaderScriptHTML)
+		</body>
+	</html>
+}
+
+func updatedSuffix(p *Page) string {
+	if p.Doc.Meta.Updated == "" {
+		return ""
+	}
+	return " · " + p.Doc.Meta.Updated
+}
+
+templ masthead(p *Page) {
+	<header class="masthead">
+		<div class="intro">
+			if p.Doc.Meta.Kicker != "" {
+				<p class="kicker">{ p.Doc.Meta.Kicker }</p>
+			}
+			<h1>@templ.Raw(p.TitleHTML)</h1>
+			if p.Doc.Meta.Lede != "" {
+				<p class="lede">{ p.Doc.Meta.Lede }</p>
+			}
+		</div>
+		@themeToggle()
+		if len(p.Facts) > 0 {
+			<div class="facts" aria-label="At a glance">
+				for _, f := range p.Facts {
+					<div class={ templ.KV("live", f.Live) }>
+						if f.Live {
+							<b data-pick-count>{ f.Value }</b>
+						} else {
+							<b>{ f.Value }</b>
+						}
+						<span>{ f.Label }</span>
+					</div>
+				}
+			</div>
+		}
+	</header>
+}
+
+templ themeToggle() {
+	<button class="theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system">
+		<svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg>
+		<svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg>
+		<svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg>
+		<span class="th-label">Auto</span>
+	</button>
+}
+
+templ contentsNav(p *Page) {
+	<nav class="toc" aria-label="Contents">
+		<ol>
+			for _, g := range p.Contents {
+				<li class="group">{ g.Label }</li>
+				for _, e := range g.Entries {
+					if e.Item {
+						<li data-item={ e.ID }><a href={ templ.URL("#" + e.ID) }><span class="n">{ strconv.Itoa(e.Number) }</span>{ e.Label }<span class="pip" aria-hidden="true"></span></a></li>
+					} else {
+						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
+					}
+				}
+			}
+		</ol>
+	</nav>
+}
+
+templ section(p *Page, s SectionView) {
+	<section class="section" id={ s.ID }>
+		<h2>{ s.Title }</h2>
+		for _, part := range s.Parts {
+			@partView(part)
+		}
+		if s.Board != nil {
+			if s.Board.Rows {
+				@rowsBoard(s.Board)
+			} else {
+				if s.Board.Summary {
+					@summaryTable(p, s.Board)
+				}
+				for _, it := range s.Board.Items {
+					@itemArticle(it)
+				}
+			}
+		}
+	</section>
+}
+
+templ partView(part PartView) {
+	switch part.Type {
+		case "prose":
+			<div class="part prose">
+				@templ.Raw(part.HTML)
+			</div>
+		case "callout":
+			<div class={ "part callout", templ.KV("risk", part.Tone == "risk") }>
+				if part.Title != "" {
+					<b>{ part.Title }</b>
+				}
+				<div>
+					@templ.Raw(part.HTML)
+				</div>
+			</div>
+		case "spec":
+			<div class="part spec">
+				for _, r := range part.Spec {
+					<div><b>{ r.Label }</b><span>@templ.Raw(r.Text)</span></div>
+				}
+			</div>
+		case "table":
+			<div class="part table-wrap">
+				<table>
+					<thead>
+						<tr>
+							for _, c := range part.Columns {
+								<th>{ c }</th>
+							}
+						</tr>
+					</thead>
+					<tbody>
+						for _, row := range part.Rows {
+							<tr>
+								for _, cell := range row {
+									<td>@templ.Raw(cell)</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+			if part.Note != "" {
+				<p class="legend">{ part.Note }</p>
+			}
+		case "code":
+			<pre class="part"><code>{ part.Code }</code></pre>
+	}
+}
+
+templ summaryTable(p *Page, b *BoardView) {
+	<div class="part table-wrap">
+		<table>
+			<thead>
+				<tr>
+					<th class="ck"><span class="sr">Pick</span></th>
+					for _, c := range b.Columns {
+						@summaryHeader(c)
+					}
+				</tr>
+			</thead>
+			<tbody>
+				for _, it := range b.Items {
+					<tr data-item={ it.ID }>
+						<td class="ck"><input class="check" type="checkbox" data-pick-row={ it.ID } aria-label={ "Pick " + strconv.Itoa(it.Number) + ", " + it.Title }/></td>
+						for _, c := range b.Columns {
+							@summaryCell(c, it)
+						}
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if b.Legend != "" {
+		<p class="legend">{ b.Legend }</p>
+	}
+}
+
+templ summaryHeader(c string) {
+	switch c {
+		case "number":
+			<th class="num">#</th>
+		case "title":
+			<th>Item</th>
+		case "size":
+			<th>Size</th>
+		case "effort":
+			<th>Effort</th>
+		case "impact":
+			<th>Impact</th>
+		case "dependsOn":
+			<th>Depends on</th>
+	}
+}
+
+templ summaryCell(c string, it ItemView) {
+	switch c {
+		case "number":
+			<td class="num">{ strconv.Itoa(it.Number) }</td>
+		case "title":
+			<td><a href={ templ.URL("#" + it.ID) }>{ it.Title }</a></td>
+		case "size":
+			<td>
+				if it.Size != "" {
+					<span class={ "chip", it.Size }>{ it.Size }</span>
+				}
+			</td>
+		case "effort":
+			<td>{ it.Effort }</td>
+		case "impact":
+			<td>
+				if it.Impact > 0 {
+					@meter(it.Impact, it.ImpactMax)
+				}
+			</td>
+		case "dependsOn":
+			<td>
+				<span class="deps">
+					if len(it.DependsOn) == 0 {
+						nothing
+					}
+					for i, d := range it.DependsOn {
+						if i > 0 {
+							,
+						}
+						<a href={ templ.URL("#" + d.ID) } title={ d.Title }>{ strconv.Itoa(d.Number) }</a>
+					}
+				</span>
+			</td>
+	}
+}
+
+templ meter(value int, max int) {
+	<span class="meter" aria-label={ "Impact " + strconv.Itoa(value) + " of " + strconv.Itoa(max) }>
+		for i := 1; i <= max; i++ {
+			<i class={ templ.KV("on", i <= value) }></i>
+		}
+	</span>
+}
+
+templ itemArticle(it ItemView) {
+	<article class="item" id={ it.ID } data-item={ it.ID } data-num={ strconv.Itoa(it.Number) }>
+		<div class="item-head">
+			<div class="item-meta">
+				if it.Size != "" {
+					<span class={ "chip", it.Size }>{ it.Size }</span>
+				}
+				if it.Effort != "" {
+					<span class="chip effort">Effort { it.Effort }</span>
+				}
+				if it.Impact > 0 {
+					@meter(it.Impact, it.ImpactMax)
+					<span class="meter-label">impact { strconv.Itoa(it.Impact) }/{ strconv.Itoa(it.ImpactMax) }</span>
+				}
+				<button class="pick-btn" type="button" aria-pressed="false" data-pick>Pick</button>
+			</div>
+			<h3><span class="num">{ strconv.Itoa(it.Number) }</span>{ it.Title }</h3>
+			if it.Summary != "" {
+				<p class="one-line">{ it.Summary }</p>
+			}
+		</div>
+		<dl class="facets">
+			for _, f := range it.Facets {
+				<div class={ "facet", templ.KV("risk", f.Risk) }>
+					<dt>{ f.Label }</dt>
+					<dd>
+						@templ.Raw(f.HTML)
+					</dd>
+				</div>
+			}
+			if len(it.DependsOn) > 0 {
+				<div class="facet">
+					<dt>Depends on</dt>
+					<dd>
+						<p>
+							for _, d := range it.DependsOn {
+								<a class="dep" href={ templ.URL("#" + d.ID) }>{ strconv.Itoa(d.Number) }</a>
+								{ " " }
+							}
+						</p>
+					</dd>
+				</div>
+			}
+		</dl>
+	</article>
+}
+
+templ rowsBoard(b *BoardView) {
+	<div class="part rows">
+		for _, it := range b.Items {
+			<div>
+				<div>
+					<b>{ it.Title }</b>
+					if it.Summary != "" {
+						<p>{ it.Summary }</p>
+					}
+				</div>
+				if it.Effort != "" {
+					<span class="chip effort">{ it.Effort }</span>
+				}
+			</div>
+		}
+	</div>
+}
+
+templ pick(p *Page) {
+	<div class="pick" id="pick">
+		<b>{ p.Kind.Pick.Title }</b>
+		<div>
+			@templ.Raw(p.PickHTML)
+		</div>
+		<div class="reply" data-reply>Nothing picked yet.</div>
+		<div class="row">
+			<button class="solid" type="button" data-copy-reply>Copy reply</button>
+		</div>
+	</div>
+}

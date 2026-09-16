@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dossier.dev/schemas/dossier.model/v1",
+  "title": "dossier.model/v1",
+  "description": "One Dossier document: a kind, metadata, ordered sections with content parts or a board of items, and the reader's decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["dossier", "kind", "meta", "sections"],
+  "properties": {
+    "dossier": { "const": "1.0" },
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "slug"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
+        "kicker": { "type": "string", "maxLength": 200 },
+        "emphasis": { "type": "string", "maxLength": 40, "description": "One word of the title set in the italic serif accent." },
+        "lede": { "type": "string", "maxLength": 1000 },
+        "updated": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "maxLength": 40 },
+        "fonts": { "type": "string", "enum": ["google"], "description": "Opt in to web fonts. Omitted means the system stack and zero external requests." }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/section" }
+    },
+    "decisions": { "$ref": "#/$defs/decisions" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "parts": { "type": "array", "items": { "$ref": "#/$defs/part" } },
+        "board": { "$ref": "#/$defs/board" }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["prose", "spec", "table", "callout", "code"] },
+        "title": { "type": "string", "maxLength": 200 },
+        "tone": { "type": "string", "enum": ["note", "risk"] },
+        "markdown": { "type": "string" },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+        "spec": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "text"], "properties": { "label": { "type": "string" }, "text": { "type": "string" } } } },
+        "note": { "type": "string", "maxLength": 1000 },
+        "lang": { "type": "string", "maxLength": 40 },
+        "code": { "type": "string" }
+      }
+    },
+    "board": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "summary": { "type": "boolean", "description": "Render a summary table before the items." },
+        "layout": { "type": "string", "enum": ["articles", "rows"] },
+        "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/item" } }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "summary": { "type": "string", "maxLength": 400 },
+        "size": { "type": "string", "maxLength": 40 },
+        "effort": { "type": "string", "maxLength": 40 },
+        "impact": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "dependsOn": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "facets": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "markdown"], "properties": { "label": { "type": "string", "minLength": 1, "maxLength": 60 }, "markdown": { "type": "string", "minLength": 1 } } } }
+      }
+    },
+    "decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "maxLength": 40 },
+        "picked": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "notes": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 2000 } }
+      }
+    }
+  }
+}

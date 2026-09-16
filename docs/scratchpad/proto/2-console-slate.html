@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Console Slate — Dossier direction prototype</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --ds-bg:#fafbfc; --ds-surface:#f1f3f7; --ds-surface-3:#e7eaf1;
+  --ds-line:#e2e6ee; --ds-line-2:#d3d8e3; --ds-line-strong:#bcc3d2;
+  --ds-ink:#16191f; --ds-ink-2:#4d5563; --ds-ink-3:#828b9c;
+  --ds-accent:#3a5ccc; --ds-accent-2:#2c49aa; --ds-accent-tint:rgba(58,92,204,.09); --ds-accent-tint-2:rgba(58,92,204,.16);
+  --ds-ok:#0f7a52; --ds-warn:#9a5b00; --ds-danger:#c0263b; --ds-info:#2563ac;
+  --ds-ok-tint:rgba(15,122,82,.11); --ds-warn-tint:rgba(154,91,0,.13); --ds-danger-tint:rgba(192,38,59,.1); --ds-info-tint:rgba(37,99,172,.1);
+  --ds-cat-1:#6d5bd0; --ds-cat-2:#0e8a86; --ds-cat-3:#b8642a;
+  --ds-frame:1180px;
+  --ds-font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ds-serif:Charter,"Bitstream Charter","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --ds-mono:"Geist Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+  --ds-ease:cubic-bezier(.2,0,0,1);
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:22px; --sp-6:30px; --sp-7:42px;
+}
+[data-theme="dark"]{
+  --ds-bg:#0c0e13; --ds-surface:#14171f; --ds-surface-3:#1c2029;
+  --ds-line:#282d38; --ds-line-2:#363c4a; --ds-line-strong:#4a5163;
+  --ds-ink:#e7eaf1; --ds-ink-2:#9aa3b4; --ds-ink-3:#6f7889;
+  --ds-accent:#7d9bff; --ds-accent-2:#97aeff; --ds-accent-tint:rgba(125,155,255,.13); --ds-accent-tint-2:rgba(125,155,255,.2);
+  --ds-ok:#34d399; --ds-warn:#fbbf24; --ds-danger:#fb7185; --ds-info:#7da9e8;
+  --ds-ok-tint:rgba(52,211,153,.13); --ds-warn-tint:rgba(251,191,36,.13); --ds-danger-tint:rgba(251,113,133,.13); --ds-info-tint:rgba(125,169,232,.13);
+  --ds-cat-1:#9a8bf0; --ds-cat-2:#3fb8b3; --ds-cat-3:#e08a4f;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ds-bg);color:var(--ds-ink);font-family:var(--ds-font);font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+::selection{background:var(--ds-accent-tint-2)}
+a{color:var(--ds-accent);text-decoration:none;font-weight:560}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ds-accent);outline-offset:2px;border-radius:5px}
+h1,h2,h3,h4{margin:0}
+p{margin:0}
+.mono{font-family:var(--ds-mono);font-variant-numeric:tabular-nums}
+.shell{width:min(var(--ds-frame),calc(100% - 44px));margin:0 auto}
+
+/* ---------- topbar ---------- */
+.topbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ds-bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--ds-line)}
+.topbar-in{display:flex;align-items:center;gap:14px;height:52px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
+.mark{width:11px;height:11px;border-radius:3px;background:var(--ds-accent);box-shadow:0 0 0 4px var(--ds-accent-tint);flex:none;transform:rotate(45deg)}
+.crumbs{font-size:13.5px;font-weight:560;color:var(--ds-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumbs b{color:var(--ds-ink);font-weight:620}
+.tools{display:flex;align-items:center;gap:7px;flex:none}
+.search{display:inline-flex;align-items:center;gap:8px;height:33px;min-width:178px;padding:0 11px;border:1px solid var(--ds-line-2);background:var(--ds-surface);border-radius:8px;color:var(--ds-ink-3);font-size:12.5px;cursor:text}
+.search .mono{font-size:10.5px;margin-left:auto;border:1px solid var(--ds-line-2);border-radius:4px;padding:1px 5px;color:var(--ds-ink-3)}
+.btn{display:inline-flex;align-items:center;gap:7px;height:33px;padding:0 12px;border:1px solid transparent;background:transparent;color:var(--ds-ink-2);font-size:13px;font-weight:560;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--ds-surface);color:var(--ds-ink)}
+.btn.primary{background:var(--ds-accent);border-color:var(--ds-accent);color:#fff}
+[data-theme="dark"] .btn.primary{color:#0c0e13}
+.btn.primary:hover{background:var(--ds-accent-2);border-color:var(--ds-accent-2)}
+.themedot{width:33px;height:33px;border-radius:8px;border:1px solid var(--ds-line-2);background:var(--ds-surface);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.themedot span{width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,var(--ds-ink) 50%,var(--ds-bg) 50%);box-shadow:0 0 0 1px var(--ds-line-strong)}
+.themedot:hover{border-color:var(--ds-line-strong)}
+
+/* ---------- generic block scaffolding ---------- */
+.main{padding:var(--sp-6) 0 80px;counter-reset:sec}
+.block{position:relative}
+.block+.block{margin-top:var(--sp-6)}
+[data-density="dense"] .block+.block{margin-top:var(--sp-5)}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:var(--sp-3)}
+.sec-num{font-family:var(--ds-mono);font-size:11px;font-weight:600;color:var(--ds-ink-3);letter-spacing:.06em;flex:none;padding-top:3px}
+.sec-title{font-family:var(--ds-serif);font-weight:480;font-size:23px;letter-spacing:-.015em;color:var(--ds-ink);line-height:1.2}
+.sec-sub{font-family:var(--ds-font);font-size:13px;color:var(--ds-ink-3);font-weight:480;margin-left:auto;text-align:right}
+.microlabel{font-family:var(--ds-mono);font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--ds-ink-3);text-transform:uppercase}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:44px;align-items:center;padding:var(--sp-6) 0 var(--sp-5);border-bottom:1px solid var(--ds-line)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--ds-mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-accent)}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ds-accent);box-shadow:0 0 0 3px var(--ds-accent-tint)}
+.hero h1{font-family:var(--ds-serif);font-weight:400;font-size:clamp(30px,4vw,42px);line-height:1.06;letter-spacing:-.02em;margin:16px 0 0;max-width:15ch}
+.lede{margin-top:16px;font-size:16px;line-height:1.5;color:var(--ds-ink-2);max-width:46ch}
+.metapills{display:flex;flex-wrap:wrap;gap:7px;margin-top:22px}
+.metapill{display:inline-flex;align-items:center;gap:7px;height:27px;padding:0 11px;border:1px solid var(--ds-line-2);background:var(--ds-surface);border-radius:7px;font-size:12px;font-weight:540;color:var(--ds-ink-2)}
+.metapill::before{content:"";width:5px;height:5px;border-radius:1px;background:var(--ds-accent);transform:rotate(45deg)}
+/* hero instrument panel */
+.panel{border:1px solid var(--ds-line-2);border-radius:12px;background:var(--ds-surface);overflow:hidden}
+.panel-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--ds-line-2);background:var(--ds-surface-3)}
+.panel-top .microlabel{color:var(--ds-ink-2)}
+.panel-dots{display:flex;gap:5px}
+.panel-dots i{width:8px;height:8px;border-radius:50%;display:block}
+.panel-dots i:nth-child(1){background:var(--ds-danger)}
+.panel-dots i:nth-child(2){background:var(--ds-warn)}
+.panel-dots i:nth-child(3){background:var(--ds-ok)}
+.panel-viz{display:flex;align-items:center;justify-content:center;padding:18px 14px;border-bottom:1px solid var(--ds-line-2);background:
+  repeating-linear-gradient(0deg,transparent 0 13px,var(--ds-line) 13px 14px),
+  repeating-linear-gradient(90deg,transparent 0 13px,var(--ds-line) 13px 14px),var(--ds-bg)}
+.panel-rows{padding:4px 0}
+.panel-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px}
+.panel-row+.panel-row{border-top:1px solid var(--ds-line)}
+.panel-row .k{font-family:var(--ds-mono);font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--ds-ink-3);text-transform:uppercase}
+.panel-row .v{font-family:var(--ds-mono);font-size:13px;font-weight:560;color:var(--ds-ink)}
+.panel-row .v.zero{color:var(--ds-ok)}
+
+/* ---------- KPI fused strip ---------- */
+.kpistrip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ds-line-2);border-radius:12px;overflow:hidden;background:var(--ds-bg)}
+.kpi{padding:15px 18px;position:relative}
+.kpi+.kpi{border-left:1px solid var(--ds-line)}
+.kpi .microlabel{display:block;margin-bottom:9px}
+.kpi .val{font-family:var(--ds-mono);font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1;color:var(--ds-ink)}
+.kpi .delta{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:var(--ds-mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .delta.up{color:var(--ds-ok)}
+.kpi .delta.down{color:var(--ds-danger)}
+.kpi .delta.flat{color:var(--ds-ink-3)}
+.kpi .delta::before{font-size:10px}
+.kpi .delta.up::before{content:"▲"}
+.kpi .delta.down::before{content:"▼"}
+.kpi .delta.flat::before{content:"■";font-size:7px}
+
+/* ---------- summary cards ---------- */
+.cardgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{border:1px solid var(--ds-line-2);border-radius:11px;background:var(--ds-bg);padding:16px}
+.card .microlabel{color:var(--ds-accent)}
+.card h3{font-size:16.5px;font-weight:650;letter-spacing:-.01em;margin:9px 0 6px}
+.card p{font-size:13.5px;color:var(--ds-ink-2);line-height:1.46}
+
+/* ---------- callout ---------- */
+.callout{display:flex;gap:13px;border:1px solid var(--ds-accent-tint-2);background:var(--ds-accent-tint);border-radius:11px;padding:14px 16px;border-left-width:3px;border-left-color:var(--ds-accent)}
+.callout .ico{flex:none;width:24px;height:24px;border-radius:7px;background:var(--ds-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+[data-theme="dark"] .callout .ico{color:#0c0e13}
+.callout .body{font-size:14px;color:var(--ds-ink-2);line-height:1.5}
+.callout .body b{color:var(--ds-ink);font-weight:620}
+.callout code{font-family:var(--ds-mono);font-size:12px;background:var(--ds-bg);border:1px solid var(--ds-line-2);border-radius:5px;padding:1px 6px;color:var(--ds-ink)}
+
+/* ---------- tables ---------- */
+.tablewrap{border:1px solid var(--ds-line-2);border-radius:11px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{text-align:left;font-family:var(--ds-mono);font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-ink-3);padding:9px 16px;background:var(--ds-surface-3);border-bottom:1px solid var(--ds-line-2)}
+tbody td{padding:10px 16px;border-bottom:1px solid var(--ds-line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--ds-surface)}
+.t-fmt{font-family:var(--ds-mono);font-size:12.5px;font-weight:560;color:var(--ds-ink);width:200px}
+.t-fmt .dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:8px;vertical-align:middle}
+
+/* ---------- decision matrix ---------- */
+.matrix{border:1px solid var(--ds-line-2);border-radius:11px;overflow:hidden}
+.matrix table{font-size:14px}
+.matrix thead th{background:var(--ds-surface-3)}
+.matrix .opt-cell{position:relative;font-weight:600;color:var(--ds-ink);padding-left:18px}
+.matrix tr.recommended{background:var(--ds-accent-tint)}
+.matrix tr.recommended:hover{background:var(--ds-accent-tint)}
+.matrix tr.recommended .opt-cell::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ds-accent)}
+.rec-badge{display:inline-flex;align-items:center;gap:5px;margin-left:9px;font-family:var(--ds-mono);font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-accent);background:var(--ds-bg);border:1px solid var(--ds-accent-tint-2);border-radius:5px;padding:2px 7px;vertical-align:middle}
+.rec-badge::before{content:"★";font-size:9px}
+.heat{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:560}
+.heat::before{content:"";width:8px;height:8px;border-radius:2px;flex:none}
+.heat.yes{color:var(--ds-ok)}
+.heat.yes::before{background:var(--ds-ok)}
+.heat.no{color:var(--ds-danger)}
+.heat.no::before{background:var(--ds-danger)}
+td.cell-yes{background:var(--ds-ok-tint)}
+td.cell-no{background:var(--ds-danger-tint)}
+.matrix tr.recommended td.cell-yes,.matrix tr.recommended td.cell-no{background-blend-mode:multiply}
+
+/* ---------- risk register ---------- */
+.risk{display:grid;grid-template-columns:auto 1fr;gap:0;border:1px solid var(--ds-line-2);border-radius:11px;overflow:hidden}
+.risk-spine{width:4px;background:var(--ds-danger)}
+.risk-body{padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:14px 22px;align-items:start}
+.risk-main h4{font-size:15px;font-weight:650;margin-bottom:5px}
+.risk-id{font-family:var(--ds-mono);font-size:10.5px;font-weight:600;letter-spacing:.03em;color:var(--ds-ink-3);text-transform:uppercase}
+.risk-mit{font-size:13.5px;color:var(--ds-ink-2);margin-top:8px;max-width:52ch}
+.risk-mit b{color:var(--ds-ink);font-weight:600}
+.risk-meta{display:flex;gap:10px;align-items:flex-start}
+.metric{text-align:left}
+.metric .microlabel{display:block;margin-bottom:5px}
+.sev{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:640;font-family:var(--ds-mono);letter-spacing:.02em}
+.sev::before{content:"";width:7px;height:7px;border-radius:50%}
+.sev.med{background:var(--ds-warn-tint);color:var(--ds-warn)}
+.sev.med::before{background:var(--ds-warn)}
+.sev.high{background:var(--ds-danger-tint);color:var(--ds-danger)}
+.sev.high::before{background:var(--ds-danger)}
+
+/* ---------- chart ---------- */
+.chart{border:1px solid var(--ds-line-2);border-radius:11px;background:var(--ds-bg);padding:16px 18px 12px}
+.chart-svg{display:block;width:100%;height:auto}
+.chart-svg .grid{stroke:var(--ds-line);stroke-width:1;stroke-dasharray:3 4}
+.chart-svg .axis{stroke:var(--ds-line-strong);stroke-width:1.2}
+.chart-svg .tick{fill:var(--ds-ink-3);font-family:var(--ds-mono);font-size:10px}
+.chart-svg .xlab{fill:var(--ds-ink-2);font-family:var(--ds-mono);font-size:11px;font-weight:560}
+.chart-svg .vlab{fill:var(--ds-ink);font-family:var(--ds-mono);font-size:11.5px;font-weight:620}
+.chart-legend{display:flex;gap:16px;margin-top:12px;padding-top:11px;border-top:1px solid var(--ds-line);font-size:11.5px;color:var(--ds-ink-2)}
+.chart-legend span{display:inline-flex;align-items:center;gap:6px}
+.chart-legend i{width:9px;height:9px;border-radius:2px}
+
+/* ---------- review board row ---------- */
+.boardrow{display:grid;grid-template-columns:4px auto auto 1fr auto auto;align-items:center;gap:0 14px;border:1px solid var(--ds-line-2);border-radius:11px;overflow:hidden;background:var(--ds-bg)}
+.boardrow .spine{grid-row:1;width:4px;align-self:stretch;background:var(--ds-ok)}
+.bcheck{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--ds-ok);background:var(--ds-ok);display:inline-flex;align-items:center;justify-content:center;margin-left:14px}
+.bcheck svg{display:block}
+.brow-id{font-family:var(--ds-mono);font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--ds-ink-3);text-transform:uppercase;padding:14px 0}
+.brow-main{padding:13px 0;min-width:0}
+.brow-main h3{font-size:15.5px;font-weight:640;letter-spacing:-.008em}
+.brow-main p{font-size:13px;color:var(--ds-ink-2);margin-top:3px}
+.brow-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:21px;padding:0 9px;border:1px solid var(--ds-line-2);background:var(--ds-surface);border-radius:6px;font-size:11px;font-weight:560;color:var(--ds-ink-2)}
+.chip.kv b{font-family:var(--ds-mono);color:var(--ds-ink);font-weight:620;font-size:10.5px}
+.chip.impact-high{border-color:var(--ds-warn-tint);background:var(--ds-warn-tint);color:var(--ds-warn)}
+.statuspill{display:inline-flex;align-items:center;gap:6px;height:25px;padding:0 11px;border-radius:7px;font-size:12px;font-weight:640;font-family:var(--ds-mono);letter-spacing:.02em;background:var(--ds-ok-tint);color:var(--ds-ok)}
+.statuspill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chev{padding:0 16px 0 4px;color:var(--ds-ink-3);display:flex;align-items:center}
+
+/* ---------- trust claim ---------- */
+.claim{display:grid;grid-template-columns:4px 1fr;border:1px solid var(--ds-line-2);border-radius:11px;overflow:hidden;background:var(--ds-bg)}
+.claim .spine{background:var(--ds-ok)}
+.claim-body{padding:15px 18px}
+.claim-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.claim-id{font-family:var(--ds-mono);font-size:10.5px;font-weight:600;letter-spacing:.03em;color:var(--ds-ink-3);text-transform:uppercase;margin-bottom:6px}
+.claim-text{font-size:16px;font-weight:600;color:var(--ds-ink);letter-spacing:-.01em}
+.claim-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}
+.verified{display:inline-flex;align-items:center;gap:7px;height:27px;padding:0 12px;border-radius:7px;font-size:12.5px;font-weight:640;font-family:var(--ds-mono);background:var(--ds-ok);color:#fff}
+[data-theme="dark"] .verified{color:#0c0e13}
+.verified svg{display:block}
+.conf{font-family:var(--ds-mono);font-size:11px;font-weight:560;color:var(--ds-ink-3);text-transform:uppercase;letter-spacing:.03em}
+.conf b{color:var(--ds-ok)}
+.claim-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--ds-line)}
+.chip.cmd{font-family:var(--ds-mono);font-size:11px;color:var(--ds-ink);background:var(--ds-surface-3)}
+.chip.cmd::before{content:"$";color:var(--ds-ok);font-weight:700;margin-right:1px}
+
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;gap:26px}
+  .kpistrip{grid-template-columns:1fr 1fr}
+  .kpi:nth-child(3){border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--ds-line)}
+  .cardgrid{grid-template-columns:1fr}
+  .search{min-width:0;width:38px;padding:0;justify-content:center}
+  .search .label,.search .mono{display:none}
+  .risk-body{grid-template-columns:1fr}
+  .boardrow{grid-template-columns:4px auto 1fr auto;grid-auto-flow:row}
+  .brow-id{display:none}
+}
+@media (max-width:520px){.kpistrip{grid-template-columns:1fr}.kpi+.kpi{border-left:0;border-top:1px solid var(--ds-line)}}
+</style>
+</head>
+<body data-density="dense">
+
+<header class="topbar">
+  <div class="shell topbar-in">
+    <div class="brand">
+      <span class="mark"></span>
+      <span class="crumbs">Dossier&nbsp; / &nbsp;<b>Showcase</b></span>
+    </div>
+    <div class="tools">
+      <span class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="label">Search</span><span class="mono">⌘K</span></span>
+      <button class="btn" type="button">Edit</button>
+      <button class="themedot" type="button" aria-label="Toggle theme" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'"><span></span></button>
+      <button class="btn primary" type="button">Export</button>
+    </div>
+  </div>
+</header>
+
+<main class="shell main">
+
+  <!-- HERO -->
+  <section class="block hero">
+    <div>
+      <span class="eyebrow">Live demo</span>
+      <h1>One JSON file becomes this</h1>
+      <p class="lede">A single <span class="mono" style="font-size:.93em">.dossier.json</span> compiles into one self-contained, interactive HTML artifact. Humans read and decide inside it; agents read the structured packets back out.</p>
+      <div class="metapills">
+        <span class="metapill">42 block types</span>
+        <span class="metapill">Self-contained</span>
+        <span class="metapill">Agent-readable</span>
+        <span class="metapill">Light + dark</span>
+      </div>
+    </div>
+    <aside class="panel" aria-label="Build summary">
+      <div class="panel-top"><span class="microlabel">Build</span><span class="panel-dots"><i></i><i></i><i></i></span></div>
+      <div class="panel-viz">
+        <svg width="190" height="84" viewBox="0 0 190 84" fill="none">
+          <rect x="6" y="20" width="44" height="44" rx="7" fill="var(--ds-accent-tint)" stroke="var(--ds-accent)" stroke-width="1.4"/>
+          <path d="M16 33h24M16 42h24M16 51h15" stroke="var(--ds-accent)" stroke-width="2" stroke-linecap="round"/>
+          <text x="28" y="14" text-anchor="middle" fill="var(--ds-ink-3)" font-family="var(--ds-mono)" font-size="8">.json</text>
+          <path d="M62 42h44" stroke="var(--ds-ink-3)" stroke-width="1.4" stroke-dasharray="2 3"/>
+          <path d="m102 37 7 5-7 5z" fill="var(--ds-ink-3)"/>
+          <rect x="120" y="16" width="60" height="52" rx="7" fill="var(--ds-bg)" stroke="var(--ds-line-strong)" stroke-width="1.4"/>
+          <rect x="120" y="16" width="60" height="13" rx="7" fill="var(--ds-surface-3)"/>
+          <path d="M120 29h60" stroke="var(--ds-line-2)" stroke-width="1"/>
+          <rect x="127" y="36" width="46" height="5" rx="2.5" fill="var(--ds-accent)"/>
+          <rect x="127" y="45" width="36" height="4" rx="2" fill="var(--ds-ink-3)"/>
+          <rect x="127" y="53" width="42" height="4" rx="2" fill="var(--ds-ink-3)"/>
+          <text x="150" y="13" text-anchor="middle" fill="var(--ds-ink-3)" font-family="var(--ds-mono)" font-size="8">.html</text>
+        </svg>
+      </div>
+      <div class="panel-rows">
+        <div class="panel-row"><span class="k">Source</span><span class="v">one .dossier.json</span></div>
+        <div class="panel-row"><span class="k">Output</span><span class="v">one .html</span></div>
+        <div class="panel-row"><span class="k">Runtime deps</span><span class="v zero">0</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- KPI STRIP -->
+  <section class="block kpistrip" aria-label="Key metrics">
+    <div class="kpi"><span class="microlabel">Block types</span><span class="val">42</span><span class="delta up">+6 this release</span></div>
+    <div class="kpi"><span class="microlabel">Runtime deps</span><span class="val">0</span><span class="delta flat">held at zero</span></div>
+    <div class="kpi"><span class="microlabel">Renderers</span><span class="val">2</span><span class="delta up">+1 React parity</span></div>
+    <div class="kpi"><span class="microlabel">Self-contained</span><span class="val">100<span style="font-size:.6em">%</span></span><span class="delta flat">no external assets</span></div>
+  </section>
+
+  <!-- SUMMARY CARDS -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 01</span><h2 class="sec-title">Three readers, one file</h2></div>
+    <div class="cardgrid">
+      <article class="card"><span class="microlabel">For humans</span><h3>Read and decide</h3><p>An editorial page you open in any browser. Mark it up, flip decisions, and check off gates in place.</p></article>
+      <article class="card"><span class="microlabel">For agents</span><h3>Structured packets</h3><p>Every block exposes a clean JSON digest, so downstream agents read back exactly what changed.</p></article>
+      <article class="card"><span class="microlabel">For your wiki</span><h3>Drop it anywhere</h3><p>One static file with zero runtime deps. Commit it, attach it, or paste it into a wiki and it just renders.</p></article>
+    </div>
+  </section>
+
+  <!-- CALLOUT -->
+  <section class="block">
+    <div class="callout">
+      <span class="ico" aria-hidden="true">i</span>
+      <p class="body"><b>Tip.</b> Regenerate any time with <code>npx dossier build packet.dossier.json</code>. The output is deterministic, so re-running on the same input yields a byte-identical artifact.</p>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 02</span><h2 class="sec-title">Exports</h2><span class="sec-sub">3 formats</span></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:200px">Format</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td class="t-fmt"><span class="dot" style="background:var(--ds-accent)"></span>HTML</td><td>The page humans open.</td></tr>
+          <tr><td class="t-fmt"><span class="dot" style="background:var(--ds-cat-2)"></span>Markdown</td><td>Plain-text copy for diffs, review, and reuse.</td></tr>
+          <tr><td class="t-fmt"><span class="dot" style="background:var(--ds-cat-3)"></span>JSON digest</td><td>What agents read.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DECISION MATRIX -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 03</span><h2 class="sec-title">Where it lives</h2><span class="sec-sub">2 options · 2 criteria</span></div>
+    <div class="matrix">
+      <table>
+        <thead>
+          <tr><th>Option</th><th style="width:170px">Cross-project</th><th style="width:170px">Public later</th></tr>
+        </thead>
+        <tbody>
+          <tr class="recommended">
+            <td class="opt-cell">Standalone repo<span class="rec-badge">Recommended</span></td>
+            <td class="cell-yes"><span class="heat yes">Yes</span></td>
+            <td class="cell-yes"><span class="heat yes">One-line flip</span></td>
+          </tr>
+          <tr>
+            <td class="opt-cell">Inside a monorepo</td>
+            <td class="cell-no"><span class="heat no">No</span></td>
+            <td class="cell-no"><span class="heat no">Hard</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RISK REGISTER -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 04</span><h2 class="sec-title">Risk register</h2></div>
+    <div class="risk">
+      <div class="spine risk-spine"></div>
+      <div class="risk-body">
+        <div class="risk-main">
+          <div class="risk-id">RISK-01</div>
+          <h4>Scope creep</h4>
+          <p class="risk-mit"><b>Mitigation.</b> Freeze the schema first, then add block types behind a version flag.</p>
+        </div>
+        <div class="risk-meta">
+          <div class="metric"><span class="microlabel">Likelihood</span><span class="sev med">Medium</span></div>
+          <div class="metric"><span class="microlabel">Impact</span><span class="sev high">High</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHART -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 05</span><h2 class="sec-title">Adoption</h2><span class="sec-sub">teams onboarded / quarter</span></div>
+    <div class="chart">
+      <svg class="chart-svg" viewBox="0 0 520 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Adoption bar chart: Q1 6, Q2 10, Q3 14, Q4 20">
+        <!-- gridlines + y ticks (0,5,10,15,20 over plot height 180, top y=20) -->
+        <g>
+          <line class="grid" x1="44" y1="200" x2="508" y2="200"/>
+          <line class="grid" x1="44" y1="155" x2="508" y2="155"/>
+          <line class="grid" x1="44" y1="110" x2="508" y2="110"/>
+          <line class="grid" x1="44" y1="65" x2="508" y2="65"/>
+          <line class="grid" x1="44" y1="20" x2="508" y2="20"/>
+          <text class="tick" x="38" y="204" text-anchor="end">0</text>
+          <text class="tick" x="38" y="159" text-anchor="end">5</text>
+          <text class="tick" x="38" y="114" text-anchor="end">10</text>
+          <text class="tick" x="38" y="69" text-anchor="end">15</text>
+          <text class="tick" x="38" y="24" text-anchor="end">20</text>
+        </g>
+        <!-- bars: scale 9px per unit, baseline 200 -->
+        <!-- Q1=6 ->54 -->
+        <rect x="70"  y="146" width="62" height="54"  rx="3" fill="var(--ds-accent)"/>
+        <text class="vlab" x="101" y="138" text-anchor="middle">6</text>
+        <!-- Q2=10 ->90 -->
+        <rect x="178" y="110" width="62" height="90"  rx="3" fill="var(--ds-accent)"/>
+        <text class="vlab" x="209" y="102" text-anchor="middle">10</text>
+        <!-- Q3=14 ->126 -->
+        <rect x="286" y="74"  width="62" height="126" rx="3" fill="var(--ds-ok)"/>
+        <text class="vlab" x="317" y="66" text-anchor="middle">14</text>
+        <!-- Q4=20 ->180 -->
+        <rect x="394" y="20"  width="62" height="180" rx="3" fill="var(--ds-ok)"/>
+        <text class="vlab" x="425" y="12" text-anchor="middle">20</text>
+        <!-- axis baseline -->
+        <line class="axis" x1="44" y1="200" x2="508" y2="200"/>
+        <!-- x labels -->
+        <text class="xlab" x="101" y="220" text-anchor="middle">Q1</text>
+        <text class="xlab" x="209" y="220" text-anchor="middle">Q2</text>
+        <text class="xlab" x="317" y="220" text-anchor="middle">Q3</text>
+        <text class="xlab" x="425" y="220" text-anchor="middle">Q4</text>
+      </svg>
+      <div class="chart-legend">
+        <span><i style="background:var(--ds-accent)"></i>Ramp</span>
+        <span><i style="background:var(--ds-ok)"></i>On / ahead of target</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEW BOARD ROW -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 06</span><h2 class="sec-title">Review board</h2></div>
+    <div class="boardrow">
+      <span class="spine"></span>
+      <span class="bcheck" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span class="brow-id">ITEM-014</span>
+      <div class="brow-main">
+        <h3>Command palette</h3>
+        <p>Cmd-K to jump and run actions.</p>
+        <div class="brow-chips">
+          <span class="chip">Navigation</span>
+          <span class="chip impact-high">Impact High</span>
+          <span class="chip">Effort Small</span>
+        </div>
+      </div>
+      <span class="statuspill">Shipped</span>
+      <span class="chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+    </div>
+  </section>
+
+  <!-- TRUST CLAIM -->
+  <section class="block">
+    <div class="sec-head"><span class="sec-num">§ 07</span><h2 class="sec-title">Trust report</h2></div>
+    <div class="claim">
+      <div class="spine"></div>
+      <div class="claim-body">
+        <div class="claim-top">
+          <div>
+            <div class="claim-id">CLAIM-03</div>
+            <div class="claim-text">The test suite passes.</div>
+          </div>
+          <div class="claim-right">
+            <span class="verified"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified</span>
+            <span class="conf">Confidence <b>High</b></span>
+          </div>
+        </div>
+        <div class="claim-chips">
+          <span class="chip cmd">npm test</span>
+          <span class="chip">test-suite</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

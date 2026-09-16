@@ -1,0 +1,9 @@
+{
+  "schema": "dossier.workspace/v1",
+  "name": "Dossier Examples",
+  "description": "Gallery workspace for the built-in examples, process packets, release evidence, and agent-readable handoff surfaces.",
+  "roots": ["."],
+  "exclude": ["packs"],
+  "packs": ["engineering"],
+  "output": "site"
+}

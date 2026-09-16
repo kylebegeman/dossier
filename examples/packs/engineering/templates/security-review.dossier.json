@@ -1,0 +1,85 @@
+{
+  "dossierVersion": "1.0",
+  "kind": "review",
+  "meta": {
+    "title": "Security review",
+    "slug": "replace-with-slug",
+    "status": "draft",
+    "owner": "agent",
+    "tags": ["security", "review"]
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "eyebrow": "Security review",
+      "title": "Replace with the system or change",
+      "lede": "A bounded security review packet with findings, evidence, trust claims, and a final gate."
+    },
+    {
+      "type": "process-board",
+      "title": "Review work",
+      "items": [
+        {
+          "id": "map-boundaries",
+          "title": "Map trust boundaries",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P1",
+          "verdict": "undecided",
+          "summary": "List external inputs, auth boundaries, storage boundaries, and privileged paths."
+        },
+        {
+          "id": "verify-mitigations",
+          "title": "Verify mitigations",
+          "status": "proposed",
+          "owner": "agent",
+          "priority": "P1",
+          "verdict": "undecided",
+          "summary": "Tie every accepted risk to evidence or a follow-up."
+        }
+      ]
+    },
+    {
+      "type": "finding-list",
+      "title": "Findings",
+      "findings": [
+        {
+          "id": "replace-finding",
+          "title": "Replace with finding",
+          "severity": "medium",
+          "body": "Describe the issue, exploitability, affected files, and recommended fix.",
+          "recommendation": "Replace with the proposed remediation."
+        }
+      ]
+    },
+    {
+      "type": "trust-report",
+      "title": "Trust report",
+      "summary": "Claims should point to command, code, or external evidence before the review is accepted.",
+      "sources": [
+        {
+          "id": "source-code-review",
+          "label": "Code review",
+          "kind": "analysis",
+          "trust": "pending",
+          "summary": "Replace with the reviewed files and commands."
+        }
+      ],
+      "claims": [
+        {
+          "id": "claim-ready",
+          "claim": "Security review is ready for downstream implementation.",
+          "status": "unverified",
+          "confidence": "unknown",
+          "sources": ["source-code-review"]
+        }
+      ]
+    },
+    {
+      "type": "verdict-gate",
+      "title": "Accept review?",
+      "gateId": "accept-security-review",
+      "prompt": "Approve, revise, defer, or block this security review."
+    }
+  ]
+}

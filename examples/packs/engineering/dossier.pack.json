@@ -1,0 +1,27 @@
+{
+  "name": "engineering",
+  "version": "0.1.0",
+  "description": "Example engineering templates and a small trusted render plugin.",
+  "templates": [
+    {
+      "id": "security-review",
+      "title": "Security review",
+      "kind": "review",
+      "path": "templates/security-review.dossier.json"
+    },
+    {
+      "id": "implementation-closeout",
+      "title": "Implementation closeout",
+      "kind": "implementation",
+      "path": "templates/implementation-closeout.dossier.json"
+    }
+  ],
+  "plugins": [
+    {
+      "id": "signal-banner",
+      "description": "Compact status banner for engineering packets.",
+      "entry": "plugins/signal-banner.plugin.mjs",
+      "permissions": ["render"]
+    }
+  ]
+}

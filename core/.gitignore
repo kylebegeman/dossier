@@ -1,0 +1,5 @@
+examples/*.html
+bin/
+*.db
+*.db-wal
+*.db-shm

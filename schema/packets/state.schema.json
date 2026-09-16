@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kylebegeman/dossier/schema/packets/state.schema.json",
+  "title": "Dossier State Packet",
+  "type": "object",
+  "required": ["schema", "packets"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": { "const": "dossier.state/v1" },
+    "slug": { "type": "string" },
+    "updatedAt": { "type": "string" },
+    "exportedAt": { "type": "string" },
+    "packets": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "actions": { "type": "object", "additionalProperties": { "type": "boolean" } },
+        "decisions": { "type": "object", "additionalProperties": { "$ref": "#/$defs/decision" } },
+        "process": { "type": "object", "additionalProperties": { "$ref": "#/$defs/processEntry" } },
+        "edits": { "type": "object", "additionalProperties": { "$ref": "#/$defs/edit" } },
+        "verdicts": { "type": "object", "additionalProperties": { "$ref": "#/$defs/verdictEntry" } },
+        "release": { "type": "object", "additionalProperties": { "$ref": "#/$defs/releaseGate" } },
+        "patchReview": { "type": "object", "additionalProperties": { "$ref": "#/$defs/patchReview" } },
+        "diffReview": { "$ref": "#/$defs/diffReview" },
+        "evidence": { "type": "object", "additionalProperties": { "$ref": "#/$defs/evidence" } }
+      }
+    }
+  },
+  "$defs": {
+    "processVerdict": { "type": "string", "enum": ["undecided", "approve", "revise", "skip", "defer", "split", "retry", "block"] },
+    "reviewVerdict": { "type": "string", "enum": ["undecided", "approve", "revise", "skip"] },
+    "decision": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "selected": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "processEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "$ref": "#/$defs/processVerdict" },
+        "notes": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "text": { "type": "string" },
+        "lang": { "type": "string" },
+        "filename": { "type": "string" },
+        "targetPath": { "type": "string" },
+        "title": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "verdictEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "$ref": "#/$defs/processVerdict" },
+        "notes": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "releaseGate": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "done": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "title": { "type": "string" },
+        "required": { "type": "boolean" }
+      }
+    },
+    "patchReview": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "$ref": "#/$defs/reviewVerdict" },
+        "notes": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "diffReview": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "files": { "type": "object", "additionalProperties": { "$ref": "#/$defs/diffReviewEntry" } },
+        "hunks": { "type": "object", "additionalProperties": { "$ref": "#/$defs/diffReviewEntry" } }
+      }
+    },
+    "diffReviewEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "$ref": "#/$defs/reviewVerdict" },
+        "comment": { "type": "string" },
+        "notes": { "type": "string" },
+        "path": { "type": "string" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "kind": { "type": "string" },
+        "source": { "type": "string" },
+        "trust": { "type": "string" },
+        "body": { "type": "string" },
+        "created": { "type": "string" },
+        "artifacts": { "type": "array", "items": { "type": "string" } },
+        "links": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

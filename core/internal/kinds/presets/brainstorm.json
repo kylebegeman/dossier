@@ -1,0 +1,23 @@
+{
+  "id": "brainstorm",
+  "title": "Brainstorm",
+  "summary": "A set of proposed features for one decision-maker to read once and pick by number.",
+  "items": {
+    "numbered": true,
+    "size": ["minor", "major"],
+    "effort": ["S", "M", "L"],
+    "impact": { "min": 1, "max": 5 },
+    "facets": ["How it works", "Reader", "Agent", "Unlocks"],
+    "closers": ["Depends on", "Effort", "Risk", "Note"],
+    "riskFacets": ["Risk", "Note"]
+  },
+  "summary_table": {
+    "columns": ["number", "title", "size", "effort", "impact", "dependsOn"],
+    "legend": "Effort: S is up to a day, M is two to four days, L is one to two weeks."
+  },
+  "contents": { "groupBy": "size" },
+  "pick": {
+    "title": "How to pick",
+    "markdown": "Reply with the numbers you want, for example `1, 3, 4, 7`, plus any changes."
+  }
+}

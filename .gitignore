@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# generated example output (regenerate with: dossier build examples/*.json)
+examples/*.html
+examples/*.md
+
+# built demo site (deployed by Actions)
+site/
+
+# transient MCP / playwright screenshots
+.playwright-mcp/

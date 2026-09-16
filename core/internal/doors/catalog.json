@@ -1,0 +1,39 @@
+{
+  "schema_version": "dossier.doors/v1",
+  "commands": [
+    {
+      "id": "describe",
+      "summary": "List the commands and the kinds with their facet vocabularies.",
+      "mutation": "read-only",
+      "surfaces": ["cli", "mcp", "skill"],
+      "parameters": { "type": "object", "additionalProperties": false, "properties": {} }
+    },
+    {
+      "id": "validate",
+      "summary": "Check model files against the schema, the structure rules, and their kind.",
+      "mutation": "read-only",
+      "surfaces": ["cli", "mcp", "skill"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["files"],
+        "properties": { "files": { "type": "array", "minItems": 1, "items": { "type": "string" } } }
+      }
+    },
+    {
+      "id": "build",
+      "summary": "Render model files to self-contained HTML beside each source or into --out.",
+      "mutation": "writes-files",
+      "surfaces": ["cli", "mcp", "skill"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["files"],
+        "properties": {
+          "files": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "out": { "type": "string", "description": "Directory for the HTML output." }
+        }
+      }
+    }
+  ]
+}
