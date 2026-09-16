@@ -164,6 +164,9 @@ func call(ctx context.Context, id string, d door, in Input) Envelope {
 // Run dispatches args[0] to a door, renders the envelope for humans or as
 // JSON when --json is present anywhere in args, and returns the exit code.
 func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) int {
+	// Global flags may come before the command too: dossier --kinds DIR describe.
+	lead := leadingFlags(args)
+	flags, args := args[:lead], args[lead:]
 	if len(args) == 0 {
 		say(stderr, "%s", Usage())
 		return 2
@@ -180,7 +183,7 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 		say(stderr, "unknown command %q\n\n%s", id, Usage())
 		return 2
 	}
-	rest, asJSON, dirs, err := globalFlags(args[1:])
+	rest, asJSON, dirs, err := globalFlags(append(append([]string(nil), flags...), args[1:]...))
 	var env Envelope
 	if err != nil {
 		env = errorEnvelope(id, "usage", err)
@@ -232,6 +235,23 @@ func globalFlags(args []string) (rest []string, asJSON bool, dirs []string, err 
 		}
 	}
 	return rest, asJSON, dirs, err
+}
+
+// leadingFlags counts the arguments before the command that are global
+// flags or their values.
+func leadingFlags(args []string) int {
+	i := 0
+	for i < len(args) {
+		switch a := args[i]; {
+		case a == "--json", strings.HasPrefix(a, "--kinds="), strings.HasPrefix(a, "-kinds="):
+			i++
+		case (a == "--kinds" || a == "-kinds") && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-"):
+			i += 2
+		default:
+			return i
+		}
+	}
+	return i
 }
 
 // Usage lists the catalog for the command line.

@@ -99,7 +99,7 @@ Gates and evidence behind one ship or hold call. Items are **gates**, numbered.
   - Risk: What shipping without this gate would mean.
   - Note: Anything the release owner must know that fits nowhere else.
 - **Sections:** `ships`, `gates` (board), `rollback`.
-- **Decision:** verdicts waive, rerun, only where status is failed or pending; choice ship or hold.
+- **Decision:** verdicts waive, rerun, only where status is failed or pending; choice ship or hold; choosing ship over a gate that is failed and required, with no waive verdict, warns.
 - **Reply:** Choose ship or hold, then waive or rerun any gate that did not pass. For example `ship, waive 6. Notes: 6: known arm64 flake.`
 
 ### review

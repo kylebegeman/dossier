@@ -658,6 +658,21 @@ func (k Kind) Rules(doc *model.Document) decisions.Rules {
 
 // describeWhen words a when rule: "status failed or pending". With an empty
 // separator the field names are left out: "failed or pending".
+// GuardText says what the kind's guard warns about, such as "choosing ship
+// over a gate that is failed and required, with no waive verdict, warns",
+// or "" when the kind has no guard.
+func (k Kind) GuardText() string {
+	g := k.Decision.Guard
+	if g == nil {
+		return ""
+	}
+	describe := k.describeWhen(g.When, "")
+	if g.Required {
+		describe += " and " + strings.ToLower(k.FieldLabel("required"))
+	}
+	return fmt.Sprintf("choosing %s over a %s that is %s, with no %s verdict, warns", g.Choice, k.Item.Noun, describe, g.Unless)
+}
+
 func (k Kind) describeWhen(when map[string][]string, sep string) string {
 	var parts []string
 	for _, field := range sortedFields(when) {
