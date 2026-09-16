@@ -55,7 +55,7 @@ func upgradeDoor(_ context.Context, in Input) Envelope {
 	result := UpgradeResult{SchemaVersion: "dossier.upgrade-result/v1"}
 	var findings, warnings []model.Problem
 	for _, path := range files {
-		l, problems, err := load.File(path)
+		l, problems, err := in.loader().File(path)
 		if err != nil {
 			return errorEnvelope(id, "read", err)
 		}
@@ -69,7 +69,7 @@ func upgradeDoor(_ context.Context, in Input) Envelope {
 		}
 		// Written, the model is read as 0.7, strictly. A document that does not
 		// fit its kind yet is reported instead of written.
-		if _, problems, err := load.Check(path, l.Doc); err != nil || len(problems) > 0 {
+		if _, problems, err := in.loader().Check(path, l.Doc); err != nil || len(problems) > 0 {
 			if err != nil {
 				return errorEnvelope(id, "verify", err)
 			}
@@ -87,7 +87,7 @@ func upgradeDoor(_ context.Context, in Input) Envelope {
 		if err := load.WriteModel(target, l.Doc); err != nil {
 			return errorEnvelope(id, "write", err)
 		}
-		if _, problems, err := load.File(target); err != nil || len(problems) > 0 {
+		if _, problems, err := in.loader().File(target); err != nil || len(problems) > 0 {
 			return errorEnvelope(id, "verify", fmt.Errorf("%s does not read back cleanly: %v %v", target, err, problems))
 		}
 		result.Files = append(result.Files, UpgradedFile{Source: path, Model: target, Upgraded: true})

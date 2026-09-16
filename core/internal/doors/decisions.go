@@ -50,7 +50,7 @@ func decisionsReadDoor(_ context.Context, in Input) Envelope {
 	if len(files) != 1 {
 		return errorEnvelope(id, "usage", fmt.Errorf("decisions read needs exactly one model file"))
 	}
-	l, problems, err := load.File(files[0])
+	l, problems, err := in.loader().File(files[0])
 	if err != nil {
 		return errorEnvelope(id, "read", err)
 	}
@@ -99,7 +99,7 @@ func decisionsApplyDoor(_ context.Context, in Input) Envelope {
 	if (*from == "") == (*reply == "") {
 		return errorEnvelope(id, "usage", fmt.Errorf("give exactly one of --from FILE or --reply TEXT"))
 	}
-	l, problems, err := load.File(files[0])
+	l, problems, err := in.loader().File(files[0])
 	if err != nil {
 		return errorEnvelope(id, "read", err)
 	}

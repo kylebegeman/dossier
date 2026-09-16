@@ -44,7 +44,7 @@ func initDoor(_ context.Context, in Input) Envelope {
 	if len(positional) != 1 {
 		return errorEnvelope(id, "usage", fmt.Errorf("init needs exactly one kind; see describe for the list"))
 	}
-	kind, err := kinds.Load(positional[0])
+	kind, err := in.kindRegistry().Load(positional[0])
 	if err != nil {
 		return errorEnvelope(id, "usage", err)
 	}

@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"dossier/internal/decisions"
+	"dossier/internal/kinds"
 	"dossier/internal/load"
 	"dossier/internal/model"
 	"dossier/internal/render"
@@ -67,6 +68,9 @@ type Config struct {
 	Store string
 	// Addr is a loopback host and port; port 0 picks a free one.
 	Addr string
+	// KindDirs hold custom kinds. They are checked for changes with the
+	// model file and reloaded when a kind file changes.
+	KindDirs []string
 	// Poll is how often the model file is checked for changes.
 	Poll time.Duration
 	// Version names the binary in the studio.
@@ -101,11 +105,13 @@ type Server struct {
 }
 
 type snapshot struct {
-	mod      time.Time
-	size     int64
-	loaded   *load.Document
-	findings []model.Problem
-	err      error
+	mod       time.Time
+	size      int64
+	kinds     *kinds.Registry
+	kindStamp string
+	loaded    *load.Document
+	findings  []model.Problem
+	err       error
 }
 
 // New opens the store, binds the listener, and loads the model. Run serves.
@@ -142,6 +148,9 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 		host = "127.0.0.1"
 	default:
 		return nil, fmt.Errorf("serve binds loopback only; use 127.0.0.1, ::1, or localhost, not %q", host)
+	}
+	if _, _, err := kinds.Open(cfg.KindDirs...); err != nil {
+		return nil, err
 	}
 	token, err := randomToken()
 	if err != nil {
@@ -245,26 +254,38 @@ func (s *Server) watch(ctx context.Context) {
 
 func (s *Server) changed() bool {
 	info, err := os.Stat(s.cfg.Model)
+	stamp := kinds.Stamp(s.cfg.KindDirs...)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+	if stamp != s.snap.kindStamp {
+		return true
+	}
 	if err != nil {
 		return s.snap.err == nil
 	}
 	return !info.ModTime().Equal(s.snap.mod) || info.Size() != s.snap.size
 }
 
-// refresh reads and checks the model file into the current snapshot.
+// refresh reads the kinds and the model file into the current snapshot. A
+// broken kind file is a finding on the page, like a broken model.
 func (s *Server) refresh() {
-	next := snapshot{}
+	next := snapshot{kindStamp: kinds.Stamp(s.cfg.KindDirs...)}
+	reg, kindProblems, kindErr := kinds.Open(s.cfg.KindDirs...)
+	next.kinds = reg
 	if info, err := os.Stat(s.cfg.Model); err != nil {
 		next.err = err
 	} else {
 		next.mod, next.size = info.ModTime(), info.Size()
 		data, err := os.ReadFile(s.cfg.Model)
-		if err != nil {
+		switch {
+		case err != nil:
 			next.err = err
-		} else {
-			next.loaded, next.findings, next.err = load.Bytes(s.cfg.Model, data)
+		case kindErr != nil:
+			next.err = kindErr
+		case len(kindProblems) > 0:
+			next.findings = kindProblems
+		default:
+			next.loaded, next.findings, next.err = load.Loader{Kinds: reg}.Bytes(s.cfg.Model, data)
 		}
 	}
 	switch {
@@ -283,6 +304,9 @@ func (s *Server) current() snapshot {
 	defer s.mu.RUnlock()
 	return s.snap
 }
+
+// loader checks models against the kinds in the current snapshot.
+func (s *Server) loader() load.Loader { return load.Loader{Kinds: s.current().kinds} }
 
 // documentID is the store's id for a slug, created on first use.
 func (s *Server) documentID(ctx context.Context, slug string) (string, error) {
@@ -386,7 +410,7 @@ func (s *Server) page(w http.ResponseWriter, r *http.Request) {
 	}
 	applied, conflicts := applyDrafts(doc, drafts)
 	if len(applied) > 0 {
-		if _, problems, err := load.Check(s.cfg.Model, doc); err != nil || len(problems) > 0 {
+		if _, problems, err := s.loader().Check(s.cfg.Model, doc); err != nil || len(problems) > 0 {
 			// The file changed under the drafts in a way they no longer fit.
 			// Show the file as it is and report every draft as a conflict.
 			if doc, err = clone(snap.loaded.Doc); err != nil {

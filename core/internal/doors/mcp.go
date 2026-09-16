@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	"dossier/internal/kinds"
 )
 
 func init() { register("mcp", mcpDoor) }
@@ -36,7 +38,13 @@ func mcpDoor(ctx context.Context, in Input) Envelope {
 	if len(args) > 0 {
 		return errorEnvelope(id, "usage", fmt.Errorf("mcp takes no arguments"))
 	}
-	server, tools, err := MCPServer()
+	// A missing kinds directory stops the server from starting; a broken kind
+	// file does not, since every tool call reads the directories again and
+	// answers with the problems until they are fixed.
+	if _, _, err := kinds.Open(in.KindDirs...); err != nil {
+		return errorEnvelope(id, "kinds", err)
+	}
+	server, tools, err := MCPServer(in.KindDirs...)
 	if err != nil {
 		return errorEnvelope(id, "catalog", err)
 	}
@@ -48,8 +56,9 @@ func mcpDoor(ctx context.Context, in Input) Envelope {
 
 // MCPServer builds the server from the catalog: one tool per mcp-surfaced
 // command, its input schema the command's parameters, its result the same
-// envelope the CLI prints.
-func MCPServer() (*mcp.Server, []string, error) {
+// envelope the CLI prints. Each call reads the custom kinds in kindDirs, so
+// edits to a kind file apply without restarting the server.
+func MCPServer(kindDirs ...string) (*mcp.Server, []string, error) {
 	catalog, err := LoadCatalog()
 	if err != nil {
 		return nil, nil, err
@@ -74,7 +83,7 @@ func MCPServer() (*mcp.Server, []string, error) {
 			if err != nil {
 				return toolResult(errorEnvelope(cmd.ID, "usage", err))
 			}
-			return toolResult(d(ctx, Input{Args: args, Stdin: strings.NewReader(""), Stderr: io.Discard}))
+			return toolResult(call(ctx, cmd.ID, d, Input{Args: args, Stdin: strings.NewReader(""), Stderr: io.Discard, KindDirs: kindDirs}))
 		})
 	}
 	sort.Strings(names)

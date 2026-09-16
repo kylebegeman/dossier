@@ -138,6 +138,37 @@ func TestMCPInMemory(t *testing.T) {
 	exerciseServer(t, cs)
 }
 
+func TestMCPToolsReadKindDirectoriesOnEveryCall(t *testing.T) {
+	dir := kindsDir(t)
+	server, _, err := MCPServer(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clientT, serverT := mcp.NewInMemoryTransports()
+	ctx := context.Background()
+	ss, err := server.Connect(ctx, serverT, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = ss.Close() }()
+	cs, err := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "0"}, nil).Connect(ctx, clientT, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = cs.Close() }()
+	env, _ := callTool(t, cs, "describe", map[string]any{})
+	if env.Outcome != OutcomeOK || !strings.Contains(string(mustJSON(env.Result)), `"id":"retro"`) {
+		t.Errorf("describe lists the custom kind: %+v", env)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "retro.kind.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	env, _ = callTool(t, cs, "describe", map[string]any{})
+	if env.Outcome != OutcomeFindings || !strings.Contains(findingText(env), "retro.kind.json") {
+		t.Errorf("a kind file broken while serving is a finding on the next call: %+v", env)
+	}
+}
+
 // TestMCPOverStdio is the conformance test: the real binary, the real
 // transport, a real client.
 func TestMCPOverStdio(t *testing.T) {

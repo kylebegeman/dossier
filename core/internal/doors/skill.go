@@ -138,6 +138,8 @@ func Skill() ([]byte, error) {
 		}
 	}
 
+	w("### Custom kinds\n\n")
+	w("A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file per kind in a directory, starting from a preset that `dossier describe --json` prints and leaving out its `source`, and pass `--kinds DIR` to any command or list directories in `%s`. Every command checks kind files first and answers with findings until they are valid; a custom kind cannot reuse a built-in id. `describe` shows where each kind came from, and `serve` and `mcp` pick up edits to kind files without a restart.\n\n", KindsEnv)
 	w("## Content rules\n\n")
 	w("- **Effort is agent time, never calendar time.** `S` is under an hour, `M` a few hours with review, `L` a day or more across sessions. Never write days-of-work or weeks-of-work.\n")
 	w("- **Concise by default.** A summary is one sentence. A facet is two or three sentences. Kinds carry character limits; `validate` and `build` warn past them without blocking.\n")

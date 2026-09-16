@@ -46,7 +46,7 @@ func serveDoor(ctx context.Context, in Input) Envelope {
 		return errorEnvelope(id, "usage", fmt.Errorf("port %d is out of range", *port))
 	}
 	logger := slog.New(slog.NewTextHandler(in.Stderr, &slog.HandlerOptions{Level: slog.LevelWarn}))
-	srv, err := serve.New(ctx, serve.Config{Model: files[0], Store: *db, Addr: net.JoinHostPort(*host, strconv.Itoa(*port)), Version: Version, Logger: logger})
+	srv, err := serve.New(ctx, serve.Config{Model: files[0], Store: *db, Addr: net.JoinHostPort(*host, strconv.Itoa(*port)), KindDirs: in.KindDirs, Version: Version, Logger: logger})
 	if err != nil {
 		return errorEnvelope(id, "start", err)
 	}

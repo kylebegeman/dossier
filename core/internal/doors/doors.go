@@ -8,13 +8,17 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 
 	"dossier/internal/decisions"
+	"dossier/internal/kinds"
+	"dossier/internal/load"
 	"dossier/internal/model"
 )
 
@@ -108,7 +112,22 @@ type Input struct {
 	Args   []string
 	Stdin  io.Reader
 	Stderr io.Writer
+	// Kinds holds the built-in kinds plus any custom kinds; nil means the
+	// built-ins only.
+	Kinds *kinds.Registry
+	// KindDirs are the custom kind directories, for doors that run long
+	// enough to reload them.
+	KindDirs []string
 }
+
+func (in Input) kindRegistry() *kinds.Registry {
+	if in.Kinds == nil {
+		return kinds.Builtin()
+	}
+	return in.Kinds
+}
+
+func (in Input) loader() load.Loader { return load.Loader{Kinds: in.Kinds} }
 
 // door is one command implementation: it parses its own flags and answers.
 type door func(ctx context.Context, in Input) Envelope
@@ -116,6 +135,31 @@ type door func(ctx context.Context, in Input) Envelope
 var registry = map[string]door{}
 
 func register(id string, d door) { registry[id] = d }
+
+// reloadsKinds names the doors that outlive one call. They read the kind
+// directories themselves and reload them on change, so a broken kind file
+// shows up in their answers instead of stopping them from starting.
+var reloadsKinds = map[string]bool{"serve": true, "mcp": true}
+
+// KindsEnv names the environment variable listing custom kind directories.
+const KindsEnv = "DOSSIER_KINDS"
+
+// call opens the kinds registry and runs a door with it. Problems in a kind
+// file are findings: a team's kinds must be valid before anything uses them.
+func call(ctx context.Context, id string, d door, in Input) Envelope {
+	if reloadsKinds[id] {
+		return d(ctx, in)
+	}
+	reg, problems, err := kinds.Open(in.KindDirs...)
+	if err != nil {
+		return errorEnvelope(id, "kinds", err)
+	}
+	if len(problems) > 0 {
+		return Envelope{SchemaVersion: SchemaVersion, Command: id, Outcome: OutcomeFindings, Findings: problems}
+	}
+	in.Kinds = reg
+	return d(ctx, in)
+}
 
 // Run dispatches args[0] to a door, renders the envelope for humans or as
 // JSON when --json is present anywhere in args, and returns the exit code.
@@ -136,16 +180,14 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 		say(stderr, "unknown command %q\n\n%s", id, Usage())
 		return 2
 	}
-	var rest []string
-	asJSON := false
-	for _, a := range args[1:] {
-		if a == "--json" {
-			asJSON = true
-			continue
-		}
-		rest = append(rest, a)
+	rest, asJSON, dirs, err := globalFlags(args[1:])
+	var env Envelope
+	if err != nil {
+		env = errorEnvelope(id, "usage", err)
+	} else {
+		dirs = append(kinds.SplitDirs(os.Getenv(KindsEnv)), dirs...)
+		env = call(ctx, id, d, Input{Args: rest, Stdin: stdin, Stderr: stderr, KindDirs: dirs})
 	}
-	env := d(ctx, Input{Args: rest, Stdin: stdin, Stderr: stderr})
 	if asJSON {
 		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")
@@ -159,6 +201,39 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 	return env.ExitCode()
 }
 
+// globalFlags removes the flags every command takes: --json anywhere, and
+// --kinds DIR (or --kinds=DIR), which may repeat. It scans every argument
+// even after a mistake, so an error still answers as JSON when asked.
+func globalFlags(args []string) (rest []string, asJSON bool, dirs []string, err error) {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			rest = append(rest, args[i:]...)
+			i = len(args)
+		case a == "--json":
+			asJSON = true
+		case a == "--kinds" || a == "-kinds":
+			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "-") {
+				err = errors.Join(err, fmt.Errorf("--kinds needs a directory"))
+				continue
+			}
+			dirs = append(dirs, args[i+1])
+			i++
+		case strings.HasPrefix(a, "--kinds=") || strings.HasPrefix(a, "-kinds="):
+			dir := a[strings.Index(a, "=")+1:]
+			if dir == "" {
+				err = errors.Join(err, fmt.Errorf("--kinds needs a directory"))
+				continue
+			}
+			dirs = append(dirs, dir)
+		default:
+			rest = append(rest, a)
+		}
+	}
+	return rest, asJSON, dirs, err
+}
+
 // Usage lists the catalog for the command line.
 func Usage() string {
 	c, err := LoadCatalog()
@@ -166,7 +241,7 @@ func Usage() string {
 		return "dossier: catalog unavailable: " + err.Error() + "\n"
 	}
 	var b bytes.Buffer
-	b.WriteString("usage: dossier <command> [flags] [--json]\n\n")
+	b.WriteString("usage: dossier <command> [flags] [--json] [--kinds DIR]\n\n")
 	cmds := append([]Command(nil), c.Commands...)
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].ID < cmds[j].ID })
 	for _, cmd := range cmds {

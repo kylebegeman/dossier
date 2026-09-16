@@ -27,19 +27,45 @@ type Document struct {
 	Upgraded bool
 }
 
+// Loader reads models against a kinds registry. The zero Loader knows only
+// the built-in kinds.
+type Loader struct {
+	Kinds *kinds.Registry
+}
+
+func (l Loader) registry() *kinds.Registry {
+	if l.Kinds == nil {
+		return kinds.Builtin()
+	}
+	return l.Kinds
+}
+
+// File reads and checks one model file with the built-in kinds.
+func File(path string) (*Document, []model.Problem, error) { return Loader{}.File(path) }
+
+// Bytes checks model bytes with the built-in kinds.
+func Bytes(path string, data []byte) (*Document, []model.Problem, error) {
+	return Loader{}.Bytes(path, data)
+}
+
+// Check validates an in-memory document with the built-in kinds.
+func Check(path string, doc *model.Document) (*Document, []model.Problem, error) {
+	return Loader{}.Check(path, doc)
+}
+
 // File reads and checks one model file. Problems are findings with paths
 // prefixed by the file; an error means the file could not be read or is not
 // JSON at all.
-func File(path string) (*Document, []model.Problem, error) {
+func (l Loader) File(path string) (*Document, []model.Problem, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, nil, err
 	}
-	return Bytes(path, data)
+	return l.Bytes(path, data)
 }
 
 // Bytes checks model bytes as if they were read from path.
-func Bytes(path string, data []byte) (*Document, []model.Problem, error) {
+func (l Loader) Bytes(path string, data []byte) (*Document, []model.Problem, error) {
 	data, aliasWarnings, upgraded, err := model.Normalize(data)
 	if err != nil {
 		return nil, nil, err
@@ -58,7 +84,7 @@ func Bytes(path string, data []byte) (*Document, []model.Problem, error) {
 	if problems := model.Check(doc); len(problems) > 0 {
 		return nil, Prefix(path, problems), nil
 	}
-	kind, err := kinds.Load(doc.Kind)
+	kind, err := l.registry().Load(doc.Kind)
 	if err != nil {
 		return nil, Prefix(path, []model.Problem{{Path: "/kind", Message: err.Error()}}), nil
 	}
@@ -83,12 +109,12 @@ func Bytes(path string, data []byte) (*Document, []model.Problem, error) {
 
 // Check validates an in-memory document through the same pipeline, as it
 // would be read back after WriteModel.
-func Check(path string, doc *model.Document) (*Document, []model.Problem, error) {
+func (l Loader) Check(path string, doc *model.Document) (*Document, []model.Problem, error) {
 	data, err := model.Encode(doc)
 	if err != nil {
 		return nil, nil, err
 	}
-	return Bytes(path, data)
+	return l.Bytes(path, data)
 }
 
 // Prefix rewrites problem paths to file#/pointer.

@@ -60,7 +60,7 @@ func renderDoor(_ context.Context, in Input) Envelope {
 	if *base != "" {
 		dir = *base
 	}
-	l, problems, err := load.Bytes(source, data)
+	l, problems, err := in.loader().Bytes(source, data)
 	if err != nil {
 		return errorEnvelope(id, "read", err)
 	}

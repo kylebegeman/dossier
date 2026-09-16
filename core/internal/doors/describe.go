@@ -14,10 +14,17 @@ func init() { register("describe", describeDoor) }
 
 // DescribeResult is dossier.describe-result/v1: the catalog and the kinds.
 type DescribeResult struct {
-	SchemaVersion string       `json:"schema_version"`
-	Version       string       `json:"version"`
-	Commands      []Command    `json:"commands"`
-	Kinds         []kinds.Kind `json:"kinds"`
+	SchemaVersion string          `json:"schema_version"`
+	Version       string          `json:"version"`
+	Commands      []Command       `json:"commands"`
+	Kinds         []DescribedKind `json:"kinds"`
+}
+
+// DescribedKind is a kind with where it came from: built-in, or the path of
+// its custom kind file.
+type DescribedKind struct {
+	kinds.Kind
+	Source string `json:"source"`
 }
 
 func (r DescribeResult) human(w io.Writer) {
@@ -29,24 +36,28 @@ func (r DescribeResult) human(w io.Writer) {
 	sayln(w, "\nKinds")
 	for _, k := range r.Kinds {
 		say(w, "  %-10s %s\n", k.ID, k.Summary)
-		say(w, "             %s\n", itemLine(k))
-		if fields := fieldList(k); fields != "" {
+		if k.Source != kinds.BuiltinSource {
+			say(w, "             from %s\n", k.Source)
+		}
+		say(w, "             %s\n", itemLine(k.Kind))
+		if fields := fieldList(k.Kind); fields != "" {
 			say(w, "             fields: %s\n", fields)
 		}
-		say(w, "             facets: %s\n", facetList(k))
+		say(w, "             facets: %s\n", facetList(k.Kind))
 	}
 }
 
-func describeDoor(_ context.Context, _ Input) Envelope {
+func describeDoor(_ context.Context, in Input) Envelope {
 	c, err := LoadCatalog()
 	if err != nil {
 		return errorEnvelope("describe", "catalog", err)
 	}
-	all, err := kinds.All()
-	if err != nil {
-		return errorEnvelope("describe", "kinds", err)
+	reg := in.kindRegistry()
+	var described []DescribedKind
+	for _, k := range reg.All() {
+		described = append(described, DescribedKind{Kind: k, Source: reg.Source(k.ID)})
 	}
-	return Envelope{SchemaVersion: SchemaVersion, Command: "describe", Outcome: OutcomeOK, Result: DescribeResult{SchemaVersion: "dossier.describe-result/v1", Version: Version, Commands: c.Commands, Kinds: all}}
+	return Envelope{SchemaVersion: SchemaVersion, Command: "describe", Outcome: OutcomeOK, Result: DescribeResult{SchemaVersion: "dossier.describe-result/v1", Version: Version, Commands: c.Commands, Kinds: described}}
 }
 
 // itemLine says what a kind's items are and how the reader decides.

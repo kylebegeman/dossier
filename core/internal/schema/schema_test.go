@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"dossier/internal/kinds"
 )
 
 func TestExampleValidates(t *testing.T) {
@@ -94,21 +92,7 @@ func TestEnvelopeSchema(t *testing.T) {
 	}
 }
 
-func TestBuiltInKindsPassTheKindSchema(t *testing.T) {
-	all, err := kinds.All()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, k := range all {
-		data, err := kinds.PresetJSON(k.ID)
-		if err != nil {
-			t.Fatal(err)
-		}
-		problems, err := CheckKind(data)
-		if err != nil || len(problems) > 0 {
-			t.Errorf("%s: %v %v", k.ID, err, problems)
-		}
-	}
+func TestKindSchemaRejectsUnknownShapes(t *testing.T) {
 	problems, err := CheckKind([]byte(`{"id":"x","title":"X","summary":"s","item":{"noun":"a","plural":"as","numbered":true},"fields":{"priority":{}},"facets":[],"sections":[],"columns":["rank"],"decision":{"mode":"vote"}}`))
 	if err != nil {
 		t.Fatal(err)
