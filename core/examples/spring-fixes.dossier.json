@@ -1,0 +1,161 @@
+{
+  "dossier": "1.0",
+  "kind": "brainstorm",
+  "meta": {
+    "title": "Small fixes before the spring timetable",
+    "slug": "spring-fixes",
+    "kicker": "Tidewright · Wenlow Islands ferries",
+    "emphasis": "spring",
+    "lede": "Six small fixes that can land before the spring timetable starts on 30 March. Each one answers something riders asked the harbour office this winter. Pick by number.",
+    "updated": "2026-03-09",
+    "status": "for-decision"
+  },
+  "sections": [
+    {
+      "id": "thesis",
+      "title": "Three weeks, six small fixes",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "The spring timetable starts on Monday 30 March, the day after the clocks go forward. It adds an evening sailing to Holm and doubles weekend crossings to Keddle, and busier boats find the rough edges winter hid.\n\nEvery fix here came from the harbour office's winter contact log and fits in the three weeks left. Pick the ones worth doing now, and the rest wait for summer."
+        }
+      ]
+    },
+    {
+      "id": "ideas",
+      "title": "Fixes",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "clock-change",
+            "title": "Calendar files that survive the clock change",
+            "summary": "Calendar exports carry the harbour's time zone, so sailings after 29 March stop showing an hour early.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Calendar files name the Europe/London time zone instead of a fixed offset. Riders who already exported a sailing after 29 March get a corrected file with their reminder."
+              },
+              {
+                "label": "Why",
+                "markdown": "Last spring 23 riders turned up an hour out in the first week of summer time, and three missed the boat. The fix is one line and a resend."
+              },
+              {
+                "label": "Risk",
+                "markdown": "Some calendar apps duplicate an event when a corrected file arrives. The resend keeps the event id, so the new file replaces the old one."
+              }
+            ]
+          },
+          {
+            "id": "spaces-left",
+            "title": "Say when a car deck is nearly full",
+            "summary": "Search results show the car spaces left once a sailing drops below ten, so drivers choose before it sells out.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "When fewer than ten car spaces remain, the search result shows the number left beside the fare. The count comes from the inventory the booking check already reads."
+              },
+              {
+                "label": "Why",
+                "markdown": "Drivers who meet a full deck at checkout phone the office to ask when spaces free up. Seeing the number early moves them to another sailing first."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "The same counter shows bike spaces in 5."
+              }
+            ]
+          },
+          {
+            "id": "usual-route",
+            "title": "Start search on the rider's usual route",
+            "summary": "The search form opens on the route, party, and vehicle the rider booked last, with one tap to change them.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Signed-in riders find their last route, passengers, and vehicle already filled in. Anything they change becomes the new starting point."
+              },
+              {
+                "label": "Why",
+                "markdown": "Most bookings are residents repeating the same crossing. Four fewer taps on each one adds up across 2,400 bookings a week."
+              }
+            ]
+          },
+          {
+            "id": "step-free",
+            "title": "Step-free boarding notes on every ticket",
+            "summary": "Tickets say how to board without steps at each harbour, and checkout asks once whether a rider needs it.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Each harbour gets a short note on where the ramp is and when crew help foot passengers aboard. Riders who ask for step-free boarding see it on the ticket, and crew see a flag on the loading list."
+              },
+              {
+                "label": "Why",
+                "markdown": "Brisk has no foot passenger ramp at low water, and riders find out at the slipway. A note turns a surprise into a plan."
+              },
+              {
+                "label": "Note",
+                "markdown": "The harbour authority wrote the notes. We only show them."
+              }
+            ]
+          },
+          {
+            "id": "bike-spaces",
+            "title": "Book a bike space with the ticket",
+            "summary": "Bikes become a bookable extra on the Petrel, which carries eight, instead of first come at the slipway.",
+            "size": "minor",
+            "effort": "M",
+            "impact": 3,
+            "dependsOn": [
+              "spaces-left"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Checkout offers a bike space while any remain, counted like car spaces. Riders without a booked space can still board when the crew have room."
+              },
+              {
+                "label": "Why",
+                "markdown": "Spring weekends bring cyclists to Keddle, and the Petrel turned away 41 bikes last April. A booked space means nobody rides to the harbour for nothing."
+              },
+              {
+                "label": "Risk",
+                "markdown": "No-shows can leave booked spaces empty while crew turn bikes away. Release unclaimed spaces ten minutes before departure."
+              }
+            ]
+          },
+          {
+            "id": "vat-receipts",
+            "title": "Receipts with VAT for business riders",
+            "summary": "Receipts show VAT and an optional company name, so contractors stop asking the office for a copy.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 2,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "The receipt page adds the VAT amount, our VAT number, and a company name the rider can fill in before downloading."
+              },
+              {
+                "label": "Why",
+                "markdown": "Contractors working on the islands asked for 180 VAT receipts this winter, and the office wrote each one by hand."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

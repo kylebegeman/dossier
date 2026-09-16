@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="760" height="380" role="img" aria-labelledby="t d">
+  <title id="t">The vehicle step of checkout</title>
+  <desc id="d">A phone showing step 3 of 5 in checkout. It asks for a registration, a length in metres, and a height in metres, with no help for either measurement.</desc>
+  <rect width="760" height="380" rx="14" fill="#f5f7fa"/>
+  <g font-family="Figtree, 'Avenir Next', 'Segoe UI', system-ui, sans-serif">
+    <g font-size="13" fill="#6b6270">
+      <text x="56" y="132">1  Sailing</text>
+      <text x="56" y="160">2  Passengers</text>
+      <text x="56" y="216">4  Account</text>
+      <text x="56" y="244">5  Payment</text>
+    </g>
+    <text x="56" y="188" font-size="13" font-weight="600" fill="#1f5fa8">3  Vehicle</text>
+    <rect x="40" y="174" width="3" height="20" rx="1.5" fill="#1f5fa8"/>
+    <rect x="262" y="20" width="236" height="340" rx="28" fill="#fff" stroke="#dde3ea" stroke-width="1.5"/>
+    <rect x="350" y="32" width="60" height="6" rx="3" fill="#dde3ea"/>
+    <g fill="#1f5fa8"><circle cx="322" cy="62" r="4.5"/><circle cx="351" cy="62" r="4.5"/></g>
+    <circle cx="380" cy="62" r="5.5" fill="#fff" stroke="#1f5fa8" stroke-width="2"/>
+    <g fill="#dde3ea"><circle cx="409" cy="62" r="4.5"/><circle cx="438" cy="62" r="4.5"/></g>
+    <text x="284" y="100" font-size="18" font-weight="600" fill="#201c22">Your vehicle</text>
+    <text x="284" y="119" font-size="12" fill="#6b6270">Step 3 of 5</text>
+    <g font-size="12" fill="#201c22">
+      <text x="284" y="146">Registration</text>
+      <text x="284" y="208">Length in metres</text>
+      <text x="284" y="270">Height in metres</text>
+    </g>
+    <g fill="#fff" stroke="#c9d2dc" stroke-width="1.2">
+      <rect x="284" y="154" width="192" height="32" rx="7"/>
+      <rect x="284" y="216" width="192" height="32" rx="7" stroke="#9a5b00" stroke-width="1.6"/>
+      <rect x="284" y="278" width="192" height="32" rx="7" stroke="#9a5b00" stroke-width="1.6"/>
+    </g>
+    <text x="296" y="175" font-size="13" fill="#201c22" letter-spacing="0.5">WN21 KDL</text>
+    <rect x="296" y="224" width="1.5" height="16" fill="#201c22"/>
+    <rect x="284" y="322" width="192" height="30" rx="8" fill="#1f5fa8"/>
+    <text x="380" y="342" font-size="13" font-weight="600" fill="#fff" text-anchor="middle">Continue</text>
+    <g fill="none" stroke="#9a5b00" stroke-width="1.4" stroke-dasharray="3 4">
+      <path d="M476 232C500 232 508 226 526 222"/>
+      <path d="M476 294C506 294 510 238 526 230"/>
+    </g>
+    <text x="534" y="222" font-size="14" font-weight="600" fill="#9a5b00">No help with either</text>
+    <text x="534" y="241" font-size="12" fill="#6b6270">Most drivers have never</text>
+    <text x="534" y="257" font-size="12" fill="#6b6270">measured their car.</text>
+    <text x="534" y="312" font-size="14" font-weight="600" fill="#201c22">14% of riders leave here</text>
+    <text x="534" y="331" font-size="12" fill="#6b6270">The largest single exit</text>
+    <text x="534" y="347" font-size="12" fill="#6b6270">in checkout.</text>
+  </g>
+</svg>

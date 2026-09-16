@@ -1,0 +1,660 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Why riders abandon checkout</title><style>
+/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+:root {
+  --bg: #ffffff;
+  --paper: #f7f5f7;
+  --paper-2: #efecf0;
+  --ink: #201c22;
+  --muted: #6b6270;
+  --line: #e0dae0;
+  --line-soft: #ece7ec;
+  --accent: #c81e4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe8ed;
+  --teal: #08776e;
+  --teal-soft: #e3f3f0;
+  --violet: #6a46d9;
+  --violet-soft: #ede8fb;
+  --coral: #9a5b00;
+  --risk-soft: #f6ecdc;
+  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: clamp(16px, 4vw, 40px);
+  --frame: 1360px;
+  --rail: 208px;
+  --measure: 76ch;
+  --r-s: 6px;
+  --r: 10px;
+  --r-l: 14px;
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+  color-scheme: dark;
+}
+
+/* base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; }
+pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* buttons: one ghost style everywhere */
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
+.btn:hover { color: var(--ink); background: var(--paper-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.btn svg { width: 14px; height: 14px; flex: none; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.link-btn:hover { color: var(--ink); }
+.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
+.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::before { transform: scale(1); }
+
+/* shell */
+.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
+@media (min-width: 1100px) {
+  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
+  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}
+
+/* masthead: one band across the frame */
+.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.search { position: relative; display: inline-flex; align-items: center; }
+.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
+.search input::placeholder { color: var(--muted); }
+.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hits:empty { display: none; }
+::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
+::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
+.no-hits { padding-block: 36px; color: var(--muted); }
+@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
+.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
+.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
+.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
+.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
+.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
+.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.stats .live b { color: var(--accent); }
+.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.stats a:hover { color: var(--ink); text-decoration: underline; }
+
+/* contents */
+.toc { font-size: 13.5px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
+.toc li a:hover { color: var(--ink); background: var(--paper); }
+.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
+.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
+.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
+.toc li.picked .pip { opacity: 1; }
+.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
+.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.toc .group:first-child { margin-top: 0; }
+.toc .group a { display: inline; padding: 0; color: inherit; }
+.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
+@media (max-width: 1099px) {
+  .toc { padding-block: 18px 0; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
+  .toc .n { text-align: left; min-width: 0; }
+  .toc .group { display: none; }
+  .toc .pip { margin-left: 2px; }
+}
+
+/* main column */
+.main { min-width: 0; }
+.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.section:last-of-type { border-bottom: 0; }
+.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
+.part + .part { margin-top: 16px; }
+.prose { max-width: var(--measure); display: grid; gap: 12px; }
+.prose p, .prose li { font-size: 15.5px; }
+.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
+.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
+.prose strong { font-weight: 600; }
+
+.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
+.spec > div:first-child { border-top: 0; }
+.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.spec span { font-size: 14.5px; }
+@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
+
+.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
+.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.callout.risk b { color: var(--coral); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
+th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+td a { color: var(--ink); text-decoration: none; font-weight: 500; }
+td a:hover { color: var(--accent); }
+td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+td.ck, th.ck { width: 34px; padding-right: 0; }
+tbody tr { transition: background var(--dur); }
+tbody tr:hover { background: var(--paper); }
+tbody tr.picked { background: var(--accent-soft); }
+tbody tr[data-tone] { background: var(--tone-soft); }
+td.vd, th.vd { width: 1%; white-space: nowrap; }
+td.vd .none { font-size: 12.5px; color: var(--muted); }
+select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+/* code, figures, charts, diagram source */
+.block { display: grid; gap: 6px; }
+.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
+.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
+.figure { margin: 0; display: grid; gap: 8px; }
+.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
+.figure .legend { margin-top: 0; }
+.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
+.diagram pre { white-space: pre-wrap; }
+
+/* diagrams: Graphviz geometry, colored by the tokens */
+figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
+.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
+.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
+.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
+.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
+.dg .edge .hollow { fill: var(--bg); }
+.dg .edge text { fill: var(--muted); font-size: 10px; }
+.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
+.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
+.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
+.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
+figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.dg-source { flex: 1 1 100%; min-width: 0; }
+.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
+.dg-source summary:hover { color: var(--ink); }
+.dg-source[open] summary { margin-bottom: 6px; }
+figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
+figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
+
+/* timeline: times in a column, a hairline rail, a dot per event in its tone */
+.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
+.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .ev { position: relative; padding: 0 0 18px 24px; }
+.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
+.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline b { display: block; font-size: 15px; font-weight: 600; }
+.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
+@media (max-width: 520px) {
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
+  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
+}
+:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
+.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
+.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
+.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
+.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
+.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
+.hl .hl-nt { color: var(--hl-tag); }
+.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
+.hl .hl-o, .hl .hl-p { color: var(--muted); }
+.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
+.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
+.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
+.hl .hl-ge { font-style: italic; }
+.hl .hl-gs { font-weight: 600; }
+.hl .hl-err { text-decoration: underline wavy var(--coral); }
+
+/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
+.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
+
+/* chips and meters */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
+.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
+.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
+.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
+.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
+.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.owner { font-size: 12.5px; color: var(--muted); }
+.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.stats > div.t-risk b { color: var(--coral); }
+.stats > div.t-teal b { color: var(--teal); }
+.stats > div.t-violet b { color: var(--violet); }
+.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
+.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
+.meter i.on { background: var(--accent); }
+.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* items: collapsible details */
+.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.item:last-of-type { border-bottom: 0; }
+.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
+.item-head::-webkit-details-marker { display: none; }
+.item-head::marker { content: ""; }
+.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
+.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
+.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
+.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
+.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
+.item[open] h3 .chev { transform: rotate(90deg); }
+.item-head:hover h3 .chev { color: var(--ink); }
+.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.item.picked h3 .num { color: var(--accent); }
+.item[data-tone] h3 .num { color: var(--tone); }
+.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
+.item-body { margin-top: 14px; padding-left: 24px; }
+@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
+.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
+.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
+.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
+.note textarea::placeholder { color: var(--muted); }
+.facets { display: grid; margin: 0; }
+.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
+.facet:first-child { border-top: 0; padding-top: 0; }
+.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
+.facet dd p { max-width: var(--measure); }
+.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
+.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
+.facet.risk dt { color: var(--coral); }
+@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
+.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rows { display: grid; gap: 8px; }
+.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
+.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
+.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
+.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
+.rows > .row > summary::-webkit-details-marker { display: none; }
+.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.rows > .row[open] > summary .chev { transform: rotate(90deg); }
+.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
+.rows > .row > .facets .facet:first-child { padding-top: 8px; }
+@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
+
+/* the one saturated block */
+.pick { margin-top: 28px; padding: 18px 20px; border-radius: var(--r-l); background: var(--accent); color: var(--accent-ink); display: grid; gap: 10px; }
+.pick b { font-size: 16px; font-weight: 600; }
+.pick p { font-size: 14.5px; opacity: 0.92; max-width: 76ch; }
+.pick .example { font-size: 13.5px; }
+.pick code { background: rgba(255,255,255,0.18); border-color: transparent; color: inherit; }
+.pick .reply { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; background: rgba(0,0,0,0.18); border-radius: 8px; padding: 9px 11px; white-space: pre-wrap; word-break: break-word; }
+.pick .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick button { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); color: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background var(--dur); }
+.pick button:hover { background: rgba(255,255,255,0.22); }
+.pick button.solid { background: var(--accent-ink); color: var(--accent); border-color: transparent; }
+.pick button.solid:hover { background: var(--accent-ink); filter: brightness(1.05); }
+.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.pick legend { padding: 0; margin-bottom: 8px; font-size: 14.5px; font-weight: 600; }
+.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent-ink) 35%, transparent); border-radius: 10px; cursor: pointer; transition: background var(--dur), border-color var(--dur); }
+.pick .options label:hover { background: color-mix(in srgb, var(--accent-ink) 10%, transparent); }
+.pick .options label:has(input:checked) { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); border-color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.pick .options input { margin: 3px 0 0; accent-color: var(--accent-ink); }
+.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
+.pick .sum { display: block; font-size: 13px; opacity: 0.9; }
+.pick .guard { max-width: none; padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 13.5px; opacity: 1; }
+.pick button.clear { justify-self: start; height: auto; padding: 0; border: 0; background: none; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.main { padding-bottom: 40px; }
+.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
+
+@media print {
+  .toc, .tools, .pick-btn, .note-btn, .pick .row, .pick .clear, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
+  .verdicts { border: 0; background: none; }
+  body { padding: 0; font-size: 12px; }
+  .page { display: block; }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
+  .dg-source { display: none; }
+  .dg { max-width: 100%; }
+  .item h3 .chev { display: none; }
+  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+  .pick { background: none; color: var(--ink); border: 1px solid var(--line); }
+}
+/* accent from meta.theme.accent */
+:root { --accent: #1f5fa8; --accent-ink: #ffffff; --accent-soft: #e4f0ff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent: #75a8e6; --accent-ink: #112238; --accent-soft: #19273a; } }
+:root[data-theme="dark"] { --accent: #75a8e6; --accent-ink: #112238; --accent-soft: #19273a; }
+</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Why riders <em>abandon</em> checkout</h1><p class="lede">A third of the riders who start checkout leave before paying. Most of them leave at two steps, and neither step is about the price.</p><div class="stats" aria-label="At a glance"><div class=""><b>2</b> <span>verified</span></div><div class=""><b>2</b> <span>likely</span></div><div class=""><b>1</b> <span>open</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#answer"><span class="n">–</span>Answer</a></li><li><a href="#findings"><span class="n">–</span>Findings</a></li><li class="group">Verified</li><li data-item="vehicle-measurements" class=""><a href="#vehicle-measurements"><span class="n">–</span>The vehicle step asks for numbers drivers do not know<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="account-wall" class=""><a href="#account-wall"><span class="n">–</span>An account wall before payment loses first-time riders<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Likely</li><li data-item="phones-vehicle-step" class=""><a href="#phones-vehicle-step"><span class="n">–</span>Phone users leave the vehicle step twice as often<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="fees-not-cause" class=""><a href="#fees-not-cause"><span class="n">–</span>Fees are not what makes riders leave<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Open</li><li data-item="water-taxi" class=""><a href="#water-taxi"><span class="n">–</span>Some Brisk riders may be choosing the water taxi<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#sources"><span class="n">–</span>Sources</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="answer"><h2>Answer</h2><div class="part prose"><p>In September, 34% of the riders who started checkout left before paying. Two steps account for three quarters of them: the vehicle step, which asks for measurements most drivers do not know, and the account step, which stops first-time riders before they can pay.</p>
+<p>Both are small to fix. Fares and fees, the usual suspects, explain very little once riders can see them.</p></div><div class="part block chart"><div class="block-label"><span>Riders who leave at each step of checkout, September 2026 (%)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Riders who leave at each step of checkout, September 2026 (%)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">5</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">10</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">15</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><rect x="80.4" y="208.0" width="56.0" height="46.0" rx="3" fill="var(--accent)"><title>Sailing: 3</title></rect><text x="108.4" y="201.0" text-anchor="middle" class="value">3</text><text x="108.4" y="275" text-anchor="middle">Sailing</text><rect x="193.2" y="223.3" width="56.0" height="30.7" rx="3" fill="var(--accent)"><title>Passengers: 2</title></rect><text x="221.2" y="216.3" text-anchor="middle" class="value">2</text><text x="221.2" y="275" text-anchor="middle">Passengers</text><rect x="306.0" y="39.3" width="56.0" height="214.7" rx="3" fill="var(--accent)"><title>Vehicle: 14</title></rect><text x="334.0" y="32.3" text-anchor="middle" class="value">14</text><text x="334.0" y="275" text-anchor="middle">Vehicle</text><rect x="418.8" y="85.3" width="56.0" height="168.7" rx="3" fill="var(--accent)"><title>Account: 11</title></rect><text x="446.8" y="78.3" text-anchor="middle" class="value">11</text><text x="446.8" y="275" text-anchor="middle">Account</text><rect x="531.6" y="192.7" width="56.0" height="61.3" rx="3" fill="var(--accent)"><title>Payment: 4</title></rect><text x="559.6" y="185.7" text-anchor="middle" class="value">4</text><text x="559.6" y="275" text-anchor="middle">Payment</text></svg></div><figure class="part figure"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgMzgwIiB3aWR0aD0iNzYwIiBoZWlnaHQ9IjM4MCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InQgZCI+CiAgPHRpdGxlIGlkPSJ0Ij5UaGUgdmVoaWNsZSBzdGVwIG9mIGNoZWNrb3V0PC90aXRsZT4KICA8ZGVzYyBpZD0iZCI+QSBwaG9uZSBzaG93aW5nIHN0ZXAgMyBvZiA1IGluIGNoZWNrb3V0LiBJdCBhc2tzIGZvciBhIHJlZ2lzdHJhdGlvbiwgYSBsZW5ndGggaW4gbWV0cmVzLCBhbmQgYSBoZWlnaHQgaW4gbWV0cmVzLCB3aXRoIG5vIGhlbHAgZm9yIGVpdGhlciBtZWFzdXJlbWVudC48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9Ijc2MCIgaGVpZ2h0PSIzODAiIHJ4PSIxNCIgZmlsbD0iI2Y1ZjdmYSIvPgogIDxnIGZvbnQtZmFtaWx5PSJGaWd0cmVlLCAnQXZlbmlyIE5leHQnLCAnU2Vnb2UgVUknLCBzeXN0ZW0tdWksIHNhbnMtc2VyaWYiPgogICAgPGcgZm9udC1zaXplPSIxMyIgZmlsbD0iIzZiNjI3MCI+CiAgICAgIDx0ZXh0IHg9IjU2IiB5PSIxMzIiPjEgIFNhaWxpbmc8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjU2IiB5PSIxNjAiPjIgIFBhc3NlbmdlcnM8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjU2IiB5PSIyMTYiPjQgIEFjY291bnQ8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjU2IiB5PSIyNDQiPjUgIFBheW1lbnQ8L3RleHQ+CiAgICA8L2c+CiAgICA8dGV4dCB4PSI1NiIgeT0iMTg4IiBmb250LXNpemU9IjEzIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMWY1ZmE4Ij4zICBWZWhpY2xlPC90ZXh0PgogICAgPHJlY3QgeD0iNDAiIHk9IjE3NCIgd2lkdGg9IjMiIGhlaWdodD0iMjAiIHJ4PSIxLjUiIGZpbGw9IiMxZjVmYTgiLz4KICAgIDxyZWN0IHg9IjI2MiIgeT0iMjAiIHdpZHRoPSIyMzYiIGhlaWdodD0iMzQwIiByeD0iMjgiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2RkZTNlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICAgIDxyZWN0IHg9IjM1MCIgeT0iMzIiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2IiByeD0iMyIgZmlsbD0iI2RkZTNlYSIvPgogICAgPGcgZmlsbD0iIzFmNWZhOCI+PGNpcmNsZSBjeD0iMzIyIiBjeT0iNjIiIHI9IjQuNSIvPjxjaXJjbGUgY3g9IjM1MSIgY3k9IjYyIiByPSI0LjUiLz48L2c+CiAgICA8Y2lyY2xlIGN4PSIzODAiIGN5PSI2MiIgcj0iNS41IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxZjVmYTgiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPGcgZmlsbD0iI2RkZTNlYSI+PGNpcmNsZSBjeD0iNDA5IiBjeT0iNjIiIHI9IjQuNSIvPjxjaXJjbGUgY3g9IjQzOCIgY3k9IjYyIiByPSI0LjUiLz48L2c+CiAgICA8dGV4dCB4PSIyODQiIHk9IjEwMCIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzIwMWMyMiI+WW91ciB2ZWhpY2xlPC90ZXh0PgogICAgPHRleHQgeD0iMjg0IiB5PSIxMTkiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2YjYyNzAiPlN0ZXAgMyBvZiA1PC90ZXh0PgogICAgPGcgZm9udC1zaXplPSIxMiIgZmlsbD0iIzIwMWMyMiI+CiAgICAgIDx0ZXh0IHg9IjI4NCIgeT0iMTQ2Ij5SZWdpc3RyYXRpb248L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4NCIgeT0iMjA4Ij5MZW5ndGggaW4gbWV0cmVzPC90ZXh0PgogICAgICA8dGV4dCB4PSIyODQiIHk9IjI3MCI+SGVpZ2h0IGluIG1ldHJlczwvdGV4dD4KICAgIDwvZz4KICAgIDxnIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2M5ZDJkYyIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgICA8cmVjdCB4PSIyODQiIHk9IjE1NCIgd2lkdGg9IjE5MiIgaGVpZ2h0PSIzMiIgcng9IjciLz4KICAgICAgPHJlY3QgeD0iMjg0IiB5PSIyMTYiIHdpZHRoPSIxOTIiIGhlaWdodD0iMzIiIHJ4PSI3IiBzdHJva2U9IiM5YTViMDAiIHN0cm9rZS13aWR0aD0iMS42Ii8+CiAgICAgIDxyZWN0IHg9IjI4NCIgeT0iMjc4IiB3aWR0aD0iMTkyIiBoZWlnaHQ9IjMyIiByeD0iNyIgc3Ryb2tlPSIjOWE1YjAwIiBzdHJva2Utd2lkdGg9IjEuNiIvPgogICAgPC9nPgogICAgPHRleHQgeD0iMjk2IiB5PSIxNzUiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiMyMDFjMjIiIGxldHRlci1zcGFjaW5nPSIwLjUiPldOMjEgS0RMPC90ZXh0PgogICAgPHJlY3QgeD0iMjk2IiB5PSIyMjQiIHdpZHRoPSIxLjUiIGhlaWdodD0iMTYiIGZpbGw9IiMyMDFjMjIiLz4KICAgIDxyZWN0IHg9IjI4NCIgeT0iMzIyIiB3aWR0aD0iMTkyIiBoZWlnaHQ9IjMwIiByeD0iOCIgZmlsbD0iIzFmNWZhOCIvPgogICAgPHRleHQgeD0iMzgwIiB5PSIzNDIiIGZvbnQtc2l6ZT0iMTMiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNvbnRpbnVlPC90ZXh0PgogICAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWE1YjAwIiBzdHJva2Utd2lkdGg9IjEuNCIgc3Ryb2tlLWRhc2hhcnJheT0iMyA0Ij4KICAgICAgPHBhdGggZD0iTTQ3NiAyMzJDNTAwIDIzMiA1MDggMjI2IDUyNiAyMjIiLz4KICAgICAgPHBhdGggZD0iTTQ3NiAyOTRDNTA2IDI5NCA1MTAgMjM4IDUyNiAyMzAiLz4KICAgIDwvZz4KICAgIDx0ZXh0IHg9IjUzNCIgeT0iMjIyIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjOWE1YjAwIj5ObyBoZWxwIHdpdGggZWl0aGVyPC90ZXh0PgogICAgPHRleHQgeD0iNTM0IiB5PSIyNDEiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2YjYyNzAiPk1vc3QgZHJpdmVycyBoYXZlIG5ldmVyPC90ZXh0PgogICAgPHRleHQgeD0iNTM0IiB5PSIyNTciIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2YjYyNzAiPm1lYXN1cmVkIHRoZWlyIGNhci48L3RleHQ+CiAgICA8dGV4dCB4PSI1MzQiIHk9IjMxMiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzIwMWMyMiI+MTQlIG9mIHJpZGVycyBsZWF2ZSBoZXJlPC90ZXh0PgogICAgPHRleHQgeD0iNTM0IiB5PSIzMzEiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2YjYyNzAiPlRoZSBsYXJnZXN0IHNpbmdsZSBleGl0PC90ZXh0PgogICAgPHRleHQgeD0iNTM0IiB5PSIzNDciIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2YjYyNzAiPmluIGNoZWNrb3V0LjwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=" alt="The vehicle step of checkout on a phone, asking for a registration, a length in metres, and a height in metres, with no help for either measurement." loading="lazy"> <figcaption class="legend">The vehicle step asks for length and height in metres, with nothing to help a driver who has never measured their car.</figcaption></figure><div class="part callout"><b>Not covered here</b><div><p>Group and school bookings go through the harbour office and are not in these numbers. Neither are riders who searched and never started checkout.</p></div></div></section><section class="section" id="findings"><h2>Findings</h2><div class="part table-wrap"><table><thead><tr><th>Finding</th><th>Confidence</th></tr></thead> <tbody><tr data-item="vehicle-measurements" class=""><td><a href="#vehicle-measurements">The vehicle step asks for numbers drivers do not know</a></td><td><span class="chip t-teal">verified</span></td></tr><tr data-item="account-wall" class=""><td><a href="#account-wall">An account wall before payment loses first-time riders</a></td><td><span class="chip t-teal">verified</span></td></tr><tr data-item="phones-vehicle-step" class=""><td><a href="#phones-vehicle-step">Phone users leave the vehicle step twice as often</a></td><td><span class="chip t-violet">likely</span></td></tr><tr data-item="fees-not-cause" class=""><td><a href="#fees-not-cause">Fees are not what makes riders leave</a></td><td><span class="chip t-violet">likely</span></td></tr><tr data-item="water-taxi" class=""><td><a href="#water-taxi">Some Brisk riders may be choosing the water taxi</a></td><td><span class="chip t-neutral">open</span></td></tr></tbody></table></div><details class="item" id="vehicle-measurements" data-item="vehicle-measurements" data-title="The vehicle step asks for numbers drivers do not know"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Confidence">Confidence verified</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> The vehicle step asks for numbers drivers do not know</h3><p class="one-line">Length and height in metres stop drivers who have never measured their car, and most leave rather than guess.</p></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Detail</dt><dd><p>14% of the riders who start checkout leave at the vehicle step, the largest single exit. In recordings, drivers search for their car&rsquo;s dimensions in another tab and never come back.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Analytics for 9,412 checkouts. 49 of the 120 recordings end at this step, and 6 of 9 riders we spoke to could not give their car&rsquo;s height.</p></dd></div><div class="facet"><dt>So what</dt><dd><p>A registration lookup, or a choice of car, van, or camper with typical sizes, removes the guesswork. Height only matters above 2 metres.</p></dd></div></dl></div></details><details class="item" id="account-wall" data-item="account-wall" data-title="An account wall before payment loses first-time riders"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Confidence">Confidence verified</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> An account wall before payment loses first-time riders</h3><p class="one-line">Riders booking for the first time must create an account before paying, and one in four of them leaves there.</p></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Detail</dt><dd><p>11% of all riders who start checkout leave at the account step, almost all of them first-time riders. Returning riders are already signed in and pass straight through.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Analytics split by new and returning riders, 39 of the 120 recordings, and 48 calls to the office asking to book without an account.</p></dd></div><div class="facet"><dt>So what</dt><dd><p>Checkout as a guest, with an account offered after payment, is the usual answer. The ticket email already carries everything an account would.</p></dd></div></dl></div></details><details class="item" id="phones-vehicle-step" data-item="phones-vehicle-step" data-title="Phone users leave the vehicle step twice as often"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Confidence">Confidence likely</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> Phone users leave the vehicle step twice as often</h3><p class="one-line">On phones, 19% leave at the vehicle step against 9% on computers, likely because the number keyboard hides the field labels.</p></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Detail</dt><dd><p>The gap is plain in the analytics. The cause is our reading of 30 phone recordings, where riders open the keyboard, lose sight of which box wants which measurement, and give up.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Analytics by device, and 30 phone recordings tagged by two of us.</p></dd></div></dl></div></details><details class="item" id="fees-not-cause" data-item="fees-not-cause" data-title="Fees are not what makes riders leave"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Confidence">Confidence likely</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> Fees are not what makes riders leave</h3><p class="one-line">Fares and the booking fee show from the first step, and few riders leave at payment, where the total appears.</p></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Detail</dt><dd><p>4% leave at payment, and in recordings most of them had a card declined by the payment provider. One of the nine riders we spoke to mentioned price.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Analytics, 14 payment step recordings, and the interviews.</p></dd></div><div class="facet"><dt>So what</dt><dd><p>Lowering fees would win back few riders. Offering to retry a declined card might win back more.</p></dd></div></dl></div></details><details class="item" id="water-taxi" data-item="water-taxi" data-title="Some Brisk riders may be choosing the water taxi"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Confidence">Confidence open</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> Some Brisk riders may be choosing the water taxi</h3><p class="one-line">A few Brisk riders mentioned the new water taxi, but nothing shows how many leave checkout to book it.</p></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Detail</dt><dd><p>Two of the nine riders we spoke to took the water taxi on a busy day. Brisk checkouts leave a little more often at the sailing step, which would fit, but the numbers are small.</p></dd></div><div class="facet"><dt>So what</dt><dd><p>Worth a question in the next rider survey before anyone builds against it.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="sources"><h2>Sources</h2><div class="part table-wrap"><table><thead><tr><th>Source</th><th>What we used</th><th>Period</th><th>Size</th></tr></thead> <tbody><tr><td>Checkout analytics</td><td>Exits by step, device, and new or returning rider</td><td>1 to 30 September 2026</td><td>9,412 checkouts</td></tr><tr><td>Session recordings</td><td>Checkouts that ended before payment, watched and tagged by two of us</td><td>September 2026</td><td>120 sessions</td></tr><tr><td>Rider interviews</td><td>Phone calls of about 20 minutes</td><td>8 to 12 September 2026</td><td>9 riders</td></tr><tr><td>Harbour office log</td><td>Contacts tagged as checkout</td><td>September 2026</td><td>212 contacts</td></tr></tbody></table></div><p class="legend">Recordings and interviews are anonymised, and the analytics hold no personal data.</p></section></main><footer class="foot"><span>Why riders abandon checkout</span> <span>Generated with Dossier · 2026-09-10</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brief","meta":{"title":"Why riders abandon checkout","slug":"checkout-abandonment","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"abandon","lede":"A third of the riders who start checkout leave before paying. Most of them leave at two steps, and neither step is about the price.","updated":"2026-09-10","status":"final","theme":{"accent":"#1f5fa8"}},"sections":[{"id":"answer","title":"Answer","parts":[{"type":"prose","markdown":"In September, 34% of the riders who started checkout left before paying. Two steps account for three quarters of them: the vehicle step, which asks for measurements most drivers do not know, and the account step, which stops first-time riders before they can pay.\n\nBoth are small to fix. Fares and fees, the usual suspects, explain very little once riders can see them."},{"type":"chart","title":"Riders who leave at each step of checkout, September 2026 (%)","variant":"bar","data":[{"label":"Sailing","value":3},{"label":"Passengers","value":2},{"label":"Vehicle","value":14},{"label":"Account","value":11},{"label":"Payment","value":4}]},{"type":"figure","src":"assets/vehicle-step.svg","alt":"The vehicle step of checkout on a phone, asking for a registration, a length in metres, and a height in metres, with no help for either measurement.","caption":"The vehicle step asks for length and height in metres, with nothing to help a driver who has never measured their car."},{"type":"callout","title":"Not covered here","markdown":"Group and school bookings go through the harbour office and are not in these numbers. Neither are riders who searched and never started checkout."}]},{"id":"findings","title":"Findings","board":{"summary":true,"items":[{"id":"vehicle-measurements","title":"The vehicle step asks for numbers drivers do not know","summary":"Length and height in metres stop drivers who have never measured their car, and most leave rather than guess.","status":"verified","facets":[{"label":"Detail","markdown":"14% of the riders who start checkout leave at the vehicle step, the largest single exit. In recordings, drivers search for their car's dimensions in another tab and never come back."},{"label":"Evidence","markdown":"Analytics for 9,412 checkouts. 49 of the 120 recordings end at this step, and 6 of 9 riders we spoke to could not give their car's height."},{"label":"So what","markdown":"A registration lookup, or a choice of car, van, or camper with typical sizes, removes the guesswork. Height only matters above 2 metres."}]},{"id":"account-wall","title":"An account wall before payment loses first-time riders","summary":"Riders booking for the first time must create an account before paying, and one in four of them leaves there.","status":"verified","facets":[{"label":"Detail","markdown":"11% of all riders who start checkout leave at the account step, almost all of them first-time riders. Returning riders are already signed in and pass straight through."},{"label":"Evidence","markdown":"Analytics split by new and returning riders, 39 of the 120 recordings, and 48 calls to the office asking to book without an account."},{"label":"So what","markdown":"Checkout as a guest, with an account offered after payment, is the usual answer. The ticket email already carries everything an account would."}]},{"id":"phones-vehicle-step","title":"Phone users leave the vehicle step twice as often","summary":"On phones, 19% leave at the vehicle step against 9% on computers, likely because the number keyboard hides the field labels.","status":"likely","facets":[{"label":"Detail","markdown":"The gap is plain in the analytics. The cause is our reading of 30 phone recordings, where riders open the keyboard, lose sight of which box wants which measurement, and give up."},{"label":"Evidence","markdown":"Analytics by device, and 30 phone recordings tagged by two of us."}]},{"id":"fees-not-cause","title":"Fees are not what makes riders leave","summary":"Fares and the booking fee show from the first step, and few riders leave at payment, where the total appears.","status":"likely","facets":[{"label":"Detail","markdown":"4% leave at payment, and in recordings most of them had a card declined by the payment provider. One of the nine riders we spoke to mentioned price."},{"label":"Evidence","markdown":"Analytics, 14 payment step recordings, and the interviews."},{"label":"So what","markdown":"Lowering fees would win back few riders. Offering to retry a declined card might win back more."}]},{"id":"water-taxi","title":"Some Brisk riders may be choosing the water taxi","summary":"A few Brisk riders mentioned the new water taxi, but nothing shows how many leave checkout to book it.","status":"open","facets":[{"label":"Detail","markdown":"Two of the nine riders we spoke to took the water taxi on a busy day. Brisk checkouts leave a little more often at the sailing step, which would fit, but the numbers are small."},{"label":"So what","markdown":"Worth a question in the next rider survey before anyone builds against it."}]}]}},{"id":"sources","title":"Sources","parts":[{"type":"table","columns":["Source","What we used","Period","Size"],"rows":[["Checkout analytics","Exits by step, device, and new or returning rider","1 to 30 September 2026","9,412 checkouts"],["Session recordings","Checkouts that ended before payment, watched and tagged by two of us","September 2026","120 sessions"],["Rider interviews","Phone calls of about 20 minutes","8 to 12 September 2026","9 riders"],["Harbour office log","Contacts tagged as checkout","September 2026","212 contacts"]],"note":"Recordings and interviews are anonymised, and the analytics hold no personal data."}]}]}</script><script>
+(() => {
+  "use strict";
+  /* reply writes the line a reader sends back, exactly as Go does: testdata/replies.json holds both to the same cases */
+  const reply = (c, s) => {
+    const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
+    let open = 0;
+    c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
+    const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
+    if (c.mode === "pick") {
+      const p = nums(s.picked || []);
+      if (p.length) groups.push(p.length === c.items.length ? "all" : p.join(", "));
+    } else if (c.mode === "verdict") {
+      c.verdicts.forEach((id) => {
+        const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k]));
+        if (n.length) groups.push(id + " " + (n.length === open ? "all" : n.join(", ")));
+      });
+    }
+    const body = groups.join("; "), noted = Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]);
+    let line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
+    if (noted.length) line += " Notes: " + noted.map((id) => num[id] + ": " + notes[id].trim().split(/\s+/).join(" ")).join("; ") + ".";
+    return line;
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply }; return; }
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+  const at = (el, name) => el.getAttribute(name);
+  const idOf = (el) => at(el.closest("[data-item]"), "data-item");
+  const on = (type, fn, target) => (target || document).addEventListener(type, fn);
+  const say = (sel, text) => $$(sel).forEach((el) => { el.textContent = text; });
+  const keys = Object.keys;
+  let model = {};
+  try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
+  const slug = (model.meta && model.meta.slug) || "dossier";
+  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
+  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+
+  /* theme: auto, light, dark */
+  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const applyTheme = (m) => {
+    if (!modes.includes(m)) m = "auto";
+    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    if (themeBtn) {
+      themeBtn.setAttribute("data-mode", m);
+      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
+      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
+      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+    }
+    keep("theme", m);
+  };
+  applyTheme(load("theme"));
+  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+
+  /* decisions: the embedded model is the baseline, this device may go further */
+  const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
+  let defs = [];
+  try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
+  defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
+  const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
+  const ctx = { mode, verdicts: defs.map((d) => d.id), items: [] };
+  items.forEach((el) => {
+    const id = at(el, "data-item");
+    num[id] = +at(el, "data-num");
+    can[id] = el.hasAttribute("data-decides");
+    ctx.items.push({ id, n: num[id], eligible: can[id] });
+  });
+  const clean = (s) => {
+    const out = { path: "", picked: [], verdicts: {}, notes: {} };
+    if (!s || typeof s !== "object") return out;
+    if (choices.some((r) => r.value === s.path)) out.path = s.path;
+    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter((id, i, a) => num[id] && a.indexOf(id) === i);
+    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach((id) => { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
+    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach((id) => { const v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    return out;
+  };
+  let state = clean(model.decisions), framed = true;
+  try { const saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
+  try { framed = window.parent !== window; } catch (e) {}
+  const tell = (msg) => { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } };
+  const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
+  const announce = () => {
+    const d = detail();
+    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    tell({ type: "dossier:decisions", decisions: d });
+  };
+  const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
+  const decided = (id) => (mode === "pick" ? state.picked.includes(id) : !!state.verdicts[id]);
+  const setPick = (id, yes) => { if (yes !== decided(id)) { state.picked = yes ? state.picked.concat(id) : state.picked.filter((x) => x !== id); save(); } };
+  const setVerdict = (id, v) => { if (can[id] && (state.verdicts[id] || "") !== v) { if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); } };
+  const setPath = (p) => { if (state.path !== p) { state.path = p; save(); } };
+  const setNote = (id, text) => { const v = String(text || "").trim(); if ((state.notes[id] || "") !== v) { if (v) state.notes[id] = v; else delete state.notes[id]; save(); } };
+  const toneOf = (el, v) => { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); };
+  const render = () => {
+    items.forEach((el) => {
+      const id = at(el, "data-item"), v = state.verdicts[id] || "", yes = decided(id), picked = mode === "pick" && yes;
+      el.classList.toggle("picked", picked);
+      toneOf(el, v);
+      $$("[data-verdict]", el).forEach((b, i) => {
+        const sel = at(b, "data-verdict") === v;
+        b.setAttribute("aria-checked", sel);
+        b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
+      });
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
+      if (tr) {
+        tr.classList.toggle("picked", picked);
+        toneOf(tr, v);
+        const ctl = $("input,select", tr);
+        if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
+      }
+      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
+      if (note && state.notes[id]) note.hidden = false;
+      if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
+    });
+    let chosen = "Open";
+    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
+    say('[data-live="choice"]', chosen);
+    $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
+    say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
+    const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
+    say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
+    applyView();
+  };
+  const decisionsJSON = () => {
+    const d = detail(), some = (o) => (keys(o).length ? o : undefined);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+  };
+  let noteTimer;
+  on("click", (e) => {
+    const t = e.target;
+    let b = t.closest("[data-verdict]");
+    if (b) { e.preventDefault(); const id = idOf(b), v = at(b, "data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
+    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); setPick(idOf(b), !decided(idOf(b))); return; }
+    if ((b = t.closest("[data-note-toggle]"))) {
+      e.preventDefault();
+      const d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
+      if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden) d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); }
+      return;
+    }
+    if (t.closest("[data-choice-clear]")) setPath("");
+    else if (t.closest("[data-collapse-toggle]")) setAllOpen(!anyOpen());
+    else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
+    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
+    else if (t.closest("[data-hide]")) setHide(!hide);
+    else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
+    else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+  });
+  on("keydown", (e) => {
+    const t = e.target, b = t.closest && t.closest("[data-verdict]");
+    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    if (!b) return;
+    const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (dir) {
+      e.preventDefault();
+      const next = group[(group.indexOf(b) + dir + group.length) % group.length];
+      setVerdict(idOf(b), at(next, "data-verdict"));
+      next.focus();
+    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(idOf(b), ""); }
+  });
+  on("change", (e) => {
+    const t = e.target;
+    if (t.matches("input[data-pick-row]")) setPick(at(t, "data-pick-row"), t.checked);
+    else if (t.matches("select[data-verdict-row]")) setVerdict(at(t, "data-verdict-row"), t.value);
+    else if (t.matches("input[data-choice]")) setPath(t.value);
+  });
+  on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+
+  /* collapsing: remembered per item on this device */
+  const details = $$("details.item[id]"), opened = {};
+  let printing = false, beforePrint = null;
+  try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
+  const anyOpen = () => details.some((d) => d.open);
+  const setAllOpen = (open) => details.forEach((d) => { d.open = open; });
+  const renderCollapse = () => { const b = $("[data-collapse-toggle]"); if (b) { b.textContent = anyOpen() ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", anyOpen()); } };
+  details.forEach((d) => {
+    if (opened[d.id]) d.open = true;
+    on("toggle", () => {
+      if (!printing && !auto[d.id]) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
+      renderCollapse();
+    }, d);
+  });
+  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
+  openHash();
+  on("hashchange", openHash, window);
+  renderCollapse();
+
+  /* view: Hide decided and search together decide what shows; printing shows everything */
+  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
+  const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
+  const matches = (u, terms) => terms.every((t) => u.text.includes(t) || (u.n > 0 && +t === u.n));
+  let hide = load("hide") === "1", query = "", auto = {}, hits = [], now = -1;
+  const mark = (name, ranges) => { if (hl) hl.set(name, new Highlight(...ranges)); };
+  const count = (active) => say("[data-hits]", !active ? "" : !hits.length ? "No matches" : now >= 0 ? now + 1 + " of " + hits.length : hits.length + (hits.length === 1 ? " match" : " matches"));
+  const applyView = () => {
+    const terms = printing ? [] : fold(query).split(/\s+/).filter(Boolean);
+    let shown = 0;
+    units.forEach((u) => {
+      const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
+      u.el.hidden = h;
+      if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
+      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+    });
+    if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
+    sections.forEach((sec) => {
+      const h = terms.length > 0 && !matches(sec, terms) && !$$("details.item:not([hidden]), .rows > :not([hidden])", sec.el).length, a = $('.toc a[href="#' + sec.el.id + '"]');
+      sec.el.hidden = h;
+      if (!h) shown++;
+      if (a) a.parentNode.hidden = h;
+    });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any && (!$("a", g) || g.hidden); });
+    $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
+    const none = $("[data-no-hits]"), b = $("[data-hide]");
+    if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
+    if (b) { b.setAttribute("aria-pressed", hide); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    hits = [];
+    now = -1;
+    const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
+    for (let node; terms.length && (node = walk.nextNode());) {
+      const el = node.parentElement, closed = el.closest("details:not([open])");
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits]") || (closed && !el.closest("summary"))) continue;
+      let f = "";
+      const map = [], x = node.data;
+      for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }
+      terms.forEach((t) => { for (let k = f.indexOf(t); k >= 0; k = f.indexOf(t, k + t.length)) { const r = new Range(); r.setStart(node, map[k]); r.setEnd(node, map[k + t.length - 1] + 1); hits.push(r); } });
+    }
+    hits.sort((a, z) => a.compareBoundaryPoints(Range.START_TO_START, z));
+    mark("dossier-hit", hits);
+    mark("dossier-now", []);
+    count(terms.length);
+  };
+  const step = (dir) => {
+    if (!hits.length) return;
+    now = (now + dir + hits.length) % hits.length;
+    mark("dossier-now", [hits[now]]);
+    hits[now].startContainer.parentElement.scrollIntoView({ block: "center" });
+    count(true);
+  };
+  const search = (q) => { if (box) box.value = q; query = q; applyView(); };
+  const setHide = (yes) => { hide = yes; keep("hide", hide ? "1" : "0"); applyView(); };
+  if (box) {
+    on("input", () => { query = box.value; applyView(); }, box);
+    on("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") { e.preventDefault(); if (box.value) search(""); else box.blur(); }
+    }, box);
+  }
+
+  /* copy and toast */
+  let toastTimer;
+  const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
+  const copy = (text, msg) => {
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+  };
+
+  /* contents: mark the section in view */
+  const links = {};
+  let active = null;
+  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
+  }
+
+  render();
+  announce();
+
+  /* embedded: keep the parent's frame as tall as the page */
+  if (framed) {
+    let lastHeight = -1;
+    const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
+    on("load", postHeight, window);
+    postHeight();
+  }
+})();
+</script></body></html>

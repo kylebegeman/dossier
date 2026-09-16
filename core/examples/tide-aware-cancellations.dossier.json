@@ -1,0 +1,234 @@
+{
+  "dossier": "1.0",
+  "kind": "review",
+  "meta": {
+    "title": "Tide-aware cancellations",
+    "slug": "tide-aware-cancellations",
+    "kicker": "Tidewright · Wenlow Islands ferries",
+    "emphasis": "Tide-aware",
+    "lede": "The change cancels a Brisk sailing on its own when low water leaves too little depth at the ramp for the Gannet. Six findings, one of them a blocker. Approve or rework, then rule on each by number.",
+    "updated": "2026-09-14",
+    "status": "in-review"
+  },
+  "sections": [
+    {
+      "id": "scope",
+      "title": "Scope",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "Joss's change adds a job that reads the tide table every hour and cancels any Brisk sailing where the depth at the ramp falls below the Gannet's draft plus a safety margin. Reviewed at revision `4e1c9a2`, with the tests run locally.\n\nThe tide table importer was reviewed on its own last month and is not covered here."
+        },
+        {
+          "type": "table",
+          "title": "What changed",
+          "columns": [
+            "File",
+            "Lines",
+            "What it does"
+          ],
+          "rows": [
+            [
+              "`booking/tide/window.go`",
+              "+184",
+              "Finds when each sailing is at the ramp and the depth at that time."
+            ],
+            [
+              "`booking/cancel/auto.go`",
+              "+96",
+              "Cancels a sailing that fails the check and records why."
+            ],
+            [
+              "`booking/cancel/auto_test.go`",
+              "+212",
+              "Covers a spring tide, a neap tide, and a missing table."
+            ],
+            [
+              "`config/vessels.yaml`",
+              "+6",
+              "Adds the Gannet's draft and the safety margin."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "findings",
+      "title": "Findings",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "utc-tides",
+            "title": "Tide times compared in UTC against local sailing times",
+            "summary": "Sailing times are local and tide times are UTC, so in summer time every check looks at the wrong hour.",
+            "severity": "blocker",
+            "effort": "S",
+            "category": "correctness",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`booking/tide/window.go`, line 58, in `depthAt`."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "From March to October the job reads the depth an hour away from departure. A sailing at low water can pass the check, and the Gannet can ground at the ramp."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Convert the departure to the harbour's time zone before the lookup, and keep tide times with their zone."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "The spring tide test passes only because its fixture is in January. Moved to 14 July, the 06:05 sailing reads 2.9 m where the table gives 1.7 m."
+              },
+              {
+                "label": "Diff",
+                "markdown": "```diff\n-\tat := sailing.Departs\n+\tat := sailing.Departs.In(harbour.Zone)\n \tdepth := table.DepthAt(at.UTC())\n```"
+              }
+            ]
+          },
+          {
+            "id": "silent-cancel",
+            "title": "Riders get no notice when the job cancels a sailing",
+            "summary": "The job sets the sailing's status directly and skips the notice path, so riders learn at the harbour.",
+            "severity": "major",
+            "effort": "M",
+            "category": "riders",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`booking/cancel/auto.go`, in `Cancel`, which writes the status instead of calling `cancel.Sailing`."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "A cancellation at 05:00 for the 07:40 reaches nobody. Riders drive to Varre and find the ramp closed."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Call `cancel.Sailing` with the reason `tide`, which sends the plain notice with its free rebooking link."
+              }
+            ]
+          },
+          {
+            "id": "draft-at-startup",
+            "title": "The Gannet's draft is read once at startup",
+            "summary": "Changing the draft or the margin needs a deploy, and the harbour master changes the margin with the season.",
+            "severity": "major",
+            "effort": "S",
+            "category": "operations",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`config/vessels.yaml`, loaded in `booking/cmd/serve/main.go`, line 41."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "The harbour master raises the margin in winter swell. Today that takes a release, on the very day it matters most."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Read vessel limits from the settings table the office already edits, and log each change with who made it."
+              }
+            ]
+          },
+          {
+            "id": "retry-flood",
+            "title": "No backoff when the tide table is missing",
+            "summary": "When next month's table has not arrived, the job retries every second and floods the logs.",
+            "severity": "minor",
+            "effort": "S",
+            "category": "reliability",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`booking/cancel/auto.go`, line 112, the retry loop in `Run`."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "The table arrives by email once a month and was late twice last year. The job would log 86,400 errors a day and quietly check nothing."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Back off to hourly, alert the office once, and show a banner that tide checks are off."
+              }
+            ]
+          },
+          {
+            "id": "margin-source",
+            "title": "The 0.4 metre margin has no source",
+            "summary": "The safety margin is a bare number, and nothing says where it came from or when it should change.",
+            "severity": "minor",
+            "effort": "S",
+            "category": "maintainability",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`config/vessels.yaml`, line 9."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "The next person to touch it will guess. The harbour master's letter from May sets 0.4 m in summer and 0.6 m from November."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Name it `ramp_margin_m`, set both seasons, and link the letter in a comment."
+              }
+            ]
+          },
+          {
+            "id": "test-names",
+            "title": "Test names describe the code, not the tide",
+            "summary": "Names like TestRun2 hide which tide each test covers.",
+            "severity": "nit",
+            "effort": "S",
+            "category": "tests",
+            "facets": [
+              {
+                "label": "Where",
+                "markdown": "`booking/cancel/auto_test.go`, all four tests."
+              },
+              {
+                "label": "Why it matters",
+                "markdown": "When a test fails next year, its name should say which tide broke. Renaming costs a minute now."
+              },
+              {
+                "label": "Fix",
+                "markdown": "Rename them after the tide they cover, such as `TestSpringLowWaterCancels` and `TestNeapTideSails`."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "checked",
+      "title": "Checked",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "override-permissions",
+            "title": "Who can undo a tide cancellation",
+            "summary": "Only the harbour office role can reinstate a sailing, and a test covers it."
+          },
+          {
+            "id": "migration",
+            "title": "Database migration",
+            "summary": "The new reason column is nullable and backfills nothing, so it deploys without downtime."
+          },
+          {
+            "id": "observability",
+            "title": "Metrics and logs",
+            "summary": "Each run logs the sailings checked and cancelled, and a counter feeds the existing dashboard."
+          },
+          {
+            "id": "other-routes",
+            "title": "Holm and Keddle sailings",
+            "summary": "Left alone, as intended: both ramps have enough depth at every tide."
+          }
+        ]
+      }
+    }
+  ]
+}

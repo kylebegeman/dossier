@@ -1,0 +1,662 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Release 3.4.0</title><style>
+/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+:root {
+  --bg: #ffffff;
+  --paper: #f7f5f7;
+  --paper-2: #efecf0;
+  --ink: #201c22;
+  --muted: #6b6270;
+  --line: #e0dae0;
+  --line-soft: #ece7ec;
+  --accent: #c81e4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe8ed;
+  --teal: #08776e;
+  --teal-soft: #e3f3f0;
+  --violet: #6a46d9;
+  --violet-soft: #ede8fb;
+  --coral: #9a5b00;
+  --risk-soft: #f6ecdc;
+  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: clamp(16px, 4vw, 40px);
+  --frame: 1360px;
+  --rail: 208px;
+  --measure: 76ch;
+  --r-s: 6px;
+  --r: 10px;
+  --r-l: 14px;
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+  color-scheme: dark;
+}
+
+/* base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; }
+pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* buttons: one ghost style everywhere */
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
+.btn:hover { color: var(--ink); background: var(--paper-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.btn svg { width: 14px; height: 14px; flex: none; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.link-btn:hover { color: var(--ink); }
+.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
+.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::before { transform: scale(1); }
+
+/* shell */
+.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
+@media (min-width: 1100px) {
+  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
+  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}
+
+/* masthead: one band across the frame */
+.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.search { position: relative; display: inline-flex; align-items: center; }
+.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
+.search input::placeholder { color: var(--muted); }
+.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hits:empty { display: none; }
+::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
+::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
+.no-hits { padding-block: 36px; color: var(--muted); }
+@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
+.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
+.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
+.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
+.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
+.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
+.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.stats .live b { color: var(--accent); }
+.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.stats a:hover { color: var(--ink); text-decoration: underline; }
+
+/* contents */
+.toc { font-size: 13.5px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
+.toc li a:hover { color: var(--ink); background: var(--paper); }
+.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
+.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
+.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
+.toc li.picked .pip { opacity: 1; }
+.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
+.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.toc .group:first-child { margin-top: 0; }
+.toc .group a { display: inline; padding: 0; color: inherit; }
+.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
+@media (max-width: 1099px) {
+  .toc { padding-block: 18px 0; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
+  .toc .n { text-align: left; min-width: 0; }
+  .toc .group { display: none; }
+  .toc .pip { margin-left: 2px; }
+}
+
+/* main column */
+.main { min-width: 0; }
+.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.section:last-of-type { border-bottom: 0; }
+.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
+.part + .part { margin-top: 16px; }
+.prose { max-width: var(--measure); display: grid; gap: 12px; }
+.prose p, .prose li { font-size: 15.5px; }
+.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
+.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
+.prose strong { font-weight: 600; }
+
+.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
+.spec > div:first-child { border-top: 0; }
+.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.spec span { font-size: 14.5px; }
+@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
+
+.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
+.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.callout.risk b { color: var(--coral); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
+th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+td a { color: var(--ink); text-decoration: none; font-weight: 500; }
+td a:hover { color: var(--accent); }
+td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+td.ck, th.ck { width: 34px; padding-right: 0; }
+tbody tr { transition: background var(--dur); }
+tbody tr:hover { background: var(--paper); }
+tbody tr.picked { background: var(--accent-soft); }
+tbody tr[data-tone] { background: var(--tone-soft); }
+td.vd, th.vd { width: 1%; white-space: nowrap; }
+td.vd .none { font-size: 12.5px; color: var(--muted); }
+select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+/* code, figures, charts, diagram source */
+.block { display: grid; gap: 6px; }
+.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
+.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
+.figure { margin: 0; display: grid; gap: 8px; }
+.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
+.figure .legend { margin-top: 0; }
+.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
+.diagram pre { white-space: pre-wrap; }
+
+/* diagrams: Graphviz geometry, colored by the tokens */
+figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
+.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
+.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
+.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
+.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
+.dg .edge .hollow { fill: var(--bg); }
+.dg .edge text { fill: var(--muted); font-size: 10px; }
+.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
+.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
+.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
+.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
+figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.dg-source { flex: 1 1 100%; min-width: 0; }
+.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
+.dg-source summary:hover { color: var(--ink); }
+.dg-source[open] summary { margin-bottom: 6px; }
+figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
+figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
+
+/* timeline: times in a column, a hairline rail, a dot per event in its tone */
+.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
+.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .ev { position: relative; padding: 0 0 18px 24px; }
+.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
+.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline b { display: block; font-size: 15px; font-weight: 600; }
+.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
+@media (max-width: 520px) {
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
+  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
+}
+:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
+.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
+.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
+.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
+.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
+.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
+.hl .hl-nt { color: var(--hl-tag); }
+.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
+.hl .hl-o, .hl .hl-p { color: var(--muted); }
+.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
+.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
+.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
+.hl .hl-ge { font-style: italic; }
+.hl .hl-gs { font-weight: 600; }
+.hl .hl-err { text-decoration: underline wavy var(--coral); }
+
+/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
+.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
+
+/* chips and meters */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
+.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
+.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
+.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
+.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
+.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.owner { font-size: 12.5px; color: var(--muted); }
+.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.stats > div.t-risk b { color: var(--coral); }
+.stats > div.t-teal b { color: var(--teal); }
+.stats > div.t-violet b { color: var(--violet); }
+.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
+.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
+.meter i.on { background: var(--accent); }
+.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* items: collapsible details */
+.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.item:last-of-type { border-bottom: 0; }
+.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
+.item-head::-webkit-details-marker { display: none; }
+.item-head::marker { content: ""; }
+.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
+.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
+.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
+.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
+.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
+.item[open] h3 .chev { transform: rotate(90deg); }
+.item-head:hover h3 .chev { color: var(--ink); }
+.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.item.picked h3 .num { color: var(--accent); }
+.item[data-tone] h3 .num { color: var(--tone); }
+.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
+.item-body { margin-top: 14px; padding-left: 24px; }
+@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
+.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
+.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
+.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
+.note textarea::placeholder { color: var(--muted); }
+.facets { display: grid; margin: 0; }
+.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
+.facet:first-child { border-top: 0; padding-top: 0; }
+.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
+.facet dd p { max-width: var(--measure); }
+.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
+.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
+.facet.risk dt { color: var(--coral); }
+@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
+.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rows { display: grid; gap: 8px; }
+.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
+.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
+.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
+.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
+.rows > .row > summary::-webkit-details-marker { display: none; }
+.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.rows > .row[open] > summary .chev { transform: rotate(90deg); }
+.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
+.rows > .row > .facets .facet:first-child { padding-top: 8px; }
+@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
+
+/* the one saturated block */
+.pick { margin-top: 28px; padding: 18px 20px; border-radius: var(--r-l); background: var(--accent); color: var(--accent-ink); display: grid; gap: 10px; }
+.pick b { font-size: 16px; font-weight: 600; }
+.pick p { font-size: 14.5px; opacity: 0.92; max-width: 76ch; }
+.pick .example { font-size: 13.5px; }
+.pick code { background: rgba(255,255,255,0.18); border-color: transparent; color: inherit; }
+.pick .reply { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; background: rgba(0,0,0,0.18); border-radius: 8px; padding: 9px 11px; white-space: pre-wrap; word-break: break-word; }
+.pick .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick button { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); color: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background var(--dur); }
+.pick button:hover { background: rgba(255,255,255,0.22); }
+.pick button.solid { background: var(--accent-ink); color: var(--accent); border-color: transparent; }
+.pick button.solid:hover { background: var(--accent-ink); filter: brightness(1.05); }
+.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.pick legend { padding: 0; margin-bottom: 8px; font-size: 14.5px; font-weight: 600; }
+.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent-ink) 35%, transparent); border-radius: 10px; cursor: pointer; transition: background var(--dur), border-color var(--dur); }
+.pick .options label:hover { background: color-mix(in srgb, var(--accent-ink) 10%, transparent); }
+.pick .options label:has(input:checked) { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); border-color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.pick .options input { margin: 3px 0 0; accent-color: var(--accent-ink); }
+.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
+.pick .sum { display: block; font-size: 13px; opacity: 0.9; }
+.pick .guard { max-width: none; padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 13.5px; opacity: 1; }
+.pick button.clear { justify-self: start; height: auto; padding: 0; border: 0; background: none; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.main { padding-bottom: 40px; }
+.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
+
+@media print {
+  .toc, .tools, .pick-btn, .note-btn, .pick .row, .pick .clear, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
+  .verdicts { border: 0; background: none; }
+  body { padding: 0; font-size: 12px; }
+  .page { display: block; }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
+  .dg-source { display: none; }
+  .dg { max-width: 100%; }
+  .item h3 .chev { display: none; }
+  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+  .pick { background: none; color: var(--ink); border: 1px solid var(--line); }
+}
+</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Release <em>3.4.0</em></h1><p class="lede">Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.</p><div class="stats" aria-label="At a glance"><div class=""><b>2291</b> <span>build</span></div><div class=""><b>5 October</b> <span>target</span></div><div class="t-risk"><b>1</b> <span>failed</span></div><div class=""><b>2</b> <span>pending</span></div><div class=""><b>4</b> <span>passed</span></div><div class=""><b>1</b> <span>skipped</span></div><div class="live"><b data-live="choice">Open</b> <a href="#pick">choice</a></div><div class="live"><b data-live="count">0</b> <span>decided</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#ships"><span class="n">–</span>What ships</a></li><li><a href="#gates"><span class="n">–</span>Gates</a></li><li class="group">Failed</li><li data-item="android-e2e" class=""><a href="#android-e2e"><span class="n">1.</span>Android end-to-end suite<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Pending</li><li data-item="store-review" class=""><a href="#store-review"><span class="n">2.</span>App Store review<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="office-walkthrough" class=""><a href="#office-walkthrough"><span class="n">3.</span>Harbour office walkthrough of tide cancellations<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Passed</li><li data-item="unit-integration" class=""><a href="#unit-integration"><span class="n">4.</span>Unit and integration tests<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="storm-load" class=""><a href="#storm-load"><span class="n">5.</span>Load test at storm-day volume<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="accessibility" class=""><a href="#accessibility"><span class="n">6.</span>Accessibility pass on booking and passes<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="crash-free" class=""><a href="#crash-free"><span class="n">7.</span>Crash-free beta sessions above 99.5%<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Skipped</li><li data-item="wallet-passes" class=""><a href="#wallet-passes"><span class="n">8.</span>Wallet pass validation<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#rollback"><span class="n">–</span>Rollback</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="ships"><h2>What ships</h2><div class="part prose"><p>3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger.</p></div><div class="part table-wrap"><table><thead><tr><th>Change</th><th>What riders see</th><th>Rollout</th></tr></thead> <tbody><tr><td>Offline boarding passes</td><td>Passes scan at the Brisk slipway with no signal.</td><td>Brisk only, behind a flag</td></tr><tr><td>Tide-aware cancellations</td><td>A Brisk sailing too shallow for the ramp cancels early, with a notice.</td><td>The office approves each one for a month</td></tr><tr><td>Capacity check on held places</td><td>Nothing, unless a deck is full, when a second sale is refused.</td><td>Everyone</td></tr><tr><td>Winter timetable</td><td>Fewer Gannet crossings and a later first boat to Keddle.</td><td>Everyone</td></tr></tbody></table></div><div class="part block chart"><div class="block-label"><span>Offline scan time on the oldest handheld, by build (ms)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Offline scan time on the oldest handheld, by build (ms)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="215.7" x2="616" y2="215.7" stroke="var(--line-soft)"/><text x="43" y="219.7" text-anchor="end" class="tick">250</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">500</text><line x1="52" y1="139.0" x2="616" y2="139.0" stroke="var(--line-soft)"/><text x="43" y="143.0" text-anchor="end" class="tick">750</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">1,000</text><line x1="52" y1="62.3" x2="616" y2="62.3" stroke="var(--line-soft)"/><text x="43" y="66.3" text-anchor="end" class="tick">1,250</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">1,500</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><polyline points="108.4,31.7 221.2,82.3 334.0,125.2 446.8,160.5 559.6,171.2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="108.4" cy="31.7" r="3" fill="var(--accent)"><title>2270: 1,450</title></circle><text x="108.4" y="23.7" text-anchor="middle" class="value">1,450</text><text x="108.4" y="275" text-anchor="middle">2270</text><circle cx="221.2" cy="82.3" r="3" fill="var(--accent)"><title>2276: 1,120</title></circle><text x="221.2" y="74.3" text-anchor="middle" class="value">1,120</text><text x="221.2" y="275" text-anchor="middle">2276</text><circle cx="334.0" cy="125.2" r="3" fill="var(--accent)"><title>2283: 840</title></circle><text x="334.0" y="117.2" text-anchor="middle" class="value">840</text><text x="334.0" y="275" text-anchor="middle">2283</text><circle cx="446.8" cy="160.5" r="3" fill="var(--accent)"><title>2288: 610</title></circle><text x="446.8" y="152.5" text-anchor="middle" class="value">610</text><text x="446.8" y="275" text-anchor="middle">2288</text><circle cx="559.6" cy="171.2" r="3" fill="var(--accent)"><title>2291: 540</title></circle><text x="559.6" y="163.2" text-anchor="middle" class="value">540</text><text x="559.6" y="275" text-anchor="middle">2291</text></svg></div></section><section class="section" id="gates"><h2>Gates</h2><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Gate</th><th>Status</th><th>Required</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="android-e2e" class=""><td class="num">1</td><td><a href="#android-e2e">Android end-to-end suite</a></td><td><span class="chip t-risk">failed</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="android-e2e" aria-label="Verdict on 1, Android end-to-end suite"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="store-review" class=""><td class="num">2</td><td><a href="#store-review">App Store review</a></td><td><span class="chip t-violet">pending</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="store-review" aria-label="Verdict on 2, App Store review"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="office-walkthrough" class=""><td class="num">3</td><td><a href="#office-walkthrough">Harbour office walkthrough of tide cancellations</a></td><td><span class="chip t-violet">pending</span></td><td></td><td class="vd"><select class="verdict" data-verdict-row="office-walkthrough" aria-label="Verdict on 3, Harbour office walkthrough of tide cancellations"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="unit-integration" class=""><td class="num">4</td><td><a href="#unit-integration">Unit and integration tests</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="storm-load" class=""><td class="num">5</td><td><a href="#storm-load">Load test at storm-day volume</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="accessibility" class=""><td class="num">6</td><td><a href="#accessibility">Accessibility pass on booking and passes</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="crash-free" class=""><td class="num">7</td><td><a href="#crash-free">Crash-free beta sessions above 99.5%</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="wallet-passes" class=""><td class="num">8</td><td><a href="#wallet-passes">Wallet pass validation</a></td><td><span class="chip t-neutral">skipped</span></td><td></td><td class="vd"><span class="none">No verdict needed</span></td></tr></tbody></table></div><details class="item" id="android-e2e" data-item="android-e2e" data-title="Android end-to-end suite" data-decides data-num="1"><summary class="item-head"><div class="item-meta"><span class="chip t-risk" title="Status">failed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">1</span> Android end-to-end suite</h3><p class="one-line">212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-android-e2e">Your note on 1</label> <textarea id="note-android-e2e" data-note="android-e2e" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>e2e-android</code> on build 2291, across the four handheld models the crews carry.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Job 18834, scenarios <code>offline-scan-signal-drop</code> and <code>offline-scan-airplane-mode</code>, with screen recordings attached.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Two of the Gannet&rsquo;s six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice.</p></dd></div></dl></div></details><details class="item" id="store-review" data-item="store-review" data-title="App Store review" data-decides data-num="2"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 2"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">2</span> App Store review</h3><p class="one-line">Build 2291 went in for review on 29 September, and reviews have taken one to two days.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-store-review">Your note on 2</label> <textarea id="note-store-review" data-note="store-review" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>The build&rsquo;s status in App Store Connect.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Waiting for review since 29 September at 16:20.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>Android does not wait on this, but staging one platform ahead of the other confuses the harbour office.</p></dd></div></dl></div></details><details class="item" id="office-walkthrough" data-item="office-walkthrough" data-title="Harbour office walkthrough of tide cancellations" data-decides data-num="3"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 3"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">3</span> Harbour office walkthrough of tide cancellations</h3><p class="one-line">The office has to agree to approve each automatic cancellation for the first month.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-office-walkthrough">Your note on 3</label> <textarea id="note-office-walkthrough" data-note="office-walkthrough" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>A walkthrough on the staging site with the harbour office, run by Ines.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Booked for 2 October.</p></dd></div></dl></div></details><details class="item" id="unit-integration" data-item="unit-integration" data-title="Unit and integration tests" data-num="4"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">4</span> Unit and integration tests</h3><p class="one-line">1,904 tests passed on build 2291.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-unit-integration">Your note on 4</label> <textarea id="note-unit-integration" data-note="unit-integration" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>test</code> on build 2291.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable.</p></dd></div></dl></div></details><details class="item" id="storm-load" data-item="storm-load" data-title="Load test at storm-day volume" data-num="5"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">5</span> Load test at storm-day volume</h3><p class="one-line">Six times normal traffic held booking at 420 ms p95, against an 800 ms target.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-storm-load">Your note on 5</label> <textarea id="note-storm-load" data-note="storm-load" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p><code>k6 run load/storm-day.js</code> against staging for 30 minutes, at six times a normal winter Tuesday.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95.</p></dd></div></dl></div></details><details class="item" id="accessibility" data-item="accessibility" data-title="Accessibility pass on booking and passes" data-num="6"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">6</span> Accessibility pass on booking and passes</h3><p class="one-line">Screen reader and keyboard checks passed on every changed screen, the new pass screen included.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-accessibility">Your note on 6</label> <textarea id="note-accessibility" data-note="accessibility" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>VoiceOver and TalkBack walkthroughs by Mira, and <code>axe</code> in CI.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Nothing blocking. The pass screen now reads out the sailing and party before the code.</p></dd></div></dl></div></details><details class="item" id="crash-free" data-item="crash-free" data-title="Crash-free beta sessions above 99.5%" data-num="7"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">7</span> Crash-free beta sessions above 99.5%</h3><p class="one-line">The beta ran 99.62% crash-free over seven days and 1,840 sessions.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-crash-free">Your note on 7</label> <textarea id="note-crash-free" data-note="crash-free" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Crash reports from the 3.4.0 beta group, 22 to 29 September.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>99.62% of 1,840 sessions were crash-free, above the 99.5% gate.</p></dd></div></dl></div></details><details class="item" id="wallet-passes" data-item="wallet-passes" data-title="Wallet pass validation" data-num="8"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">skipped</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">8</span> Wallet pass validation</h3><p class="one-line">Not run, because wallet passes are out of scope for 3.4.0.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-wallet-passes">Your note on 8</label> <textarea id="note-wallet-passes" data-note="wallet-passes" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Not run.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Skipped by the offline boarding passes plan. Wallet passes wait for a later release.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="rollback"><h2>Rollback</h2><div class="part prose"><p>Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night.</p></div><div class="part block"><div class="block-label"><span>Rollback steps</span></div><pre class="hl"><code><span class="hl-c1"># Stop the staged rollout where it is</span>
+release halt 3.4.0
+
+<span class="hl-c1"># Turn offline passes off at Brisk; scanners go back to online checks</span>
+flags <span class="hl-nb">set</span> offline-passes --harbour brisk --off
+
+<span class="hl-c1"># Return the booking service to 3.3.2</span>
+deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&#34;</span></code></pre></div></section><div class="pick" id="pick" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;waive&#34;,&#34;label&#34;:&#34;Waive&#34;,&#34;tone&#34;:&#34;risk&#34;},{&#34;id&#34;:&#34;rerun&#34;,&#34;label&#34;:&#34;Rerun&#34;,&#34;tone&#34;:&#34;violet&#34;}]"><b>How to decide</b><div><p>Choose ship or hold, then waive or rerun any gate that did not pass.</p></div><fieldset class="choice"><legend>Ship or hold?</legend><div class="options"><label><input type="radio" name="dossier-choice" value="ship" data-choice data-label="Ship"> <span><span class="opt">Ship</span> <span class="sum">Release now, with any waivers noted.</span></span></label><label><input type="radio" name="dossier-choice" value="hold" data-choice data-label="Hold"> <span><span class="opt">Hold</span> <span class="sum">Wait until the gates that did not pass are settled.</span></span></label></div><button type="button" class="clear" data-choice-clear hidden>Clear the choice</button></fieldset><p class="guard" role="status" data-guard="ship" data-unless="waive" data-watch="android-e2e" data-one="Ship goes ahead over gate {n}, which is failed and required and has no Waive verdict." data-many="Ship goes ahead over gates {n}, which are failed and required and have no Waive verdict." hidden></p><p class="example">For example <code>ship, waive 3. Notes: 3: known arm64 flake.</code></p><div class="reply" data-reply>Nothing decided yet.</div><div class="row"><button class="solid" type="button" data-copy-reply>Copy reply</button> <button type="button" data-copy-decisions>Copy decisions as JSON</button></div></div></main><footer class="foot"><span>Release 3.4.0</span> <span>Generated with Dossier · 2026-10-01</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"release","meta":{"title":"Release 3.4.0","slug":"release-3-4-0","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"3.4.0","lede":"Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.","updated":"2026-10-01","status":"for-decision","facts":[{"label":"build","value":"2291"},{"label":"target","value":"5 October"}]},"sections":[{"id":"ships","title":"What ships","parts":[{"type":"prose","markdown":"3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger."},{"type":"table","title":"Changes","columns":["Change","What riders see","Rollout"],"rows":[["Offline boarding passes","Passes scan at the Brisk slipway with no signal.","Brisk only, behind a flag"],["Tide-aware cancellations","A Brisk sailing too shallow for the ramp cancels early, with a notice.","The office approves each one for a month"],["Capacity check on held places","Nothing, unless a deck is full, when a second sale is refused.","Everyone"],["Winter timetable","Fewer Gannet crossings and a later first boat to Keddle.","Everyone"]]},{"type":"chart","title":"Offline scan time on the oldest handheld, by build (ms)","variant":"line","data":[{"label":"2270","value":1450},{"label":"2276","value":1120},{"label":"2283","value":840},{"label":"2288","value":610},{"label":"2291","value":540}]}]},{"id":"gates","title":"Gates","board":{"summary":true,"items":[{"id":"android-e2e","title":"Android end-to-end suite","summary":"212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.","status":"failed","required":true,"facets":[{"label":"How checked","markdown":"CI job `e2e-android` on build 2291, across the four handheld models the crews carry."},{"label":"Result","markdown":"212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline."},{"label":"Evidence","markdown":"Job 18834, scenarios `offline-scan-signal-drop` and `offline-scan-airplane-mode`, with screen recordings attached."},{"label":"Risk","markdown":"Two of the Gannet's six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice."}]},{"id":"store-review","title":"App Store review","summary":"Build 2291 went in for review on 29 September, and reviews have taken one to two days.","status":"pending","required":true,"facets":[{"label":"How checked","markdown":"The build's status in App Store Connect."},{"label":"Result","markdown":"Waiting for review since 29 September at 16:20."},{"label":"Note","markdown":"Android does not wait on this, but staging one platform ahead of the other confuses the harbour office."}]},{"id":"office-walkthrough","title":"Harbour office walkthrough of tide cancellations","summary":"The office has to agree to approve each automatic cancellation for the first month.","status":"pending","facets":[{"label":"How checked","markdown":"A walkthrough on the staging site with the harbour office, run by Ines."},{"label":"Result","markdown":"Booked for 2 October."}]},{"id":"unit-integration","title":"Unit and integration tests","summary":"1,904 tests passed on build 2291.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"CI job `test` on build 2291."},{"label":"Result","markdown":"1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable."}]},{"id":"storm-load","title":"Load test at storm-day volume","summary":"Six times normal traffic held booking at 420 ms p95, against an 800 ms target.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"`k6 run load/storm-day.js` against staging for 30 minutes, at six times a normal winter Tuesday."},{"label":"Result","markdown":"420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95."}]},{"id":"accessibility","title":"Accessibility pass on booking and passes","summary":"Screen reader and keyboard checks passed on every changed screen, the new pass screen included.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"VoiceOver and TalkBack walkthroughs by Mira, and `axe` in CI."},{"label":"Result","markdown":"Nothing blocking. The pass screen now reads out the sailing and party before the code."}]},{"id":"crash-free","title":"Crash-free beta sessions above 99.5%","summary":"The beta ran 99.62% crash-free over seven days and 1,840 sessions.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"Crash reports from the 3.4.0 beta group, 22 to 29 September."},{"label":"Result","markdown":"99.62% of 1,840 sessions were crash-free, above the 99.5% gate."}]},{"id":"wallet-passes","title":"Wallet pass validation","summary":"Not run, because wallet passes are out of scope for 3.4.0.","status":"skipped","facets":[{"label":"How checked","markdown":"Not run."},{"label":"Result","markdown":"Skipped by the offline boarding passes plan. Wallet passes wait for a later release."}]}]}},{"id":"rollback","title":"Rollback","parts":[{"type":"prose","markdown":"Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night."},{"type":"code","title":"Rollback steps","lang":"sh","code":"# Stop the staged rollout where it is\nrelease halt 3.4.0\n\n# Turn offline passes off at Brisk; scanners go back to online checks\nflags set offline-passes --harbour brisk --off\n\n# Return the booking service to 3.3.2\ndeploy booking --version 3.3.2 --reason \"rollback 3.4.0\""}]}]}</script><script>
+(() => {
+  "use strict";
+  /* reply writes the line a reader sends back, exactly as Go does: testdata/replies.json holds both to the same cases */
+  const reply = (c, s) => {
+    const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
+    let open = 0;
+    c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
+    const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
+    if (c.mode === "pick") {
+      const p = nums(s.picked || []);
+      if (p.length) groups.push(p.length === c.items.length ? "all" : p.join(", "));
+    } else if (c.mode === "verdict") {
+      c.verdicts.forEach((id) => {
+        const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k]));
+        if (n.length) groups.push(id + " " + (n.length === open ? "all" : n.join(", ")));
+      });
+    }
+    const body = groups.join("; "), noted = Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]);
+    let line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
+    if (noted.length) line += " Notes: " + noted.map((id) => num[id] + ": " + notes[id].trim().split(/\s+/).join(" ")).join("; ") + ".";
+    return line;
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply }; return; }
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+  const at = (el, name) => el.getAttribute(name);
+  const idOf = (el) => at(el.closest("[data-item]"), "data-item");
+  const on = (type, fn, target) => (target || document).addEventListener(type, fn);
+  const say = (sel, text) => $$(sel).forEach((el) => { el.textContent = text; });
+  const keys = Object.keys;
+  let model = {};
+  try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
+  const slug = (model.meta && model.meta.slug) || "dossier";
+  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
+  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+
+  /* theme: auto, light, dark */
+  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const applyTheme = (m) => {
+    if (!modes.includes(m)) m = "auto";
+    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    if (themeBtn) {
+      themeBtn.setAttribute("data-mode", m);
+      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
+      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
+      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+    }
+    keep("theme", m);
+  };
+  applyTheme(load("theme"));
+  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+
+  /* decisions: the embedded model is the baseline, this device may go further */
+  const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
+  let defs = [];
+  try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
+  defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
+  const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
+  const ctx = { mode, verdicts: defs.map((d) => d.id), items: [] };
+  items.forEach((el) => {
+    const id = at(el, "data-item");
+    num[id] = +at(el, "data-num");
+    can[id] = el.hasAttribute("data-decides");
+    ctx.items.push({ id, n: num[id], eligible: can[id] });
+  });
+  const clean = (s) => {
+    const out = { path: "", picked: [], verdicts: {}, notes: {} };
+    if (!s || typeof s !== "object") return out;
+    if (choices.some((r) => r.value === s.path)) out.path = s.path;
+    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter((id, i, a) => num[id] && a.indexOf(id) === i);
+    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach((id) => { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
+    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach((id) => { const v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    return out;
+  };
+  let state = clean(model.decisions), framed = true;
+  try { const saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
+  try { framed = window.parent !== window; } catch (e) {}
+  const tell = (msg) => { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } };
+  const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
+  const announce = () => {
+    const d = detail();
+    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    tell({ type: "dossier:decisions", decisions: d });
+  };
+  const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
+  const decided = (id) => (mode === "pick" ? state.picked.includes(id) : !!state.verdicts[id]);
+  const setPick = (id, yes) => { if (yes !== decided(id)) { state.picked = yes ? state.picked.concat(id) : state.picked.filter((x) => x !== id); save(); } };
+  const setVerdict = (id, v) => { if (can[id] && (state.verdicts[id] || "") !== v) { if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); } };
+  const setPath = (p) => { if (state.path !== p) { state.path = p; save(); } };
+  const setNote = (id, text) => { const v = String(text || "").trim(); if ((state.notes[id] || "") !== v) { if (v) state.notes[id] = v; else delete state.notes[id]; save(); } };
+  const toneOf = (el, v) => { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); };
+  const render = () => {
+    items.forEach((el) => {
+      const id = at(el, "data-item"), v = state.verdicts[id] || "", yes = decided(id), picked = mode === "pick" && yes;
+      el.classList.toggle("picked", picked);
+      toneOf(el, v);
+      $$("[data-verdict]", el).forEach((b, i) => {
+        const sel = at(b, "data-verdict") === v;
+        b.setAttribute("aria-checked", sel);
+        b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
+      });
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
+      if (tr) {
+        tr.classList.toggle("picked", picked);
+        toneOf(tr, v);
+        const ctl = $("input,select", tr);
+        if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
+      }
+      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
+      if (note && state.notes[id]) note.hidden = false;
+      if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
+    });
+    let chosen = "Open";
+    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
+    say('[data-live="choice"]', chosen);
+    $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
+    say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
+    const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
+    say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
+    applyView();
+  };
+  const decisionsJSON = () => {
+    const d = detail(), some = (o) => (keys(o).length ? o : undefined);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+  };
+  let noteTimer;
+  on("click", (e) => {
+    const t = e.target;
+    let b = t.closest("[data-verdict]");
+    if (b) { e.preventDefault(); const id = idOf(b), v = at(b, "data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
+    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); setPick(idOf(b), !decided(idOf(b))); return; }
+    if ((b = t.closest("[data-note-toggle]"))) {
+      e.preventDefault();
+      const d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
+      if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden) d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); }
+      return;
+    }
+    if (t.closest("[data-choice-clear]")) setPath("");
+    else if (t.closest("[data-collapse-toggle]")) setAllOpen(!anyOpen());
+    else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
+    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
+    else if (t.closest("[data-hide]")) setHide(!hide);
+    else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
+    else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+  });
+  on("keydown", (e) => {
+    const t = e.target, b = t.closest && t.closest("[data-verdict]");
+    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    if (!b) return;
+    const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (dir) {
+      e.preventDefault();
+      const next = group[(group.indexOf(b) + dir + group.length) % group.length];
+      setVerdict(idOf(b), at(next, "data-verdict"));
+      next.focus();
+    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(idOf(b), ""); }
+  });
+  on("change", (e) => {
+    const t = e.target;
+    if (t.matches("input[data-pick-row]")) setPick(at(t, "data-pick-row"), t.checked);
+    else if (t.matches("select[data-verdict-row]")) setVerdict(at(t, "data-verdict-row"), t.value);
+    else if (t.matches("input[data-choice]")) setPath(t.value);
+  });
+  on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+
+  /* collapsing: remembered per item on this device */
+  const details = $$("details.item[id]"), opened = {};
+  let printing = false, beforePrint = null;
+  try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
+  const anyOpen = () => details.some((d) => d.open);
+  const setAllOpen = (open) => details.forEach((d) => { d.open = open; });
+  const renderCollapse = () => { const b = $("[data-collapse-toggle]"); if (b) { b.textContent = anyOpen() ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", anyOpen()); } };
+  details.forEach((d) => {
+    if (opened[d.id]) d.open = true;
+    on("toggle", () => {
+      if (!printing && !auto[d.id]) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
+      renderCollapse();
+    }, d);
+  });
+  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
+  openHash();
+  on("hashchange", openHash, window);
+  renderCollapse();
+
+  /* view: Hide decided and search together decide what shows; printing shows everything */
+  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
+  const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
+  const matches = (u, terms) => terms.every((t) => u.text.includes(t) || (u.n > 0 && +t === u.n));
+  let hide = load("hide") === "1", query = "", auto = {}, hits = [], now = -1;
+  const mark = (name, ranges) => { if (hl) hl.set(name, new Highlight(...ranges)); };
+  const count = (active) => say("[data-hits]", !active ? "" : !hits.length ? "No matches" : now >= 0 ? now + 1 + " of " + hits.length : hits.length + (hits.length === 1 ? " match" : " matches"));
+  const applyView = () => {
+    const terms = printing ? [] : fold(query).split(/\s+/).filter(Boolean);
+    let shown = 0;
+    units.forEach((u) => {
+      const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
+      u.el.hidden = h;
+      if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
+      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+    });
+    if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
+    sections.forEach((sec) => {
+      const h = terms.length > 0 && !matches(sec, terms) && !$$("details.item:not([hidden]), .rows > :not([hidden])", sec.el).length, a = $('.toc a[href="#' + sec.el.id + '"]');
+      sec.el.hidden = h;
+      if (!h) shown++;
+      if (a) a.parentNode.hidden = h;
+    });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any && (!$("a", g) || g.hidden); });
+    $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
+    const none = $("[data-no-hits]"), b = $("[data-hide]");
+    if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
+    if (b) { b.setAttribute("aria-pressed", hide); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    hits = [];
+    now = -1;
+    const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
+    for (let node; terms.length && (node = walk.nextNode());) {
+      const el = node.parentElement, closed = el.closest("details:not([open])");
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits]") || (closed && !el.closest("summary"))) continue;
+      let f = "";
+      const map = [], x = node.data;
+      for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }
+      terms.forEach((t) => { for (let k = f.indexOf(t); k >= 0; k = f.indexOf(t, k + t.length)) { const r = new Range(); r.setStart(node, map[k]); r.setEnd(node, map[k + t.length - 1] + 1); hits.push(r); } });
+    }
+    hits.sort((a, z) => a.compareBoundaryPoints(Range.START_TO_START, z));
+    mark("dossier-hit", hits);
+    mark("dossier-now", []);
+    count(terms.length);
+  };
+  const step = (dir) => {
+    if (!hits.length) return;
+    now = (now + dir + hits.length) % hits.length;
+    mark("dossier-now", [hits[now]]);
+    hits[now].startContainer.parentElement.scrollIntoView({ block: "center" });
+    count(true);
+  };
+  const search = (q) => { if (box) box.value = q; query = q; applyView(); };
+  const setHide = (yes) => { hide = yes; keep("hide", hide ? "1" : "0"); applyView(); };
+  if (box) {
+    on("input", () => { query = box.value; applyView(); }, box);
+    on("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") { e.preventDefault(); if (box.value) search(""); else box.blur(); }
+    }, box);
+  }
+
+  /* copy and toast */
+  let toastTimer;
+  const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
+  const copy = (text, msg) => {
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+  };
+
+  /* contents: mark the section in view */
+  const links = {};
+  let active = null;
+  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
+  }
+
+  render();
+  announce();
+
+  /* embedded: keep the parent's frame as tall as the page */
+  if (framed) {
+    let lastHeight = -1;
+    const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
+    on("load", postHeight, window);
+    postHeight();
+  }
+})();
+</script></body></html>

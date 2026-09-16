@@ -1,0 +1,671 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Offline boarding passes</title><style>
+/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+:root {
+  --bg: #ffffff;
+  --paper: #f7f5f7;
+  --paper-2: #efecf0;
+  --ink: #201c22;
+  --muted: #6b6270;
+  --line: #e0dae0;
+  --line-soft: #ece7ec;
+  --accent: #c81e4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe8ed;
+  --teal: #08776e;
+  --teal-soft: #e3f3f0;
+  --violet: #6a46d9;
+  --violet-soft: #ede8fb;
+  --coral: #9a5b00;
+  --risk-soft: #f6ecdc;
+  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: clamp(16px, 4vw, 40px);
+  --frame: 1360px;
+  --rail: 208px;
+  --measure: 76ch;
+  --r-s: 6px;
+  --r: 10px;
+  --r-l: 14px;
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+  color-scheme: dark;
+}
+
+/* base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; }
+pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* buttons: one ghost style everywhere */
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
+.btn:hover { color: var(--ink); background: var(--paper-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.btn svg { width: 14px; height: 14px; flex: none; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.link-btn:hover { color: var(--ink); }
+.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
+.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::before { transform: scale(1); }
+
+/* shell */
+.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
+@media (min-width: 1100px) {
+  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
+  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}
+
+/* masthead: one band across the frame */
+.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.search { position: relative; display: inline-flex; align-items: center; }
+.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
+.search input::placeholder { color: var(--muted); }
+.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hits:empty { display: none; }
+::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
+::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
+.no-hits { padding-block: 36px; color: var(--muted); }
+@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
+.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
+.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
+.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
+.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
+.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
+.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.stats .live b { color: var(--accent); }
+.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.stats a:hover { color: var(--ink); text-decoration: underline; }
+
+/* contents */
+.toc { font-size: 13.5px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
+.toc li a:hover { color: var(--ink); background: var(--paper); }
+.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
+.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
+.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
+.toc li.picked .pip { opacity: 1; }
+.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
+.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.toc .group:first-child { margin-top: 0; }
+.toc .group a { display: inline; padding: 0; color: inherit; }
+.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
+@media (max-width: 1099px) {
+  .toc { padding-block: 18px 0; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
+  .toc .n { text-align: left; min-width: 0; }
+  .toc .group { display: none; }
+  .toc .pip { margin-left: 2px; }
+}
+
+/* main column */
+.main { min-width: 0; }
+.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.section:last-of-type { border-bottom: 0; }
+.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
+.part + .part { margin-top: 16px; }
+.prose { max-width: var(--measure); display: grid; gap: 12px; }
+.prose p, .prose li { font-size: 15.5px; }
+.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
+.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
+.prose strong { font-weight: 600; }
+
+.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
+.spec > div:first-child { border-top: 0; }
+.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.spec span { font-size: 14.5px; }
+@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
+
+.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
+.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.callout.risk b { color: var(--coral); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
+th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+td a { color: var(--ink); text-decoration: none; font-weight: 500; }
+td a:hover { color: var(--accent); }
+td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+td.ck, th.ck { width: 34px; padding-right: 0; }
+tbody tr { transition: background var(--dur); }
+tbody tr:hover { background: var(--paper); }
+tbody tr.picked { background: var(--accent-soft); }
+tbody tr[data-tone] { background: var(--tone-soft); }
+td.vd, th.vd { width: 1%; white-space: nowrap; }
+td.vd .none { font-size: 12.5px; color: var(--muted); }
+select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+/* code, figures, charts, diagram source */
+.block { display: grid; gap: 6px; }
+.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
+.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
+.figure { margin: 0; display: grid; gap: 8px; }
+.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
+.figure .legend { margin-top: 0; }
+.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
+.diagram pre { white-space: pre-wrap; }
+
+/* diagrams: Graphviz geometry, colored by the tokens */
+figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
+.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
+.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
+.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
+.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
+.dg .edge .hollow { fill: var(--bg); }
+.dg .edge text { fill: var(--muted); font-size: 10px; }
+.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
+.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
+.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
+.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
+figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.dg-source { flex: 1 1 100%; min-width: 0; }
+.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
+.dg-source summary:hover { color: var(--ink); }
+.dg-source[open] summary { margin-bottom: 6px; }
+figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
+figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
+
+/* timeline: times in a column, a hairline rail, a dot per event in its tone */
+.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
+.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .ev { position: relative; padding: 0 0 18px 24px; }
+.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
+.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline b { display: block; font-size: 15px; font-weight: 600; }
+.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
+@media (max-width: 520px) {
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
+  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
+}
+:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
+.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
+.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
+.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
+.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
+.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
+.hl .hl-nt { color: var(--hl-tag); }
+.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
+.hl .hl-o, .hl .hl-p { color: var(--muted); }
+.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
+.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
+.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
+.hl .hl-ge { font-style: italic; }
+.hl .hl-gs { font-weight: 600; }
+.hl .hl-err { text-decoration: underline wavy var(--coral); }
+
+/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
+.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
+
+/* chips and meters */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
+.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
+.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
+.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
+.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
+.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.owner { font-size: 12.5px; color: var(--muted); }
+.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.stats > div.t-risk b { color: var(--coral); }
+.stats > div.t-teal b { color: var(--teal); }
+.stats > div.t-violet b { color: var(--violet); }
+.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
+.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
+.meter i.on { background: var(--accent); }
+.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* items: collapsible details */
+.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.item:last-of-type { border-bottom: 0; }
+.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
+.item-head::-webkit-details-marker { display: none; }
+.item-head::marker { content: ""; }
+.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
+.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
+.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
+.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
+.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
+.item[open] h3 .chev { transform: rotate(90deg); }
+.item-head:hover h3 .chev { color: var(--ink); }
+.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.item.picked h3 .num { color: var(--accent); }
+.item[data-tone] h3 .num { color: var(--tone); }
+.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
+.item-body { margin-top: 14px; padding-left: 24px; }
+@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
+.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
+.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
+.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
+.note textarea::placeholder { color: var(--muted); }
+.facets { display: grid; margin: 0; }
+.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
+.facet:first-child { border-top: 0; padding-top: 0; }
+.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
+.facet dd p { max-width: var(--measure); }
+.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
+.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
+.facet.risk dt { color: var(--coral); }
+@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
+.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rows { display: grid; gap: 8px; }
+.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
+.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
+.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
+.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
+.rows > .row > summary::-webkit-details-marker { display: none; }
+.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.rows > .row[open] > summary .chev { transform: rotate(90deg); }
+.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
+.rows > .row > .facets .facet:first-child { padding-top: 8px; }
+@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
+
+/* the one saturated block */
+.pick { margin-top: 28px; padding: 18px 20px; border-radius: var(--r-l); background: var(--accent); color: var(--accent-ink); display: grid; gap: 10px; }
+.pick b { font-size: 16px; font-weight: 600; }
+.pick p { font-size: 14.5px; opacity: 0.92; max-width: 76ch; }
+.pick .example { font-size: 13.5px; }
+.pick code { background: rgba(255,255,255,0.18); border-color: transparent; color: inherit; }
+.pick .reply { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; background: rgba(0,0,0,0.18); border-radius: 8px; padding: 9px 11px; white-space: pre-wrap; word-break: break-word; }
+.pick .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick button { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); color: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background var(--dur); }
+.pick button:hover { background: rgba(255,255,255,0.22); }
+.pick button.solid { background: var(--accent-ink); color: var(--accent); border-color: transparent; }
+.pick button.solid:hover { background: var(--accent-ink); filter: brightness(1.05); }
+.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.pick legend { padding: 0; margin-bottom: 8px; font-size: 14.5px; font-weight: 600; }
+.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent-ink) 35%, transparent); border-radius: 10px; cursor: pointer; transition: background var(--dur), border-color var(--dur); }
+.pick .options label:hover { background: color-mix(in srgb, var(--accent-ink) 10%, transparent); }
+.pick .options label:has(input:checked) { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); border-color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.pick .options input { margin: 3px 0 0; accent-color: var(--accent-ink); }
+.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
+.pick .sum { display: block; font-size: 13px; opacity: 0.9; }
+.pick .guard { max-width: none; padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 13.5px; opacity: 1; }
+.pick button.clear { justify-self: start; height: auto; padding: 0; border: 0; background: none; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.main { padding-bottom: 40px; }
+.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
+
+@media print {
+  .toc, .tools, .pick-btn, .note-btn, .pick .row, .pick .clear, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
+  .verdicts { border: 0; background: none; }
+  body { padding: 0; font-size: 12px; }
+  .page { display: block; }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
+  .dg-source { display: none; }
+  .dg { max-width: 100%; }
+  .item h3 .chev { display: none; }
+  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+  .pick { background: none; color: var(--ink); border: 1px solid var(--line); }
+}
+</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1><em>Offline</em> boarding passes</h1><p class="lede">Boarding passes that scan with no signal at the Brisk slipway, in seven steps across three phases. Approve each step with go, revise, or skip.</p><div class="stats" aria-label="At a glance"><div class=""><b>7</b> <span>steps</span></div><div class="live"><b data-live="count">0</b> <span>decided</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#goal"><span class="n">–</span>Goal</a></li><li class="group"><a href="#sign">Phase 1: Sign passes</a></li><li data-item="signing-key" class=""><a href="#signing-key"><span class="n">1.</span>Add a pass signing key to the booking service<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="sign-passes" class=""><a href="#sign-passes"><span class="n">2.</span>Sign every pass at booking<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group"><a href="#scan">Phase 2: Scan offline</a></li><li data-item="sync-keys" class=""><a href="#sync-keys"><span class="n">3.</span>Keep the public keys on every scanner<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="verify-offline" class=""><a href="#verify-offline"><span class="n">4.</span>Check passes on the scanner with no network<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="queue-scans" class=""><a href="#queue-scans"><span class="n">5.</span>Queue scans until the signal returns<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group"><a href="#rollout">Phase 3: Roll out at Brisk</a></li><li data-item="brisk-trial" class=""><a href="#brisk-trial"><span class="n">6.</span>Trial on the Brisk crossings for a week<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="retire-paper" class=""><a href="#retire-paper"><span class="n">7.</span>Retire the printed boarding list<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#verify"><span class="n">–</span>Verification</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="goal"><h2>Goal</h2><div class="part prose"><p>Brisk harbour has no mobile signal at the slipway on most mornings. Passes that need the network fail at the ramp, and crew fall back to a paper list printed the night before, which misses every late booking.</p>
+<p>The goal is a pass the crew scanner can check with no network at all, in place for the winter timetable on 26 October.</p></div><div class="part spec"><div><b>Offline for</b><span>Up to eight hours, the first Brisk sailing to the last on a winter day.</span></div><div><b>Check time</b><span>Under one second a pass on the oldest handheld the crews carry.</span></div><div><b>Copied passes</b><span>Refused when scanned twice on one handheld, and flagged across handhelds once back in signal.</span></div><div><b>Out of scope</b><span>Wallet passes, paper tickets, and any change to fares or refunds.</span></div></div><figure class="part diagram" data-format="mermaid"><div class="dg-frame"><svg class="dg" role="img" aria-label="How a pass is signed and checked" width="256.4px" height="349.1px" viewBox="0.00 0.00 235.35 320.10"><g id="da6509277-graph0" class="graph" transform="scale(1 1) rotate(0) translate(8.64 311.46)"><g id="da6509277-node1" class="node violet"><path d="M139.19,-300.09C139.19,-301.6 120.7,-302.82 97.93,-302.82 75.16,-302.82 56.66,-301.6 56.66,-300.09 56.66,-300.09 56.66,-275.52 56.66,-275.52 56.66,-274.01 75.16,-272.79 97.93,-272.79 120.7,-272.79 139.19,-274.01 139.19,-275.52 139.19,-275.52 139.19,-300.09 139.19,-300.09"></path><path d="M139.19,-300.09C139.19,-298.58 120.7,-297.36 97.93,-297.36 75.16,-297.36 56.66,-298.58 56.66,-300.09"></path><text text-anchor="middle" x="97.93" y="-284.51">Signing keys</text></g><g id="da6509277-node2" class="node"><polygon class="hollow" points="100.83,-239.79 3.02,-239.79 3.02,-213.87 100.83,-213.87 100.83,-239.79"></polygon><text text-anchor="middle" x="51.93" y="-223.53">Booking service</text></g><g id="da6509277-edge1" class="edge"><path d="M86.79,-272.53C80.73,-264.75 73.14,-255.03 66.6,-246.64"></path><polygon points="68.57,-245.19 62.34,-241.18 64.71,-248.2 68.57,-245.19"></polygon></g><g id="da6509277-node4" class="node accent"><polygon class="hollow" points="129.94,-99.95 41.92,-99.95 41.92,-74.03 129.94,-74.03 129.94,-99.95"></polygon><text text-anchor="middle" x="85.93" y="-83.69">Crew scanner</text></g><g id="da6509277-edge4" class="edge"><path stroke-dasharray="5,2" d="M105.64,-272.61C121.08,-242.12 152.09,-168.84 124.93,-115.95 122.88,-111.97 119.98,-108.42 116.66,-105.31"></path><polygon points="118.5,-103.65 111.52,-101.13 115.41,-107.45 118.5,-103.65"></polygon><text text-anchor="middle" x="176.1" y="-188.87">public keys, nightly</text></g><g id="da6509277-node3" class="node"><polygon class="hollow" points="67.86,-169.87 0,-169.87 0,-143.95 67.86,-143.95 67.86,-169.87"></polygon><text text-anchor="middle" x="33.93" y="-153.61">Rider app</text></g><g id="da6509277-edge2" class="edge"><path d="M48.63,-213.37C46.04,-203.61 42.38,-189.81 39.36,-178.42"></path><polygon points="41.76,-177.89 37.6,-171.75 37.02,-179.15 41.76,-177.89"></polygon><text text-anchor="middle" x="70.69" y="-188.87">signed pass</text></g><g id="da6509277-edge3" class="edge"><path d="M29.02,-143.48C26.56,-135.11 25.05,-124.13 30.11,-115.95 32.7,-111.76 36.13,-108.17 40.02,-105.11"></path><polygon points="41.26,-107.23 45.69,-101.28 38.51,-103.17 41.26,-107.23"></polygon><text text-anchor="middle" x="76.52" y="-118.95">QR code at the ramp</text></g><g id="da6509277-node5" class="node teal"><path d="M126.89,-27.3C126.89,-28.81 108.53,-30.03 85.93,-30.03 63.32,-30.03 44.96,-28.81 44.96,-27.3 44.96,-27.3 44.96,-2.73 44.96,-2.73 44.96,-1.22 63.32,0 85.93,0 108.53,0 126.89,-1.22 126.89,-2.73 126.89,-2.73 126.89,-27.3 126.89,-27.3"></path><path d="M126.89,-27.3C126.89,-25.79 108.53,-24.57 85.93,-24.57 63.32,-24.57 44.96,-25.79 44.96,-27.3"></path><text text-anchor="middle" x="85.93" y="-11.72">Boarding log</text></g><g id="da6509277-edge5" class="edge"><path d="M85.93,-73.8C85.93,-64.19 85.93,-50.52 85.93,-38.88"></path><polygon points="88.38,-39 85.93,-32 83.48,-39 88.38,-39"></polygon><text text-anchor="middle" x="144.29" y="-49.03">scans, once back in signal</text></g></g></svg></div><figcaption><span>How a pass is signed and checked</span> <details class="dg-source"><summary>Mermaid source</summary><pre><code>flowchart TB
+  keys[(Signing keys)]:::violet --&gt; book[Booking service]
+  book --&gt;|signed pass| app[Rider app]
+  app --&gt;|QR code at the ramp| scanner[Crew scanner]:::accent
+  keys -.-&gt;|public keys, nightly| scanner
+  scanner --&gt;|scans, once back in signal| log[(Boarding log)]:::teal</code></pre></details></figcaption></figure></section><section class="section" id="sign"><h2>Phase 1: Sign passes</h2><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Step</th><th>Effort</th><th>Status</th><th>Owner</th><th>Depends on</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="signing-key" class=""><td class="num">1</td><td><a href="#signing-key">Add a pass signing key to the booking service</a></td><td>S</td><td><span class="chip t-teal">done</span></td><td>Tomas</td><td><span class="deps">nothing </span></td><td class="vd"><select class="verdict" data-verdict-row="signing-key" aria-label="Verdict on 1, Add a pass signing key to the booking service"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr><tr data-item="sign-passes" class=""><td class="num">2</td><td><a href="#sign-passes">Sign every pass at booking</a></td><td>M</td><td><span class="chip t-violet">doing</span></td><td>Mira</td><td><span class="deps"> <a href="#signing-key" title="Add a pass signing key to the booking service">1</a></span></td><td class="vd"><select class="verdict" data-verdict-row="sign-passes" aria-label="Verdict on 2, Sign every pass at booking"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p><details class="item" id="signing-key" data-item="signing-key" data-title="Add a pass signing key to the booking service" data-decides data-num="1"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">done</span><span class="chip t-outline" title="Effort">Effort S</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Tomas</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">1</span> Add a pass signing key to the booking service</h3><p class="one-line">An Ed25519 key pair in the secrets store, rotated every 90 days, with the old key accepted for a week after.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-signing-key">Your note on 1</label> <textarea id="note-signing-key" data-note="signing-key" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>A key pair lives in the secrets store under <code>pass-signing</code>. The booking service loads it at startup and publishes the public half at <code>/keys/pass.json</code>.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p><code>curl -s localhost:8080/keys/pass.json | jq '.keys | length'</code> prints 2 during a rotation and 1 otherwise.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A leaked private key lets anyone mint passes. An early rotation revokes it within the hour, and the runbook has the steps.</p></dd></div></dl></div></details><details class="item" id="sign-passes" data-item="sign-passes" data-title="Sign every pass at booking" data-decides data-num="2"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Status">doing</span><span class="chip t-outline" title="Effort">Effort M</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 2"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">2</span> Sign every pass at booking</h3><p class="one-line">Each pass carries its booking, sailing, party, and vehicle, signed, in a QR code the scanner reads in poor light.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-sign-passes">Your note on 2</label> <textarea id="note-sign-passes" data-note="sign-passes" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>The pass payload grows from a booking id to the fields below, signed and base45 encoded. Passes issued before the change work until they expire.</p></dd></div><div class="facet"><dt>Touches</dt><dd><p><code>booking/pass/issue.go</code>, the rider app&rsquo;s pass screen, and the confirmation email.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p><code>go test ./booking/pass/...</code> passes, and a pass shown at 70% screen brightness scans on the oldest handheld.</p></dd></div><div class="facet"><dt>Diff</dt><dd><pre class="hl"><code><span class="hl-gd">-type Pass struct{ BookingID string }
+</span><span class="hl-gi">+type Pass struct {
+</span><span class="hl-gi">+	BookingID string    `json:&#34;b&#34;`
+</span><span class="hl-gi">+	SailingID string    `json:&#34;s&#34;`
+</span><span class="hl-gi">+	Party     int       `json:&#34;p&#34;`
+</span><span class="hl-gi">+	Vehicle   string    `json:&#34;v,omitempty&#34;`
+</span><span class="hl-gi">+	Expires   time.Time `json:&#34;e&#34;`
+</span><span class="hl-gi">+}
+</span></code></pre></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#signing-key">1</a></p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="scan"><h2>Phase 2: Scan offline</h2><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Step</th><th>Effort</th><th>Status</th><th>Owner</th><th>Depends on</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="sync-keys" class=""><td class="num">3</td><td><a href="#sync-keys">Keep the public keys on every scanner</a></td><td>S</td><td><span class="chip t-neutral">planned</span></td><td>Joss</td><td><span class="deps"> <a href="#signing-key" title="Add a pass signing key to the booking service">1</a></span></td><td class="vd"><select class="verdict" data-verdict-row="sync-keys" aria-label="Verdict on 3, Keep the public keys on every scanner"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr><tr data-item="verify-offline" class=""><td class="num">4</td><td><a href="#verify-offline">Check passes on the scanner with no network</a></td><td>M</td><td><span class="chip t-neutral">planned</span></td><td>Mira</td><td><span class="deps"> <a href="#sign-passes" title="Sign every pass at booking">2</a>, <a href="#sync-keys" title="Keep the public keys on every scanner">3</a></span></td><td class="vd"><select class="verdict" data-verdict-row="verify-offline" aria-label="Verdict on 4, Check passes on the scanner with no network"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr><tr data-item="queue-scans" class=""><td class="num">5</td><td><a href="#queue-scans">Queue scans until the signal returns</a></td><td>M</td><td><span class="chip t-neutral">planned</span></td><td>Joss</td><td><span class="deps"> <a href="#verify-offline" title="Check passes on the scanner with no network">4</a></span></td><td class="vd"><select class="verdict" data-verdict-row="queue-scans" aria-label="Verdict on 5, Queue scans until the signal returns"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p><details class="item" id="sync-keys" data-item="sync-keys" data-title="Keep the public keys on every scanner" data-decides data-num="3"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">planned</span><span class="chip t-outline" title="Effort">Effort S</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Joss</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 3"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">3</span> Keep the public keys on every scanner</h3><p class="one-line">Scanners fetch the public keys whenever they have signal and keep the last two, so a rotation never strands a sailing.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-sync-keys">Your note on 3</label> <textarea id="note-sync-keys" data-note="sync-keys" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>The crew app fetches <code>/keys/pass.json</code> at launch and each night on harbour Wi-Fi, and stores the last two keys. The status bar shows how old they are.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p>With Wi-Fi off for 48 hours, a scanner still accepts passes signed before and after a rotation.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#signing-key">1</a></p></dd></div></dl></div></details><details class="item" id="verify-offline" data-item="verify-offline" data-title="Check passes on the scanner with no network" data-decides data-num="4"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">planned</span><span class="chip t-outline" title="Effort">Effort M</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 4"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">4</span> Check passes on the scanner with no network</h3><p class="one-line">The scanner checks the signature, sailing, and expiry itself, and shows board or stop in under a second.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-verify-offline">Your note on 4</label> <textarea id="note-verify-offline" data-note="verify-offline" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>A scan checks the signature against the stored keys, then the sailing and expiry against the handheld&rsquo;s clock. The screen shows board in teal or stop in ochre, with the reason in words.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Crew load forty cars in ten minutes at Brisk. Anything slower than a second a pass holds up the ramp.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p><code>scanner-sim --offline 8h --passes testdata/brisk-week.json</code> reports every pass checked in under 1,000 ms.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A handheld with the wrong time refuses good passes. The scanner keeps the last server time it saw and warns crew when the clock drifts more than five minutes.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#sign-passes">2</a><a class="dep" href="#sync-keys">3</a></p></dd></div></dl></div></details><details class="item" id="queue-scans" data-item="queue-scans" data-title="Queue scans until the signal returns" data-decides data-num="5"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">planned</span><span class="chip t-outline" title="Effort">Effort M</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Joss</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 5"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">5</span> Queue scans until the signal returns</h3><p class="one-line">Scans wait on the handheld and upload when it reconnects, and a pass scanned twice is flagged to the office.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-queue-scans">Your note on 5</label> <textarea id="note-queue-scans" data-note="queue-scans" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>Each scan goes into a local queue with the pass and the time, and uploads in order on reconnect. The server flags any pass scanned twice for one sailing.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p><code>scanner-sim --replay-duplicates testdata/copied-passes.json</code> flags both copies after the reconnect.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>A copy used on two handhelds on one sailing is only caught after upload. The harbour office agreed that is acceptable at Brisk.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#verify-offline">4</a></p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="rollout"><h2>Phase 3: Roll out at Brisk</h2><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Step</th><th>Effort</th><th>Status</th><th>Owner</th><th>Depends on</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="brisk-trial" class=""><td class="num">6</td><td><a href="#brisk-trial">Trial on the Brisk crossings for a week</a></td><td>S</td><td><span class="chip t-neutral">planned</span></td><td>Ines</td><td><span class="deps"> <a href="#verify-offline" title="Check passes on the scanner with no network">4</a>, <a href="#queue-scans" title="Queue scans until the signal returns">5</a></span></td><td class="vd"><select class="verdict" data-verdict-row="brisk-trial" aria-label="Verdict on 6, Trial on the Brisk crossings for a week"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr><tr data-item="retire-paper" class=""><td class="num">7</td><td><a href="#retire-paper">Retire the printed boarding list</a></td><td>S</td><td><span class="chip t-risk">blocked</span></td><td>Ines</td><td><span class="deps"> <a href="#brisk-trial" title="Trial on the Brisk crossings for a week">6</a></span></td><td class="vd"><select class="verdict" data-verdict-row="retire-paper" aria-label="Verdict on 7, Retire the printed boarding list"><option value="">Undecided</option> <option value="go">Go</option><option value="revise">Revise</option><option value="skip">Skip</option></select></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p><details class="item" id="brisk-trial" data-item="brisk-trial" data-title="Trial on the Brisk crossings for a week" data-decides data-num="6"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">planned</span><span class="chip t-outline" title="Effort">Effort S</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Ines</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 6"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">6</span> Trial on the Brisk crossings for a week</h3><p class="one-line">Every Brisk crossing boards from the scanner for a week, with the paper list printed as a fallback.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-brisk-trial">Your note on 6</label> <textarea id="note-brisk-trial" data-note="brisk-trial" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>For one week, crew scan every pass at the Brisk slipway and tick the paper list only when a scan fails. Ines logs every failure with its reason.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p>Fewer than one scan in a hundred falls back to the paper list, and no rider waits more than a minute at the ramp.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#verify-offline">4</a><a class="dep" href="#queue-scans">5</a></p></dd></div></dl></div></details><details class="item" id="retire-paper" data-item="retire-paper" data-title="Retire the printed boarding list" data-decides data-num="7"><summary class="item-head"><div class="item-meta"><span class="chip t-risk" title="Status">blocked</span><span class="chip t-outline" title="Effort">Effort S</span><span class="owner" title="Owner"><span class="sr">Owner: </span>Ines</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 7"><button type="button" role="radio" class="t-teal" data-verdict="go" aria-checked="false" tabindex="0">Go</button><button type="button" role="radio" class="t-violet" data-verdict="revise" aria-checked="false" tabindex="-1">Revise</button><button type="button" role="radio" class="t-neutral" data-verdict="skip" aria-checked="false" tabindex="-1">Skip</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">7</span> Retire the printed boarding list</h3><p class="one-line">Stop printing the list the night before, once the harbour authority signs off on boarding from the scanner alone.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-retire-paper">Your note on 7</label> <textarea id="note-retire-paper" data-note="retire-paper" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>What changes</dt><dd><p>The nightly print job stops for Brisk, and the crew app keeps a read-only list for emergencies.</p></dd></div><div class="facet"><dt>Done when</dt><dd><p>The harbour authority confirms in writing that scanner-only boarding meets its passenger count rules.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>The authority wants a passenger count that survives a flat battery. Until it rules, each boat carries a charged spare handheld.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#brisk-trial">6</a></p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="verify"><h2>Verification</h2><div class="part prose"><p>The plan has worked when a full week of Brisk crossings boards from the scanner alone, and a copied pass is caught in the simulator and in the trial.</p></div><div class="part block"><div class="block-label"><span>Checks</span></div><pre class="hl"><code>go <span class="hl-nb">test</span> ./booking/pass/... ./scanner/...
+scanner-sim --offline 8h --passes testdata/brisk-week.json
+scanner-sim --replay-duplicates testdata/copied-passes.json</code></pre></div></section><div class="pick" id="pick" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;go&#34;,&#34;label&#34;:&#34;Go&#34;,&#34;tone&#34;:&#34;teal&#34;},{&#34;id&#34;:&#34;revise&#34;,&#34;label&#34;:&#34;Revise&#34;,&#34;tone&#34;:&#34;violet&#34;},{&#34;id&#34;:&#34;skip&#34;,&#34;label&#34;:&#34;Skip&#34;,&#34;tone&#34;:&#34;neutral&#34;}]"><b>How to approve</b><div><p>Say go, revise, or skip by step number. Numbers without a word mean go.</p></div><p class="example">For example <code>go all; revise 4; skip 7. Notes: 4: split the migration.</code></p><div class="reply" data-reply>Nothing decided yet.</div><div class="row"><button class="solid" type="button" data-copy-reply>Copy reply</button> <button type="button" data-copy-decisions>Copy decisions as JSON</button></div></div></main><footer class="foot"><span>Offline boarding passes</span> <span>Generated with Dossier · 2026-08-24</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"plan","meta":{"title":"Offline boarding passes","slug":"offline-boarding-passes","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"Offline","lede":"Boarding passes that scan with no signal at the Brisk slipway, in seven steps across three phases. Approve each step with go, revise, or skip.","updated":"2026-08-24","status":"for-approval"},"sections":[{"id":"goal","title":"Goal","parts":[{"type":"prose","markdown":"Brisk harbour has no mobile signal at the slipway on most mornings. Passes that need the network fail at the ramp, and crew fall back to a paper list printed the night before, which misses every late booking.\n\nThe goal is a pass the crew scanner can check with no network at all, in place for the winter timetable on 26 October."},{"type":"spec","spec":[{"label":"Offline for","text":"Up to eight hours, the first Brisk sailing to the last on a winter day."},{"label":"Check time","text":"Under one second a pass on the oldest handheld the crews carry."},{"label":"Copied passes","text":"Refused when scanned twice on one handheld, and flagged across handhelds once back in signal."},{"label":"Out of scope","text":"Wallet passes, paper tickets, and any change to fares or refunds."}]},{"type":"diagram","title":"How a pass is signed and checked","source":"flowchart TB\n  keys[(Signing keys)]:::violet --\u003e book[Booking service]\n  book --\u003e|signed pass| app[Rider app]\n  app --\u003e|QR code at the ramp| scanner[Crew scanner]:::accent\n  keys -.-\u003e|public keys, nightly| scanner\n  scanner --\u003e|scans, once back in signal| log[(Boarding log)]:::teal","format":"mermaid"}]},{"id":"sign","title":"Phase 1: Sign passes","board":{"summary":true,"items":[{"id":"signing-key","title":"Add a pass signing key to the booking service","summary":"An Ed25519 key pair in the secrets store, rotated every 90 days, with the old key accepted for a week after.","status":"done","effort":"S","owner":"Tomas","facets":[{"label":"What changes","markdown":"A key pair lives in the secrets store under `pass-signing`. The booking service loads it at startup and publishes the public half at `/keys/pass.json`."},{"label":"Done when","markdown":"`curl -s localhost:8080/keys/pass.json | jq '.keys | length'` prints 2 during a rotation and 1 otherwise."},{"label":"Risk","markdown":"A leaked private key lets anyone mint passes. An early rotation revokes it within the hour, and the runbook has the steps."}]},{"id":"sign-passes","title":"Sign every pass at booking","summary":"Each pass carries its booking, sailing, party, and vehicle, signed, in a QR code the scanner reads in poor light.","status":"doing","effort":"M","owner":"Mira","dependsOn":["signing-key"],"facets":[{"label":"What changes","markdown":"The pass payload grows from a booking id to the fields below, signed and base45 encoded. Passes issued before the change work until they expire."},{"label":"Touches","markdown":"`booking/pass/issue.go`, the rider app's pass screen, and the confirmation email."},{"label":"Done when","markdown":"`go test ./booking/pass/...` passes, and a pass shown at 70% screen brightness scans on the oldest handheld."},{"label":"Diff","markdown":"```diff\n-type Pass struct{ BookingID string }\n+type Pass struct {\n+\tBookingID string    `json:\"b\"`\n+\tSailingID string    `json:\"s\"`\n+\tParty     int       `json:\"p\"`\n+\tVehicle   string    `json:\"v,omitempty\"`\n+\tExpires   time.Time `json:\"e\"`\n+}\n```"}]}]}},{"id":"scan","title":"Phase 2: Scan offline","board":{"summary":true,"items":[{"id":"sync-keys","title":"Keep the public keys on every scanner","summary":"Scanners fetch the public keys whenever they have signal and keep the last two, so a rotation never strands a sailing.","status":"planned","effort":"S","owner":"Joss","dependsOn":["signing-key"],"facets":[{"label":"What changes","markdown":"The crew app fetches `/keys/pass.json` at launch and each night on harbour Wi-Fi, and stores the last two keys. The status bar shows how old they are."},{"label":"Done when","markdown":"With Wi-Fi off for 48 hours, a scanner still accepts passes signed before and after a rotation."}]},{"id":"verify-offline","title":"Check passes on the scanner with no network","summary":"The scanner checks the signature, sailing, and expiry itself, and shows board or stop in under a second.","status":"planned","effort":"M","owner":"Mira","dependsOn":["sign-passes","sync-keys"],"facets":[{"label":"What changes","markdown":"A scan checks the signature against the stored keys, then the sailing and expiry against the handheld's clock. The screen shows board in teal or stop in ochre, with the reason in words."},{"label":"Why","markdown":"Crew load forty cars in ten minutes at Brisk. Anything slower than a second a pass holds up the ramp."},{"label":"Done when","markdown":"`scanner-sim --offline 8h --passes testdata/brisk-week.json` reports every pass checked in under 1,000 ms."},{"label":"Risk","markdown":"A handheld with the wrong time refuses good passes. The scanner keeps the last server time it saw and warns crew when the clock drifts more than five minutes."}]},{"id":"queue-scans","title":"Queue scans until the signal returns","summary":"Scans wait on the handheld and upload when it reconnects, and a pass scanned twice is flagged to the office.","status":"planned","effort":"M","owner":"Joss","dependsOn":["verify-offline"],"facets":[{"label":"What changes","markdown":"Each scan goes into a local queue with the pass and the time, and uploads in order on reconnect. The server flags any pass scanned twice for one sailing."},{"label":"Done when","markdown":"`scanner-sim --replay-duplicates testdata/copied-passes.json` flags both copies after the reconnect."},{"label":"Note","markdown":"A copy used on two handhelds on one sailing is only caught after upload. The harbour office agreed that is acceptable at Brisk."}]}]}},{"id":"rollout","title":"Phase 3: Roll out at Brisk","board":{"summary":true,"items":[{"id":"brisk-trial","title":"Trial on the Brisk crossings for a week","summary":"Every Brisk crossing boards from the scanner for a week, with the paper list printed as a fallback.","status":"planned","effort":"S","owner":"Ines","dependsOn":["verify-offline","queue-scans"],"facets":[{"label":"What changes","markdown":"For one week, crew scan every pass at the Brisk slipway and tick the paper list only when a scan fails. Ines logs every failure with its reason."},{"label":"Done when","markdown":"Fewer than one scan in a hundred falls back to the paper list, and no rider waits more than a minute at the ramp."}]},{"id":"retire-paper","title":"Retire the printed boarding list","summary":"Stop printing the list the night before, once the harbour authority signs off on boarding from the scanner alone.","status":"blocked","effort":"S","owner":"Ines","dependsOn":["brisk-trial"],"facets":[{"label":"What changes","markdown":"The nightly print job stops for Brisk, and the crew app keeps a read-only list for emergencies."},{"label":"Done when","markdown":"The harbour authority confirms in writing that scanner-only boarding meets its passenger count rules."},{"label":"Risk","markdown":"The authority wants a passenger count that survives a flat battery. Until it rules, each boat carries a charged spare handheld."}]}]}},{"id":"verify","title":"Verification","parts":[{"type":"prose","markdown":"The plan has worked when a full week of Brisk crossings boards from the scanner alone, and a copied pass is caught in the simulator and in the trial."},{"type":"code","title":"Checks","lang":"sh","code":"go test ./booking/pass/... ./scanner/...\nscanner-sim --offline 8h --passes testdata/brisk-week.json\nscanner-sim --replay-duplicates testdata/copied-passes.json"}]}]}</script><script>
+(() => {
+  "use strict";
+  /* reply writes the line a reader sends back, exactly as Go does: testdata/replies.json holds both to the same cases */
+  const reply = (c, s) => {
+    const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
+    let open = 0;
+    c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
+    const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
+    if (c.mode === "pick") {
+      const p = nums(s.picked || []);
+      if (p.length) groups.push(p.length === c.items.length ? "all" : p.join(", "));
+    } else if (c.mode === "verdict") {
+      c.verdicts.forEach((id) => {
+        const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k]));
+        if (n.length) groups.push(id + " " + (n.length === open ? "all" : n.join(", ")));
+      });
+    }
+    const body = groups.join("; "), noted = Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]);
+    let line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
+    if (noted.length) line += " Notes: " + noted.map((id) => num[id] + ": " + notes[id].trim().split(/\s+/).join(" ")).join("; ") + ".";
+    return line;
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply }; return; }
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+  const at = (el, name) => el.getAttribute(name);
+  const idOf = (el) => at(el.closest("[data-item]"), "data-item");
+  const on = (type, fn, target) => (target || document).addEventListener(type, fn);
+  const say = (sel, text) => $$(sel).forEach((el) => { el.textContent = text; });
+  const keys = Object.keys;
+  let model = {};
+  try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
+  const slug = (model.meta && model.meta.slug) || "dossier";
+  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
+  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+
+  /* theme: auto, light, dark */
+  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const applyTheme = (m) => {
+    if (!modes.includes(m)) m = "auto";
+    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    if (themeBtn) {
+      themeBtn.setAttribute("data-mode", m);
+      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
+      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
+      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+    }
+    keep("theme", m);
+  };
+  applyTheme(load("theme"));
+  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+
+  /* decisions: the embedded model is the baseline, this device may go further */
+  const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
+  let defs = [];
+  try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
+  defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
+  const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
+  const ctx = { mode, verdicts: defs.map((d) => d.id), items: [] };
+  items.forEach((el) => {
+    const id = at(el, "data-item");
+    num[id] = +at(el, "data-num");
+    can[id] = el.hasAttribute("data-decides");
+    ctx.items.push({ id, n: num[id], eligible: can[id] });
+  });
+  const clean = (s) => {
+    const out = { path: "", picked: [], verdicts: {}, notes: {} };
+    if (!s || typeof s !== "object") return out;
+    if (choices.some((r) => r.value === s.path)) out.path = s.path;
+    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter((id, i, a) => num[id] && a.indexOf(id) === i);
+    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach((id) => { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
+    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach((id) => { const v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    return out;
+  };
+  let state = clean(model.decisions), framed = true;
+  try { const saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
+  try { framed = window.parent !== window; } catch (e) {}
+  const tell = (msg) => { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } };
+  const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
+  const announce = () => {
+    const d = detail();
+    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    tell({ type: "dossier:decisions", decisions: d });
+  };
+  const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
+  const decided = (id) => (mode === "pick" ? state.picked.includes(id) : !!state.verdicts[id]);
+  const setPick = (id, yes) => { if (yes !== decided(id)) { state.picked = yes ? state.picked.concat(id) : state.picked.filter((x) => x !== id); save(); } };
+  const setVerdict = (id, v) => { if (can[id] && (state.verdicts[id] || "") !== v) { if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); } };
+  const setPath = (p) => { if (state.path !== p) { state.path = p; save(); } };
+  const setNote = (id, text) => { const v = String(text || "").trim(); if ((state.notes[id] || "") !== v) { if (v) state.notes[id] = v; else delete state.notes[id]; save(); } };
+  const toneOf = (el, v) => { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); };
+  const render = () => {
+    items.forEach((el) => {
+      const id = at(el, "data-item"), v = state.verdicts[id] || "", yes = decided(id), picked = mode === "pick" && yes;
+      el.classList.toggle("picked", picked);
+      toneOf(el, v);
+      $$("[data-verdict]", el).forEach((b, i) => {
+        const sel = at(b, "data-verdict") === v;
+        b.setAttribute("aria-checked", sel);
+        b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
+      });
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
+      if (tr) {
+        tr.classList.toggle("picked", picked);
+        toneOf(tr, v);
+        const ctl = $("input,select", tr);
+        if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
+      }
+      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
+      if (note && state.notes[id]) note.hidden = false;
+      if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
+    });
+    let chosen = "Open";
+    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
+    say('[data-live="choice"]', chosen);
+    $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
+    say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
+    const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
+    say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
+    applyView();
+  };
+  const decisionsJSON = () => {
+    const d = detail(), some = (o) => (keys(o).length ? o : undefined);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+  };
+  let noteTimer;
+  on("click", (e) => {
+    const t = e.target;
+    let b = t.closest("[data-verdict]");
+    if (b) { e.preventDefault(); const id = idOf(b), v = at(b, "data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
+    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); setPick(idOf(b), !decided(idOf(b))); return; }
+    if ((b = t.closest("[data-note-toggle]"))) {
+      e.preventDefault();
+      const d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
+      if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden) d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); }
+      return;
+    }
+    if (t.closest("[data-choice-clear]")) setPath("");
+    else if (t.closest("[data-collapse-toggle]")) setAllOpen(!anyOpen());
+    else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
+    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
+    else if (t.closest("[data-hide]")) setHide(!hide);
+    else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
+    else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+  });
+  on("keydown", (e) => {
+    const t = e.target, b = t.closest && t.closest("[data-verdict]");
+    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    if (!b) return;
+    const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (dir) {
+      e.preventDefault();
+      const next = group[(group.indexOf(b) + dir + group.length) % group.length];
+      setVerdict(idOf(b), at(next, "data-verdict"));
+      next.focus();
+    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(idOf(b), ""); }
+  });
+  on("change", (e) => {
+    const t = e.target;
+    if (t.matches("input[data-pick-row]")) setPick(at(t, "data-pick-row"), t.checked);
+    else if (t.matches("select[data-verdict-row]")) setVerdict(at(t, "data-verdict-row"), t.value);
+    else if (t.matches("input[data-choice]")) setPath(t.value);
+  });
+  on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+
+  /* collapsing: remembered per item on this device */
+  const details = $$("details.item[id]"), opened = {};
+  let printing = false, beforePrint = null;
+  try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
+  const anyOpen = () => details.some((d) => d.open);
+  const setAllOpen = (open) => details.forEach((d) => { d.open = open; });
+  const renderCollapse = () => { const b = $("[data-collapse-toggle]"); if (b) { b.textContent = anyOpen() ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", anyOpen()); } };
+  details.forEach((d) => {
+    if (opened[d.id]) d.open = true;
+    on("toggle", () => {
+      if (!printing && !auto[d.id]) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
+      renderCollapse();
+    }, d);
+  });
+  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
+  openHash();
+  on("hashchange", openHash, window);
+  renderCollapse();
+
+  /* view: Hide decided and search together decide what shows; printing shows everything */
+  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
+  const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
+  const matches = (u, terms) => terms.every((t) => u.text.includes(t) || (u.n > 0 && +t === u.n));
+  let hide = load("hide") === "1", query = "", auto = {}, hits = [], now = -1;
+  const mark = (name, ranges) => { if (hl) hl.set(name, new Highlight(...ranges)); };
+  const count = (active) => say("[data-hits]", !active ? "" : !hits.length ? "No matches" : now >= 0 ? now + 1 + " of " + hits.length : hits.length + (hits.length === 1 ? " match" : " matches"));
+  const applyView = () => {
+    const terms = printing ? [] : fold(query).split(/\s+/).filter(Boolean);
+    let shown = 0;
+    units.forEach((u) => {
+      const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
+      u.el.hidden = h;
+      if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
+      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+    });
+    if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
+    sections.forEach((sec) => {
+      const h = terms.length > 0 && !matches(sec, terms) && !$$("details.item:not([hidden]), .rows > :not([hidden])", sec.el).length, a = $('.toc a[href="#' + sec.el.id + '"]');
+      sec.el.hidden = h;
+      if (!h) shown++;
+      if (a) a.parentNode.hidden = h;
+    });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any && (!$("a", g) || g.hidden); });
+    $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
+    const none = $("[data-no-hits]"), b = $("[data-hide]");
+    if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
+    if (b) { b.setAttribute("aria-pressed", hide); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    hits = [];
+    now = -1;
+    const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
+    for (let node; terms.length && (node = walk.nextNode());) {
+      const el = node.parentElement, closed = el.closest("details:not([open])");
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits]") || (closed && !el.closest("summary"))) continue;
+      let f = "";
+      const map = [], x = node.data;
+      for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }
+      terms.forEach((t) => { for (let k = f.indexOf(t); k >= 0; k = f.indexOf(t, k + t.length)) { const r = new Range(); r.setStart(node, map[k]); r.setEnd(node, map[k + t.length - 1] + 1); hits.push(r); } });
+    }
+    hits.sort((a, z) => a.compareBoundaryPoints(Range.START_TO_START, z));
+    mark("dossier-hit", hits);
+    mark("dossier-now", []);
+    count(terms.length);
+  };
+  const step = (dir) => {
+    if (!hits.length) return;
+    now = (now + dir + hits.length) % hits.length;
+    mark("dossier-now", [hits[now]]);
+    hits[now].startContainer.parentElement.scrollIntoView({ block: "center" });
+    count(true);
+  };
+  const search = (q) => { if (box) box.value = q; query = q; applyView(); };
+  const setHide = (yes) => { hide = yes; keep("hide", hide ? "1" : "0"); applyView(); };
+  if (box) {
+    on("input", () => { query = box.value; applyView(); }, box);
+    on("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") { e.preventDefault(); if (box.value) search(""); else box.blur(); }
+    }, box);
+  }
+
+  /* copy and toast */
+  let toastTimer;
+  const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
+  const copy = (text, msg) => {
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+  };
+
+  /* contents: mark the section in view */
+  const links = {};
+  let active = null;
+  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
+  }
+
+  render();
+  announce();
+
+  /* embedded: keep the parent's frame as tall as the page */
+  if (framed) {
+    let lastHeight = -1;
+    const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
+    on("load", postHeight, window);
+    postHeight();
+  }
+})();
+</script></body></html>

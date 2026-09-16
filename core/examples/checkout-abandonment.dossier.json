@@ -1,0 +1,209 @@
+{
+  "dossier": "1.0",
+  "kind": "brief",
+  "meta": {
+    "title": "Why riders abandon checkout",
+    "slug": "checkout-abandonment",
+    "kicker": "Tidewright · Wenlow Islands ferries",
+    "emphasis": "abandon",
+    "lede": "A third of the riders who start checkout leave before paying. Most of them leave at two steps, and neither step is about the price.",
+    "updated": "2026-09-10",
+    "status": "final",
+    "theme": {
+      "accent": "#1f5fa8"
+    }
+  },
+  "sections": [
+    {
+      "id": "answer",
+      "title": "Answer",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "In September, 34% of the riders who started checkout left before paying. Two steps account for three quarters of them: the vehicle step, which asks for measurements most drivers do not know, and the account step, which stops first-time riders before they can pay.\n\nBoth are small to fix. Fares and fees, the usual suspects, explain very little once riders can see them."
+        },
+        {
+          "type": "chart",
+          "title": "Riders who leave at each step of checkout, September 2026 (%)",
+          "variant": "bar",
+          "data": [
+            {
+              "label": "Sailing",
+              "value": 3
+            },
+            {
+              "label": "Passengers",
+              "value": 2
+            },
+            {
+              "label": "Vehicle",
+              "value": 14
+            },
+            {
+              "label": "Account",
+              "value": 11
+            },
+            {
+              "label": "Payment",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "type": "figure",
+          "src": "assets/vehicle-step.svg",
+          "alt": "The vehicle step of checkout on a phone, asking for a registration, a length in metres, and a height in metres, with no help for either measurement.",
+          "caption": "The vehicle step asks for length and height in metres, with nothing to help a driver who has never measured their car."
+        },
+        {
+          "type": "callout",
+          "title": "Not covered here",
+          "markdown": "Group and school bookings go through the harbour office and are not in these numbers. Neither are riders who searched and never started checkout."
+        }
+      ]
+    },
+    {
+      "id": "findings",
+      "title": "Findings",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "vehicle-measurements",
+            "title": "The vehicle step asks for numbers drivers do not know",
+            "summary": "Length and height in metres stop drivers who have never measured their car, and most leave rather than guess.",
+            "status": "verified",
+            "facets": [
+              {
+                "label": "Detail",
+                "markdown": "14% of the riders who start checkout leave at the vehicle step, the largest single exit. In recordings, drivers search for their car's dimensions in another tab and never come back."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "Analytics for 9,412 checkouts. 49 of the 120 recordings end at this step, and 6 of 9 riders we spoke to could not give their car's height."
+              },
+              {
+                "label": "So what",
+                "markdown": "A registration lookup, or a choice of car, van, or camper with typical sizes, removes the guesswork. Height only matters above 2 metres."
+              }
+            ]
+          },
+          {
+            "id": "account-wall",
+            "title": "An account wall before payment loses first-time riders",
+            "summary": "Riders booking for the first time must create an account before paying, and one in four of them leaves there.",
+            "status": "verified",
+            "facets": [
+              {
+                "label": "Detail",
+                "markdown": "11% of all riders who start checkout leave at the account step, almost all of them first-time riders. Returning riders are already signed in and pass straight through."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "Analytics split by new and returning riders, 39 of the 120 recordings, and 48 calls to the office asking to book without an account."
+              },
+              {
+                "label": "So what",
+                "markdown": "Checkout as a guest, with an account offered after payment, is the usual answer. The ticket email already carries everything an account would."
+              }
+            ]
+          },
+          {
+            "id": "phones-vehicle-step",
+            "title": "Phone users leave the vehicle step twice as often",
+            "summary": "On phones, 19% leave at the vehicle step against 9% on computers, likely because the number keyboard hides the field labels.",
+            "status": "likely",
+            "facets": [
+              {
+                "label": "Detail",
+                "markdown": "The gap is plain in the analytics. The cause is our reading of 30 phone recordings, where riders open the keyboard, lose sight of which box wants which measurement, and give up."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "Analytics by device, and 30 phone recordings tagged by two of us."
+              }
+            ]
+          },
+          {
+            "id": "fees-not-cause",
+            "title": "Fees are not what makes riders leave",
+            "summary": "Fares and the booking fee show from the first step, and few riders leave at payment, where the total appears.",
+            "status": "likely",
+            "facets": [
+              {
+                "label": "Detail",
+                "markdown": "4% leave at payment, and in recordings most of them had a card declined by the payment provider. One of the nine riders we spoke to mentioned price."
+              },
+              {
+                "label": "Evidence",
+                "markdown": "Analytics, 14 payment step recordings, and the interviews."
+              },
+              {
+                "label": "So what",
+                "markdown": "Lowering fees would win back few riders. Offering to retry a declined card might win back more."
+              }
+            ]
+          },
+          {
+            "id": "water-taxi",
+            "title": "Some Brisk riders may be choosing the water taxi",
+            "summary": "A few Brisk riders mentioned the new water taxi, but nothing shows how many leave checkout to book it.",
+            "status": "open",
+            "facets": [
+              {
+                "label": "Detail",
+                "markdown": "Two of the nine riders we spoke to took the water taxi on a busy day. Brisk checkouts leave a little more often at the sailing step, which would fit, but the numbers are small."
+              },
+              {
+                "label": "So what",
+                "markdown": "Worth a question in the next rider survey before anyone builds against it."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sources",
+      "title": "Sources",
+      "parts": [
+        {
+          "type": "table",
+          "columns": [
+            "Source",
+            "What we used",
+            "Period",
+            "Size"
+          ],
+          "rows": [
+            [
+              "Checkout analytics",
+              "Exits by step, device, and new or returning rider",
+              "1 to 30 September 2026",
+              "9,412 checkouts"
+            ],
+            [
+              "Session recordings",
+              "Checkouts that ended before payment, watched and tagged by two of us",
+              "September 2026",
+              "120 sessions"
+            ],
+            [
+              "Rider interviews",
+              "Phone calls of about 20 minutes",
+              "8 to 12 September 2026",
+              "9 riders"
+            ],
+            [
+              "Harbour office log",
+              "Contacts tagged as checkout",
+              "September 2026",
+              "212 contacts"
+            ]
+          ],
+          "note": "Recordings and interviews are anonymised, and the analytics hold no personal data."
+        }
+      ]
+    }
+  ]
+}
