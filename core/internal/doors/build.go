@@ -63,7 +63,9 @@ func buildDoor(_ context.Context, args []string, _ io.Reader) Envelope {
 			continue
 		}
 		warnings = append(warnings, l.Warnings...)
-		html, err := render.Render(l.Doc, l.Kind)
+		figures, figureWarnings := render.InlineFigures(l.Doc, filepath.Dir(path))
+		warnings = append(warnings, prefix(path, figureWarnings)...)
+		html, err := render.RenderWith(l.Doc, l.Kind, render.Options{Figures: figures})
 		if err != nil {
 			return errorEnvelope("build", "render", fmt.Errorf("%s: %w", path, err))
 		}

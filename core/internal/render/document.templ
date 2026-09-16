@@ -183,7 +183,36 @@ templ partView(part PartView) {
 				<p class="legend">{ part.Note }</p>
 			}
 		case "code":
-			<pre class="part"><code>{ part.Code }</code></pre>
+			<div class="part block">
+				if part.Title != "" {
+					<div class="block-label"><span>{ part.Title }</span></div>
+				}
+				<pre class="hl"><code>@templ.Raw(part.HTML)</code></pre>
+			</div>
+		case "figure":
+			<figure class="part figure">
+				<img src={ part.Src } alt={ part.Alt } loading="lazy"/>
+				if part.Caption != "" {
+					<figcaption class="legend">@templ.Raw(part.Caption)</figcaption>
+				}
+			</figure>
+		case "diagram":
+			<div class="part block diagram" data-format={ part.Format }>
+				<div class="block-label">
+					<span>{ part.Format }</span>
+					if part.Title != "" {
+						<span>{ part.Title }</span>
+					}
+				</div>
+				<pre><code>{ part.Code }</code></pre>
+			</div>
+		case "chart":
+			<div class="part block chart">
+				if part.Title != "" {
+					<div class="block-label"><span>{ part.Title }</span></div>
+				}
+				@templ.Raw(part.SVG)
+			</div>
 	}
 }
 

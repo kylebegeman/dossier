@@ -143,3 +143,86 @@ func TestInlineStripsParagraph(t *testing.T) {
 		t.Errorf("got %q", h)
 	}
 }
+
+func mediaDoc() *model.Document {
+	return &model.Document{Dossier: "1.0", Kind: "brainstorm", Meta: model.Meta{Title: "Media", Slug: "media"}, Sections: []model.Section{{ID: "m", Title: "Media", Parts: []model.Part{
+		{Type: "code", Lang: "go", Title: "main.go", Code: "package main\n\nfunc main() { println(\"hi\") }\n"},
+		{Type: "code", Lang: "nosuchlang", Code: "<b>plain</b>"},
+		{Type: "prose", Markdown: "Text.\n\n```js\nconst x = 1;\n```\n"},
+		{Type: "figure", Src: "images/pic.png", Alt: "A picture", Caption: "The *caption*."},
+		{Type: "figure", Src: "data:image/svg+xml,%3Csvg%3E"},
+		{Type: "figure", Src: "images/missing.png"},
+		{Type: "diagram", Source: "flowchart LR\n  A --> B", Format: "mermaid", Title: "Loop"},
+		{Type: "chart", Title: "Adoption", Data: []model.Point{{Label: "Q1", Value: 12}, {Label: "Q2", Value: 1500.5}}},
+		{Type: "chart", Variant: "area", Data: []model.Point{{Label: "Jan", Value: 4}, {Label: "Feb", Value: -2}}},
+	}}}}
+}
+
+func TestRenderMediaParts(t *testing.T) {
+	doc := mediaDoc()
+	kind, err := kinds.Load("brainstorm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "images"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "images", "pic.png"), []byte("PNG!"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	figures, warnings := InlineFigures(doc, dir)
+	if len(warnings) != 1 || !strings.Contains(warnings[0].Message, "missing.png") {
+		t.Errorf("expected one warning for the missing image, got %v", warnings)
+	}
+	html, err := RenderWith(doc, kind, Options{Figures: figures})
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(html)
+	for _, want := range []string{
+		`<span class="hl-kn">package</span>`,
+		`<div class="block-label"><span>main.go</span></div>`,
+		`&lt;b&gt;plain&lt;/b&gt;`,
+		`<div class="part prose"><p>Text.</p>
+<pre class="hl"><code><span class="hl-`,
+		`>const</span>`,
+		`<img src="data:image/png;base64,UE5HIQ==" alt="A picture" loading="lazy">`,
+		`<figcaption class="legend">The <em>caption</em>.</figcaption>`,
+		`<img src="data:image/svg+xml,%3Csvg%3E" alt="" loading="lazy">`,
+		`<img src="images/missing.png"`,
+		`data-format="mermaid"`,
+		`<span>mermaid</span>`,
+		`<span>Loop</span>`,
+		`flowchart LR`,
+		`role="img" aria-label="Adoption"`,
+		`<title>Q2: 1,500.5</title>`,
+		`aria-label="area chart"`,
+		`<polygon points=`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("output lacks %q", want)
+		}
+	}
+	if strings.Contains(out, `src="images/pic.png"`) {
+		t.Error("inlined figure must not keep the relative path on the img")
+	}
+	if !strings.Contains(out, `"src":"images/pic.png"`) {
+		t.Error("model island must keep the original figure path")
+	}
+	again, err := RenderWith(doc, kind, Options{Figures: figures})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(html, again) {
+		t.Error("media render is not deterministic")
+	}
+}
+
+func TestFormatNumber(t *testing.T) {
+	for in, want := range map[float64]string{0: "0", 12: "12", 1500.5: "1,500.5", -1234567: "-1,234,567", 999.99: "999.99"} {
+		if got := formatNumber(in); got != want {
+			t.Errorf("formatNumber(%v) = %q, want %q", in, got, want)
+		}
+	}
+}
