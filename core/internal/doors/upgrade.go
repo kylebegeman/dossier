@@ -39,7 +39,8 @@ func (r UpgradeResult) human(w io.Writer) {
 
 // upgradeDoor writes 0.6 documents as 0.7 models: the alias pass made
 // permanent. Files already on 0.7 are left alone.
-func upgradeDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func upgradeDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	const id = "upgrade"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)

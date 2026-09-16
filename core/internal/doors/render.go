@@ -29,7 +29,8 @@ func (r RenderResult) human(w io.Writer) { say(w, "%s", r.HTML) }
 // renderDoor renders one model, from a file or from stdin, and answers with
 // the HTML instead of writing it. Integrations such as the React wrapper
 // call it with --json.
-func renderDoor(_ context.Context, args []string, stdin io.Reader) Envelope {
+func renderDoor(_ context.Context, in Input) Envelope {
+	args, stdin := in.Args, in.Stdin
 	const id = "render"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)

@@ -30,7 +30,8 @@ func (r MCPResult) human(w io.Writer) {
 
 // mcpDoor serves every mcp-surfaced door as a tool over stdio until the
 // client closes the stream.
-func mcpDoor(ctx context.Context, args []string, _ io.Reader) Envelope {
+func mcpDoor(ctx context.Context, in Input) Envelope {
+	args := in.Args
 	const id = "mcp"
 	if len(args) > 0 {
 		return errorEnvelope(id, "usage", fmt.Errorf("mcp takes no arguments"))
@@ -73,7 +74,7 @@ func MCPServer() (*mcp.Server, []string, error) {
 			if err != nil {
 				return toolResult(errorEnvelope(cmd.ID, "usage", err))
 			}
-			return toolResult(d(ctx, args, strings.NewReader("")))
+			return toolResult(d(ctx, Input{Args: args, Stdin: strings.NewReader(""), Stderr: io.Discard}))
 		})
 	}
 	sort.Strings(names)

@@ -32,7 +32,8 @@ func (r SkillResult) human(w io.Writer) {
 	say(w, "%s", r.Markdown)
 }
 
-func skillDoor(_ context.Context, args []string, _ io.Reader) Envelope {
+func skillDoor(_ context.Context, in Input) Envelope {
+	args := in.Args
 	const id = "skill"
 	fs := flag.NewFlagSet(id, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
