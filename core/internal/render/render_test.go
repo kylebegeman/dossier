@@ -60,7 +60,7 @@ func TestRenderFlagship(t *testing.T) {
 		`id="dossier-model"`,
 		`<li class="group">Minor</li>`,
 		`<li class="group">Major</li>`,
-		`data-item="storm-rebook" data-title="Rebook in one tap on storm days" data-num="1"`,
+		`data-item="storm-rebook" data-title="Rebook in one tap on storm days" data-decides data-num="1"`,
 		`data-num="10"`,
 		`class="facet risk"`,
 		`<span class="chip t-teal" title="Size">minor</span>`,
@@ -69,8 +69,15 @@ func TestRenderFlagship(t *testing.T) {
 		`aria-label="Impact 5 of 5"`,
 		`<b>6</b> <span>minor</span>`,
 		`<b>3</b> <span>also considered</span>`,
-		`<p class="example">For example <code>2, 5, 7. Notes: 5: smaller first.</code></p>`,
-		`class="pick"`,
+		`<p class="example">For example <code>storms, 2, 5, 7. Notes: 5: smaller first.</code></p>`,
+		`<div class="pick" id="pick" data-mode="pick" data-verdicts="null">`,
+		`<legend>What should winter build for first?</legend>`,
+		`<input type="radio" name="dossier-choice" value="storms" data-choice data-label="Storm days">`,
+		`<button type="button" class="clear" data-choice-clear hidden>Clear the choice</button>`,
+		`<b data-live="choice">Open</b> <a href="#pick">choice</a>`,
+		`<b data-live="count">0</b> <span>picked</span>`,
+		`<div class="reply" data-reply>Nothing decided yet.</div>`,
+		`data-hide aria-pressed="false">Hide decided</button>`,
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("output lacks %q", want)
@@ -93,8 +100,9 @@ func TestRenderFlagship(t *testing.T) {
 }
 
 // TestKindsShapeTheBoard renders one small document per decision shape: a
-// verdict kind has no pick controls yet, and an unnumbered kind has no
-// numbers, decisions, or pick block.
+// verdict kind has verdict controls instead of picks, a release lets only
+// failed and pending gates take one, and an unnumbered kind has no numbers,
+// decisions, or decision block.
 func TestKindsShapeTheBoard(t *testing.T) {
 	facets := func(labels ...string) []model.Facet {
 		var out []model.Facet
@@ -103,13 +111,14 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		}
 		return out
 	}
+	var decided *model.Decisions
 	render := func(kindID string, meta model.Meta, sections ...model.Section) string {
 		t.Helper()
 		kind, err := kinds.Load(kindID)
 		if err != nil {
 			t.Fatal(err)
 		}
-		doc := &model.Document{Dossier: "1.0", Kind: kindID, Meta: meta, Sections: sections}
+		doc := &model.Document{Dossier: "1.0", Kind: kindID, Meta: meta, Sections: sections, Decisions: decided}
 		if p := model.Check(doc); len(p) > 0 {
 			t.Fatalf("%s: %v", kindID, p)
 		}
@@ -138,13 +147,63 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`<th>Finding</th>`,
 		`<th>Severity</th>`,
 		`data-num="2"`,
+		`<span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-teal" data-verdict="fix" aria-checked="false" tabindex="0">Fix</button><button type="button" role="radio" class="t-violet" data-verdict="later" aria-checked="false" tabindex="-1">Later</button>`,
+		`<th class="vd">Verdict</th>`,
+		`<select class="verdict" data-verdict-row="leak" aria-label="Verdict on 1, Token in logs"><option value="">Undecided</option> <option value="fix">Fix</option>`,
+		`<div class="pick" id="pick" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;fix&#34;,&#34;label&#34;:&#34;Fix&#34;,&#34;tone&#34;:&#34;teal&#34;}`,
+		`<legend>Approve or rework?</legend>`,
+		`<b data-live="count">0</b> <span>decided</span>`,
 	} {
 		if !strings.Contains(review, want) {
 			t.Errorf("review lacks %q", want)
 		}
 	}
-	if strings.Contains(review, "data-pick") || strings.Contains(review, "Hide picked") {
+	if strings.Contains(review, "data-pick") {
 		t.Error("a verdict kind has no pick controls")
+	}
+
+	decided = &model.Decisions{Path: "rework", Verdicts: map[string]string{"typo": "later"}, Notes: map[string]string{"leak": "rotate the token"}}
+	ruled := render("review", model.Meta{Title: "Review", Slug: "r"},
+		model.Section{ID: "findings", Title: "Findings", Board: &model.Board{Summary: true, Items: []model.Item{
+			{ID: "leak", Title: "Token in logs", Severity: "blocker", Facets: facets("Where", "Why it matters")},
+			{ID: "typo", Title: "Typo", Severity: "nit", Facets: facets("Where", "Why it matters")},
+		}}})
+	for _, want := range []string{
+		`data-item="typo" data-title="Typo" data-decides data-num="2" data-tone="violet"`,
+		`data-verdict="later" aria-checked="true" tabindex="0">Later</button>`,
+		`data-verdict="fix" aria-checked="false" tabindex="-1">Fix</button>`,
+		`<tr data-item="typo" class="" data-tone="violet">`,
+		`<option value="later" selected>Later</option>`,
+		`<li data-item="typo" class="" data-tone="violet"><a href="#typo"><span class="n">2.</span>Typo<span class="sr">, Later</span>`,
+		`<input type="radio" name="dossier-choice" value="rework" data-choice data-label="Rework" checked>`,
+		`<b data-live="choice">Rework</b>`,
+		`<b data-live="count">1</b> <span>decided</span>`,
+		`<div class="reply" data-reply>rework, later 2. Notes: 1: rotate the token.</div>`,
+	} {
+		if !strings.Contains(ruled, want) {
+			t.Errorf("decided review lacks %q", want)
+		}
+	}
+	decided = nil
+
+	release := render("release", model.Meta{Title: "Release", Slug: "rel"},
+		model.Section{ID: "gates", Title: "Gates", Board: &model.Board{Summary: true, Items: []model.Item{
+			{ID: "unit", Title: "Unit tests", Status: "passed", Required: true, Facets: facets("How checked", "Result")},
+			{ID: "arm", Title: "arm64 build", Status: "failed", Required: true, Facets: facets("How checked", "Result")},
+		}}})
+	for _, want := range []string{
+		`data-item="unit" data-title="Unit tests" data-num="1">`,
+		`data-item="arm" data-title="arm64 build" data-decides data-num="2">`,
+		`<td class="vd"><span class="none">No verdict needed</span></td>`,
+		`aria-label="Verdict on 2"`,
+		`<legend>Ship or hold?</legend>`,
+	} {
+		if !strings.Contains(release, want) {
+			t.Errorf("release lacks %q", want)
+		}
+	}
+	if strings.Contains(release, `aria-label="Verdict on 1"`) {
+		t.Error("a passed gate takes no verdict")
 	}
 
 	brief := render("brief", model.Meta{Title: "Brief", Slug: "b"},
@@ -166,7 +225,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 	plan := render("plan", model.Meta{Title: "Plan", Slug: "p"},
 		model.Section{ID: "phase-one", Title: "Phase one", Board: &model.Board{Items: []model.Item{{ID: "a", Title: "A", Status: "doing", Owner: "Mira", Facets: facets("What changes", "Done when")}}}},
 		model.Section{ID: "phase-two", Title: "Phase two", Board: &model.Board{Items: []model.Item{{ID: "b", Title: "B", Status: "blocked", DependsOn: []string{"a"}, Facets: facets("What changes", "Done when")}}}})
-	for _, want := range []string{`<li class="group">Phase one</li>`, `<li class="group">Phase two</li>`, `data-item="b" data-title="B" data-num="2"`, `<span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span>`, `<span class="chip t-risk" title="Status">blocked</span>`, `<b>2</b> <span>steps</span>`} {
+	for _, want := range []string{`<li class="group">Phase one</li>`, `<li class="group">Phase two</li>`, `data-item="b" data-title="B" data-decides data-num="2"`, `<span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span>`, `<span class="chip t-risk" title="Status">blocked</span>`, `<b>2</b> <span>steps</span>`} {
 		if !strings.Contains(plan, want) {
 			t.Errorf("plan lacks %q", want)
 		}
@@ -409,5 +468,42 @@ func markupOnly(html string) string {
 			return html[:start]
 		}
 		html = html[:start] + html[start+end+len("</script>"):]
+	}
+}
+
+func TestExampleRepliesFollowTheDocumentsChoice(t *testing.T) {
+	review, err := kinds.Load("review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	brainstorm, err := kinds.Load("brainstorm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	merge := &model.Choice{Question: "Merge?", Options: []model.Option{{ID: "merge", Label: "Merge"}, {ID: "block", Label: "Block"}}}
+	doc := &model.Document{Kind: "review"}
+	if got := exampleReply(review, review.Rules(doc)); got != "rework, fix 1, 2; later 4; skip 6. Notes: 4: after the release." {
+		t.Errorf("the kind's own choice keeps its example: %q", got)
+	}
+	doc.Choice = merge
+	if got := exampleReply(review, review.Rules(doc)); got != "merge, fix 1, 2; later 4; skip 6. Notes: 4: after the release." {
+		t.Errorf("a replaced choice answers with the document's option: %q", got)
+	}
+	if got := exampleReply(brainstorm, brainstorm.Rules(&model.Document{Kind: "brainstorm"})); got != "2, 5, 7. Notes: 5: smaller first." {
+		t.Errorf("no choice, no prefix: %q", got)
+	}
+	if got := exampleReply(brainstorm, brainstorm.Rules(&model.Document{Kind: "brainstorm", Choice: merge})); got != "merge, 2, 5, 7. Notes: 5: smaller first." {
+		t.Errorf("a document question goes first: %q", got)
+	}
+	release, err := kinds.Load("release")
+	if err != nil {
+		t.Fatal(err)
+	}
+	release.Decision.Example = "Hold."
+	if got := exampleReply(release, release.Rules(&model.Document{Kind: "release"})); got != "Hold." {
+		t.Errorf("an example that is only the choice stays: %q", got)
+	}
+	if got := exampleReply(release, release.Rules(&model.Document{Kind: "release", Choice: merge})); got != "merge." {
+		t.Errorf("an example that is only the kind's choice takes the document's: %q", got)
 	}
 }
