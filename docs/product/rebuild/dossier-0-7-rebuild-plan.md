@@ -197,7 +197,9 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - M1 mostly done: model, strict decode, schema, kind rules with facet order, `validate` door with findings. Aliases for 0.6 block names are not started.
 - M2 mostly done: prose, spec, table, callout, code, and boards with facets, summary table, contents groups, facts tile, theme toggle, pick block with local picks; `build` door. The 0.7 brainstorm builds from `core/examples/dossier-0-7-brainstorm.dossier.json` in about 2 ms to a 94 KB artifact with zero external requests. Syntax highlighting is not wired yet.
 - M3 done: `internal/decisions` (dossier.decisions/v1 in Markdown and JSON, the reply line, a reply parser, apply with findings), `decisions read` and `decisions apply` doors, decided state rendered into the artifact, reader notes and copy-as-JSON. Round trip covered by a doors test: apply a reply, build, read back, apply the written document to a fresh model.
-- Next: M4 remaining sections (figure, diagram, chart, highlighted code) and the 0.6 alias mapping, then M5 doors (`init`, `mcp`, generated skill).
+- M4 done: `figure`, `diagram`, and `chart` parts; chroma highlighting for code parts and fenced code in markdown with a hand-written token theme; relative figure paths inlined at build time; rows boards fold their facets. `internal/model/alias.go` rewrites any 0.6 document onto the model with a warning per aliased block, and the five remaining presets (`plan`, `review`, `release`, `incident`, `brief`) ship as permissive kinds so imported documents have a home. The seventeen fixtures under `core/testdata/legacy` build with outcome `ok`, warnings only; their upgraded models and the showcase HTML are goldens.
+- Decided in M4: diagrams emit DOT or Mermaid source under a format label until a wasm Graphviz is adopted as its own decision; `math` imports as a latex code part; the permissive presets get their facet vocabularies in M5 with the skill.
+- Next: M5 doors (`init`, `mcp`, generated skill).
 
 ## Content rules
 
