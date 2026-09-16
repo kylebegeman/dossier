@@ -80,3 +80,24 @@ func TestCheckMediaParts(t *testing.T) {
 		t.Errorf("expected 8 media part problems, got %d: %v", len(p), p)
 	}
 }
+
+func TestCheckTimeline(t *testing.T) {
+	doc := func(p Part) *Document {
+		return &Document{Dossier: "1.0", Kind: "incident", Meta: Meta{Title: "T", Slug: "t"}, Sections: []Section{{ID: "s", Title: "S", Parts: []Part{p}}}}
+	}
+	if p := Check(doc(Part{Type: "timeline", Events: []Event{{At: "07:40", Title: "Doors close", Tone: "risk"}}})); len(p) > 0 {
+		t.Errorf("a valid timeline: %v", p)
+	}
+	got := Check(doc(Part{Type: "timeline", Events: []Event{{At: "", Title: "No time"}, {At: "08:00", Title: "Loud", Tone: "red"}}}))
+	var lines []string
+	for _, p := range got {
+		lines = append(lines, p.String())
+	}
+	want := "/sections/0/parts/0/events/0: at and title are required\n/sections/0/parts/0/events/1/tone: must be one of teal, violet, risk, neutral"
+	if strings.Join(lines, "\n") != want {
+		t.Errorf("got:\n%s", strings.Join(lines, "\n"))
+	}
+	if p := Check(doc(Part{Type: "timeline"})); len(p) != 1 {
+		t.Errorf("a timeline needs events: %v", p)
+	}
+}

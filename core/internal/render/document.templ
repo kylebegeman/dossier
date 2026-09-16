@@ -271,6 +271,26 @@ templ partView(part PartView) {
 				</div>
 				<pre><code>{ part.Code }</code></pre>
 			</div>
+		case "timeline":
+			<ol class="part timeline">
+				for _, e := range part.Events {
+					<li { toneAttr(e.Tone)... }>
+						if e.DateTime != "" {
+							<time class="at" datetime={ e.DateTime }>{ e.At }</time>
+						} else {
+							<span class="at">{ e.At }</span>
+						}
+						<div class="ev">
+							<b>{ e.Title }</b>
+							if e.HTML != "" {
+								<div class="md">
+									@templ.Raw(e.HTML)
+								</div>
+							}
+						</div>
+					</li>
+				}
+			</ol>
 		case "chart":
 			<div class="part block chart">
 				if part.Title != "" {

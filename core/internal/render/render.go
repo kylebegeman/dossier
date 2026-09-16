@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
@@ -127,7 +128,18 @@ type PartView struct {
 	Caption string
 	Format  string
 	SVG     string
+	Events  []EventView
 	Edit    string
+}
+
+// EventView is one timeline event. DateTime is set when At parses as a time
+// or date, so the page can mark it up with <time>.
+type EventView struct {
+	At       string
+	DateTime string
+	Title    string
+	HTML     string
+	Tone     string
 }
 
 // BoardView is a board with numbered or row items.
@@ -570,6 +582,14 @@ func renderPart(p model.Part, opts Options) (PartView, error) {
 		pv.Code = p.Source
 	case "chart":
 		pv.SVG = chartSVG(p.Title, p.Variant, p.Data)
+	case "timeline":
+		for _, e := range p.Events {
+			h, err := markdown(e.Markdown)
+			if err != nil {
+				return pv, err
+			}
+			pv.Events = append(pv.Events, EventView{At: e.At, DateTime: dateTime(e.At), Title: e.Title, HTML: h, Tone: e.Tone})
+		}
 	case "table":
 		for _, row := range p.Rows {
 			var cells []string
@@ -594,6 +614,22 @@ func renderPart(p model.Part, opts Options) (PartView, error) {
 		pv.Spec = rows
 	}
 	return pv, nil
+}
+
+// dateTime returns the machine form of a timeline time when it is one: a
+// time of day, a date, or both. Anything else, like "Day 2", has none.
+func dateTime(at string) string {
+	at = strings.TrimSpace(at)
+	for _, layout := range []struct{ in, out string }{
+		{"15:04", "15:04"}, {"15:04:05", "15:04:05"}, {"2006-01-02", "2006-01-02"},
+		{"2006-01-02 15:04", "2006-01-02T15:04"}, {"2006-01-02T15:04", "2006-01-02T15:04"},
+		{time.RFC3339, time.RFC3339},
+	} {
+		if t, err := time.Parse(layout.in, at); err == nil {
+			return t.Format(layout.out)
+		}
+	}
+	return ""
 }
 
 // imageTypes maps the file extensions InlineFigures inlines to their MIME types.

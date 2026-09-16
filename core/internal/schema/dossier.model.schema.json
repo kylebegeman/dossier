@@ -72,7 +72,7 @@
       "additionalProperties": false,
       "required": ["type"],
       "properties": {
-        "type": { "type": "string", "enum": ["prose", "spec", "table", "callout", "code", "figure", "diagram", "chart"] },
+        "type": { "type": "string", "enum": ["prose", "spec", "table", "callout", "code", "figure", "diagram", "chart", "timeline"] },
         "title": { "type": "string", "maxLength": 200 },
         "tone": { "type": "string", "enum": ["note", "risk"] },
         "markdown": { "type": "string" },
@@ -88,7 +88,22 @@
         "source": { "type": "string", "description": "Diagram source in the given format." },
         "format": { "type": "string", "enum": ["dot", "mermaid"] },
         "variant": { "type": "string", "enum": ["bar", "line", "area"] },
-        "data": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "value"], "properties": { "label": { "type": "string" }, "value": { "type": "number" } } } }
+        "data": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "value"], "properties": { "label": { "type": "string" }, "value": { "type": "number" } } } },
+        "events": {
+          "type": "array",
+          "description": "Timeline events in order. at is a time or date as written, such as 07:40 or 2026-01-14.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["at", "title"],
+            "properties": {
+              "at": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "markdown": { "type": "string" },
+              "tone": { "type": "string", "enum": ["teal", "violet", "risk", "neutral"] }
+            }
+          }
+        }
       }
     },
     "board": {

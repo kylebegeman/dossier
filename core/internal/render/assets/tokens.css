@@ -187,6 +187,21 @@ select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; b
 .chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
 .chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
 .diagram pre { white-space: pre-wrap; }
+
+/* timeline: times in a column, a hairline rail, a dot per event in its tone */
+.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
+.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .ev { position: relative; padding: 0 0 18px 24px; }
+.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
+.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline b { display: block; font-size: 15px; font-weight: 600; }
+.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
+@media (max-width: 520px) {
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
+  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
+}
 :root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
 .hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
 .hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
@@ -312,7 +327,7 @@ select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; b
   .verdicts { border: 0; background: none; }
   body { padding: 0; font-size: 12px; }
   .page { display: block; }
-  .item, .figure, .chart, pre { break-inside: avoid; }
+  .item, .figure, .chart, .timeline li, pre { break-inside: avoid; }
   .item h3 .chev { display: none; }
   .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
   .pick { background: none; color: var(--ink); border: 1px solid var(--line); }

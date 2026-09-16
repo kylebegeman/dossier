@@ -68,6 +68,7 @@
           "board": { "type": "boolean" },
           "repeat": { "type": "boolean" },
           "layout": { "enum": ["rows"] },
+          "part": { "enum": ["prose", "timeline"] },
           "optional": { "type": "boolean" }
         }
       }

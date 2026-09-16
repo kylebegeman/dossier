@@ -89,6 +89,8 @@ type FacetRule struct {
 }
 
 // SectionRule is a section a document of this kind is expected to have.
+// Part names the content part a starter puts in a section without a board:
+// prose by default, or a timeline.
 type SectionRule struct {
 	ID       string `json:"id"`
 	Title    string `json:"title"`
@@ -96,6 +98,7 @@ type SectionRule struct {
 	Board    bool   `json:"board,omitempty"`
 	Repeat   bool   `json:"repeat,omitempty"`
 	Layout   string `json:"layout,omitempty"`
+	Part     string `json:"part,omitempty"`
 	Optional bool   `json:"optional,omitempty"`
 }
 
@@ -302,6 +305,13 @@ func (k Kind) Validate() []model.Problem {
 		}
 		if s.Repeat && !s.Board {
 			add(sp+"/repeat", "only boards repeat")
+		}
+		switch {
+		case s.Part == "":
+		case s.Part != "prose" && s.Part != "timeline":
+			add(sp+"/part", "must be prose or timeline")
+		case s.Board || s.Layout == "rows":
+			add(sp+"/part", "a board or rows section holds items, not a part")
 		}
 		if s.Board {
 			boards++
@@ -813,6 +823,13 @@ func (k Kind) Advise(doc *model.Document) []model.Problem {
 		return out
 	}
 	for si, s := range doc.Sections {
+		for pi, p := range s.Parts {
+			for ei, e := range p.Events {
+				if n := len([]rune(e.Markdown)); k.Limits.Event > 0 && n > k.Limits.Event {
+					out = append(out, model.Problem{Path: fmt.Sprintf("/sections/%d/parts/%d/events/%d/markdown", si, pi, ei), Message: fmt.Sprintf("event %q is %d characters; keep timeline events under %d, one or two sentences", e.Title, n, k.Limits.Event)})
+				}
+			}
+		}
 		if s.Board == nil || s.Board.Layout == "rows" {
 			continue
 		}
