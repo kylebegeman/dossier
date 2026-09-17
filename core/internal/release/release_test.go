@@ -176,13 +176,21 @@ func TestVersionsAgree(t *testing.T) {
 			t.Fatal(err)
 		}
 		var manifest struct {
-			Version string `json:"version"`
+			Version    string `json:"version"`
+			Repository struct {
+				URL string `json:"url"`
+			} `json:"repository"`
 		}
 		if err := json.Unmarshal(data, &manifest); err != nil {
 			t.Fatal(err)
 		}
 		if manifest.Version != version {
 			t.Errorf("%s is %s; VERSION is %s", pkg, manifest.Version, version)
+		}
+		// npm refuses a provenance publish unless the repository matches the
+		// one that built it.
+		if manifest.Repository.URL != "git+https://github.com/kylebegeman/dossier.git" {
+			t.Errorf("%s names repository %q", pkg, manifest.Repository.URL)
 		}
 	}
 	data, _ := os.ReadFile("../../../packages/dossier/package.json")

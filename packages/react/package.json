@@ -3,6 +3,12 @@
   "version": "0.7.0",
   "description": "A typed React wrapper around the self-contained HTML artifact Dossier renders.",
   "license": "MIT",
+  "homepage": "https://github.com/kylebegeman/dossier/tree/master/packages/react#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kylebegeman/dossier.git",
+    "directory": "packages/react"
+  },
   "type": "module",
   "sideEffects": false,
   "exports": {
