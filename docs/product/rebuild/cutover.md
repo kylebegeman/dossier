@@ -31,10 +31,16 @@ out every step.
   `master` moved.
 - **npm.** Seven of the eight packages had never been published, and npm's
   trusted publishing cannot make a first publish. A granular token in the
-  `NPM_TOKEN` repository secret covers 0.7.0; afterwards the new packages
-  move to trusted publishing and the token is revoked.
+  `NPM_TOKEN` repository secret published those seven at 0.7.0, and the
+  launcher, set up for trusted publishing since 0.6, published through it.
+  Still to do, on npmjs.com and Kyle's: add a trusted publisher to each of
+  the seven (repository `kylebegeman/dossier`, workflow `release.yml`, no
+  environment), then revoke the token and delete the secret. Until then each
+  release publishes them with the token.
 - **Pages.** The site is the showcase: `make site` builds an index, written
-  as a Dossier brief in `docs/site`, and the seven examples.
+  as a Dossier brief in `docs/site`, and the seven examples. The page 0.7.0
+  led with, the winter crossing brainstorm, is now a test fixture and still
+  builds, unlisted, so its links keep working.
 
 ## What changed
 
@@ -53,14 +59,23 @@ out every step.
 3. **Docs.** `docs/product/README.md` and `docs/scratchpad/README.md` point
    at the 0.7 material, and `docs/releases/0.7.0.dossier.json` with
    `docs/releases/0.7.0.md` are the release document and notes.
+4. **0.7.0 shipped** on 2026-09-17 (UTC): the GitHub release with six
+   archives, checksums, the formula, and the release page; eight npm
+   packages with provenance; and the Homebrew tap's first pull request,
+   merged after its test-bot passed on macOS and Linux. An install from npm
+   rendered a page.
 
 ## Releasing a version
 
-1. Set `core/VERSION` and the versions in `packages/dossier/package.json`
-   and `packages/react/package.json`, which a test keeps in step, and the
-   tag in the launcher README's image link. Add
+1. Set the version everywhere `TestVersionsAgree` looks: `core/VERSION`,
+   `Version` in `core/internal/doors/mcp.go` (as `<version>-dev`), and the
+   versions in `packages/dossier/package.json` and
+   `packages/react/package.json`. Keep the launcher's
+   `optionalDependencies`, the React lockfile, and the tag and alt text of
+   the launcher README's image in step too. Add
    `docs/releases/<version>.dossier.json` and `docs/releases/<version>.md`,
-   and run `make check` and `make dist-check` in `core`.
+   build the release document to check it, and run `make check` and
+   `make dist-check` in `core`.
 2. Push to a branch, let CI pass, and fast-forward `master`.
 3. Tag `v<version>` on `master` and push the tag. The release workflow does
    the rest, and a failed run can be rerun because every step skips what is
