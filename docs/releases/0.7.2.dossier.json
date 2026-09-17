@@ -1,0 +1,183 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Dossier 0.7.2",
+    "slug": "release-0-7-2",
+    "kicker": "Dossier releases",
+    "emphasis": "0.7.2",
+    "lede": "A maintenance release: every npm package now publishes through trusted publishing with provenance, and nothing else changes. Every gate passed, and the call is ship.",
+    "updated": "2026-09-17",
+    "status": "shipped",
+    "facts": [
+      {
+        "label": "platforms",
+        "value": "6"
+      },
+      {
+        "label": "npm packages",
+        "value": "8"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "ships",
+      "title": "What ships",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.2 moves the last seven npm packages off a publish token. The binary, the page, and the studio are the same as in 0.7.1."
+        },
+        {
+          "type": "table",
+          "title": "Changes",
+          "columns": [
+            "Area",
+            "What changed"
+          ],
+          "rows": [
+            [
+              "npm",
+              "All eight packages publish only from the release workflow through trusted publishing, with signed provenance, and disallow tokens."
+            ],
+            [
+              "Everything else",
+              "Unchanged from 0.7.1."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "title": "Gates",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "go-checks",
+            "title": "Go checks",
+            "summary": "Formatting, vet, staticcheck, errcheck, the race-enabled tests, and a CGO-free build all passed.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make check` in `core`, which also drift-checks generated code and the vendored Graphviz."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every package passed. The reader is 20,257 bytes of its 20,480 byte budget and the stylesheet 29,106 of 30,720."
+              }
+            ]
+          },
+          {
+            "id": "showcase",
+            "title": "Showcase fixtures",
+            "summary": "All seven example documents build with no warnings and match their HTML and Markdown goldens.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestExamples` and `TestExampleReplies` build the showcase the way a reader gets it and paste a reply into each decision document."
+              },
+              {
+                "label": "Result",
+                "markdown": "Seven documents, six kinds, no warnings, and the largest page at 110 KB of its 120 KB budget."
+              }
+            ]
+          },
+          {
+            "id": "legacy",
+            "title": "0.6 imports",
+            "summary": "All 17 legacy fixtures upgrade to models that pass the strict 0.7 checks.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestLegacyFixtures` upgrades each 0.6 document and compares it with its golden."
+              },
+              {
+                "label": "Result",
+                "markdown": "17 of 17 upgrade strictly onto their kinds' vocabularies."
+              }
+            ]
+          },
+          {
+            "id": "react",
+            "title": "React package tests",
+            "summary": "The wrapper renders through the binary, and the reader agrees with Go on every shared reply case.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`npm test` in `packages/react`, including the 15 reply cases shared with the Go parser."
+              },
+              {
+                "label": "Result",
+                "markdown": "10 of 10 tests passed."
+              }
+            ]
+          },
+          {
+            "id": "distribution",
+            "title": "Distribution dry run",
+            "summary": "Six archives, their checksums, the Homebrew formula, and seven npm packages build and install.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make dist-check` cross-compiles every target, runs the formula's test commands on an archive, and installs the npm packages from tarballs."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every check printed ok, and the binary and the launcher both report 0.7.2."
+              }
+            ]
+          },
+          {
+            "id": "trusted-publishing",
+            "title": "npm trusted publishing",
+            "summary": "Every package trusts only this repository's release workflow, and no token can publish.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "On npmjs.com, each of the eight packages names `kylebegeman/dossier` and `release.yml` as its trusted publisher and disallows tokens. The repository holds no npm token secret."
+              },
+              {
+                "label": "Result",
+                "markdown": "Set up for all eight after 0.7.1. This release is the first to publish every package this way."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.2 changes only how the packages are published, so 0.7.1 is an equal choice for any project."
+        },
+        {
+          "type": "code",
+          "title": "Back to 0.7.1",
+          "lang": "sh",
+          "code": "npm install --save-dev @kylebegeman/dossier@0.7.1"
+        }
+      ]
+    }
+  ],
+  "decisions": {
+    "path": "ship"
+  }
+}

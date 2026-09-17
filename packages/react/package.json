@@ -1,6 +1,6 @@
 {
   "name": "@kylebegeman/dossier-react",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A typed React wrapper around the self-contained HTML artifact Dossier renders.",
   "license": "MIT",
   "homepage": "https://github.com/kylebegeman/dossier/tree/master/packages/react#readme",
