@@ -219,7 +219,8 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - M6 done except deleting the 0.6 tree and publishing, which wait for Kyle: `serve` with the studio island over a kore-style SQLite store (goose, sqlc); `upgrade`, `render`, and `types` doors; the React wrapper in `packages/react` with generated model types; reproducible release builds with npm, Homebrew, and archive dry runs in `make dist-check`; the README with one prompt and one screenshot; `manual-qa-0-7.md` and `cutover.md` beside this plan.
 - Deferred in M6, then settled in M7: CodeMirror is vendored as one bundle, and evidence stays in facets, which the studio edits.
 - M7, the finishing plan, done. Kyle set the bar that nothing merges, pushes, or releases until the whole product is finished, and an audit against this plan and the 0.7 brainstorm found the gaps. Fourteen steps closed them, each committed with `make check` green: kind schema v1 and six designed kinds; custom kinds from a directory; verdicts, the document choice, and one reply grammar shared with the reader; verdict controls; search; the accent derived for both themes; the timeline part; diagrams as SVG through Graphviz wasm with Mermaid flowcharts translated; `build --md`; the studio's verdict sync, facets by name, reply import, and kept accent; CodeMirror; 0.6 imports onto the vocabularies with all 17 fixtures upgrading strictly; a seven-document showcase with goldens, the README, and screenshots; and these docs.
-- Next: cutover and publishing follow `cutover.md` and stay with Kyle.
+- Cutover done. The 0.6 tree and its workflows left, the history was replayed onto GitHub's `master` after CI passed on a branch, Pages serves the showcase, and `release.yml` publishes a version tag. Kyle made the decisions in `cutover.md` and asked Claude to carry them out.
+- Next: release 0.7.0 from the `v0.7.0` tag, move the new npm packages to trusted publishing, then Ledger.
 
 ## Content rules
 

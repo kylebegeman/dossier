@@ -29,6 +29,7 @@ for the layout map and rules, and
 | Change what the studio stores | a new migration in `internal/store/migrations`, queries in `internal/store/queries`, then `make generate` |
 | Change the React wrapper | `../packages/react/src`; `npm test` there builds the binary and renders through it |
 | Change what a release ships | `internal/release`; `make dist-check` dry-runs everything, third-party notices included |
+| Release a version | "Releasing a version" in `../docs/product/rebuild/cutover.md`; a `v*` tag runs `../.github/workflows/release.yml` |
 | Verify a change | `make check` |
 
 ## Commands
