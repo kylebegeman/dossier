@@ -1,26 +1,27 @@
 (() => {
   "use strict";
-  /* reply writes the line a reader sends back, exactly as Go does: testdata/replies.json holds both to the same cases */
-  const reply = (c, s) => {
+  /* the reply line and its words, exactly as Go writes them: testdata/replies.json holds both to the same cases */
+  const parts = (c, s) => {
     const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
     let open = 0;
     c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
     const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
-    if (c.mode === "pick") {
-      const p = nums(s.picked || []);
-      if (p.length) groups.push(p.length === c.items.length ? "all" : p.join(", "));
-    } else if (c.mode === "verdict") {
-      c.verdicts.forEach((id) => {
-        const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k]));
-        if (n.length) groups.push(id + " " + (n.length === open ? "all" : n.join(", ")));
-      });
-    }
-    const body = groups.join("; "), noted = Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]);
-    let line = (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + ".";
-    if (noted.length) line += " Notes: " + noted.map((id) => num[id] + ": " + notes[id].trim().split(/\s+/).join(" ")).join("; ") + ".";
-    return line;
+    if (c.mode === "pick") { const p = nums(s.picked || []); if (p.length) groups.push(["", p, p.length === c.items.length]); }
+    else if (c.mode === "verdict") c.verdicts.forEach((id) => { const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k])); if (n.length) groups.push([id, n, n.length === open]); });
+    return [groups, Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]).map((id) => [num[id], notes[id].trim().split(/\s+/).join(" ")])];
   };
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply }; return; }
+  const reply = (c, s) => {
+    const [groups, noted] = parts(c, s), body = groups.map(([id, n, all]) => (id ? id + " " : "") + (all ? "all" : n.join(", "))).join("; ");
+    return (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + "." + (noted.length ? " Notes: " + noted.map((x) => x.join(": ")).join("; ") + "." : "");
+  };
+  const words = (c, s) => {
+    const [groups, noted] = parts(c, s), and = (n) => (n.length < 3 ? n.join(" and ") : n.slice(0, -1).join(", ") + ", and " + n[n.length - 1]);
+    const said = (s.path ? ["Choice: " + (c.options[s.path] || s.path)] : []).concat(
+      groups.map(([id, n, all]) => (id ? c.labels[id] : "Pick") + ": " + (all ? "all " + c.plural : (n.length > 1 ? c.plural : c.noun) + " " + and(n))),
+      noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
+    return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words }; return; }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -57,7 +58,8 @@
   try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
   defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
   const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
-  const ctx = { mode, verdicts: defs.map((d) => d.id), items: [] };
+  const ctx = { mode, verdicts: defs.map((d) => d.id), labels: label, options: {}, items: [], noun: pickBlock && at(pickBlock, "data-noun"), plural: pickBlock && at(pickBlock, "data-plural") };
+  choices.forEach((r) => { ctx.options[r.value] = at(r, "data-label"); });
   items.forEach((el) => {
     const id = at(el, "data-item");
     num[id] = +at(el, "data-num");
@@ -120,8 +122,9 @@
     say('[data-live="choice"]', chosen);
     $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
     say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
-    const empty = !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length;
-    say("[data-reply]", empty ? "Nothing decided yet." : reply(ctx, state));
+    if (pickBlock) pickBlock.toggleAttribute("data-empty", !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length);
+    say("[data-reply]", reply(ctx, state));
+    say("[data-words]", words(ctx, state));
     applyView();
   };
   const decisionsJSON = () => {
@@ -143,7 +146,7 @@
     if (t.closest("[data-choice-clear]")) setPath("");
     else if (t.closest("[data-collapse-toggle]")) setAllOpen(!anyOpen());
     else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
-    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Decisions copied as JSON");
+    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Copied as JSON");
     else if (t.closest("[data-hide]")) setHide(!hide);
     else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
@@ -225,7 +228,7 @@
     const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
     for (let node; terms.length && (node = walk.nextNode());) {
       const el = node.parentElement, closed = el.closest("details:not([open])");
-      if (el.closest("[hidden],button,select,textarea,[data-no-hits]") || (closed && !el.closest("summary"))) continue;
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits],.pick") || (closed && !el.closest("summary"))) continue;
       let f = "";
       const map = [], x = node.data;
       for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }

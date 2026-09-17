@@ -71,14 +71,16 @@ func TestRenderFlagship(t *testing.T) {
 		`aria-label="Impact 5 of 5"`,
 		`<b>6</b> <span>minor</span>`,
 		`<b>3</b> <span>also considered</span>`,
-		`<p class="example">For example <code>storms, 2, 5, 7. Notes: 5: smaller first.</code></p>`,
-		`<div class="pick" id="pick" data-mode="pick" data-verdicts="null">`,
-		`<legend>What should winter build for first?</legend>`,
+		`<p><span class="tag">Example</span> <code>storms, 2, 5, 7. Notes: 5: smaller first.</code></p><p class="words">Choice: Storm days. Pick: ideas 2, 5, and 7. Note on idea 5: smaller first.</p>`,
+		`<section class="pick" id="pick" aria-labelledby="pick-title" data-mode="pick" data-verdicts="null" data-noun="idea" data-plural="ideas" data-empty>`,
+		`<h2 id="pick-title">Your reply</h2>`,
+		`<b id="pick-question">What should winter build for first?</b>`,
 		`<input type="radio" name="dossier-choice" value="storms" data-choice data-label="Storm days">`,
-		`<button type="button" class="clear" data-choice-clear hidden>Clear the choice</button>`,
+		`<button type="button" class="link-btn" data-choice-clear hidden>Clear</button>`,
 		`<b data-live="choice">Open</b> <a href="#pick">choice</a>`,
 		`<b data-live="count">0</b> <span>picked</span>`,
-		`<div class="reply" data-reply>Nothing decided yet.</div>`,
+		`<code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p>`,
+		`<button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button>`,
 		`data-hide aria-pressed="false">Hide decided</button>`,
 		`<input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search>`,
 		`<span class="hits" data-hits aria-live="polite"></span>`,
@@ -155,8 +157,10 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`<span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-teal" data-verdict="fix" aria-checked="false" tabindex="0">Fix</button><button type="button" role="radio" class="t-violet" data-verdict="later" aria-checked="false" tabindex="-1">Later</button>`,
 		`<th class="vd">Verdict</th>`,
 		`<select class="verdict" data-verdict-row="leak" aria-label="Verdict on 1, Token in logs"><option value="">Undecided</option> <option value="fix">Fix</option>`,
-		`<div class="pick" id="pick" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;fix&#34;,&#34;label&#34;:&#34;Fix&#34;,&#34;tone&#34;:&#34;teal&#34;}`,
-		`<legend>Approve or rework?</legend>`,
+		`<section class="pick" id="pick" aria-labelledby="pick-title" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;fix&#34;,&#34;label&#34;:&#34;Fix&#34;,&#34;tone&#34;:&#34;teal&#34;}`,
+		`data-noun="finding" data-plural="findings" data-empty>`,
+		`<b id="pick-question">Approve or rework?</b>`,
+		`<code>rework, fix 1.</code></p><p class="words">Choice: Rework. Fix: finding 1.</p>`,
 		`<b data-live="count">0</b> <span>decided</span>`,
 	} {
 		if !strings.Contains(review, want) {
@@ -183,11 +187,14 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`<input type="radio" name="dossier-choice" value="rework" data-choice data-label="Rework" checked>`,
 		`<b data-live="choice">Rework</b>`,
 		`<b data-live="count">1</b> <span>decided</span>`,
-		`<div class="reply" data-reply>rework, later 2. Notes: 1: rotate the token.</div>`,
+		`<code data-reply>rework, later 2. Notes: 1: rotate the token.</code></p><p class="words" data-words>Choice: Rework. Later: finding 2. Note on finding 1: rotate the token.</p>`,
 	} {
 		if !strings.Contains(ruled, want) {
 			t.Errorf("decided review lacks %q", want)
 		}
+	}
+	if strings.Contains(ruled, "data-empty>") {
+		t.Error("a decided review's reply block is not marked empty")
 	}
 	decided = nil
 
@@ -201,7 +208,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`data-item="arm" data-title="arm64 build" data-decides data-num="2">`,
 		`<td class="vd"><span class="none">No verdict needed</span></td>`,
 		`aria-label="Verdict on 2"`,
-		`<legend>Ship or hold?</legend>`,
+		`<b id="pick-question">Ship or hold?</b>`,
 	} {
 		if !strings.Contains(release, want) {
 			t.Errorf("release lacks %q", want)
@@ -228,7 +235,18 @@ func TestKindsShapeTheBoard(t *testing.T) {
 	if !strings.Contains(waived, `verdict." hidden></p>`) {
 		t.Error("waiving every guarded gate hides the warning")
 	}
+	decided = &model.Decisions{Notes: map[string]string{"arm": "  "}}
+	blank := render("release", model.Meta{Title: "Release", Slug: "rel"}, model.Section{ID: "gates", Title: "Gates", Board: &model.Board{Items: gates}})
+	if !strings.Contains(blank, `data-plural="gates" data-empty>`) {
+		t.Error("a blank note decides nothing, as the reader counts it")
+	}
 	decided = nil
+	passed := render("release", model.Meta{Title: "Release", Slug: "rel"}, model.Section{ID: "gates", Title: "Gates", Board: &model.Board{Items: []model.Item{
+		{ID: "unit", Title: "Unit tests", Status: "passed", Required: true, Facets: facets("How checked", "Result")},
+	}}})
+	if !strings.Contains(passed, `<code>ship.</code></p><p class="words">Choice: Ship.</p>`) {
+		t.Errorf("with no gate to rule on, the example is the choice alone: %s", passed[strings.Index(passed, `<div class="said example">`):])
+	}
 
 	brief := render("brief", model.Meta{Title: "Brief", Slug: "b"},
 		model.Section{ID: "findings", Title: "Findings", Board: &model.Board{Summary: true, Items: []model.Item{
@@ -697,6 +715,28 @@ func TestMarkdownCarriesEveryPartAndTheDecisions(t *testing.T) {
 	}
 	if !strings.HasSuffix(out, ".`\n") || strings.HasSuffix(out, "\n\n") {
 		t.Error("the rendition ends with exactly one newline")
+	}
+}
+
+func TestMarkdownSaysWhenNothingIsDecided(t *testing.T) {
+	kind, err := kinds.Load("brainstorm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := &model.Document{Dossier: "1.0", Kind: "brainstorm", Meta: model.Meta{Title: "Ideas", Slug: "ideas"},
+		Sections: []model.Section{{ID: "ideas", Title: "Ideas", Board: &model.Board{Items: []model.Item{
+			{ID: "one", Title: "One", Facets: []model.Facet{{Label: "How it works", Markdown: "x"}, {Label: "Why", Markdown: "y"}}},
+		}}}},
+	}
+	for _, d := range []*model.Decisions{nil, {}, {Notes: map[string]string{"one": " "}}} {
+		doc.Decisions = d
+		md, err := Markdown(doc, kind)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.HasSuffix(string(md), "For example: `1.`\n\nNo decisions yet.\n") {
+			t.Errorf("decisions %+v: %s", d, md)
+		}
 	}
 }
 

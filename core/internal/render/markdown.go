@@ -92,7 +92,7 @@ func Markdown(doc *model.Document, kind kinds.Kind) ([]byte, error) {
 		if page.ReplyExample != "" {
 			w("For example: `%s`\n\n", page.ReplyExample)
 		}
-		if doc.Decisions == nil {
+		if page.Undecided {
 			w("No decisions yet.\n")
 		} else {
 			w("Reply so far: `%s`\n", page.Reply)

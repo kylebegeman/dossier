@@ -654,7 +654,7 @@ func TestVerdictsSyncImportAndApply(t *testing.T) {
 	if !strings.Contains(page, `data-item="leak" data-title="Token in logs" data-decides data-num="1" data-tone="teal"`) || strings.Contains(page, `class="item picked"`) {
 		t.Error("stored verdicts render; picks in a verdict kind and unknown verdicts are dropped")
 	}
-	if !strings.Contains(page, `<div class="reply" data-reply>rework, fix 1. Notes: 2: later.</div>`) {
+	if !strings.Contains(page, `<code data-reply>rework, fix 1. Notes: 2: later.</code></p><p class="words" data-words>Choice: Rework. Fix: finding 1. Note on finding 2: later.</p>`) {
 		t.Error("the reply reflects the stored verdicts")
 	}
 	code, res = h.api("POST", "/_/decisions/import", "approve, later 1; skip 2. Notes: 2: cosmetic.")

@@ -12,7 +12,7 @@ for the layout map and rules, and
 | Author or validate a document | `internal/schema/dossier.model.schema.json`, then `internal/kinds/presets/` for the kind's facets |
 | Add or change a kind | `internal/kinds/kinds.go` and one preset JSON, checked by `internal/schema/dossier.kind.schema.json`; add a test in `kinds_test.go`, then `make generate` for the skill |
 | Load custom kinds | `internal/kinds/registry.go` (`--kinds DIR`, `DOSSIER_KINDS`); an example kind is `examples/kinds/retro.kind.json` |
-| Change how readers decide or reply | `internal/decisions` (rules, grammar, documents); the reader's reply function in `internal/render/assets/reader.js`; shared cases in `testdata/replies.json`, run by `../packages/react` |
+| Change how readers decide or reply | `internal/decisions` (rules, grammar, documents); the reader's `reply` and `words` functions in `internal/render/assets/reader.js`; shared cases for both in `testdata/replies.json`, run by `../packages/react` |
 | Change how the page renders | `internal/render/document.templ` and `internal/render/render.go`; run `make generate` |
 | Change the look | `internal/render/assets/tokens.css`; the budget test in `render_test.go` fails past 30 KB |
 | Change reader behavior | `internal/render/assets/reader.js`; budget 20 KB |

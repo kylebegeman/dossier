@@ -34,7 +34,8 @@ module follows its toolchain, HTTP, and view rules and records divergences here.
   `examples`, `examples/kinds`
 - goldens: `testdata/examples` (full builds of the showcase),
   `testdata/legacy` (0.6 imports), `testdata/diagrams` (Mermaid to DOT),
-  `testdata/replies.json` (reply cases the React package also runs)
+  `testdata/replies.json` (reply lines and their plain words, cases the
+  React package also runs)
 - outside this module: `../packages/react` (the React wrapper, whose
   `src/model.ts` this module generates) and `../packages/dossier` (the npm
   launcher the release stamps)
@@ -73,9 +74,10 @@ only through `load.WriteModel`.
   `testdata/examples`; after a deliberate change, review the output and run
   `UPDATE_GOLDEN=1 go test ./internal/doors -run TestExamples`.
 - Replies have one grammar in two places: `internal/decisions` parses them
-  and the reader writes them. `testdata/replies.json` is written from Go and
-  run by `../packages/react`'s tests, so a grammar change updates both sides
-  and the cases together.
+  and the reader writes them, and both say a reply in the same plain words
+  (`ReplyWords`, `words`). `testdata/replies.json` is written from Go and
+  run by `../packages/react`'s tests, so a grammar or wording change updates
+  both sides and the cases together.
 - Unknown JSON fields are errors. A 0.6 document (`dossierVersion`,
   `blocks`) is rewritten onto the model by `internal/model/alias.go` before
   validation, with a warning per aliased block, never silently. A clean

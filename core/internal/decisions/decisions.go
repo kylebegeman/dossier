@@ -214,6 +214,115 @@ func copyMap(m map[string]string) map[string]string {
 //
 // The reader writes exactly the same line; a shared test holds them together.
 func ReplyLine(d Document, items []Item, rules Rules) string {
+	groups, notes := replyParts(d, items, rules)
+	body := make([]string, len(groups))
+	for i, g := range groups {
+		targets := joinInts(g.nums)
+		if g.all {
+			targets = "all"
+		}
+		if g.verdict != "" {
+			targets = g.verdict + " " + targets
+		}
+		body[i] = targets
+	}
+	var b strings.Builder
+	switch {
+	case d.Path != "" && len(body) > 0:
+		b.WriteString(d.Path + ", " + strings.Join(body, "; "))
+	case d.Path != "":
+		b.WriteString(d.Path)
+	case len(body) > 0:
+		b.WriteString(strings.Join(body, "; "))
+	default:
+		b.WriteString("nothing")
+	}
+	b.WriteString(".")
+	if len(notes) > 0 {
+		b.WriteString(" Notes: ")
+		for i, n := range notes {
+			if i > 0 {
+				b.WriteString("; ")
+			}
+			fmt.Fprintf(&b, "%d: %s", n.n, n.text)
+		}
+		b.WriteString(".")
+	}
+	return b.String()
+}
+
+// ReplyWords says a reply in plain words, one short sentence for each part
+// of the line and in the same order, so a reader can check what they send:
+//
+//	rework, fix 1, 2; later 4. Notes: 4: after the release.
+//	Choice: Rework. Fix: findings 1 and 2. Later: finding 4. Note on finding 4: after the release.
+//
+// The reader says the same words; the shared cases hold them together.
+func ReplyWords(d Document, items []Item, rules Rules) string {
+	groups, notes := replyParts(d, items, rules)
+	var said []string
+	if d.Path != "" {
+		label := d.Path
+		if o, ok := rules.Option(d.Path); ok {
+			label = o.Label
+		}
+		said = append(said, "Choice: "+label)
+	}
+	for _, g := range groups {
+		label := "Pick"
+		if g.verdict != "" {
+			label = rules.VerdictLabel(g.verdict)
+		}
+		targets := "all " + rules.Plural
+		switch {
+		case g.all:
+		case len(g.nums) == 1:
+			targets = rules.Noun + " " + andInts(g.nums)
+		default:
+			targets = rules.Plural + " " + andInts(g.nums)
+		}
+		said = append(said, label+": "+targets)
+	}
+	for _, n := range notes {
+		said = append(said, fmt.Sprintf("Note on %s %d: %s", rules.Noun, n.n, n.text))
+	}
+	if len(said) == 0 {
+		return "Nothing decided yet."
+	}
+	for i, s := range said {
+		if !strings.HasSuffix(s, ".") && !strings.HasSuffix(s, "!") && !strings.HasSuffix(s, "?") {
+			said[i] = s + "."
+		}
+	}
+	return strings.Join(said, " ")
+}
+
+// Undecided reports whether decisions carry nothing a reply would say: no
+// choice among the options, no picks or verdicts the rules accept, and no
+// notes on known items. The reader marks its reply block the same way.
+func Undecided(d Document, items []Item, rules Rules) bool {
+	groups, notes := replyParts(d, items, rules)
+	_, chosen := rules.Option(d.Path)
+	return !chosen && len(groups) == 0 && len(notes) == 0
+}
+
+// replyGroup is one group of a reply: picks when verdict is empty, with the
+// numbers in order and whether they are every item the group can name.
+type replyGroup struct {
+	verdict string
+	nums    []int
+	all     bool
+}
+
+type replyNote struct {
+	n    int
+	text string
+}
+
+// replyParts splits decisions into what a reply says, in the reply's order:
+// picks or verdict groups in the kind's verdict order, then notes by number
+// with their whitespace collapsed.
+func replyParts(d Document, items []Item, rules Rules) ([]replyGroup, []replyNote) {
 	number := make(map[string]int, len(items))
 	eligible := 0
 	for _, it := range items {
@@ -222,16 +331,11 @@ func ReplyLine(d Document, items []Item, rules Rules) string {
 			eligible++
 		}
 	}
-	var groups []string
+	var groups []replyGroup
 	switch rules.Mode {
 	case ModePick:
-		nums := numbersOf(d.Picked, number)
-		switch {
-		case len(nums) == 0:
-		case len(nums) == len(items):
-			groups = append(groups, "all")
-		default:
-			groups = append(groups, joinInts(nums))
+		if nums := numbersOf(d.Picked, number); len(nums) > 0 {
+			groups = append(groups, replyGroup{nums: nums, all: len(nums) == len(items)})
 		}
 	case ModeVerdict:
 		for _, v := range rules.Verdicts {
@@ -241,46 +345,19 @@ func ReplyLine(d Document, items []Item, rules Rules) string {
 					ids = append(ids, id)
 				}
 			}
-			nums := numbersOf(ids, number)
-			switch {
-			case len(nums) == 0:
-			case len(nums) == eligible:
-				groups = append(groups, v.ID+" all")
-			default:
-				groups = append(groups, v.ID+" "+joinInts(nums))
+			if nums := numbersOf(ids, number); len(nums) > 0 {
+				groups = append(groups, replyGroup{verdict: v.ID, nums: nums, all: len(nums) == eligible})
 			}
 		}
 	}
-	var b strings.Builder
-	switch {
-	case d.Path != "" && len(groups) > 0:
-		b.WriteString(d.Path + ", " + strings.Join(groups, "; "))
-	case d.Path != "":
-		b.WriteString(d.Path)
-	case len(groups) > 0:
-		b.WriteString(strings.Join(groups, "; "))
-	default:
-		b.WriteString("nothing")
-	}
-	b.WriteString(".")
-	var noted []string
+	var notes []replyNote
 	for id, text := range d.Notes {
-		if number[id] > 0 && strings.TrimSpace(text) != "" {
-			noted = append(noted, id)
+		if n := number[id]; n > 0 && strings.TrimSpace(text) != "" {
+			notes = append(notes, replyNote{n: n, text: strings.Join(strings.Fields(text), " ")})
 		}
 	}
-	if len(noted) > 0 {
-		sort.Slice(noted, func(i, j int) bool { return number[noted[i]] < number[noted[j]] })
-		b.WriteString(" Notes: ")
-		for i, id := range noted {
-			if i > 0 {
-				b.WriteString("; ")
-			}
-			fmt.Fprintf(&b, "%d: %s", number[id], strings.Join(strings.Fields(d.Notes[id]), " "))
-		}
-		b.WriteString(".")
-	}
-	return b.String()
+	sort.Slice(notes, func(i, j int) bool { return notes[i].n < notes[j].n })
+	return groups, notes
 }
 
 func numbersOf(ids []string, number map[string]int) []int {
@@ -302,6 +379,15 @@ func joinInts(nums []int) string {
 		parts[i] = strconv.Itoa(n)
 	}
 	return strings.Join(parts, ", ")
+}
+
+// andInts joins numbers for words: "1", "1 and 2", "1, 2, and 3".
+func andInts(nums []int) string {
+	s := strings.Split(joinInts(nums), ", ")
+	if len(s) < 3 {
+		return strings.Join(s, " and ")
+	}
+	return strings.Join(s[:len(s)-1], ", ") + ", and " + s[len(s)-1]
 }
 
 // Markdown renders the decisions document for people: the reply line, the

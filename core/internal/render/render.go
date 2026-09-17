@@ -91,14 +91,21 @@ type Page struct {
 	Fonts            bool
 	// Decides is set when the kind decides and the document has numbered
 	// items; Mode is the kind's decision mode.
-	Decides      bool
-	Mode         string
-	HasArticles  bool
-	PickHTML     string
+	Decides     bool
+	Mode        string
+	HasArticles bool
+	// ReplyExample is the kind's example reply fitted to the document, and
+	// ExampleWords says it plainly; the page shows them until something is
+	// decided.
 	ReplyExample string
-	// Reply is the reply line for the model's own decisions, which the
-	// reader keeps current. VerdictsJSON tells the reader the kind's verdicts.
+	ExampleWords string
+	// Reply is the reply line for the model's own decisions and ReplyWords
+	// says it plainly; the reader keeps both current. Undecided is set when
+	// the model decides nothing. VerdictsJSON tells the reader the kind's
+	// verdicts.
 	Reply        string
+	ReplyWords   string
+	Undecided    bool
 	VerdictsJSON string
 	Choice       *ChoiceView
 	Guard        *GuardView
@@ -443,22 +450,21 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	}
 	page.Contents = contents(doc, kind, numbers, marks)
 	if page.Decides {
-		h, err := markdown(kind.Decision.Markdown)
-		if err != nil {
-			return nil, err
+		items := decisions.Items(doc, rules)
+		page.ReplyExample = exampleReply(kind, rules, items)
+		if page.ReplyExample != "" {
+			if example, err := decisions.ParseReply(page.ReplyExample, items, rules); err == nil {
+				page.ExampleWords = decisions.ReplyWords(example, items, rules)
+			}
 		}
-		page.PickHTML = h
-		page.ReplyExample = exampleReply(kind, rules, decisions.Items(doc, rules))
 		verdictsJSON, err := json.Marshal(rules.Verdicts)
 		if err != nil {
 			return nil, err
 		}
 		page.VerdictsJSON = string(verdictsJSON)
 		d := decisions.FromModel(doc, rules)
-		page.Reply = "Nothing decided yet."
-		if d.Path != "" || len(d.Picked) > 0 || len(d.Verdicts) > 0 || len(d.Notes) > 0 {
-			page.Reply = d.Reply
-		}
+		page.Reply, page.ReplyWords = d.Reply, decisions.ReplyWords(d, items, rules)
+		page.Undecided = decisions.Undecided(d, items, rules)
 		if c := rules.Choice; c != nil {
 			cv := &ChoiceView{Question: c.Question}
 			for _, o := range c.Options {
@@ -478,7 +484,7 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 				Many:   fmt.Sprintf("%s goes ahead over %s {n}, which are %s and have no %s verdict.", choice.Label, kind.Item.Plural, g.Describe, unless),
 			}
 			var watch, open []string
-			for _, it := range decisions.Items(doc, rules) {
+			for _, it := range items {
 				if !g.Watch[it.ID] {
 					continue
 				}
@@ -510,7 +516,8 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 // does not gets its first option in front. When the example names items the
 // document cannot take, its numbers move onto ones it can, in order, so the
 // example always applies when pasted back; with too few decidable items for
-// that, it shrinks to its first group on the first of them.
+// that, it shrinks to its first group on the first of them, and with none it
+// keeps only the choice, or is empty when there is no choice to make.
 func exampleReply(kind kinds.Kind, rules decisions.Rules, items []decisions.Item) string {
 	example := kind.Decision.Example
 	if rules.Choice != nil && example != "" {
@@ -576,7 +583,14 @@ func fitExample(example string, rules decisions.Rules, items []decisions.Item) s
 	for _, n := range used {
 		fits = fits && can[n]
 	}
-	if fits || len(eligible) == 0 || strings.Contains(head, "-") {
+	if len(eligible) == 0 {
+		if rules.Choice == nil {
+			return ""
+		}
+		word, _, _ := strings.Cut(head, ",")
+		return strings.TrimSuffix(word, ".") + "."
+	}
+	if fits || strings.Contains(head, "-") {
 		return example
 	}
 	sort.Ints(used)

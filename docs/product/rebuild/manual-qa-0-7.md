@@ -58,17 +58,19 @@ On every page:
   verdict: it selects without opening the item. Arrow keys move and select
   within the group, and Delete clears it. The summary menu, the rail marker,
   and the masthead count follow.
-- **Choice.** Choosing an option updates the masthead fact, and Clear the
-  choice returns it to Open.
+- **Choice.** Choosing an option updates the masthead fact, and Clear
+  beside the question returns it to Open.
 - **Guard.** In the release, choose Ship. A warning names gate 1, the failed
   required gate. Waive gate 1 and the warning goes.
 - **Hide decided.** It hides decided items and the rows and rail entries
   that match them, together with any search.
 - **Notes.** Add a note, reload, and the note is still there.
-- **Reply.** The reply line updates as you decide. Copy reply puts it on the
-  clipboard, and Copy decisions as JSON copies a `dossier.decisions/v1`
-  document. The example reply under each decision block names items that
-  page can take.
+- **Reply.** Your reply, at the bottom of each deciding page, shows an
+  example with a plain reading until you decide anything; the example names
+  items that page can take. Once you decide, it shows your reply line and
+  says it in words, both updating as you go. Copy reply puts the line on the
+  clipboard, and Copy as JSON copies a `dossier.decisions/v1` document. The
+  block is calm in both themes and never picks up search highlights.
 
 ## 3. The decisions loop
 

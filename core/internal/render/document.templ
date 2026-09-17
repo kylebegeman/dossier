@@ -572,14 +572,17 @@ templ rowsBoard(b *BoardView) {
 }
 
 templ pick(p *Page) {
-	<div class="pick" id="pick" data-mode={ p.Mode } data-verdicts={ p.VerdictsJSON }>
-		<b>{ p.Kind.Decision.Title }</b>
+	<section class="pick" id="pick" aria-labelledby="pick-title" data-mode={ p.Mode } data-verdicts={ p.VerdictsJSON } data-noun={ p.Kind.Item.Noun } data-plural={ p.Kind.Item.Plural } data-empty?={ p.Undecided }>
 		<div>
-			@templ.Raw(p.PickHTML)
+			<h2 id="pick-title">Your reply</h2>
+			<p class="pick-lede">It fills in as you decide. When you’re done, copy it and paste it back to your agent.</p>
 		</div>
 		if p.Choice != nil {
-			<fieldset class="choice">
-				<legend>{ p.Choice.Question }</legend>
+			<fieldset class="choice" aria-labelledby="pick-question">
+				<div class="choice-head">
+					<b id="pick-question">{ p.Choice.Question }</b>
+					<button type="button" class="link-btn" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear</button>
+				</div>
 				<div class="options">
 					for _, o := range p.Choice.Options {
 						<label>
@@ -592,19 +595,30 @@ templ pick(p *Page) {
 						</label>
 					}
 				</div>
-				<button type="button" class="clear" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear the choice</button>
 			</fieldset>
 		}
 		if p.Guard != nil {
 			<p class="guard" role="status" data-guard={ p.Guard.Choice } data-unless={ p.Guard.Unless } data-watch={ p.Guard.Watch } data-one={ p.Guard.One } data-many={ p.Guard.Many } hidden?={ p.Guard.Text == "" }>{ p.Guard.Text }</p>
 		}
-		if p.ReplyExample != "" {
-			<p class="example">For example <code>{ p.ReplyExample }</code></p>
-		}
-		<div class="reply" data-reply>{ p.Reply }</div>
-		<div class="row">
-			<button class="solid" type="button" data-copy-reply>Copy reply</button>
-			<button type="button" data-copy-decisions>Copy decisions as JSON</button>
+		<div class="reply">
+			<div class="said example">
+				if p.ReplyExample != "" {
+					<p><span class="tag">Example</span> <code>{ p.ReplyExample }</code></p>
+					if p.ExampleWords != "" {
+						<p class="words">{ p.ExampleWords }</p>
+					}
+				} else {
+					<p class="words">Nothing decided yet.</p>
+				}
+			</div>
+			<div class="said live">
+				<p><code data-reply>{ p.Reply }</code></p>
+				<p class="words" data-words>{ p.ReplyWords }</p>
+			</div>
+			<div class="acts">
+				<button type="button" class="btn solid" data-copy-reply>Copy reply</button>
+				<button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button>
+			</div>
 		</div>
-	</div>
+	</section>
 }
