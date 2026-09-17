@@ -222,7 +222,8 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - Cutover done. The 0.6 tree and its workflows left, the history was replayed onto GitHub's `master` after CI passed on a branch, Pages serves the showcase, and `release.yml` publishes a version tag. Kyle made the decisions in `cutover.md` and asked Claude to carry them out.
 - 0.7.0 shipped on 2026-09-17 (UTC): GitHub release, npm, Pages, and the Homebrew tap.
 - 0.7.1 shipped on 2026-09-17 (UTC), once Kyle called it: the reply block became Your reply, calm and compact, with every reply said in plain words by Go and the reader alike, and the showcase now leads with a brainstorm about a codebase while the winter crossing brainstorm became a test fixture. `docs/assets/readme/capture` refreshes the README images.
-- Next: confirm at the next release that all eight npm packages publish through trusted publishing, with the token revoked and its secret deleted (`cutover.md`), then Ledger.
+- npm publishing moved to trusted publishing for all eight packages after 0.7.1; the token is revoked, its secret deleted, and tokens are disallowed.
+- Next: confirm at the next release that all eight publish as GitHub Actions (`cutover.md`), then Ledger.
 
 ## Content rules
 

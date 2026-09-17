@@ -35,7 +35,8 @@ out every step.
   launcher, set up for trusted publishing since 0.6, published through it.
   After 0.7.1, which still published those seven with the token, Kyle
   added their trusted publishers as "Moving packages to trusted publishing"
-  below says, and the token and its secret go.
+  below says, revoked the token, deleted the secret, and set all eight
+  packages to disallow tokens.
 - **Pages.** The site is the showcase: `make site` builds an index, written
   as a Dossier brief in `docs/site`, and the seven examples. The page 0.7.0
   led with, the winter crossing brainstorm, is now a test fixture and still
