@@ -33,10 +33,9 @@ out every step.
   trusted publishing cannot make a first publish. A granular token in the
   `NPM_TOKEN` repository secret published those seven at 0.7.0, and the
   launcher, set up for trusted publishing since 0.6, published through it.
-  Still to do, on npmjs.com and Kyle's: add a trusted publisher to each of
-  the seven (repository `kylebegeman/dossier`, workflow `release.yml`, no
-  environment), then revoke the token and delete the secret. Until then each
-  release publishes them with the token.
+  After 0.7.1, which still published those seven with the token, Kyle
+  added their trusted publishers as "Moving packages to trusted publishing"
+  below says, and the token and its secret go.
 - **Pages.** The site is the showcase: `make site` builds an index, written
   as a Dossier brief in `docs/site`, and the seven examples. The page 0.7.0
   led with, the winter crossing brainstorm, is now a test fixture and still
@@ -64,6 +63,10 @@ out every step.
    packages with provenance; and the Homebrew tap's first pull request,
    merged after its test-bot passed on macOS and Linux. An install from npm
    rendered a page.
+5. **0.7.1 shipped** on 2026-09-17 (UTC) the same way, after Kyle called it:
+   `release/0.7.1` passed CI, `master` moved to it, and the `v0.7.1` tag
+   published the release, the eight npm packages, and the release page. The
+   tap's second pull request brought the formula to 0.7.1.
 
 ## Releasing a version
 
@@ -83,3 +86,34 @@ out every step.
 4. Without a tap token, open a pull request on `kylebegeman/homebrew-tap`
    that replaces `Formula/dossier.rb` with the `dossier.rb` release asset;
    the tap's test-bot checks it before merge.
+5. Once npm serves the new version, install the launcher and the React
+   package from npm in an empty directory and render a page, and check the
+   live site.
+
+## Moving packages to trusted publishing
+
+npm lets a package trust this repository's release workflow instead of a
+token, and the npm CLI in `release.yml` uses trusted publishing first
+wherever it is set up, so the steps can be taken before or between
+releases. For each package still publishing with the token
+(`@kylebegeman/dossier-react` and the six `@kylebegeman/dossier-<os>-<arch>`
+platform packages), signed in to npmjs.com as the owner:
+
+1. Open the package's **Settings** tab,
+   `https://www.npmjs.com/package/<name>/access`.
+2. Under **Trusted publishing**, choose **Select your publisher**, then
+   **GitHub Actions**.
+3. Enter **Organization or user** `kylebegeman`, **Repository** `dossier`,
+   and **Workflow filename** `release.yml`, and leave **Environment name**
+   empty. The values are case-sensitive, and `@kylebegeman/dossier` shows
+   them already set.
+4. Under **Allowed actions**, allow direct `npm publish`. Publishers created
+   after 2026-09-03 allow only `npm stage publish` unless told otherwise,
+   and the workflow runs `npm publish`.
+5. Save, confirming with two-factor authentication if asked.
+
+After the next release, `npm view <name>@<version> _npmUser.name` reads
+`GitHub Actions` for every package. Then revoke the granular token under
+**Access Tokens**, delete the `NPM_TOKEN` repository secret, and on each of
+the eight packages choose **Settings → Publishing access → Require
+two-factor authentication and disallow tokens**.
