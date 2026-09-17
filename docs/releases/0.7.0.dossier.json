@@ -1,0 +1,199 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Dossier 0.7.0",
+    "slug": "release-0-7-0",
+    "kicker": "Dossier releases",
+    "emphasis": "0.7.0",
+    "lede": "Dossier rebuilt as one Go binary, with six designed kinds, verdicts, search, diagrams, a studio, and a new showcase. Every gate passed, and the call is ship.",
+    "updated": "2026-09-16",
+    "status": "shipped",
+    "facts": [
+      {
+        "label": "platforms",
+        "value": "6"
+      },
+      {
+        "label": "npm packages",
+        "value": "8"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "ships",
+      "title": "What ships",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7 replaces the Node generator with a single CGO-free Go binary built around five concepts: kind, section, item, facet, and decisions. It installs through Homebrew, npm, or an archive, and every 0.6 document still builds."
+        },
+        {
+          "type": "table",
+          "title": "Highlights",
+          "columns": [
+            "Area",
+            "What changed"
+          ],
+          "rows": [
+            [
+              "Kinds",
+              "Six designed kinds (brainstorm, plan, review, release, incident, and brief) each carry their own fields, facets, sections, and way to decide. Teams add their own with `--kinds DIR`."
+            ],
+            [
+              "Deciding",
+              "Picks, verdicts, and a document choice all write one reply line, which `dossier decisions apply` reads back into the model."
+            ],
+            [
+              "The page",
+              "Search, verdicts from the keyboard, one brand color, timelines, charts, and diagrams laid out as SVG at build time, with no external requests."
+            ],
+            [
+              "Studio",
+              "`dossier serve` edits the page in place as drafts, keeps decisions in SQLite in step across tabs, and edits the model as JSON in CodeMirror."
+            ],
+            [
+              "Agents",
+              "One command catalog projects to the CLI, an MCP server, and a generated skill, all answering one result envelope."
+            ],
+            [
+              "0.6 documents",
+              "They validate and build with a warning per old block, and `dossier upgrade` maps them onto the new kinds."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "title": "Gates",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "go-checks",
+            "title": "Go checks",
+            "summary": "Formatting, vet, staticcheck, errcheck, the race-enabled tests, and a CGO-free build all passed.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make check` in `core`, which also drift-checks generated code and the vendored Graphviz."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every package passed, with the reader at 19.2 KB of its 20 KB budget and the stylesheet at 29.1 KB of 30."
+              }
+            ]
+          },
+          {
+            "id": "showcase",
+            "title": "Showcase fixtures",
+            "summary": "All seven example documents build with no warnings and match their HTML and Markdown goldens.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestExamples` and `TestExampleReplies` build the showcase the way a reader gets it and paste a reply into each decision document."
+              },
+              {
+                "label": "Result",
+                "markdown": "Seven documents, six kinds, no warnings, and the largest page under 100 KB of its 120 KB budget."
+              }
+            ]
+          },
+          {
+            "id": "legacy",
+            "title": "0.6 imports",
+            "summary": "All 17 legacy fixtures upgrade to models that pass the strict 0.7 checks.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestLegacyFixtures` upgrades each 0.6 document and compares it with its golden."
+              },
+              {
+                "label": "Result",
+                "markdown": "17 of 17 upgrade strictly onto their kinds' vocabularies."
+              }
+            ]
+          },
+          {
+            "id": "react",
+            "title": "React package tests",
+            "summary": "The wrapper renders through the binary and reads reader messages, verdicts included.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`npm test` in `packages/react`, including the reply cases shared with the Go parser."
+              },
+              {
+                "label": "Result",
+                "markdown": "10 of 10 tests passed."
+              }
+            ]
+          },
+          {
+            "id": "distribution",
+            "title": "Distribution dry run",
+            "summary": "Six archives, their checksums, the Homebrew formula, and seven npm packages build and install.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make dist-check` cross-compiles every target, runs the formula's test commands on an archive, and installs the npm packages from tarballs."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every check printed ok, and each archive carries `THIRD_PARTY_NOTICES.md`."
+              }
+            ]
+          },
+          {
+            "id": "browser",
+            "title": "Reader and studio in a browser",
+            "summary": "Every page in light, dark, and at phone width, and every studio tool, worked by hand.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "The manual QA guide: search, picks, keyboard verdicts, the ship warning, two-tab sync, reply import, facets, conflicts, the accent, and the Model JSON editor."
+              },
+              {
+                "label": "Result",
+                "markdown": "All passed. A framed page reported its verdicts, and the React package accepted the message."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.0 replaces the 0.6 npm package's JavaScript API with the binary. A project that needs 0.6 pins it, and 0.6 documents build on either version."
+        },
+        {
+          "type": "code",
+          "title": "Stay on 0.6",
+          "lang": "sh",
+          "code": "npm install --save-dev @kylebegeman/dossier@0.6.7"
+        }
+      ]
+    }
+  ],
+  "decisions": {
+    "path": "ship"
+  }
+}
