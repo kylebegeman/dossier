@@ -29,7 +29,7 @@ for the layout map and rules, and
 | Change what the studio stores | a new migration in `internal/store/migrations`, queries in `internal/store/queries`, then `make generate` |
 | Change the React wrapper | `../packages/react/src`; `npm test` there builds the binary and renders through it |
 | Change what a release ships | `internal/release`; `make dist-check` dry-runs everything, third-party notices included |
-| Refresh the README images | `node docs/assets/readme/capture/capture.mjs` from the repository root after a page changes; it runs `make site` and rewrites the images in `../docs/assets/readme`, and `--out DIR` compares with them instead |
+| Refresh the README images | `node ../docs/assets/readme/capture/capture.mjs` after a page changes, from any directory; it runs `make site` and rewrites the images in `../docs/assets/readme`, and `--out DIR` writes elsewhere and compares with them |
 | Release a version | "Releasing a version" in `../docs/product/rebuild/cutover.md`; a `v*` tag runs `../.github/workflows/release.yml` |
 | Verify a change | `make check` |
 

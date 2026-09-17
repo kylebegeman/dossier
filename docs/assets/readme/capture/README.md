@@ -1,7 +1,7 @@
 # README image capture
 
 The images one folder up are captures of the built showcase. After a page
-changes, refresh them from the repository root:
+changes, refresh them; the script works from any directory:
 
 ```sh
 node docs/assets/readme/capture/capture.mjs
@@ -9,8 +9,11 @@ node docs/assets/readme/capture/capture.mjs
 
 It runs `make site` in `core`, captures each page in headless Chrome in light
 and dark, frames the captures, and writes lossless WebP and the deciding GIF
-back into `docs/assets/readme`. Name sets to refresh only some of them:
-`hero`, `kinds`, `loop`, `decide`, `phones`, and `studio`.
+back into `docs/assets/readme`, replacing nothing there until every capture
+has succeeded. Name sets to refresh only some of them: `hero`, `kinds`,
+`loop`, `decide`, `phones`, and `studio`. `--site DIR` uses a site already
+built, `--bin PATH` a binary already built for the studio set, and `--keep`
+leaves the raw captures in the printed work directory.
 
 To check a change without touching the committed images, write them
 elsewhere. The run ends with each image's size beside the committed one and

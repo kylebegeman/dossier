@@ -75,11 +75,10 @@ export async function launch() {
   const ws = new WebSocket(url);
   await new Promise((resolve, reject) => { ws.addEventListener("open", resolve, { once: true }); ws.addEventListener("error", reject, { once: true }); });
   let id = 0;
-  const waiting = new Map(), listeners = [];
+  const waiting = new Map();
   ws.addEventListener("message", (m) => {
     const msg = JSON.parse(m.data);
-    if (msg.id && waiting.has(msg.id)) { waiting.get(msg.id)(msg); waiting.delete(msg.id); return; }
-    for (const l of listeners) l(msg);
+    if (msg.id && waiting.has(msg.id)) { waiting.get(msg.id)(msg); waiting.delete(msg.id); }
   });
   const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => {
     const n = ++id;
@@ -96,13 +95,22 @@ export async function launch() {
     await s("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: scale, mobile });
     await s("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
     const page = {
+      // goto navigates and waits for the document it asked for to finish
+      // loading. It marks the document it leaves, so a reload of the same
+      // address is waited for too, and it does not trust whichever load
+      // event comes first, which under load can be the tab's own
+      // about:blank. A navigation that fails is an error, so a missing page
+      // never becomes a capture of Chrome's error page.
       async goto(to) {
-        let loaded = false;
-        const l = (msg) => { if (msg.sessionId === sessionId && msg.method === "Page.loadEventFired") loaded = true; };
-        listeners.push(l);
-        await s("Page.navigate", { url: to });
-        for (let i = 0; i < 150 && !loaded; i++) await sleep(100);
-        listeners.splice(listeners.indexOf(l), 1);
+        await s("Runtime.evaluate", { expression: "window.__leaving = true" });
+        const nav = await s("Page.navigate", { url: to });
+        if (nav.errorText) throw new Error(`${to}: ${nav.errorText}`);
+        const ready = `!window.__leaving && location.href === ${JSON.stringify(new URL(to).href)} && document.readyState === "complete"`;
+        for (let i = 0; i < 300; i++) {
+          const r = await s("Runtime.evaluate", { expression: ready, returnByValue: true });
+          if (r.result && r.result.value === true) break;
+          await sleep(50);
+        }
         await s("Runtime.evaluate", { expression: "document.documentElement.style.scrollBehavior = 'auto'; document.fonts && document.fonts.ready", awaitPromise: true });
         await sleep(300);
       },

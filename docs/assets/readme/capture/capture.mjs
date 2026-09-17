@@ -5,9 +5,10 @@
 // It runs `make site` in core (unless --site names a site already built),
 // captures the pages in headless Chrome in light and dark, frames them, and
 // writes lossless WebP (cwebp) and GIF (ffmpeg) into --out, which is
-// docs/assets/readme unless given. Sets pick a subset: hero, kinds, loop,
-// decide, phones, studio. With --out anywhere else, it ends by comparing
-// each image with the committed one: dimensions, and how many pixels differ.
+// docs/assets/readme unless given, replacing nothing there until every
+// capture has succeeded. Sets pick a subset: hero, kinds, loop, decide,
+// phones, studio. With --out anywhere else, it ends by comparing each image
+// with the committed one: dimensions, and how many pixels differ.
 // The studio set builds the binary (or uses --bin) and serves a copy of the
 // review on a free port for the length of the capture. --keep leaves the
 // raw captures in the printed work directory.
@@ -46,11 +47,14 @@ if (!siteOption) execFileSync("make", ["-s", "site"], { cwd: core, stdio: ["igno
 const site = resolve(siteOption ?? join(repo, "site"));
 const work = mkdtempSync(join(tmpdir(), "dossier-capture-"));
 atExit(() => { if (keep) console.log(`raw captures kept in ${work}`); else rmSync(work, { recursive: true, force: true }); });
+// Finished images wait here and move to out together at the end.
+const staged = join(work, "images");
+mkdirSync(staged);
 mkdirSync(out, { recursive: true });
 const page = (file) => `file://${join(site, file)}`;
 const written = [];
 const webp = (png, name) => {
-  const dest = join(out, name);
+  const dest = join(staged, name);
   execFileSync("cwebp", ["-quiet", "-lossless", "-z", "9", png, "-o", dest]);
   written.push(dest);
 };
@@ -205,7 +209,7 @@ async function captureDecide(browser) {
     // Each step holds long enough to read, the last one longest.
     const list = join(work, `decide-${scheme}.txt`);
     writeFileSync(list, frames.map((f, i) => `file '${f}'\nduration ${holds[i]}`).join("\n") + `\nfile '${frames[frames.length - 1]}'\n`);
-    const dest = join(out, `decide-${scheme}.gif`);
+    const dest = join(staged, `decide-${scheme}.gif`);
     execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list,
       "-vf", "fps=8,split[a][b];[a]palettegen=max_colors=256:stats_mode=full[p];[b][p]paletteuse=dither=sierra2_4a", "-loop", "0", dest]);
     written.push(dest);
@@ -344,7 +348,7 @@ try {
   if (chosen.includes("studio")) await captureStudio(browser);
   const rows = [];
   for (const file of written) {
-    const name = file.slice(out.length + 1);
+    const name = file.slice(staged.length + 1);
     const [w, h] = dimensions(file);
     const row = [name, `${w}x${h}`];
     if (out !== committed) {
@@ -363,6 +367,7 @@ try {
     }
     rows.push(row);
   }
+  for (const file of written) copyFileSync(file, join(out, file.slice(staged.length + 1)));
   const head = out === committed ? ["image", "size"] : ["image", "size", "committed", "compared"];
   const widths = head.map((_, i) => Math.max(head[i].length, ...rows.map((r) => r[i].length)));
   for (const r of [head, ...rows]) console.log(r.map((c, i) => c.padEnd(widths[i])).join("  "));
