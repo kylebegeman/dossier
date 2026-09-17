@@ -22,7 +22,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.webp">
-  <img alt="A Dossier page titled Ten moves for a calmer winter crossing, with a contents rail grouped as minor and major, counts and an open choice in the masthead, and a map of three ferry routes." src="docs/assets/readme/hero-light.webp">
+  <img alt="A Dossier page titled Ten changes for a steadier booking service, with a contents rail grouped as minor and major, counts and an open choice in the masthead, and a diagram of the path from search to a paid booking." src="docs/assets/readme/hero-light.webp">
 </picture>
 
 ## Why Dossier
@@ -101,14 +101,14 @@ That model builds as it stands. The full document is [core/examples/tide-aware-c
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/decide-dark.gif">
-  <img alt="Deciding a release: choosing Ship raises a warning about the failed Android gate, waiving that gate clears it, and the reply line reads ship, waive 1; rerun 2." src="docs/assets/readme/decide-light.gif">
+  <img alt="Deciding a release: choosing Ship raises a warning about the failed Android gate, waiving that gate clears it, and Your reply fills in as ship, waive 1; rerun 2, with the same said in plain words." src="docs/assets/readme/decide-light.gif">
 </picture>
 
-Each kind decides its own way, and every decision comes back as one line an agent can apply.
+Each kind decides its own way. As the reader decides, the page writes one reply line an agent can apply and says it back in plain words, so the reader knows what they are sending.
 
 | Kind | Items | The reader decides | A reply |
 | --- | --- | --- | --- |
-| `brainstorm` | ideas | Picks, after an optional choice | `storms, 1, 7, 10.` |
+| `brainstorm` | ideas | Picks, after an optional choice | `speed, 1, 2, 7.` |
 | `plan` | steps | Go, revise, or skip | `go 1-4; revise 5; skip 7.` |
 | `review` | findings | Approve or rework, then fix, later, or skip | `rework, fix 1, 2; later 4.` |
 | `release` | gates | Ship or hold, then waive or rerun | `ship, waive 1; rerun 2.` |
@@ -117,13 +117,13 @@ Each kind decides its own way, and every decision comes back as one line an agen
 
 ## Six kinds, one team
 
-The showcase follows Tidewright, an invented four-person team running ferry tickets for the Wenlow Islands. Every page opens live.
+The showcase follows Tidewright, an invented four-person team running ferry tickets for the Wenlow Islands, starting where most agent work starts: in the code. Every page opens live.
 
-### Brainstorm: [Ten moves for a calmer winter crossing](https://kylebegeman.github.io/dossier/winter-crossing.html)
+### Brainstorm: [Ten changes for a steadier booking service](https://kylebegeman.github.io/dossier/booking-service.html)
 
-Ideas grouped by size and picked by number, with a choice to make first.
+Changes an agent found by reading the code, grouped by size and picked by number, with a choice to make first. [Small fixes before the spring timetable](https://kylebegeman.github.io/dossier/spring-fixes.html) is the same kind with no code in it.
 
-<a href="https://kylebegeman.github.io/dossier/winter-crossing.html">
+<a href="https://kylebegeman.github.io/dossier/booking-service.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-brainstorm-dark.webp">
   <img alt="The brainstorm's ideas table: picks, sizes, effort, impact, and dependencies." src="docs/assets/readme/kind-brainstorm-light.webp">
