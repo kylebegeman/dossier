@@ -223,7 +223,8 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - 0.7.0 shipped on 2026-09-17 (UTC): GitHub release, npm, Pages, and the Homebrew tap.
 - 0.7.1 shipped on 2026-09-17 (UTC), once Kyle called it: the reply block became Your reply, calm and compact, with every reply said in plain words by Go and the reader alike, and the showcase now leads with a brainstorm about a codebase while the winter crossing brainstorm became a test fixture. `docs/assets/readme/capture` refreshes the README images.
 - npm publishing moved to trusted publishing for all eight packages after 0.7.1; the token is revoked, its secret deleted, and tokens are disallowed.
-- Next: confirm at the next release that all eight publish as GitHub Actions (`cutover.md`), then Ledger.
+- 0.7.2 shipped on 2026-09-17 (UTC), a maintenance release that proved it: all eight packages published as GitHub Actions.
+- Next: Ledger.
 
 ## Content rules
 

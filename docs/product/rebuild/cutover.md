@@ -68,6 +68,10 @@ out every step.
    `release/0.7.1` passed CI, `master` moved to it, and the `v0.7.1` tag
    published the release, the eight npm packages, and the release page. The
    tap's second pull request brought the formula to 0.7.1.
+6. **0.7.2 shipped** on 2026-09-17 (UTC) as a maintenance release that
+   proved trusted publishing: with no token anywhere, all eight packages
+   published as GitHub Actions. The tap's third pull request brought the
+   formula to 0.7.2.
 
 ## Releasing a version
 
