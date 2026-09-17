@@ -64,7 +64,7 @@ func startWith(t *testing.T, data []byte, kindDirs ...string) *harness {
 	return &harness{t: t, srv: srv, model: path}
 }
 
-const brainstorm = "../../examples/winter-crossing.dossier.json"
+const brainstorm = "../../testdata/fixtures/winter-crossing.dossier.json"
 
 func (h *harness) request(method, path, body string, headers map[string]string) (*http.Response, string) {
 	h.t.Helper()

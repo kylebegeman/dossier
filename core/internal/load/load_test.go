@@ -10,7 +10,7 @@ import (
 )
 
 func TestFileReportsFindingsWarningsAndUpgrades(t *testing.T) {
-	doc, problems, err := File(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
+	doc, problems, err := File(filepath.Join("..", "..", "testdata", "fixtures", "winter-crossing.dossier.json"))
 	if err != nil || len(problems) > 0 {
 		t.Fatalf("brainstorm: %v %v", err, problems)
 	}
@@ -80,7 +80,7 @@ func TestWriteModelIsAtomicAndKeepsMode(t *testing.T) {
 }
 
 func TestAccentTooLightForTextIsAWarning(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "fixtures", "winter-crossing.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

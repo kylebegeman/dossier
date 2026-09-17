@@ -6,7 +6,7 @@
     "slug": "index",
     "kicker": "Dossier 0.7",
     "emphasis": "example",
-    "lede": "Seven documents from one invented ferry ticketing team, covering every kind Dossier ships. Open any of them to read, search, and decide the way a reader would.",
+    "lede": "Seven documents from one invented ferry ticketing team, from a brainstorm about its code to a brief about its riders, covering every kind Dossier ships. Open any of them to read, search, and decide the way a reader would.",
     "status": "live"
   },
   "sections": [
@@ -28,14 +28,14 @@
           ],
           "rows": [
             [
-              "[Ten moves for a calmer winter crossing](winter-crossing.html)",
+              "[Ten changes for a steadier booking service](booking-service.html)",
               "brainstorm",
-              "Answer the choice, pick a few ideas, and copy the reply."
+              "Choose where the cycle starts, pick a few changes, and watch your reply fill in at the bottom."
             ],
             [
               "[Small fixes before the spring timetable](spring-fixes.html)",
               "brainstorm",
-              "Pick by number, then turn on Hide decided."
+              "The same kind with no code in it. Pick by number, then turn on Hide decided."
             ],
             [
               "[Offline boarding passes](offline-boarding-passes.html)",

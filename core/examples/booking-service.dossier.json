@@ -1,0 +1,392 @@
+{
+  "dossier": "1.0",
+  "kind": "brainstorm",
+  "meta": {
+    "title": "Ten changes for a steadier booking service",
+    "slug": "booking-service",
+    "kicker": "Tidewright · tidewright/booking",
+    "emphasis": "steadier",
+    "lede": "Six small changes and four large ones for the booking service, found by reading its code. One choice first: a faster checkout or safer changes. Pick by number.",
+    "updated": "2026-09-16",
+    "status": "for-decision"
+  },
+  "choice": {
+    "question": "Where should this cycle start?",
+    "options": [
+      {
+        "id": "speed",
+        "label": "A faster checkout",
+        "summary": "Cut the round trips and slow calls riders wait through at the Friday peak."
+      },
+      {
+        "id": "safety",
+        "label": "Safer changes",
+        "summary": "Tests, flags, and clear errors, so a change stops breaking checkout."
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "thesis",
+      "title": "Checkout carries the risk",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "The booking service is a Go service over Postgres that the rider app and the harbour office both call. Four people build it, with agents writing most of the code.\n\nThese ideas come from reading all of it: 212 files, about 31,000 lines of Go and SQL, and the last 90 days of traces and incidents. Most of the pain sits on one path, from search to a paid booking, and most incidents began with a change to that path.\n\nEffort is agent time, not calendar time."
+        },
+        {
+          "type": "diagram",
+          "title": "The path from search to a paid booking. Holds live inside one process, and payments retry without a key.",
+          "format": "mermaid",
+          "source": "flowchart LR\n  app[Rider app] --> api[Gateway]\n  api --> search[Search]\n  api --> checkout[Checkout]:::accent\n  search --> fares[Fares]:::violet\n  checkout --> fares\n  checkout --> holds[Seat holds]:::risk\n  checkout --> pay[Payments]:::risk\n  fares --> db[(Postgres)]\n  holds -.-> mem[(In-process map)]:::risk\n  pay -->|retries, no key| card[Card provider]"
+        }
+      ]
+    },
+    {
+      "id": "slow",
+      "title": "Where checkout slows down",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "At the Friday evening peak, a booking takes 3.2 seconds from tapping Book to the confirmation, and one attempt in forty times out. Payments and fares account for most of the wait."
+        },
+        {
+          "type": "chart",
+          "title": "Median milliseconds per checkout step, Friday evening peak",
+          "variant": "bar",
+          "data": [
+            {
+              "label": "Search",
+              "value": 240
+            },
+            {
+              "label": "Fares",
+              "value": 720
+            },
+            {
+              "label": "Hold",
+              "value": 380
+            },
+            {
+              "label": "Payment",
+              "value": 1640
+            },
+            {
+              "label": "Confirm",
+              "value": 220
+            }
+          ]
+        },
+        {
+          "type": "code",
+          "title": "fares/quote.go: one query for every leg of the trip",
+          "lang": "go",
+          "code": "func (q *Quoter) Quote(ctx context.Context, legs []Leg) (Quote, error) {\n\tvar total Money\n\tfor _, leg := range legs {\n\t\tfare, err := q.store.FareFor(ctx, leg.RouteID, leg.Class)\n\t\tif err != nil {\n\t\t\treturn Quote{}, err\n\t\t}\n\t\ttotal = total.Add(fare.Price(leg.Party))\n\t}\n\treturn Quote{Total: total}, nil\n}"
+        },
+        {
+          "type": "spec",
+          "spec": [
+            {
+              "label": "3.2 seconds",
+              "text": "Median from Book to the confirmation at the Friday peak."
+            },
+            {
+              "label": "1 in 40",
+              "text": "Checkout attempts that time out at the same peak."
+            },
+            {
+              "label": "7 of 11",
+              "text": "Incidents in 90 days that began with a change to checkout."
+            },
+            {
+              "label": "No tests",
+              "text": "Cover the payment retry path or the seat hold expiry."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "risk",
+          "title": "A retry can charge twice",
+          "markdown": "When the card provider is slow, checkout retries the charge without an idempotency key. Twice in 90 days a rider paid twice for one booking. Idea 2 closes this whichever way the cycle goes."
+        }
+      ]
+    },
+    {
+      "id": "ideas",
+      "title": "Ideas",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "fares-batch",
+            "title": "Quote every leg in one query",
+            "summary": "Fares for a whole trip load in one query instead of one per leg, which removes most of the wait in the fares step.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "`FareFor` becomes `FaresFor` in `fares/store.go`, and `Quote` reads from the map it returns:\n\n```postgresql\nSELECT route_id, class, price FROM fares\nWHERE (route_id, class) IN (SELECT * FROM unnest($1::text[], $2::text[]))\n```"
+              },
+              {
+                "label": "Why",
+                "markdown": "Fares is the second slowest step, and almost all of it is round trips. A return trip for a family of four makes eight queries today."
+              },
+              {
+                "label": "In use",
+                "markdown": "The trace for a return booking shows one fares query, and the step drops to about 90 ms."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "Idea 7 caches the same map."
+              }
+            ]
+          },
+          {
+            "id": "idempotent-pay",
+            "title": "An idempotency key on every charge",
+            "summary": "Each checkout sends one key with its charge and every retry, so a slow card provider can never charge a rider twice.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 5,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Checkout makes one key for each payment, stores it on the booking row, and `payments/charge.go` sends it as `Idempotency-Key` on the first call and on every retry."
+              },
+              {
+                "label": "Why",
+                "markdown": "Two riders were charged twice in 90 days, both after a provider timeout, and each refund took the harbour office 25 minutes."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "Idea 9 reuses the key to refund exactly once."
+              },
+              {
+                "label": "Risk",
+                "markdown": "A key kept only in memory is lost on a restart mid-checkout, which is why it lives on the booking row."
+              }
+            ]
+          },
+          {
+            "id": "pay-errors",
+            "title": "Typed errors from the payments client",
+            "summary": "The payments client returns declined, retryable, and fatal errors as values the caller can test, not messages it has to match.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "`payments/client.go` wraps provider codes in `ErrDeclined`, `ErrRetryable`, and `ErrFatal`. Checkout switches on `errors.Is` instead of `strings.Contains(err.Error(), \"timeout\")`."
+              },
+              {
+                "label": "Why",
+                "markdown": "Three incidents started when the provider reworded an error message. With types, the compiler and the tests catch that instead of riders."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "Ideas 2 and 9 retry only `ErrRetryable`."
+              }
+            ]
+          },
+          {
+            "id": "request-ids",
+            "title": "One request id in every log line",
+            "summary": "A request id from the gateway reaches every log line and outgoing call, so one checkout reads as one story.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Middleware in `api/middleware.go` puts the id in the context, `internal/log` adds it to every line, and the fares and payments clients forward it as `X-Request-Id`."
+              },
+              {
+                "label": "Why",
+                "markdown": "Following a failed checkout today means matching timestamps across four logs. It took two hours in the last incident."
+              },
+              {
+                "label": "In use",
+                "markdown": "Searching the logs for one id shows the whole booking, from search to the card provider's answer."
+              }
+            ]
+          },
+          {
+            "id": "contract-tests",
+            "title": "Contract tests for the fares API",
+            "summary": "Recorded app requests pin what the rider app expects from the fares endpoint, so CI fails before a change breaks the app.",
+            "size": "minor",
+            "effort": "M",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "`fares/contract_test.go` replays the app's recorded requests from `testdata/app-fares/` against the handler and compares every response field by name and type."
+              },
+              {
+                "label": "Why",
+                "markdown": "Two releases broke the app by renaming a fares field, and both passed every test the service had."
+              },
+              {
+                "label": "Note",
+                "markdown": "The app team records new requests with one command when the app changes."
+              }
+            ]
+          },
+          {
+            "id": "release-holds",
+            "title": "Free seat holds when checkout gives up",
+            "summary": "A failed or abandoned checkout frees its held spaces at once instead of waiting fifteen minutes for them to expire.",
+            "size": "minor",
+            "effort": "S",
+            "impact": 3,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Checkout's error path and the app's back button call `holds.Release`. Expiry stays as the backstop for a rider who closes the app."
+              },
+              {
+                "label": "Why",
+                "markdown": "At the peak, abandoned holds keep up to 30 car spaces off sale, and riders see a sailing as full when it is not."
+              }
+            ]
+          },
+          {
+            "id": "quote-cache",
+            "title": "Cache quotes for thirty seconds",
+            "summary": "Search, the trip screen, and checkout share one short-lived quote, so a rider's fare is worked out once per trip.",
+            "size": "major",
+            "effort": "M",
+            "impact": 4,
+            "dependsOn": [
+              "fares-batch"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "`fares/cache.go` keys quotes by route, date, class, and party, keeps them for 30 seconds, and drops them all when fares change by bumping a version."
+              },
+              {
+                "label": "Why",
+                "markdown": "A rider sees the same quote on three screens, and each screen asks for it again. At the peak that is a third of all fares queries."
+              },
+              {
+                "label": "Risk",
+                "markdown": "A stale price must never reach payment. Checkout checks the fares version again before it charges and requotes if it moved."
+              }
+            ]
+          },
+          {
+            "id": "hold-leases",
+            "title": "Seat holds in a lease table",
+            "summary": "Holds move from a map inside one process to a Postgres table, so deploys keep them and two instances can take bookings.",
+            "size": "major",
+            "effort": "L",
+            "impact": 5,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A `hold_leases` table with a unique index on sailing and space. Holds are taken with `INSERT ... ON CONFLICT DO NOTHING` and swept when they expire, and `holds/holds.go` keeps its interface."
+              },
+              {
+                "label": "Why",
+                "markdown": "Holds live in memory today, so the service cannot run a second instance, and every deploy drops the holds of riders mid-checkout."
+              },
+              {
+                "label": "In use",
+                "markdown": "A deploy at the Friday peak goes unnoticed, and the gateway spreads checkouts across two instances."
+              },
+              {
+                "label": "Unlocks",
+                "markdown": "A second instance at the Friday peak, which halves the queue in front of every checkout step."
+              },
+              {
+                "label": "Risk",
+                "markdown": "A mistake here double books car spaces. Run both stores side by side for a week and compare every hold before switching."
+              }
+            ]
+          },
+          {
+            "id": "refund-queue",
+            "title": "Refunds on a queue with retries",
+            "summary": "Refunds leave the request path for a worker that retries with backoff and records every attempt.",
+            "size": "major",
+            "effort": "L",
+            "impact": 4,
+            "dependsOn": [
+              "idempotent-pay",
+              "pay-errors"
+            ],
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "Cancelling a booking writes a `refund_jobs` row. A worker in `refunds/worker.go` sends it with the charge's key and retries `ErrRetryable` with backoff."
+              },
+              {
+                "label": "Why",
+                "markdown": "A slow refund holds the cancel screen for up to 20 seconds today, and a failed one is lost unless the rider calls."
+              },
+              {
+                "label": "Risk",
+                "markdown": "A stuck queue delays refunds without a sound. Alert when the oldest job is more than ten minutes old."
+              }
+            ]
+          },
+          {
+            "id": "checkout-flags",
+            "title": "Ship checkout changes behind flags",
+            "summary": "A checkout change can go out switched off, reach a share of riders, and be turned off again without a rollback.",
+            "size": "major",
+            "effort": "M",
+            "impact": 4,
+            "facets": [
+              {
+                "label": "How it works",
+                "markdown": "A small flag store in `internal/flags`, read from Postgres every 30 seconds and checked in `checkout/handler.go`, plus a `flags` command for the team."
+              },
+              {
+                "label": "Why",
+                "markdown": "Seven of the last eleven incidents began with a checkout change, and each one took a full rollback to undo."
+              },
+              {
+                "label": "In use",
+                "markdown": "A new payment screen reaches 5% of riders on Monday, half on Wednesday, and everyone once its error rate holds."
+              },
+              {
+                "label": "Risk",
+                "markdown": "Old flags pile up. Each flag gets an owner and a removal date when it is added."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "also",
+      "title": "Also considered",
+      "board": {
+        "layout": "rows",
+        "items": [
+          {
+            "id": "rewrite-rust",
+            "title": "Rewrite checkout in Rust",
+            "summary": "The time goes to round trips and the card provider, not to Go, so a rewrite would move none of it."
+          },
+          {
+            "id": "microservices",
+            "title": "Split booking into microservices",
+            "summary": "Four people run this, and more services would add the very network hops that slow checkout."
+          },
+          {
+            "id": "graphql",
+            "title": "A GraphQL gateway for the apps",
+            "summary": "The app's calls are few and cheap, and idea 7 removes the repeated ones."
+          }
+        ]
+      }
+    }
+  ]
+}

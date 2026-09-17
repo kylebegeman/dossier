@@ -17,12 +17,12 @@ import (
 	"dossier/internal/schema"
 )
 
-// copyExample copies the flagship model and its figure into a fresh
-// directory, so builds there are clean.
+// copyExample copies the winter crossing fixture and its figure into a
+// fresh directory, so builds there are clean.
 func copyExample(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "fixtures", "winter-crossing.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func copyExample(t *testing.T) string {
 	if err := os.WriteFile(path, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	figure, err := os.ReadFile(filepath.Join("..", "..", "examples", "assets", "wenlow-routes.svg"))
+	figure, err := os.ReadFile(filepath.Join("..", "..", "testdata", "fixtures", "assets", "wenlow-routes.svg"))
 	if err != nil {
 		t.Fatal(err)
 	}

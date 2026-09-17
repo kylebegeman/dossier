@@ -90,7 +90,7 @@ func TestExamples(t *testing.T) {
 // model still validates without warnings.
 func TestExampleReplies(t *testing.T) {
 	for name, c := range map[string]struct{ reply, want string }{
-		"winter-crossing":          {"storms, 1, 7, 10. Notes: 7: the operator confirms each warning.", "storms, 1, 7, 10. Notes: 7: the operator confirms each warning."},
+		"booking-service":          {"safety, 10, 2, 3. Notes: 10: start with the payment screen.", "safety, 2, 3, 10. Notes: 10: start with the payment screen."},
 		"spring-fixes":             {"5, 1, 2", "1, 2, 5."},
 		"offline-boarding-passes":  {"go 1-4; revise 5; skip 7. Notes: 5: queue on the SD card.", "go 1, 2, 3, 4; revise 5; skip 7. Notes: 5: queue on the SD card."},
 		"tide-aware-cancellations": {"rework, 1-3; later 4, 5; skip 6", "rework, fix 1, 2, 3; later 4, 5; skip 6."},

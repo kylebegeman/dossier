@@ -34,10 +34,12 @@ dist-check: dist
 	go run ./cmd/dossier-release check --out dist
 
 # site builds the Pages site into ../site: the index in ../docs/site and every
-# showcase document, the way .github/workflows/pages.yml publishes it.
+# showcase document, the way .github/workflows/pages.yml publishes it. The
+# winter crossing brainstorm led the 0.7.0 showcase and is now a test
+# fixture; it still builds, unlisted, so links to it keep working.
 site:
 	rm -rf ../site
-	go run ./cmd/dossier build ../docs/site/index.dossier.json examples/*.dossier.json --out ../site
+	go run ./cmd/dossier build ../docs/site/index.dossier.json examples/*.dossier.json testdata/fixtures/winter-crossing.dossier.json --out ../site
 	touch ../site/.nojekyll
 
 clean:

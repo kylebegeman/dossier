@@ -21,7 +21,7 @@ Dossier turns **one JSON model** into **one self-contained HTML file**: no serve
 
 ## Replies
 
-A reply is one line: the choice when there is one, then picks or verdict groups by item number, then notes. `storms, 1, 3. Notes: 3: keep blue.` picks ideas 1 and 3. `rework, fix 1, 2; later 4; skip 6.` rules on review findings. Numbers without a verdict take the kind's default, `2-4` is a range, and `all` (or `rest`) covers every item not named elsewhere. `nothing` decides nothing. `dossier decisions apply` explains any reply it cannot read and names the words it accepts.
+A reply is one line: the choice when there is one, then picks or verdict groups by item number, then notes. `speed, 1, 3. Notes: 3: keep it small.` picks ideas 1 and 3. `rework, fix 1, 2; later 4; skip 6.` rules on review findings. Numbers without a verdict take the kind's default, `2-4` is a range, and `all` (or `rest`) covers every item not named elsewhere. `nothing` decides nothing. `dossier decisions apply` explains any reply it cannot read and names the words it accepts.
 
 ## Kinds
 
@@ -156,7 +156,7 @@ Pass `--json` to any command for the `dossier.result/v1` envelope: `outcome` is 
 | `dossier upgrade FILES... [--out OUT]` | Write 0.6 documents as 0.7 models, in place or into --out; 0.7 models are left alone. | `files` (required): one or more model files; `out`: Directory for the upgraded models; default replaces each source |
 | `dossier serve MODEL [--db DB] [--host HOST] [--open] [--port PORT]` | Run the local studio for one model: live reload, in-place edits kept as drafts, and the reader's decisions kept in a SQLite store beside the model. | `db`: SQLite store; default is the model's name with .db; `host`: Loopback host to bind; default 127.0.0.1; `model` (required); `open`: Open the studio in the default browser; `port`: Port to bind; default 4321, 0 picks a free one |
 | `dossier decisions read MODEL [--out OUT]` | Read a model's decisions as a decisions document, optionally writing it to a file. | `model` (required); `out`: Write the decisions document here, .md or .json |
-| `dossier decisions apply MODEL [--decisions DECISIONS] [--from FROM] [--out OUT] [--reply REPLY]` | Apply a reply line or a decisions document to a model and write the model back. | `decisions`: Also write the decisions document here; `from`: A decisions document, .md or .json; `model` (required); `out`: Write the updated model here instead of in place; `reply`: A reply line in the kind's form, such as "storms, 1, 3. Notes: 3: keep blue." or "rework, fix 1, 2; later 4." |
+| `dossier decisions apply MODEL [--decisions DECISIONS] [--from FROM] [--out OUT] [--reply REPLY]` | Apply a reply line or a decisions document to a model and write the model back. | `decisions`: Also write the decisions document here; `from`: A decisions document, .md or .json; `model` (required); `out`: Write the updated model here instead of in place; `reply`: A reply line in the kind's form, such as "speed, 1, 3. Notes: 3: keep it small." or "rework, fix 1, 2; later 4." |
 
 `dossier mcp` serves the same commands as MCP tools over stdio, named `build`, `decisions_apply`, `decisions_read`, `describe`, `init`, `upgrade`, `validate`, with the parameters above as their input schema and the same envelope as their answer.
 

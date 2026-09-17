@@ -96,7 +96,7 @@ func Skill() ([]byte, error) {
 	w("- **Facet** is a labeled Markdown body on an item. Labels come from the kind, in its order; required facets must be present.\n")
 	w("- **Decision** is the only state: the option chosen, picked ids or verdicts by id, and notes by id. A kind may ask one question first, and a document's top-level `choice` (a question and two to six options with one-word ids) replaces it.\n\n")
 	w("## Replies\n\n")
-	w("A reply is one line: the choice when there is one, then picks or verdict groups by item number, then notes. `storms, 1, 3. Notes: 3: keep blue.` picks ideas 1 and 3. `rework, fix 1, 2; later 4; skip 6.` rules on review findings. Numbers without a verdict take the kind's default, `2-4` is a range, and `all` (or `rest`) covers every item not named elsewhere. `nothing` decides nothing. `dossier decisions apply` explains any reply it cannot read and names the words it accepts.\n\n")
+	w("A reply is one line: the choice when there is one, then picks or verdict groups by item number, then notes. `speed, 1, 3. Notes: 3: keep it small.` picks ideas 1 and 3. `rework, fix 1, 2; later 4; skip 6.` rules on review findings. Numbers without a verdict take the kind's default, `2-4` is a range, and `all` (or `rest`) covers every item not named elsewhere. `nothing` decides nothing. `dossier decisions apply` explains any reply it cannot read and names the words it accepts.\n\n")
 
 	w("## Kinds\n\n")
 	w("Run `dossier describe --json` for the full presets. `*` marks a required facet.\n\n")

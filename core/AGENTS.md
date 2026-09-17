@@ -30,8 +30,12 @@ module follows its toolchain, HTTP, and view rules and records divergences here.
 - the studio store (goose migrations, sqlc queries): `internal/store`
 - release builds, dry runs, and third-party notices: `internal/release`,
   `cmd/dossier-release`, licenses in `third_party/licenses`
-- the showcase, one team's document for every kind, and a custom kind:
-  `examples`, `examples/kinds`
+- the showcase, one team's documents for every kind led by a brainstorm
+  about its code, and a custom kind: `examples`, `examples/kinds`
+- test fixtures: `testdata/fixtures` (the winter crossing brainstorm, with
+  a figure, a chart, a document choice, and rows, which the render, doors,
+  studio, load, schema, and React tests share; `make site` also builds it,
+  unlisted, because 0.7.0 linked to it)
 - goldens: `testdata/examples` (full builds of the showcase),
   `testdata/legacy` (0.6 imports), `testdata/diagrams` (Mermaid to DOT),
   `testdata/replies.json` (reply lines and their plain words, cases the

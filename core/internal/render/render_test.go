@@ -13,9 +13,12 @@ import (
 	"dossier/internal/model"
 )
 
-func loadExample(t *testing.T, name string) (*model.Document, kinds.Kind) {
+// loadFixture reads a checked model from testdata/fixtures: the winter
+// crossing brainstorm, which carries a figure, a chart, a document choice,
+// and a rows board, is the one most tests here render.
+func loadFixture(t *testing.T, name string) (*model.Document, kinds.Kind) {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", name))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "fixtures", name))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,8 +49,8 @@ func TestBudgets(t *testing.T) {
 	}
 }
 
-func TestRenderFlagship(t *testing.T) {
-	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+func TestRenderBrainstormFixture(t *testing.T) {
+	doc, kind := loadFixture(t, "winter-crossing.dossier.json")
 	html, err := Render(doc, kind)
 	if err != nil {
 		t.Fatal(err)
@@ -278,7 +281,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 }
 
 func TestRenderIsDeterministic(t *testing.T) {
-	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+	doc, kind := loadFixture(t, "winter-crossing.dossier.json")
 	a, err := Render(doc, kind)
 	if err != nil {
 		t.Fatal(err)
@@ -446,7 +449,7 @@ func TestGoldenShowcase(t *testing.T) {
 }
 
 func TestStudioMarksEditableFieldsAndInjectsFirst(t *testing.T) {
-	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+	doc, kind := loadFixture(t, "winter-crossing.dossier.json")
 	html, err := RenderWith(doc, kind, Options{Studio: &Studio{Inject: `<script id="studio-probe"></script>`}})
 	if err != nil {
 		t.Fatal(err)
@@ -583,7 +586,7 @@ func ideas(n int) *model.Document {
 }
 
 func TestAccentAddsTheDerivedPalette(t *testing.T) {
-	doc, kind := loadExample(t, "winter-crossing.dossier.json")
+	doc, kind := loadFixture(t, "winter-crossing.dossier.json")
 	plain, err := Render(doc, kind)
 	if err != nil {
 		t.Fatal(err)

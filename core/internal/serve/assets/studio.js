@@ -145,7 +145,7 @@
 
   /* import: a reply line or decisions document someone sent back */
   function openImport() {
-    const area = h("textarea", { class: "studio-input", rows: 4, spellcheck: "false", "aria-label": "Reply or decisions document", placeholder: "storms, 1, 3. Notes: 3: keep blue." });
+    const area = h("textarea", { class: "studio-input", rows: 4, spellcheck: "false", "aria-label": "Reply or decisions document", placeholder: "speed, 1, 3. Notes: 3: keep it small." });
     const foot = h("footer", { role: "status", "aria-live": "polite" }, "Paste the line the reader sent, or a decisions document. It replaces the stored decisions.");
     const dialog = h("dialog", { class: "studio-dialog studio-small", "aria-label": "Import a reply" },
       h("div", null,

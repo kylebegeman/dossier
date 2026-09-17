@@ -209,7 +209,7 @@ func copyMap(m map[string]string) map[string]string {
 // ReplyLine renders the canonical reply: the choice, then picks or verdict
 // groups in the kind's verdict order with ascending numbers, then notes.
 //
-//	storms, 1, 3. Notes: 3: keep the blue accent.
+//	speed, 1, 3. Notes: 3: keep it small.
 //	rework, fix 1, 2; later 4. Notes: 4: after the release.
 //
 // The reader writes exactly the same line; a shared test holds them together.

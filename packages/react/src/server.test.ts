@@ -25,8 +25,9 @@ after(() => {
 });
 
 test("renders a typed model to the artifact", async () => {
-  const model = JSON.parse(readFileSync(join(core, "examples", "winter-crossing.dossier.json"), "utf8")) as DossierModel;
-  const result = await renderDossier(model, { bin, base: join(core, "examples") });
+  const fixtures = join(core, "testdata", "fixtures");
+  const model = JSON.parse(readFileSync(join(fixtures, "winter-crossing.dossier.json"), "utf8")) as DossierModel;
+  const result = await renderDossier(model, { bin, base: fixtures });
   assert.equal(result.slug, "winter-crossing");
   assert.ok(result.html.includes("data:image/svg+xml;base64,"), "the figure is inlined from base");
   assert.match(result.html, /^<!doctype html>/i);

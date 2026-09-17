@@ -8,7 +8,7 @@ import (
 )
 
 func TestExampleValidates(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "examples", "winter-crossing.dossier.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "fixtures", "winter-crossing.dossier.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -22,8 +22,8 @@ dossier build core/examples/*.dossier.json --md --out /tmp/qa
 
 | Page | Kind | Look for |
 | --- | --- | --- |
-| `winter-crossing.html` | brainstorm | The route figure, the contacts chart, picks, and the storm days or quiet midweeks choice |
-| `spring-fixes.html` | brainstorm | Picks alone, with no choice |
+| `booking-service.html` | brainstorm | The request path diagram, the checkout chart, the Go excerpt, picks, and the faster checkout or safer changes choice |
+| `spring-fixes.html` | brainstorm | The same kind with no code: picks alone, with no choice |
 | `offline-boarding-passes.html` | plan | Three phase boards, the diagram, go, revise, and skip, and a Diff facet |
 | `tide-aware-cancellations.html` | review | Severity groups, fix, later, and skip, approve or rework, and Checked rows |
 | `release-3-4-0.html` | release | Verdicts only on failed and pending gates, ship or hold, and the guard warning |

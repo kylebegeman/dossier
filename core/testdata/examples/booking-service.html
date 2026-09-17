@@ -1,0 +1,685 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Ten changes for a steadier booking service</title><style>
+/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+:root {
+  --bg: #ffffff;
+  --paper: #f7f5f7;
+  --paper-2: #efecf0;
+  --ink: #201c22;
+  --muted: #6b6270;
+  --line: #e0dae0;
+  --line-soft: #ece7ec;
+  --accent: #c81e4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe8ed;
+  --teal: #08776e;
+  --teal-soft: #e3f3f0;
+  --violet: #6a46d9;
+  --violet-soft: #ede8fb;
+  --coral: #9a5b00;
+  --risk-soft: #f6ecdc;
+  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: clamp(16px, 4vw, 40px);
+  --frame: 1360px;
+  --rail: 208px;
+  --measure: 76ch;
+  --r-s: 6px;
+  --r: 10px;
+  --r-l: 14px;
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
+  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
+  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
+  color-scheme: dark;
+}
+
+/* base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; tab-size: 4; }
+pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* buttons: one ghost style everywhere */
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
+.btn:hover { color: var(--ink); background: var(--paper-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.btn svg { width: 14px; height: 14px; flex: none; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.link-btn:hover { color: var(--ink); }
+.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
+.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::before { transform: scale(1); }
+
+/* shell */
+.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
+@media (min-width: 1100px) {
+  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
+  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}
+
+/* masthead: one band across the frame */
+.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.search { position: relative; display: inline-flex; align-items: center; }
+.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
+.search input::placeholder { color: var(--muted); }
+.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hits:empty { display: none; }
+::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
+::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
+.no-hits { padding-block: 36px; color: var(--muted); }
+@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
+.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
+.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
+.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
+.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
+.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
+.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.stats .live b { color: var(--accent); }
+.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.stats a:hover { color: var(--ink); text-decoration: underline; }
+
+/* contents */
+.toc { font-size: 13.5px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
+.toc li a:hover { color: var(--ink); background: var(--paper); }
+.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
+.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
+.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
+.toc li.picked .pip { opacity: 1; }
+.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
+.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.toc .group:first-child { margin-top: 0; }
+.toc .group a { display: inline; padding: 0; color: inherit; }
+.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
+@media (max-width: 1099px) {
+  .toc { padding-block: 18px 0; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
+  .toc .n { text-align: left; min-width: 0; }
+  .toc .group { display: none; }
+  .toc .pip { margin-left: 2px; }
+}
+
+/* main column */
+.main { min-width: 0; }
+.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.section:not(:has(~ .section)) { border-bottom: 0; }
+.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
+.part + .part { margin-top: 16px; }
+.prose { max-width: var(--measure); display: grid; gap: 12px; }
+.prose p, .prose li { font-size: 15.5px; }
+.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
+.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
+.prose strong { font-weight: 600; }
+
+.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
+.spec > div:first-child { border-top: 0; }
+.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.spec span { font-size: 14.5px; }
+@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
+
+.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
+.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.callout.risk b { color: var(--coral); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
+th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+td a { color: var(--ink); text-decoration: none; font-weight: 500; }
+td a:hover { color: var(--accent); }
+td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+td.ck, th.ck { width: 34px; padding-right: 0; }
+tbody tr { transition: background var(--dur); }
+tbody tr:hover { background: var(--paper); }
+tbody tr.picked { background: var(--accent-soft); }
+tbody tr[data-tone] { background: var(--tone-soft); }
+tbody tr[data-tone] .chip { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 38%, transparent); }
+td.vd, th.vd { width: 1%; white-space: nowrap; }
+td.vd .none { font-size: 12.5px; color: var(--muted); }
+select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+/* code, figures, charts, diagram source */
+.block { display: grid; gap: 6px; }
+.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
+.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
+.figure { margin: 0; display: grid; gap: 8px; }
+.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
+.figure .legend { margin-top: 0; }
+.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
+.diagram pre { white-space: pre-wrap; }
+
+/* diagrams: Graphviz geometry, colored by the tokens */
+figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
+.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
+.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
+.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
+.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
+.dg .edge .hollow { fill: var(--bg); }
+.dg .edge text { fill: var(--muted); font-size: 10px; }
+.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
+.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
+.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
+.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
+.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
+figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.dg-source { flex: 1 1 100%; min-width: 0; }
+.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
+.dg-source summary:hover { color: var(--ink); }
+.dg-source[open] summary { margin-bottom: 6px; }
+figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
+figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
+
+/* timeline: times in a column, a hairline rail, a dot per event in its tone */
+.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
+.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .ev { position: relative; padding: 0 0 18px 24px; }
+.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
+.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline b { display: block; font-size: 15px; font-weight: 600; }
+.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
+@media (max-width: 520px) {
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
+  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
+}
+:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
+.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
+.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
+.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
+.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
+.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
+.hl .hl-nt { color: var(--hl-tag); }
+.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
+.hl .hl-o, .hl .hl-p { color: var(--muted); }
+.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
+.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
+.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
+.hl .hl-ge { font-style: italic; }
+.hl .hl-gs { font-weight: 600; }
+.hl .hl-err { text-decoration: underline wavy var(--coral); }
+
+/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
+.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
+.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
+.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
+.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
+
+/* chips and meters */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
+.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
+.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
+.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
+.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
+.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.owner { font-size: 12.5px; color: var(--muted); }
+.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.stats > div.t-risk b { color: var(--coral); }
+.stats > div.t-teal b { color: var(--teal); }
+.stats > div.t-violet b { color: var(--violet); }
+.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
+.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
+.meter i.on { background: var(--accent); }
+.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* items: collapsible details */
+.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
+.item:last-of-type { border-bottom: 0; }
+.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
+.item-head::-webkit-details-marker { display: none; }
+.item-head::marker { content: ""; }
+.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
+.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
+.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
+.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
+.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
+.item[open] h3 .chev { transform: rotate(90deg); }
+.item-head:hover h3 .chev { color: var(--ink); }
+.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.item.picked h3 .num { color: var(--accent); }
+.item[data-tone] h3 .num { color: var(--tone); }
+.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
+.item-body { margin-top: 14px; padding-left: 24px; }
+@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
+.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
+.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
+.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
+.note textarea::placeholder { color: var(--muted); }
+.facets { display: grid; margin: 0; }
+.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
+.facet:first-child { border-top: 0; padding-top: 0; }
+.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
+.facet dd p { max-width: var(--measure); }
+.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
+.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
+.facet.risk dt { color: var(--coral); }
+@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
+.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rows { display: grid; gap: 8px; }
+.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
+.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
+.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
+.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
+.rows > .row > summary::-webkit-details-marker { display: none; }
+.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.rows > .row[open] > summary .chev { transform: rotate(90deg); }
+.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
+.rows > .row > .facets .facet:first-child { padding-top: 8px; }
+@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
+
+/* reply: every decision on the page, as one line to send back */
+.pick { margin-top: 32px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r-l); display: grid; gap: 14px; scroll-margin-top: 12px; }
+.pick h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.pick-lede { margin-top: 2px; font-size: 14px; color: var(--muted); max-width: var(--measure); }
+.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.pick .choice-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14.5px; }
+.pick .choice-head b { font-weight: 600; }
+.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; transition: background var(--dur), border-color var(--dur); }
+.pick .options label:hover { background: var(--paper); }
+.pick .options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.pick .options input { margin: 4px 0 0; accent-color: var(--accent); }
+.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
+.pick .sum { display: block; font-size: 13px; color: var(--muted); }
+.pick .guard { padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--risk-soft); font-size: 13.5px; }
+.reply { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.said { flex: 1 1 340px; min-width: 0; display: grid; gap: 3px; }
+.said code { padding: 0; border: 0; background: none; font-size: 13px; line-height: 1.55; }
+.said .words { font-size: 13.5px; color: var(--muted); }
+.said .tag { margin-right: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
+.said.example code { color: var(--muted); }
+.pick[data-empty] :is(.live, .acts), .pick:not([data-empty]) .example { display: none; }
+.acts { display: flex; align-items: center; gap: 14px; }
+.btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn.solid:hover { background: var(--ink); color: var(--bg); opacity: 0.86; }
+
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.main { padding-bottom: 40px; }
+.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
+
+@media print {
+  .toc, .tools, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
+  .verdicts { border: 0; background: none; }
+  body { padding: 0; font-size: 12px; }
+  .page { display: block; }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
+  .dg-source { display: none; }
+  .dg { max-width: 100%; }
+  .item h3 .chev { display: none; }
+  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+}
+</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Tidewright · tidewright/booking</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Ten changes for a <em>steadier</em> booking service</h1><p class="lede">Six small changes and four large ones for the booking service, found by reading its code. One choice first: a faster checkout or safer changes. Pick by number.</p><div class="stats" aria-label="At a glance"><div class=""><b>6</b> <span>minor</span></div><div class=""><b>4</b> <span>major</span></div><div class=""><b>3</b> <span>also considered</span></div><div class="live"><b data-live="choice">Open</b> <a href="#pick">choice</a></div><div class="live"><b data-live="count">0</b> <span>picked</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#thesis"><span class="n">–</span>Checkout carries the risk</a></li><li><a href="#slow"><span class="n">–</span>Where checkout slows down</a></li><li><a href="#ideas"><span class="n">–</span>Ideas</a></li><li class="group">Minor</li><li data-item="fares-batch" class=""><a href="#fares-batch"><span class="n">1.</span>Quote every leg in one query<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="idempotent-pay" class=""><a href="#idempotent-pay"><span class="n">2.</span>An idempotency key on every charge<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="pay-errors" class=""><a href="#pay-errors"><span class="n">3.</span>Typed errors from the payments client<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="request-ids" class=""><a href="#request-ids"><span class="n">4.</span>One request id in every log line<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="contract-tests" class=""><a href="#contract-tests"><span class="n">5.</span>Contract tests for the fares API<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="release-holds" class=""><a href="#release-holds"><span class="n">6.</span>Free seat holds when checkout gives up<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Major</li><li data-item="quote-cache" class=""><a href="#quote-cache"><span class="n">7.</span>Cache quotes for thirty seconds<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="hold-leases" class=""><a href="#hold-leases"><span class="n">8.</span>Seat holds in a lease table<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="refund-queue" class=""><a href="#refund-queue"><span class="n">9.</span>Refunds on a queue with retries<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="checkout-flags" class=""><a href="#checkout-flags"><span class="n">10.</span>Ship checkout changes behind flags<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#also"><span class="n">–</span>Also considered</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="thesis"><h2>Checkout carries the risk</h2><div class="part prose"><p>The booking service is a Go service over Postgres that the rider app and the harbour office both call. Four people build it, with agents writing most of the code.</p>
+<p>These ideas come from reading all of it: 212 files, about 31,000 lines of Go and SQL, and the last 90 days of traces and incidents. Most of the pain sits on one path, from search to a paid booking, and most incidents began with a change to that path.</p>
+<p>Effort is agent time, not calendar time.</p></div><figure class="part diagram" data-format="mermaid"><div class="dg-frame"><svg class="dg" role="img" aria-label="The path from search to a paid booking. Holds live inside one process, and payments retry without a key." width="629.5px" height="170.2px" viewBox="0.00 0.00 577.25 156.25"><g id="d911a441c-graph0" class="graph" transform="scale(1 1) rotate(0) translate(8.64 147.62)"><g id="d911a441c-node1" class="node"><polygon class="hollow" points="67.86,-105.92 0,-105.92 0,-80 67.86,-80 67.86,-105.92"></polygon><text text-anchor="middle" x="33.93" y="-89.66">Rider app</text></g><g id="d911a441c-node2" class="node"><polygon class="hollow" points="164.42,-105.92 100.86,-105.92 100.86,-80 164.42,-80 164.42,-105.92"></polygon><text text-anchor="middle" x="132.64" y="-89.66">Gateway</text></g><g id="d911a441c-edge1" class="edge"><path d="M68.21,-92.96C75.91,-92.96 84.19,-92.96 92.13,-92.96"></path><polygon points="92.06,-95.41 99.06,-92.96 92.06,-90.51 92.06,-95.41"></polygon></g><g id="d911a441c-node3" class="node"><polygon class="hollow" points="258.25,-134.92 203.23,-134.92 203.23,-109 258.25,-109 258.25,-134.92"></polygon><text text-anchor="middle" x="230.74" y="-118.66">Search</text></g><g id="d911a441c-edge2" class="edge"><path d="M164.84,-102.38C174.43,-105.27 185.05,-108.47 194.87,-111.44"></path><polygon points="194.03,-113.74 201.44,-113.42 195.45,-109.05 194.03,-113.74"></polygon></g><g id="d911a441c-node4" class="node accent"><polygon class="hollow" points="264.06,-80.92 197.42,-80.92 197.42,-55 264.06,-55 264.06,-80.92"></polygon><text text-anchor="middle" x="230.74" y="-64.66">Checkout</text></g><g id="d911a441c-edge3" class="edge"><path d="M164.84,-84.84C172.49,-82.85 180.79,-80.69 188.81,-78.61"></path><polygon points="189.42,-80.98 195.58,-76.85 188.19,-76.24 189.42,-80.98"></polygon></g><g id="d911a441c-node5" class="node violet"><polygon class="hollow" points="360.13,-136.92 306.13,-136.92 306.13,-111 360.13,-111 360.13,-136.92"></polygon><text text-anchor="middle" x="333.13" y="-120.66">Fares</text></g><g id="d911a441c-edge4" class="edge"><path d="M258.64,-122.5C270.53,-122.73 284.67,-123.01 297.34,-123.27"></path><polygon points="297.28,-125.72 304.33,-123.41 297.38,-120.82 297.28,-125.72"></polygon></g><g id="d911a441c-edge5" class="edge"><path d="M255.78,-81.37C269.32,-88.92 286.37,-98.44 300.93,-106.56"></path><polygon points="299.65,-108.65 306.96,-109.92 302.04,-104.37 299.65,-108.65"></polygon></g><g id="d911a441c-node6" class="node risk"><polygon class="hollow" points="369.2,-77.92 297.06,-77.92 297.06,-52 369.2,-52 369.2,-77.92"></polygon><text text-anchor="middle" x="333.13" y="-61.66">Seat holds</text></g><g id="d911a441c-edge6" class="edge"><path d="M264.33,-66.99C271.98,-66.76 280.25,-66.51 288.3,-66.27"></path><polygon points="288.14,-68.73 295.06,-66.07 287.99,-63.83 288.14,-68.73"></polygon></g><g id="d911a441c-node7" class="node risk"><polygon class="hollow" points="367.66,-26.92 298.59,-26.92 298.59,-1 367.66,-1 367.66,-26.92"></polygon><text text-anchor="middle" x="333.13" y="-10.66">Payments</text></g><g id="d911a441c-edge7" class="edge"><path d="M256.55,-54.61C269.71,-47.54 286.01,-38.77 300.11,-31.18"></path><polygon points="300.91,-33.53 305.92,-28.06 298.59,-29.22 300.91,-33.53"></polygon></g><g id="d911a441c-node8" class="node"><path d="M543.77,-136.25C543.77,-137.75 529.52,-138.97 511.98,-138.97 494.44,-138.97 480.2,-137.75 480.2,-136.25 480.2,-136.25 480.2,-111.67 480.2,-111.67 480.2,-110.17 494.44,-108.94 511.98,-108.94 529.52,-108.94 543.77,-110.17 543.77,-111.67 543.77,-111.67 543.77,-136.25 543.77,-136.25"></path><path d="M543.77,-136.25C543.77,-134.74 529.52,-133.52 511.98,-133.52 494.44,-133.52 480.2,-134.74 480.2,-136.25"></path><text text-anchor="middle" x="511.98" y="-120.66">Postgres</text></g><g id="d911a441c-edge8" class="edge"><path d="M360.6,-123.96C390.01,-123.96 437.78,-123.96 471.58,-123.96"></path><polygon points="471.34,-126.41 478.34,-123.96 471.34,-121.51 471.34,-126.41"></polygon></g><g id="d911a441c-node9" class="node risk"><path d="M559.97,-78.24C559.97,-79.75 538.46,-80.97 511.98,-80.97 485.51,-80.97 464,-79.75 464,-78.24 464,-78.24 464,-53.67 464,-53.67 464,-52.17 485.51,-50.94 511.98,-50.94 538.46,-50.94 559.97,-52.17 559.97,-53.67 559.97,-53.67 559.97,-78.24 559.97,-78.24"></path><path d="M559.97,-78.24C559.97,-76.74 538.46,-75.51 511.98,-75.51 485.51,-75.51 464,-76.74 464,-78.24"></path><text text-anchor="middle" x="511.98" y="-62.66">In-process map</text></g><g id="d911a441c-edge9" class="edge"><path stroke-dasharray="5,2" d="M369.49,-65.16C394.08,-65.3 427.35,-65.49 455.46,-65.65"></path><polygon points="455.09,-68.09 462.1,-65.68 455.11,-63.19 455.09,-68.09"></polygon></g><g id="d911a441c-node10" class="node"><polygon class="hollow" points="555.38,-25.92 468.58,-25.92 468.58,0 555.38,0 555.38,-25.92"></polygon><text text-anchor="middle" x="511.98" y="-9.66">Card provider</text></g><g id="d911a441c-edge10" class="edge"><path d="M367.81,-13.77C393.92,-13.62 430.52,-13.41 460.18,-13.25"></path><polygon points="459.85,-15.7 466.84,-13.21 459.82,-10.8 459.85,-15.7"></polygon><text text-anchor="middle" x="416.6" y="-16.66">retries, no key</text></g></g></svg></div><figcaption><span>The path from search to a paid booking. Holds live inside one process, and payments retry without a key.</span> <details class="dg-source"><summary>Mermaid source</summary><pre><code>flowchart LR
+  app[Rider app] --&gt; api[Gateway]
+  api --&gt; search[Search]
+  api --&gt; checkout[Checkout]:::accent
+  search --&gt; fares[Fares]:::violet
+  checkout --&gt; fares
+  checkout --&gt; holds[Seat holds]:::risk
+  checkout --&gt; pay[Payments]:::risk
+  fares --&gt; db[(Postgres)]
+  holds -.-&gt; mem[(In-process map)]:::risk
+  pay --&gt;|retries, no key| card[Card provider]</code></pre></details></figcaption></figure></section><section class="section" id="slow"><h2>Where checkout slows down</h2><div class="part prose"><p>At the Friday evening peak, a booking takes 3.2 seconds from tapping Book to the confirmation, and one attempt in forty times out. Payments and fares account for most of the wait.</p></div><div class="part block chart"><div class="block-label"><span>Median milliseconds per checkout step, Friday evening peak</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Median milliseconds per checkout step, Friday evening peak"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="196.5" x2="616" y2="196.5" stroke="var(--line-soft)"/><text x="43" y="200.5" text-anchor="end" class="tick">500</text><line x1="52" y1="139.0" x2="616" y2="139.0" stroke="var(--line-soft)"/><text x="43" y="143.0" text-anchor="end" class="tick">1,000</text><line x1="52" y1="81.5" x2="616" y2="81.5" stroke="var(--line-soft)"/><text x="43" y="85.5" text-anchor="end" class="tick">1,500</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">2,000</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><rect x="80.4" y="226.4" width="56.0" height="27.6" rx="3" fill="var(--accent)"><title>Search: 240</title></rect><text x="108.4" y="219.4" text-anchor="middle" class="value">240</text><text x="108.4" y="275" text-anchor="middle">Search</text><rect x="193.2" y="171.2" width="56.0" height="82.8" rx="3" fill="var(--accent)"><title>Fares: 720</title></rect><text x="221.2" y="164.2" text-anchor="middle" class="value">720</text><text x="221.2" y="275" text-anchor="middle">Fares</text><rect x="306.0" y="210.3" width="56.0" height="43.7" rx="3" fill="var(--accent)"><title>Hold: 380</title></rect><text x="334.0" y="203.3" text-anchor="middle" class="value">380</text><text x="334.0" y="275" text-anchor="middle">Hold</text><rect x="418.8" y="65.4" width="56.0" height="188.6" rx="3" fill="var(--accent)"><title>Payment: 1,640</title></rect><text x="446.8" y="58.4" text-anchor="middle" class="value">1,640</text><text x="446.8" y="275" text-anchor="middle">Payment</text><rect x="531.6" y="228.7" width="56.0" height="25.3" rx="3" fill="var(--accent)"><title>Confirm: 220</title></rect><text x="559.6" y="221.7" text-anchor="middle" class="value">220</text><text x="559.6" y="275" text-anchor="middle">Confirm</text></svg></div><div class="part block"><div class="block-label"><span>fares/quote.go: one query for every leg of the trip</span></div><pre class="hl"><code><span class="hl-kd">func</span><span class="hl-w"> </span><span class="hl-p">(</span><span class="hl-nx">q</span><span class="hl-w"> </span><span class="hl-o">*</span><span class="hl-nx">Quoter</span><span class="hl-p">)</span><span class="hl-w"> </span><span class="hl-nf">Quote</span><span class="hl-p">(</span><span class="hl-nx">ctx</span><span class="hl-w"> </span><span class="hl-nx">context</span><span class="hl-p">.</span><span class="hl-nx">Context</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nx">legs</span><span class="hl-w"> </span><span class="hl-p">[]</span><span class="hl-nx">Leg</span><span class="hl-p">)</span><span class="hl-w"> </span><span class="hl-p">(</span><span class="hl-nx">Quote</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-kt">error</span><span class="hl-p">)</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w">
+</span><span class="hl-w">	</span><span class="hl-kd">var</span><span class="hl-w"> </span><span class="hl-nx">total</span><span class="hl-w"> </span><span class="hl-nx">Money</span><span class="hl-w">
+</span><span class="hl-w">	</span><span class="hl-k">for</span><span class="hl-w"> </span><span class="hl-nx">_</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nx">leg</span><span class="hl-w"> </span><span class="hl-o">:=</span><span class="hl-w"> </span><span class="hl-k">range</span><span class="hl-w"> </span><span class="hl-nx">legs</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w">
+</span><span class="hl-w">		</span><span class="hl-nx">fare</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nx">err</span><span class="hl-w"> </span><span class="hl-o">:=</span><span class="hl-w"> </span><span class="hl-nx">q</span><span class="hl-p">.</span><span class="hl-nx">store</span><span class="hl-p">.</span><span class="hl-nf">FareFor</span><span class="hl-p">(</span><span class="hl-nx">ctx</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nx">leg</span><span class="hl-p">.</span><span class="hl-nx">RouteID</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nx">leg</span><span class="hl-p">.</span><span class="hl-nx">Class</span><span class="hl-p">)</span><span class="hl-w">
+</span><span class="hl-w">		</span><span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-nx">err</span><span class="hl-w"> </span><span class="hl-o">!=</span><span class="hl-w"> </span><span class="hl-kc">nil</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w">
+</span><span class="hl-w">			</span><span class="hl-k">return</span><span class="hl-w"> </span><span class="hl-nx">Quote</span><span class="hl-p">{},</span><span class="hl-w"> </span><span class="hl-nx">err</span><span class="hl-w">
+</span><span class="hl-w">		</span><span class="hl-p">}</span><span class="hl-w">
+</span><span class="hl-w">		</span><span class="hl-nx">total</span><span class="hl-w"> </span><span class="hl-p">=</span><span class="hl-w"> </span><span class="hl-nx">total</span><span class="hl-p">.</span><span class="hl-nf">Add</span><span class="hl-p">(</span><span class="hl-nx">fare</span><span class="hl-p">.</span><span class="hl-nf">Price</span><span class="hl-p">(</span><span class="hl-nx">leg</span><span class="hl-p">.</span><span class="hl-nx">Party</span><span class="hl-p">))</span><span class="hl-w">
+</span><span class="hl-w">	</span><span class="hl-p">}</span><span class="hl-w">
+</span><span class="hl-w">	</span><span class="hl-k">return</span><span class="hl-w"> </span><span class="hl-nx">Quote</span><span class="hl-p">{</span><span class="hl-nx">Total</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nx">total</span><span class="hl-p">},</span><span class="hl-w"> </span><span class="hl-kc">nil</span><span class="hl-w">
+</span><span class="hl-p">}</span></code></pre></div><div class="part spec"><div><b>3.2 seconds</b><span>Median from Book to the confirmation at the Friday peak.</span></div><div><b>1 in 40</b><span>Checkout attempts that time out at the same peak.</span></div><div><b>7 of 11</b><span>Incidents in 90 days that began with a change to checkout.</span></div><div><b>No tests</b><span>Cover the payment retry path or the seat hold expiry.</span></div></div><div class="part callout risk"><b>A retry can charge twice</b><div><p>When the card provider is slow, checkout retries the charge without an idempotency key. Twice in 90 days a rider paid twice for one booking. Idea 2 closes this whichever way the cycle goes.</p></div></div></section><section class="section" id="ideas"><h2>Ideas</h2><div class="part table-wrap"><table><thead><tr><th class="ck"><span class="sr">Pick</span></th><th class="num">#</th><th>Idea</th><th>Size</th><th>Effort</th><th>Impact</th><th>Depends on</th></tr></thead> <tbody><tr data-item="fares-batch" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="fares-batch" aria-label="Pick 1, Quote every leg in one query"></td><td class="num">1</td><td><a href="#fares-batch">Quote every leg in one query</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="idempotent-pay" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="idempotent-pay" aria-label="Pick 2, An idempotency key on every charge"></td><td class="num">2</td><td><a href="#idempotent-pay">An idempotency key on every charge</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="pay-errors" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="pay-errors" aria-label="Pick 3, Typed errors from the payments client"></td><td class="num">3</td><td><a href="#pay-errors">Typed errors from the payments client</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="request-ids" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="request-ids" aria-label="Pick 4, One request id in every log line"></td><td class="num">4</td><td><a href="#request-ids">One request id in every log line</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="contract-tests" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="contract-tests" aria-label="Pick 5, Contract tests for the fares API"></td><td class="num">5</td><td><a href="#contract-tests">Contract tests for the fares API</a></td><td><span class="chip t-teal">minor</span></td><td>M</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="release-holds" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="release-holds" aria-label="Pick 6, Free seat holds when checkout gives up"></td><td class="num">6</td><td><a href="#release-holds">Free seat holds when checkout gives up</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="quote-cache" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="quote-cache" aria-label="Pick 7, Cache quotes for thirty seconds"></td><td class="num">7</td><td><a href="#quote-cache">Cache quotes for thirty seconds</a></td><td><span class="chip t-violet">major</span></td><td>M</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps"> <a href="#fares-batch" title="Quote every leg in one query">1</a></span></td></tr><tr data-item="hold-leases" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="hold-leases" aria-label="Pick 8, Seat holds in a lease table"></td><td class="num">8</td><td><a href="#hold-leases">Seat holds in a lease table</a></td><td><span class="chip t-violet">major</span></td><td>L</td><td><span class="meter" aria-label="Impact 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="refund-queue" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="refund-queue" aria-label="Pick 9, Refunds on a queue with retries"></td><td class="num">9</td><td><a href="#refund-queue">Refunds on a queue with retries</a></td><td><span class="chip t-violet">major</span></td><td>L</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps"> <a href="#idempotent-pay" title="An idempotency key on every charge">2</a>, <a href="#pay-errors" title="Typed errors from the payments client">3</a></span></td></tr><tr data-item="checkout-flags" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="checkout-flags" aria-label="Pick 10, Ship checkout changes behind flags"></td><td class="num">10</td><td><a href="#checkout-flags">Ship checkout changes behind flags</a></td><td><span class="chip t-violet">major</span></td><td>M</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p><details class="item" id="fares-batch" data-item="fares-batch" data-title="Quote every leg in one query" data-decides data-num="1"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">1</span> Quote every leg in one query</h3><p class="one-line">Fares for a whole trip load in one query instead of one per leg, which removes most of the wait in the fares step.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-fares-batch">Your note on 1</label> <textarea id="note-fares-batch" data-note="fares-batch" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p><code>FareFor</code> becomes <code>FaresFor</code> in <code>fares/store.go</code>, and <code>Quote</code> reads from the map it returns:</p>
+<pre class="hl"><code><span class="hl-k">SELECT</span> <span class="hl-n">route_id</span><span class="hl-p">,</span> <span class="hl-k">class</span><span class="hl-p">,</span> <span class="hl-n">price</span> <span class="hl-k">FROM</span> <span class="hl-n">fares</span>
+<span class="hl-k">WHERE</span> <span class="hl-p">(</span><span class="hl-n">route_id</span><span class="hl-p">,</span> <span class="hl-k">class</span><span class="hl-p">)</span> <span class="hl-k">IN</span> <span class="hl-p">(</span><span class="hl-k">SELECT</span> <span class="hl-o">*</span> <span class="hl-k">FROM</span> <span class="hl-n">unnest</span><span class="hl-p">(</span><span class="hl-nv">$1</span><span class="hl-o">::</span><span class="hl-nb">text</span><span class="hl-p">[],</span> <span class="hl-nv">$2</span><span class="hl-o">::</span><span class="hl-nb">text</span><span class="hl-p">[]))</span>
+</code></pre></dd></div><div class="facet"><dt>Why</dt><dd><p>Fares is the second slowest step, and almost all of it is round trips. A return trip for a family of four makes eight queries today.</p></dd></div><div class="facet"><dt>In use</dt><dd><p>The trace for a return booking shows one fares query, and the step drops to about 90 ms.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>Idea 7 caches the same map.</p></dd></div></dl></div></details><details class="item" id="idempotent-pay" data-item="idempotent-pay" data-title="An idempotency key on every charge" data-decides data-num="2"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span> <span class="meter-label">impact 5/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">2</span> An idempotency key on every charge</h3><p class="one-line">Each checkout sends one key with its charge and every retry, so a slow card provider can never charge a rider twice.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-idempotent-pay">Your note on 2</label> <textarea id="note-idempotent-pay" data-note="idempotent-pay" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Checkout makes one key for each payment, stores it on the booking row, and <code>payments/charge.go</code> sends it as <code>Idempotency-Key</code> on the first call and on every retry.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Two riders were charged twice in 90 days, both after a provider timeout, and each refund took the harbour office 25 minutes.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>Idea 9 reuses the key to refund exactly once.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A key kept only in memory is lost on a restart mid-checkout, which is why it lives on the booking row.</p></dd></div></dl></div></details><details class="item" id="pay-errors" data-item="pay-errors" data-title="Typed errors from the payments client" data-decides data-num="3"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">3</span> Typed errors from the payments client</h3><p class="one-line">The payments client returns declined, retryable, and fatal errors as values the caller can test, not messages it has to match.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-pay-errors">Your note on 3</label> <textarea id="note-pay-errors" data-note="pay-errors" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p><code>payments/client.go</code> wraps provider codes in <code>ErrDeclined</code>, <code>ErrRetryable</code>, and <code>ErrFatal</code>. Checkout switches on <code>errors.Is</code> instead of <code>strings.Contains(err.Error(), &quot;timeout&quot;)</code>.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Three incidents started when the provider reworded an error message. With types, the compiler and the tests catch that instead of riders.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>Ideas 2 and 9 retry only <code>ErrRetryable</code>.</p></dd></div></dl></div></details><details class="item" id="request-ids" data-item="request-ids" data-title="One request id in every log line" data-decides data-num="4"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">4</span> One request id in every log line</h3><p class="one-line">A request id from the gateway reaches every log line and outgoing call, so one checkout reads as one story.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-request-ids">Your note on 4</label> <textarea id="note-request-ids" data-note="request-ids" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Middleware in <code>api/middleware.go</code> puts the id in the context, <code>internal/log</code> adds it to every line, and the fares and payments clients forward it as <code>X-Request-Id</code>.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Following a failed checkout today means matching timestamps across four logs. It took two hours in the last incident.</p></dd></div><div class="facet"><dt>In use</dt><dd><p>Searching the logs for one id shows the whole booking, from search to the card provider&rsquo;s answer.</p></dd></div></dl></div></details><details class="item" id="contract-tests" data-item="contract-tests" data-title="Contract tests for the fares API" data-decides data-num="5"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort M</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">5</span> Contract tests for the fares API</h3><p class="one-line">Recorded app requests pin what the rider app expects from the fares endpoint, so CI fails before a change breaks the app.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-contract-tests">Your note on 5</label> <textarea id="note-contract-tests" data-note="contract-tests" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p><code>fares/contract_test.go</code> replays the app&rsquo;s recorded requests from <code>testdata/app-fares/</code> against the handler and compares every response field by name and type.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Two releases broke the app by renaming a fares field, and both passed every test the service had.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>The app team records new requests with one command when the app changes.</p></dd></div></dl></div></details><details class="item" id="release-holds" data-item="release-holds" data-title="Free seat holds when checkout gives up" data-decides data-num="6"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">6</span> Free seat holds when checkout gives up</h3><p class="one-line">A failed or abandoned checkout frees its held spaces at once instead of waiting fifteen minutes for them to expire.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-release-holds">Your note on 6</label> <textarea id="note-release-holds" data-note="release-holds" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Checkout&rsquo;s error path and the app&rsquo;s back button call <code>holds.Release</code>. Expiry stays as the backstop for a rider who closes the app.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>At the peak, abandoned holds keep up to 30 car spaces off sale, and riders see a sailing as full when it is not.</p></dd></div></dl></div></details><details class="item" id="quote-cache" data-item="quote-cache" data-title="Cache quotes for thirty seconds" data-decides data-num="7"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Size">major</span><span class="chip t-outline" title="Effort">Effort M</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">7</span> Cache quotes for thirty seconds</h3><p class="one-line">Search, the trip screen, and checkout share one short-lived quote, so a rider&#39;s fare is worked out once per trip.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-quote-cache">Your note on 7</label> <textarea id="note-quote-cache" data-note="quote-cache" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p><code>fares/cache.go</code> keys quotes by route, date, class, and party, keeps them for 30 seconds, and drops them all when fares change by bumping a version.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>A rider sees the same quote on three screens, and each screen asks for it again. At the peak that is a third of all fares queries.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A stale price must never reach payment. Checkout checks the fares version again before it charges and requotes if it moved.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#fares-batch">1</a></p></dd></div></dl></div></details><details class="item" id="hold-leases" data-item="hold-leases" data-title="Seat holds in a lease table" data-decides data-num="8"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Size">major</span><span class="chip t-outline" title="Effort">Effort L</span><span class="meter" aria-label="Impact 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span> <span class="meter-label">impact 5/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">8</span> Seat holds in a lease table</h3><p class="one-line">Holds move from a map inside one process to a Postgres table, so deploys keep them and two instances can take bookings.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-hold-leases">Your note on 8</label> <textarea id="note-hold-leases" data-note="hold-leases" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>A <code>hold_leases</code> table with a unique index on sailing and space. Holds are taken with <code>INSERT ... ON CONFLICT DO NOTHING</code> and swept when they expire, and <code>holds/holds.go</code> keeps its interface.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Holds live in memory today, so the service cannot run a second instance, and every deploy drops the holds of riders mid-checkout.</p></dd></div><div class="facet"><dt>In use</dt><dd><p>A deploy at the Friday peak goes unnoticed, and the gateway spreads checkouts across two instances.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>A second instance at the Friday peak, which halves the queue in front of every checkout step.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A mistake here double books car spaces. Run both stores side by side for a week and compare every hold before switching.</p></dd></div></dl></div></details><details class="item" id="refund-queue" data-item="refund-queue" data-title="Refunds on a queue with retries" data-decides data-num="9"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Size">major</span><span class="chip t-outline" title="Effort">Effort L</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">9</span> Refunds on a queue with retries</h3><p class="one-line">Refunds leave the request path for a worker that retries with backoff and records every attempt.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-refund-queue">Your note on 9</label> <textarea id="note-refund-queue" data-note="refund-queue" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Cancelling a booking writes a <code>refund_jobs</code> row. A worker in <code>refunds/worker.go</code> sends it with the charge&rsquo;s key and retries <code>ErrRetryable</code> with backoff.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>A slow refund holds the cancel screen for up to 20 seconds today, and a failed one is lost unless the rider calls.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>A stuck queue delays refunds without a sound. Alert when the oldest job is more than ten minutes old.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#idempotent-pay">2</a><a class="dep" href="#pay-errors">3</a></p></dd></div></dl></div></details><details class="item" id="checkout-flags" data-item="checkout-flags" data-title="Ship checkout changes behind flags" data-decides data-num="10"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Size">major</span><span class="chip t-outline" title="Effort">Effort M</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">10</span> Ship checkout changes behind flags</h3><p class="one-line">A checkout change can go out switched off, reach a share of riders, and be turned off again without a rollback.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-checkout-flags">Your note on 10</label> <textarea id="note-checkout-flags" data-note="checkout-flags" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>A small flag store in <code>internal/flags</code>, read from Postgres every 30 seconds and checked in <code>checkout/handler.go</code>, plus a <code>flags</code> command for the team.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Seven of the last eleven incidents began with a checkout change, and each one took a full rollback to undo.</p></dd></div><div class="facet"><dt>In use</dt><dd><p>A new payment screen reaches 5% of riders on Monday, half on Wednesday, and everyone once its error rate holds.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Old flags pile up. Each flag gets an owner and a removal date when it is added.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="also"><h2>Also considered</h2><div class="part rows"><div id="rewrite-rust"><div><b>Rewrite checkout in Rust</b> <p>The time goes to round trips and the card provider, not to Go, so a rewrite would move none of it.</p></div><span class="row-chips"></span></div><div id="microservices"><div><b>Split booking into microservices</b> <p>Four people run this, and more services would add the very network hops that slow checkout.</p></div><span class="row-chips"></span></div><div id="graphql"><div><b>A GraphQL gateway for the apps</b> <p>The app&#39;s calls are few and cheap, and idea 7 removes the repeated ones.</p></div><span class="row-chips"></span></div></div></section><section class="pick" id="pick" aria-labelledby="pick-title" data-mode="pick" data-verdicts="null" data-noun="idea" data-plural="ideas" data-empty><div><h2 id="pick-title">Your reply</h2><p class="pick-lede">It fills in as you decide. When you’re done, copy it and paste it back to your agent.</p></div><fieldset class="choice" aria-labelledby="pick-question"><div class="choice-head"><b id="pick-question">Where should this cycle start?</b> <button type="button" class="link-btn" data-choice-clear hidden>Clear</button></div><div class="options"><label><input type="radio" name="dossier-choice" value="speed" data-choice data-label="A faster checkout"> <span><span class="opt">A faster checkout</span> <span class="sum">Cut the round trips and slow calls riders wait through at the Friday peak.</span></span></label><label><input type="radio" name="dossier-choice" value="safety" data-choice data-label="Safer changes"> <span><span class="opt">Safer changes</span> <span class="sum">Tests, flags, and clear errors, so a change stops breaking checkout.</span></span></label></div></fieldset><div class="reply"><div class="said example"><p><span class="tag">Example</span> <code>speed, 2, 5, 7. Notes: 5: smaller first.</code></p><p class="words">Choice: A faster checkout. Pick: ideas 2, 5, and 7. Note on idea 5: smaller first.</p></div><div class="said live"><p><code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p></div><div class="acts"><button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button></div></div></section></main><footer class="foot"><span>Ten changes for a steadier booking service</span> <span>Generated with Dossier · 2026-09-16</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brainstorm","meta":{"title":"Ten changes for a steadier booking service","slug":"booking-service","kicker":"Tidewright · tidewright/booking","emphasis":"steadier","lede":"Six small changes and four large ones for the booking service, found by reading its code. One choice first: a faster checkout or safer changes. Pick by number.","updated":"2026-09-16","status":"for-decision"},"choice":{"question":"Where should this cycle start?","options":[{"id":"speed","label":"A faster checkout","summary":"Cut the round trips and slow calls riders wait through at the Friday peak."},{"id":"safety","label":"Safer changes","summary":"Tests, flags, and clear errors, so a change stops breaking checkout."}]},"sections":[{"id":"thesis","title":"Checkout carries the risk","parts":[{"type":"prose","markdown":"The booking service is a Go service over Postgres that the rider app and the harbour office both call. Four people build it, with agents writing most of the code.\n\nThese ideas come from reading all of it: 212 files, about 31,000 lines of Go and SQL, and the last 90 days of traces and incidents. Most of the pain sits on one path, from search to a paid booking, and most incidents began with a change to that path.\n\nEffort is agent time, not calendar time."},{"type":"diagram","title":"The path from search to a paid booking. Holds live inside one process, and payments retry without a key.","source":"flowchart LR\n  app[Rider app] --\u003e api[Gateway]\n  api --\u003e search[Search]\n  api --\u003e checkout[Checkout]:::accent\n  search --\u003e fares[Fares]:::violet\n  checkout --\u003e fares\n  checkout --\u003e holds[Seat holds]:::risk\n  checkout --\u003e pay[Payments]:::risk\n  fares --\u003e db[(Postgres)]\n  holds -.-\u003e mem[(In-process map)]:::risk\n  pay --\u003e|retries, no key| card[Card provider]","format":"mermaid"}]},{"id":"slow","title":"Where checkout slows down","parts":[{"type":"prose","markdown":"At the Friday evening peak, a booking takes 3.2 seconds from tapping Book to the confirmation, and one attempt in forty times out. Payments and fares account for most of the wait."},{"type":"chart","title":"Median milliseconds per checkout step, Friday evening peak","variant":"bar","data":[{"label":"Search","value":240},{"label":"Fares","value":720},{"label":"Hold","value":380},{"label":"Payment","value":1640},{"label":"Confirm","value":220}]},{"type":"code","title":"fares/quote.go: one query for every leg of the trip","lang":"go","code":"func (q *Quoter) Quote(ctx context.Context, legs []Leg) (Quote, error) {\n\tvar total Money\n\tfor _, leg := range legs {\n\t\tfare, err := q.store.FareFor(ctx, leg.RouteID, leg.Class)\n\t\tif err != nil {\n\t\t\treturn Quote{}, err\n\t\t}\n\t\ttotal = total.Add(fare.Price(leg.Party))\n\t}\n\treturn Quote{Total: total}, nil\n}"},{"type":"spec","spec":[{"label":"3.2 seconds","text":"Median from Book to the confirmation at the Friday peak."},{"label":"1 in 40","text":"Checkout attempts that time out at the same peak."},{"label":"7 of 11","text":"Incidents in 90 days that began with a change to checkout."},{"label":"No tests","text":"Cover the payment retry path or the seat hold expiry."}]},{"type":"callout","title":"A retry can charge twice","tone":"risk","markdown":"When the card provider is slow, checkout retries the charge without an idempotency key. Twice in 90 days a rider paid twice for one booking. Idea 2 closes this whichever way the cycle goes."}]},{"id":"ideas","title":"Ideas","board":{"summary":true,"items":[{"id":"fares-batch","title":"Quote every leg in one query","summary":"Fares for a whole trip load in one query instead of one per leg, which removes most of the wait in the fares step.","size":"minor","effort":"S","impact":4,"facets":[{"label":"How it works","markdown":"`FareFor` becomes `FaresFor` in `fares/store.go`, and `Quote` reads from the map it returns:\n\n```postgresql\nSELECT route_id, class, price FROM fares\nWHERE (route_id, class) IN (SELECT * FROM unnest($1::text[], $2::text[]))\n```"},{"label":"Why","markdown":"Fares is the second slowest step, and almost all of it is round trips. A return trip for a family of four makes eight queries today."},{"label":"In use","markdown":"The trace for a return booking shows one fares query, and the step drops to about 90 ms."},{"label":"Unlocks","markdown":"Idea 7 caches the same map."}]},{"id":"idempotent-pay","title":"An idempotency key on every charge","summary":"Each checkout sends one key with its charge and every retry, so a slow card provider can never charge a rider twice.","size":"minor","effort":"S","impact":5,"facets":[{"label":"How it works","markdown":"Checkout makes one key for each payment, stores it on the booking row, and `payments/charge.go` sends it as `Idempotency-Key` on the first call and on every retry."},{"label":"Why","markdown":"Two riders were charged twice in 90 days, both after a provider timeout, and each refund took the harbour office 25 minutes."},{"label":"Unlocks","markdown":"Idea 9 reuses the key to refund exactly once."},{"label":"Risk","markdown":"A key kept only in memory is lost on a restart mid-checkout, which is why it lives on the booking row."}]},{"id":"pay-errors","title":"Typed errors from the payments client","summary":"The payments client returns declined, retryable, and fatal errors as values the caller can test, not messages it has to match.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"`payments/client.go` wraps provider codes in `ErrDeclined`, `ErrRetryable`, and `ErrFatal`. Checkout switches on `errors.Is` instead of `strings.Contains(err.Error(), \"timeout\")`."},{"label":"Why","markdown":"Three incidents started when the provider reworded an error message. With types, the compiler and the tests catch that instead of riders."},{"label":"Unlocks","markdown":"Ideas 2 and 9 retry only `ErrRetryable`."}]},{"id":"request-ids","title":"One request id in every log line","summary":"A request id from the gateway reaches every log line and outgoing call, so one checkout reads as one story.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Middleware in `api/middleware.go` puts the id in the context, `internal/log` adds it to every line, and the fares and payments clients forward it as `X-Request-Id`."},{"label":"Why","markdown":"Following a failed checkout today means matching timestamps across four logs. It took two hours in the last incident."},{"label":"In use","markdown":"Searching the logs for one id shows the whole booking, from search to the card provider's answer."}]},{"id":"contract-tests","title":"Contract tests for the fares API","summary":"Recorded app requests pin what the rider app expects from the fares endpoint, so CI fails before a change breaks the app.","size":"minor","effort":"M","impact":3,"facets":[{"label":"How it works","markdown":"`fares/contract_test.go` replays the app's recorded requests from `testdata/app-fares/` against the handler and compares every response field by name and type."},{"label":"Why","markdown":"Two releases broke the app by renaming a fares field, and both passed every test the service had."},{"label":"Note","markdown":"The app team records new requests with one command when the app changes."}]},{"id":"release-holds","title":"Free seat holds when checkout gives up","summary":"A failed or abandoned checkout frees its held spaces at once instead of waiting fifteen minutes for them to expire.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Checkout's error path and the app's back button call `holds.Release`. Expiry stays as the backstop for a rider who closes the app."},{"label":"Why","markdown":"At the peak, abandoned holds keep up to 30 car spaces off sale, and riders see a sailing as full when it is not."}]},{"id":"quote-cache","title":"Cache quotes for thirty seconds","summary":"Search, the trip screen, and checkout share one short-lived quote, so a rider's fare is worked out once per trip.","size":"major","effort":"M","impact":4,"dependsOn":["fares-batch"],"facets":[{"label":"How it works","markdown":"`fares/cache.go` keys quotes by route, date, class, and party, keeps them for 30 seconds, and drops them all when fares change by bumping a version."},{"label":"Why","markdown":"A rider sees the same quote on three screens, and each screen asks for it again. At the peak that is a third of all fares queries."},{"label":"Risk","markdown":"A stale price must never reach payment. Checkout checks the fares version again before it charges and requotes if it moved."}]},{"id":"hold-leases","title":"Seat holds in a lease table","summary":"Holds move from a map inside one process to a Postgres table, so deploys keep them and two instances can take bookings.","size":"major","effort":"L","impact":5,"facets":[{"label":"How it works","markdown":"A `hold_leases` table with a unique index on sailing and space. Holds are taken with `INSERT ... ON CONFLICT DO NOTHING` and swept when they expire, and `holds/holds.go` keeps its interface."},{"label":"Why","markdown":"Holds live in memory today, so the service cannot run a second instance, and every deploy drops the holds of riders mid-checkout."},{"label":"In use","markdown":"A deploy at the Friday peak goes unnoticed, and the gateway spreads checkouts across two instances."},{"label":"Unlocks","markdown":"A second instance at the Friday peak, which halves the queue in front of every checkout step."},{"label":"Risk","markdown":"A mistake here double books car spaces. Run both stores side by side for a week and compare every hold before switching."}]},{"id":"refund-queue","title":"Refunds on a queue with retries","summary":"Refunds leave the request path for a worker that retries with backoff and records every attempt.","size":"major","effort":"L","impact":4,"dependsOn":["idempotent-pay","pay-errors"],"facets":[{"label":"How it works","markdown":"Cancelling a booking writes a `refund_jobs` row. A worker in `refunds/worker.go` sends it with the charge's key and retries `ErrRetryable` with backoff."},{"label":"Why","markdown":"A slow refund holds the cancel screen for up to 20 seconds today, and a failed one is lost unless the rider calls."},{"label":"Risk","markdown":"A stuck queue delays refunds without a sound. Alert when the oldest job is more than ten minutes old."}]},{"id":"checkout-flags","title":"Ship checkout changes behind flags","summary":"A checkout change can go out switched off, reach a share of riders, and be turned off again without a rollback.","size":"major","effort":"M","impact":4,"facets":[{"label":"How it works","markdown":"A small flag store in `internal/flags`, read from Postgres every 30 seconds and checked in `checkout/handler.go`, plus a `flags` command for the team."},{"label":"Why","markdown":"Seven of the last eleven incidents began with a checkout change, and each one took a full rollback to undo."},{"label":"In use","markdown":"A new payment screen reaches 5% of riders on Monday, half on Wednesday, and everyone once its error rate holds."},{"label":"Risk","markdown":"Old flags pile up. Each flag gets an owner and a removal date when it is added."}]}]}},{"id":"also","title":"Also considered","board":{"layout":"rows","items":[{"id":"rewrite-rust","title":"Rewrite checkout in Rust","summary":"The time goes to round trips and the card provider, not to Go, so a rewrite would move none of it."},{"id":"microservices","title":"Split booking into microservices","summary":"Four people run this, and more services would add the very network hops that slow checkout."},{"id":"graphql","title":"A GraphQL gateway for the apps","summary":"The app's calls are few and cheap, and idea 7 removes the repeated ones."}]}}]}</script><script>
+(() => {
+  "use strict";
+  /* the reply line and its words, exactly as Go writes them: testdata/replies.json holds both to the same cases */
+  const parts = (c, s) => {
+    const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
+    let open = 0;
+    c.items.forEach((it) => { num[it.id] = it.n; can[it.id] = it.eligible; if (it.eligible) open++; });
+    const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
+    if (c.mode === "pick") { const p = nums(s.picked || []); if (p.length) groups.push(["", p, p.length === c.items.length]); }
+    else if (c.mode === "verdict") c.verdicts.forEach((id) => { const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k])); if (n.length) groups.push([id, n, n.length === open]); });
+    return [groups, Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]).map((id) => [num[id], notes[id].trim().split(/\s+/).join(" ")])];
+  };
+  const reply = (c, s) => {
+    const [groups, noted] = parts(c, s), body = groups.map(([id, n, all]) => (id ? id + " " : "") + (all ? "all" : n.join(", "))).join("; ");
+    return (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + "." + (noted.length ? " Notes: " + noted.map((x) => x.join(": ")).join("; ") + "." : "");
+  };
+  const words = (c, s) => {
+    const [groups, noted] = parts(c, s), and = (n) => (n.length < 3 ? n.join(" and ") : n.slice(0, -1).join(", ") + ", and " + n[n.length - 1]);
+    const said = (s.path ? ["Choice: " + (c.options[s.path] || s.path)] : []).concat(
+      groups.map(([id, n, all]) => (id ? c.labels[id] : "Pick") + ": " + (all ? "all " + c.plural : (n.length > 1 ? c.plural : c.noun) + " " + and(n))),
+      noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
+    return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
+  };
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words }; return; }
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+  const at = (el, name) => el.getAttribute(name);
+  const idOf = (el) => at(el.closest("[data-item]"), "data-item");
+  const on = (type, fn, target) => (target || document).addEventListener(type, fn);
+  const say = (sel, text) => $$(sel).forEach((el) => { el.textContent = text; });
+  const keys = Object.keys;
+  let model = {};
+  try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
+  const slug = (model.meta && model.meta.slug) || "dossier";
+  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
+  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+
+  /* theme: auto, light, dark */
+  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const applyTheme = (m) => {
+    if (!modes.includes(m)) m = "auto";
+    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    if (themeBtn) {
+      themeBtn.setAttribute("data-mode", m);
+      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
+      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
+      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+    }
+    keep("theme", m);
+  };
+  applyTheme(load("theme"));
+  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+
+  /* decisions: the embedded model is the baseline, this device may go further */
+  const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
+  let defs = [];
+  try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
+  defs.forEach((d) => { tone[d.id] = d.tone; label[d.id] = d.label; });
+  const items = $$("[data-item][data-num]"), choices = $$("input[data-choice]");
+  const ctx = { mode, verdicts: defs.map((d) => d.id), labels: label, options: {}, items: [], noun: pickBlock && at(pickBlock, "data-noun"), plural: pickBlock && at(pickBlock, "data-plural") };
+  choices.forEach((r) => { ctx.options[r.value] = at(r, "data-label"); });
+  items.forEach((el) => {
+    const id = at(el, "data-item");
+    num[id] = +at(el, "data-num");
+    can[id] = el.hasAttribute("data-decides");
+    ctx.items.push({ id, n: num[id], eligible: can[id] });
+  });
+  const clean = (s) => {
+    const out = { path: "", picked: [], verdicts: {}, notes: {} };
+    if (!s || typeof s !== "object") return out;
+    if (choices.some((r) => r.value === s.path)) out.path = s.path;
+    if (mode === "pick" && Array.isArray(s.picked)) out.picked = s.picked.filter((id, i, a) => num[id] && a.indexOf(id) === i);
+    if (mode === "verdict" && s.verdicts && typeof s.verdicts === "object") keys(s.verdicts).forEach((id) => { if (can[id] && label[s.verdicts[id]]) out.verdicts[id] = s.verdicts[id]; });
+    if (s.notes && typeof s.notes === "object") keys(s.notes).forEach((id) => { const v = s.notes[id]; if (num[id] && typeof v === "string" && v.trim()) out.notes[id] = v.trim(); });
+    return out;
+  };
+  let state = clean(model.decisions), framed = true;
+  try { const saved = load("decisions"); if (saved) state = clean(JSON.parse(saved)); } catch (e) {}
+  try { framed = window.parent !== window; } catch (e) {}
+  const tell = (msg) => { if (framed) { msg.slug = slug; try { window.parent.postMessage(msg, "*"); } catch (e) {} } };
+  const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
+  const announce = () => {
+    const d = detail();
+    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    tell({ type: "dossier:decisions", decisions: d });
+  };
+  const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
+  const decided = (id) => (mode === "pick" ? state.picked.includes(id) : !!state.verdicts[id]);
+  const setPick = (id, yes) => { if (yes !== decided(id)) { state.picked = yes ? state.picked.concat(id) : state.picked.filter((x) => x !== id); save(); } };
+  const setVerdict = (id, v) => { if (can[id] && (state.verdicts[id] || "") !== v) { if (v) state.verdicts[id] = v; else delete state.verdicts[id]; save(); } };
+  const setPath = (p) => { if (state.path !== p) { state.path = p; save(); } };
+  const setNote = (id, text) => { const v = String(text || "").trim(); if ((state.notes[id] || "") !== v) { if (v) state.notes[id] = v; else delete state.notes[id]; save(); } };
+  const toneOf = (el, v) => { if (tone[v]) el.setAttribute("data-tone", tone[v]); else el.removeAttribute("data-tone"); };
+  const render = () => {
+    items.forEach((el) => {
+      const id = at(el, "data-item"), v = state.verdicts[id] || "", yes = decided(id), picked = mode === "pick" && yes;
+      el.classList.toggle("picked", picked);
+      toneOf(el, v);
+      $$("[data-verdict]", el).forEach((b, i) => {
+        const sel = at(b, "data-verdict") === v;
+        b.setAttribute("aria-checked", sel);
+        b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
+      });
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
+      if (tr) {
+        tr.classList.toggle("picked", picked);
+        toneOf(tr, v);
+        const ctl = $("input,select", tr);
+        if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
+      }
+      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
+      if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
+      if (note && state.notes[id]) note.hidden = false;
+      if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
+    });
+    let chosen = "Open";
+    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
+    say('[data-live="choice"]', chosen);
+    $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
+    say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
+    if (pickBlock) pickBlock.toggleAttribute("data-empty", !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length);
+    say("[data-reply]", reply(ctx, state));
+    say("[data-words]", words(ctx, state));
+    applyView();
+  };
+  const decisionsJSON = () => {
+    const d = detail(), some = (o) => (keys(o).length ? o : undefined);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+  };
+  let noteTimer;
+  on("click", (e) => {
+    const t = e.target;
+    let b = t.closest("[data-verdict]");
+    if (b) { e.preventDefault(); const id = idOf(b), v = at(b, "data-verdict"); setVerdict(id, state.verdicts[id] === v && e.detail ? "" : v); return; }
+    if ((b = t.closest("[data-pick]"))) { e.preventDefault(); setPick(idOf(b), !decided(idOf(b))); return; }
+    if ((b = t.closest("[data-note-toggle]"))) {
+      e.preventDefault();
+      const d = b.closest("[data-item]"), wrap = $("[data-note-wrap]", d);
+      if (wrap) { wrap.hidden = !wrap.hidden; if (!wrap.hidden) d.open = true; render(); if (!wrap.hidden) $("textarea", wrap).focus(); }
+      return;
+    }
+    if (t.closest("[data-choice-clear]")) setPath("");
+    else if (t.closest("[data-collapse-toggle]")) setAllOpen(!anyOpen());
+    else if (t.closest("[data-copy-reply]")) copy(reply(ctx, state), "Reply copied");
+    else if (t.closest("[data-copy-decisions]")) copy(decisionsJSON(), "Copied as JSON");
+    else if (t.closest("[data-hide]")) setHide(!hide);
+    else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
+    else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+  });
+  on("keydown", (e) => {
+    const t = e.target, b = t.closest && t.closest("[data-verdict]");
+    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    if (!b) return;
+    const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (dir) {
+      e.preventDefault();
+      const next = group[(group.indexOf(b) + dir + group.length) % group.length];
+      setVerdict(idOf(b), at(next, "data-verdict"));
+      next.focus();
+    } else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); setVerdict(idOf(b), ""); }
+  });
+  on("change", (e) => {
+    const t = e.target;
+    if (t.matches("input[data-pick-row]")) setPick(at(t, "data-pick-row"), t.checked);
+    else if (t.matches("select[data-verdict-row]")) setVerdict(at(t, "data-verdict-row"), t.value);
+    else if (t.matches("input[data-choice]")) setPath(t.value);
+  });
+  on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+
+  /* collapsing: remembered per item on this device */
+  const details = $$("details.item[id]"), opened = {};
+  let printing = false, beforePrint = null;
+  try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
+  const anyOpen = () => details.some((d) => d.open);
+  const setAllOpen = (open) => details.forEach((d) => { d.open = open; });
+  const renderCollapse = () => { const b = $("[data-collapse-toggle]"); if (b) { b.textContent = anyOpen() ? "Collapse all" : "Expand all"; b.setAttribute("aria-expanded", anyOpen()); } };
+  details.forEach((d) => {
+    if (opened[d.id]) d.open = true;
+    on("toggle", () => {
+      if (!printing && !auto[d.id]) { if (d.open) opened[d.id] = true; else delete opened[d.id]; keep("open", JSON.stringify(keys(opened))); }
+      renderCollapse();
+    }, d);
+  });
+  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
+  openHash();
+  on("hashchange", openHash, window);
+  renderCollapse();
+
+  /* view: Hide decided and search together decide what shows; printing shows everything */
+  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
+  const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
+  const matches = (u, terms) => terms.every((t) => u.text.includes(t) || (u.n > 0 && +t === u.n));
+  let hide = load("hide") === "1", query = "", auto = {}, hits = [], now = -1;
+  const mark = (name, ranges) => { if (hl) hl.set(name, new Highlight(...ranges)); };
+  const count = (active) => say("[data-hits]", !active ? "" : !hits.length ? "No matches" : now >= 0 ? now + 1 + " of " + hits.length : hits.length + (hits.length === 1 ? " match" : " matches"));
+  const applyView = () => {
+    const terms = printing ? [] : fold(query).split(/\s+/).filter(Boolean);
+    let shown = 0;
+    units.forEach((u) => {
+      const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
+      u.el.hidden = h;
+      if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
+      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+    });
+    if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
+    sections.forEach((sec) => {
+      const h = terms.length > 0 && !matches(sec, terms) && !$$("details.item:not([hidden]), .rows > :not([hidden])", sec.el).length, a = $('.toc a[href="#' + sec.el.id + '"]');
+      sec.el.hidden = h;
+      if (!h) shown++;
+      if (a) a.parentNode.hidden = h;
+    });
+    $$(".toc li.group").forEach((g) => { let n = g.nextElementSibling, any = false; while (n && !n.classList.contains("group")) { any = any || !n.hidden; n = n.nextElementSibling; } g.hidden = !any && (!$("a", g) || g.hidden); });
+    $$("[data-hidden-row]").forEach((row) => { const n = $$("details.item[hidden]", row.parentNode).length; row.hidden = !n || terms.length > 0; $("[data-hidden-count]", row).textContent = n; });
+    const none = $("[data-no-hits]"), b = $("[data-hide]");
+    if (none) { none.hidden = !terms.length || shown > 0; $("[data-no-hits-query]", none).textContent = query.trim(); }
+    if (b) { b.setAttribute("aria-pressed", hide); b.textContent = hide ? "Showing undecided" : "Hide decided"; }
+    hits = [];
+    now = -1;
+    const walk = document.createTreeWalker($("#main") || document.body, NodeFilter.SHOW_TEXT);
+    for (let node; terms.length && (node = walk.nextNode());) {
+      const el = node.parentElement, closed = el.closest("details:not([open])");
+      if (el.closest("[hidden],button,select,textarea,[data-no-hits],.pick") || (closed && !el.closest("summary"))) continue;
+      let f = "";
+      const map = [], x = node.data;
+      for (let i = 0; i < x.length; i++) { const c = fold(x[i]); for (let j = 0; j < c.length; j++) { f += c[j]; map.push(i); } }
+      terms.forEach((t) => { for (let k = f.indexOf(t); k >= 0; k = f.indexOf(t, k + t.length)) { const r = new Range(); r.setStart(node, map[k]); r.setEnd(node, map[k + t.length - 1] + 1); hits.push(r); } });
+    }
+    hits.sort((a, z) => a.compareBoundaryPoints(Range.START_TO_START, z));
+    mark("dossier-hit", hits);
+    mark("dossier-now", []);
+    count(terms.length);
+  };
+  const step = (dir) => {
+    if (!hits.length) return;
+    now = (now + dir + hits.length) % hits.length;
+    mark("dossier-now", [hits[now]]);
+    hits[now].startContainer.parentElement.scrollIntoView({ block: "center" });
+    count(true);
+  };
+  const search = (q) => { if (box) box.value = q; query = q; applyView(); };
+  const setHide = (yes) => { hide = yes; keep("hide", hide ? "1" : "0"); applyView(); };
+  if (box) {
+    on("input", () => { query = box.value; applyView(); }, box);
+    on("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); step(e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") { e.preventDefault(); if (box.value) search(""); else box.blur(); }
+    }, box);
+  }
+
+  /* copy and toast */
+  let toastTimer;
+  const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
+  const copy = (text, msg) => {
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+  };
+
+  /* contents: mark the section in view */
+  const links = {};
+  let active = null;
+  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
+  }
+
+  render();
+  announce();
+
+  /* embedded: keep the parent's frame as tall as the page */
+  if (framed) {
+    let lastHeight = -1;
+    const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };
+    if ("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.body);
+    on("load", postHeight, window);
+    postHeight();
+  }
+})();
+</script></body></html>
