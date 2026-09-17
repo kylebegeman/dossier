@@ -1,0 +1,191 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Dossier 0.7.1",
+    "slug": "release-0-7-1",
+    "kicker": "Dossier releases",
+    "emphasis": "0.7.1",
+    "lede": "A calmer reply block that says each reply in plain words, and a showcase that opens with a brainstorm about code. Every gate passed, and the call is ship.",
+    "updated": "2026-09-16",
+    "status": "shipped",
+    "facts": [
+      {
+        "label": "platforms",
+        "value": "6"
+      },
+      {
+        "label": "npm packages",
+        "value": "8"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "ships",
+      "title": "What ships",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.1 answers the first reader feedback on 0.7.0: the block at the bottom of a deciding page was loud and did not say that it fills in from the reader's choices. Models from 0.7.0 build unchanged."
+        },
+        {
+          "type": "table",
+          "title": "Changes",
+          "columns": [
+            "Area",
+            "What changed"
+          ],
+          "rows": [
+            [
+              "Your reply",
+              "The saturated block is now a bordered section that says it fills in as you decide. It shows an example until you do, then your reply with Copy reply and Copy as JSON."
+            ],
+            [
+              "Plain words",
+              "Every reply line is said again in words, such as Choice: Safer changes. Pick: ideas 2 and 10. Go and the reader share the wording and its test cases."
+            ],
+            [
+              "Showcase",
+              "A brainstorm about a booking service's code leads the examples and the README, and the spring fixes show the same kind without code."
+            ],
+            [
+              "Fixes",
+              "Examples on pages with nothing to rule on keep only the choice, the Markdown copy names an empty set of decisions, the last section drops its rule above the block, and code tabs are four columns wide."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "title": "Gates",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "go-checks",
+            "title": "Go checks",
+            "summary": "Formatting, vet, staticcheck, errcheck, the race-enabled tests, and a CGO-free build all passed.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make check` in `core`, which also drift-checks generated code and the vendored Graphviz."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every package passed. The reader is 20,100 bytes of its 20,480 byte budget and the stylesheet 29,064 of 30,720."
+              }
+            ]
+          },
+          {
+            "id": "showcase",
+            "title": "Showcase fixtures",
+            "summary": "All seven example documents build with no warnings and match their HTML and Markdown goldens.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestExamples` and `TestExampleReplies` build the showcase the way a reader gets it and paste a reply into each decision document."
+              },
+              {
+                "label": "Result",
+                "markdown": "Seven documents, six kinds, no warnings, and the largest page, the booking service brainstorm, at 110 KB of its 120 KB budget."
+              }
+            ]
+          },
+          {
+            "id": "legacy",
+            "title": "0.6 imports",
+            "summary": "All 17 legacy fixtures upgrade to models that pass the strict 0.7 checks.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestLegacyFixtures` upgrades each 0.6 document and compares it with its golden."
+              },
+              {
+                "label": "Result",
+                "markdown": "17 of 17 upgrade strictly onto their kinds' vocabularies."
+              }
+            ]
+          },
+          {
+            "id": "react",
+            "title": "React package tests",
+            "summary": "The wrapper renders through the binary, and the reader writes every shared reply case in the same line and words as Go.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`npm test` in `packages/react`, including the 13 reply cases shared with the Go parser."
+              },
+              {
+                "label": "Result",
+                "markdown": "10 of 10 tests passed."
+              }
+            ]
+          },
+          {
+            "id": "distribution",
+            "title": "Distribution dry run",
+            "summary": "Six archives, their checksums, the Homebrew formula, and seven npm packages build and install.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make dist-check` cross-compiles every target, runs the formula's test commands on an archive, and installs the npm packages from tarballs."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every check printed ok, and the binary and the launcher both report 0.7.1."
+              }
+            ]
+          },
+          {
+            "id": "browser",
+            "title": "Reader and studio in a browser",
+            "summary": "Your reply in every state, in light, dark, and at phone width, and decisions kept by the studio.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "Headless Chrome on the built showcase: the empty and decided block on five pages, the ship warning, Clear, both copy buttons, a reload, search, and the print rules, then `dossier serve` with a second tab."
+              },
+              {
+                "label": "Result",
+                "markdown": "All passed. Search never highlights inside the block, and the studio renders stored decisions into it."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.1 changes only the page and the showcase, so going back to 0.7.0 is safe for any model."
+        },
+        {
+          "type": "code",
+          "title": "Back to 0.7.0",
+          "lang": "sh",
+          "code": "npm install --save-dev @kylebegeman/dossier@0.7.0"
+        }
+      ]
+    }
+  ],
+  "decisions": {
+    "path": "ship"
+  }
+}
