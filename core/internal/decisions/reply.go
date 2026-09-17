@@ -10,13 +10,14 @@ import (
 
 // ParseReply reads a reply line under the rules:
 //
-//	[choice ","] group {";" group} "." ["Notes:" n ":" text {";" n ":" text} "."]
+//	[choice ","] group {";" group} "." ["Notes:" n ":" text {";" n ":" text} ["."]]
 //
 // A group is an optional verdict followed by targets: numbers, ranges such
 // as 2-4, or all (rest means the same): every item that takes a verdict and
 // is not named elsewhere. Bare numbers take the kind's default verdict; in a
 // pick kind they are picks. Words match without case, and "and" joins
-// numbers like a comma.
+// numbers like a comma. A period after the last note is the line's, not the
+// note's, so it is dropped.
 func ParseReply(text string, items []Item, rules Rules) (Document, error) {
 	if rules.Mode == ModeNone {
 		return Document{}, fmt.Errorf("the %s kind has nothing to decide", rules.Kind)

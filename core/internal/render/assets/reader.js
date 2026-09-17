@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  /* the reply line and its words, exactly as Go writes them: testdata/replies.json holds both to the same cases */
+  /* the reply line, its words, and whether it says anything, exactly as Go has them: testdata/replies.json holds both to the same cases */
   const parts = (c, s) => {
     const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
     let open = 0;
@@ -8,12 +8,14 @@
     const nums = (ids) => { const seen = {}; return ids.map((id) => num[id]).filter((n) => n && !seen[n] && (seen[n] = 1)).sort((a, b) => a - b); };
     if (c.mode === "pick") { const p = nums(s.picked || []); if (p.length) groups.push(["", p, p.length === c.items.length]); }
     else if (c.mode === "verdict") c.verdicts.forEach((id) => { const n = nums(Object.keys(v).filter((k) => v[k] === id && can[k])); if (n.length) groups.push([id, n, n.length === open]); });
-    return [groups, Object.keys(notes).filter((id) => num[id] && String(notes[id]).trim()).sort((a, b) => num[a] - num[b]).map((id) => [num[id], notes[id].trim().split(/\s+/).join(" ")])];
+    const note = (id) => String(notes[id]).trim().split(/\s+/).join(" ").replace(/[ .]+$/, "");
+    return [groups, Object.keys(notes).map((id) => [num[id], note(id)]).filter(([n, t]) => n && t).sort((a, b) => a[0] - b[0])];
   };
   const reply = (c, s) => {
     const [groups, noted] = parts(c, s), body = groups.map(([id, n, all]) => (id ? id + " " : "") + (all ? "all" : n.join(", "))).join("; ");
-    return (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + "." + (noted.length ? " Notes: " + noted.map((x) => x.join(": ")).join("; ") + "." : "");
+    return (s.path && body ? s.path + ", " + body : s.path || body || "nothing") + "." + (noted.length ? " Notes: " + noted.map((x) => x.join(": ")).join("; ") + (/[!?]$/.test(noted[noted.length - 1][1]) ? "" : ".") : "");
   };
+  const empty = (c, s) => { const [groups, noted] = parts(c, s); return !s.path && !groups.length && !noted.length; };
   const words = (c, s) => {
     const [groups, noted] = parts(c, s), and = (n) => (n.length < 3 ? n.join(" and ") : n.slice(0, -1).join(", ") + ", and " + n[n.length - 1]);
     const said = (s.path ? ["Choice: " + (c.options[s.path] || s.path)] : []).concat(
@@ -21,7 +23,7 @@
       noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
     return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
   };
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words }; return; }
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty }; return; }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -122,7 +124,7 @@
     say('[data-live="choice"]', chosen);
     $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
     say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
-    if (pickBlock) pickBlock.toggleAttribute("data-empty", !state.path && !state.picked.length && !keys(state.verdicts).length && !keys(state.notes).length);
+    if (pickBlock) pickBlock.toggleAttribute("data-empty", empty(ctx, state));
     say("[data-reply]", reply(ctx, state));
     say("[data-words]", words(ctx, state));
     applyView();

@@ -76,7 +76,7 @@
               },
               {
                 "label": "Result",
-                "markdown": "Every package passed. The reader is 20,100 bytes of its 20,480 byte budget and the stylesheet 29,064 of 30,720."
+                "markdown": "Every package passed. The reader is 20,257 bytes of its 20,480 byte budget and the stylesheet 29,106 of 30,720."
               }
             ]
           },
@@ -123,7 +123,7 @@
             "facets": [
               {
                 "label": "How checked",
-                "markdown": "`npm test` in `packages/react`, including the 13 reply cases shared with the Go parser."
+                "markdown": "`npm test` in `packages/react`, including the 15 reply cases shared with the Go parser, which now also hold both sides to when nothing is decided."
               },
               {
                 "label": "Result",

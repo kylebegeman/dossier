@@ -406,7 +406,7 @@ func masthead(p *Page) templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				if f.Live == "choice" {
+				if f.Live != "" {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<a href=\"#pick\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -3045,7 +3045,7 @@ func pick(p *Page) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 291, "</b> <button type=\"button\" class=\"link-btn\" data-choice-clear")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 291, "</b> <button type=\"button\" class=\"link-btn\" aria-label=\"Clear the choice\" data-choice-clear")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

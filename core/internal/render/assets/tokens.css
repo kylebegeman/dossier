@@ -340,14 +340,14 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
 .pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
 .pick .sum { display: block; font-size: 13px; color: var(--muted); }
 .pick .guard { padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--risk-soft); font-size: 13.5px; }
-.reply { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
-.said { flex: 1 1 340px; min-width: 0; display: grid; gap: 3px; }
-.said code { padding: 0; border: 0; background: none; font-size: 13px; line-height: 1.55; }
-.said .words { font-size: 13.5px; color: var(--muted); }
-.said .tag { margin-right: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
-.said.example code { color: var(--muted); }
+.pick .reply { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.pick .said { flex: 1 1 340px; min-width: 0; display: grid; gap: 3px; }
+.pick .said code { padding: 0; border: 0; background: none; font-size: 13px; line-height: 1.55; }
+.pick .said .words { font-size: 13.5px; color: var(--muted); }
+.pick .said .tag { margin-right: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
+.pick .said.example code { color: var(--muted); }
 .pick[data-empty] :is(.live, .acts), .pick:not([data-empty]) .example { display: none; }
-.acts { display: flex; align-items: center; gap: 14px; }
+.pick .acts { display: flex; align-items: center; gap: 14px; }
 .btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 .btn.solid:hover { background: var(--ink); color: var(--bg); opacity: 0.86; }
 

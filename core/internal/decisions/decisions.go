@@ -246,7 +246,11 @@ func ReplyLine(d Document, items []Item, rules Rules) string {
 			}
 			fmt.Fprintf(&b, "%d: %s", n.n, n.text)
 		}
-		b.WriteString(".")
+		// The notes end with a period unless the last one ends its own
+		// sentence, so a reader's "Smaller first!" is not followed by one.
+		if last := notes[len(notes)-1].text; !strings.HasSuffix(last, "!") && !strings.HasSuffix(last, "?") {
+			b.WriteString(".")
+		}
 	}
 	return b.String()
 }
@@ -298,12 +302,12 @@ func ReplyWords(d Document, items []Item, rules Rules) string {
 }
 
 // Undecided reports whether decisions carry nothing a reply would say: no
-// choice among the options, no picks or verdicts the rules accept, and no
-// notes on known items. The reader marks its reply block the same way.
+// choice, no picks or verdicts the rules accept, and no notes on known
+// items, so the reply line reads "nothing.". The reader marks its reply
+// block by the same rule, and the shared cases hold the two together.
 func Undecided(d Document, items []Item, rules Rules) bool {
 	groups, notes := replyParts(d, items, rules)
-	_, chosen := rules.Option(d.Path)
-	return !chosen && len(groups) == 0 && len(notes) == 0
+	return d.Path == "" && len(groups) == 0 && len(notes) == 0
 }
 
 // replyGroup is one group of a reply: picks when verdict is empty, with the
@@ -320,8 +324,11 @@ type replyNote struct {
 }
 
 // replyParts splits decisions into what a reply says, in the reply's order:
-// picks or verdict groups in the kind's verdict order, then notes by number
-// with their whitespace collapsed.
+// picks or verdict groups in the kind's verdict order, then notes by number.
+// A note is written on one line with its spaces collapsed and without any
+// period a reader ended it with, since the line's own period follows the
+// last note and the parser drops one; a note that is only periods says
+// nothing.
 func replyParts(d Document, items []Item, rules Rules) ([]replyGroup, []replyNote) {
 	number := make(map[string]int, len(items))
 	eligible := 0
@@ -352,8 +359,9 @@ func replyParts(d Document, items []Item, rules Rules) ([]replyGroup, []replyNot
 	}
 	var notes []replyNote
 	for id, text := range d.Notes {
-		if n := number[id]; n > 0 && strings.TrimSpace(text) != "" {
-			notes = append(notes, replyNote{n: n, text: strings.Join(strings.Fields(text), " ")})
+		text = strings.TrimRight(strings.Join(strings.Fields(text), " "), ". ")
+		if n := number[id]; n > 0 && text != "" {
+			notes = append(notes, replyNote{n: n, text: text})
 		}
 	}
 	sort.Slice(notes, func(i, j int) bool { return notes[i].n < notes[j].n })
@@ -373,17 +381,20 @@ func numbersOf(ids []string, number map[string]int) []int {
 	return nums
 }
 
-func joinInts(nums []int) string {
+func decimals(nums []int) []string {
 	parts := make([]string, len(nums))
 	for i, n := range nums {
 		parts[i] = strconv.Itoa(n)
 	}
-	return strings.Join(parts, ", ")
+	return parts
 }
+
+// joinInts joins numbers for the line: "1, 2, 3".
+func joinInts(nums []int) string { return strings.Join(decimals(nums), ", ") }
 
 // andInts joins numbers for words: "1", "1 and 2", "1, 2, and 3".
 func andInts(nums []int) string {
-	s := strings.Split(joinInts(nums), ", ")
+	s := decimals(nums)
 	if len(s) < 3 {
 		return strings.Join(s, " and ")
 	}

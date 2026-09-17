@@ -79,9 +79,9 @@ func TestRenderBrainstormFixture(t *testing.T) {
 		`<h2 id="pick-title">Your reply</h2>`,
 		`<b id="pick-question">What should winter build for first?</b>`,
 		`<input type="radio" name="dossier-choice" value="storms" data-choice data-label="Storm days">`,
-		`<button type="button" class="link-btn" data-choice-clear hidden>Clear</button>`,
+		`<button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden>Clear</button>`,
 		`<b data-live="choice">Open</b> <a href="#pick">choice</a>`,
-		`<b data-live="count">0</b> <span>picked</span>`,
+		`<b data-live="count">0</b> <a href="#pick">picked</a>`,
 		`<code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p>`,
 		`<button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button>`,
 		`data-hide aria-pressed="false">Hide decided</button>`,
@@ -164,7 +164,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`data-noun="finding" data-plural="findings" data-empty>`,
 		`<b id="pick-question">Approve or rework?</b>`,
 		`<code>rework, fix 1.</code></p><p class="words">Choice: Rework. Fix: finding 1.</p>`,
-		`<b data-live="count">0</b> <span>decided</span>`,
+		`<b data-live="count">0</b> <a href="#pick">decided</a>`,
 	} {
 		if !strings.Contains(review, want) {
 			t.Errorf("review lacks %q", want)
@@ -189,7 +189,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`<li data-item="typo" class="" data-tone="violet"><a href="#typo"><span class="n">2.</span>Typo<span class="sr">, Later</span>`,
 		`<input type="radio" name="dossier-choice" value="rework" data-choice data-label="Rework" checked>`,
 		`<b data-live="choice">Rework</b>`,
-		`<b data-live="count">1</b> <span>decided</span>`,
+		`<b data-live="count">1</b> <a href="#pick">decided</a>`,
 		`<code data-reply>rework, later 2. Notes: 1: rotate the token.</code></p><p class="words" data-words>Choice: Rework. Later: finding 2. Note on finding 1: rotate the token.</p>`,
 	} {
 		if !strings.Contains(ruled, want) {

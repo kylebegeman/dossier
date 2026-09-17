@@ -147,7 +147,7 @@ templ masthead(p *Page) {
 						} else {
 							<b>{ f.Value }</b>
 						}
-						if f.Live == "choice" {
+						if f.Live != "" {
 							<a href="#pick">{ f.Label }</a>
 						} else {
 							<span>{ f.Label }</span>
@@ -581,7 +581,7 @@ templ pick(p *Page) {
 			<fieldset class="choice" aria-labelledby="pick-question">
 				<div class="choice-head">
 					<b id="pick-question">{ p.Choice.Question }</b>
-					<button type="button" class="link-btn" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear</button>
+					<button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear</button>
 				</div>
 				<div class="options">
 					for _, o := range p.Choice.Options {
