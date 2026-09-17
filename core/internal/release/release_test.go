@@ -81,10 +81,15 @@ func TestBuildWritesTheDistribution(t *testing.T) {
 
 	formula, _ := os.ReadFile(filepath.Join(cfg.Out, "homebrew", "dossier.rb"))
 	sumLine := strings.Fields(strings.Split(string(sums), "\n")[0])
-	for _, want := range []string{`version "9.8.7"`, "releases/download/v9.8.7/dossier_9.8.7_darwin_arm64.tar.gz", `sha256 "` + sumLine[0] + `"`, `bin.install "dossier"`} {
+	for _, want := range []string{"releases/download/v9.8.7/dossier_9.8.7_darwin_arm64.tar.gz", `sha256 "` + sumLine[0] + `"`, `bin.install "dossier"`} {
 		if !strings.Contains(string(formula), want) {
 			t.Errorf("formula lacks %q", want)
 		}
+	}
+	// Homebrew reads the version from the archive names, and its audit
+	// rejects a version stanza that repeats it.
+	if strings.Contains(string(formula), "\n  version ") {
+		t.Error("the formula must not state the version its URLs carry")
 	}
 }
 

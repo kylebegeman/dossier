@@ -403,7 +403,6 @@ var formulaTemplate = template.Must(template.New("formula").Parse(`# Generated b
 class Dossier < Formula
   desc "Turn one JSON model into one self-contained HTML dossier"
   homepage "https://github.com/kylebegeman/dossier"
-  version "{{.Version}}"
   license "MIT"
 
   on_macos do
