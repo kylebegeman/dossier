@@ -126,6 +126,7 @@ A team adds its own kinds without forking Dossier. Write one `ID.kind.json` file
 
 - **Effort is agent time, never calendar time.** `S` is under an hour, `M` a few hours with review, `L` a day or more across sessions. Never write days-of-work or weeks-of-work.
 - **Concise by default.** A summary is one sentence. A facet is two or three sentences. Kinds carry character limits; `validate` and `build` warn past them without blocking.
+- **Plain, direct writing.** Use sentence case for titles, with no decorative italics or em dashes. The title renders in one consistent typeface; legacy `meta.emphasis` is accepted but has no visual effect.
 - **Detail sits behind a fold.** Items open collapsed, so the summary line must stand alone.
 - **Ids** are lowercase letters, digits, and hyphens, unique across sections and items. `dependsOn` names item ids.
 - **Markdown** in prose, facets, table cells, and spec text. Raw HTML is escaped. Fenced code is highlighted.

@@ -18,13 +18,12 @@ import (
 // MinContrast is the WCAG AA ratio for body text.
 const MinContrast = 4.5
 
-// The token backgrounds accent text sits on, from tokens.css. Light paper is
-// darker than the light background, so text that reads on paper reads on
-// both; in the dark theme both are checked.
+// The strongest surface backgrounds from tokens.css. Checking paper-2 also
+// covers the page and card surfaces; dark checks include the page explicitly.
 var (
-	lightPaper = mustParse("#f7f5f7")
-	darkBg     = mustParse("#141216")
-	darkPaper  = mustParse("#1c191e")
+	lightPaper = mustParse("#eeeeee")
+	darkBg     = mustParse("#121212")
+	darkPaper  = mustParse("#252525")
 	white      = mustParse("#ffffff")
 )
 
@@ -89,7 +88,8 @@ func (p Palette) CSS() string {
 	}
 	return ":root { " + vars(p.Light) + " }\n" +
 		"@media (prefers-color-scheme: dark) { :root:not([data-theme=\"light\"]) { " + vars(p.Dark) + " } }\n" +
-		":root[data-theme=\"dark\"] { " + vars(p.Dark) + " }\n"
+		":root[data-theme=\"dark\"] { " + vars(p.Dark) + " }\n" +
+		"@media print { :root, :root[data-theme] { " + vars(p.Light) + " } }\n"
 }
 
 // Contrast is the WCAG contrast ratio of two #rrggbb colors.

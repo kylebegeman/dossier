@@ -184,7 +184,7 @@ func TestBuildLegacyDocument(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`<title>Release 0.6.7 Evidence</title>`, `id="release-gates"`, `<details class="item" id="npm-test" data-item="npm-test"`, `<dt>How checked</dt>`, `<b>0.6.7</b> <span>version</span>`} {
+	for _, want := range []string{`<title>Release 0.6.7 Evidence</title>`, `id="release-gates"`, `<details class="item" id="npm-test" data-item="npm-test"`, `<dt>How checked</dt>`, `<b class="fact-text">0.6.7</b> <span>version</span>`} {
 		if !strings.Contains(string(html), want) {
 			t.Errorf("legacy artifact lacks %q", want)
 		}

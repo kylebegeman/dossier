@@ -1,6 +1,5 @@
 (() => {
   "use strict";
-  /* the reply line, its words, and whether it says anything, exactly as Go has them: testdata/replies.json holds both to the same cases */
   const parts = (c, s) => {
     const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
     let open = 0;
@@ -23,7 +22,8 @@
       noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
     return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
   };
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty }; return; }
+  const themeMode = (saved, dark) => ["light", "dark"].includes(saved) ? saved : dark ? "dark" : "light";
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty, themeMode }; return; }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -34,27 +34,27 @@
   const keys = Object.keys;
   let model = {};
   try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
-  const slug = (model.meta && model.meta.slug) || "dossier";
-  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
-  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+  const slug = model.meta?.slug || "dossier";
+  const load = (k, shared) => { try { return localStorage.getItem("dossier:" + (shared ? "" : slug + ":") + k); } catch (e) { return null; } };
+  const keep = (k, v, shared) => { try { localStorage.setItem("dossier:" + (shared ? "" : slug + ":") + k, v); } catch (e) {} };
 
-  /* theme: auto, light, dark */
-  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const themeBtn = $("[data-theme-toggle]");
   const applyTheme = (m) => {
-    if (!modes.includes(m)) m = "auto";
-    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    document.documentElement.setAttribute("data-theme", m);
     if (themeBtn) {
+      themeBtn.hidden = false;
       themeBtn.setAttribute("data-mode", m);
-      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
-      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
-      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+      themeBtn.setAttribute("aria-checked", m === "dark");
+      themeBtn.title = "Switch to " + (m === "dark" ? "light" : "dark") + " mode";
     }
-    keep("theme", m);
   };
-  applyTheme(load("theme"));
-  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+  applyTheme(themeMode(load("theme", true) || load("theme"), matchMedia("(prefers-color-scheme: dark)").matches));
+  if (themeBtn) on("click", () => {
+    const m = at(themeBtn, "data-mode") === "dark" ? "light" : "dark";
+    applyTheme(m);
+    keep("theme", m, true);
+  }, themeBtn);
 
-  /* decisions: the embedded model is the baseline, this device may go further */
   const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
   let defs = [];
   try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
@@ -131,7 +131,7 @@
   };
   const decisionsJSON = () => {
     const d = detail(), some = (o) => (keys(o).length ? o : undefined);
-    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: model.meta?.title || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
   };
   let noteTimer;
   on("click", (e) => {
@@ -154,8 +154,8 @@
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
   });
   on("keydown", (e) => {
-    const t = e.target, b = t.closest && t.closest("[data-verdict]");
-    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    const t = e.target, b = t.closest?.("[data-verdict]");
+    if (e.key === "/" && box && !t.closest?.("input,textarea,select,[contenteditable]")) { e.preventDefault(); box.focus(); return; }
     if (!b) return;
     const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (dir) {
@@ -172,9 +172,8 @@
     else if (t.matches("input[data-choice]")) setPath(t.value);
   });
   on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
-  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches?.("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
 
-  /* collapsing: remembered per item on this device */
   const details = $$("details.item[id]"), opened = {};
   let printing = false, beforePrint = null;
   try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
@@ -188,15 +187,14 @@
       renderCollapse();
     }, d);
   });
-  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
-  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  on("beforeprint", () => { printing = true; beforePrint = $$("details:is(.item,.row,.board-overview,.decision-panel)").map((d) => [d, d.open]); beforePrint.forEach(([d]) => { d.open = true; }); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) beforePrint.forEach(([d, open]) => { d.open = open; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
   const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
   openHash();
   on("hashchange", openHash, window);
   renderCollapse();
 
-  /* view: Hide decided and search together decide what shows; printing shows everything */
-  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const box = $("[data-search]"), hl = window.CSS?.highlights;
   const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
   const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
@@ -258,28 +256,44 @@
     }, box);
   }
 
-  /* copy and toast */
   let toastTimer;
   const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
   const copy = (text, msg) => {
     const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
   };
 
-  /* contents: mark the section in view */
+  const nav = $(".toc"), navBtn = $("[data-contents-toggle]");
+  if (nav && navBtn) {
+    navBtn.hidden = false;
+    const compact = matchMedia("(max-width: 999px)");
+    const setNav = (yes) => { nav.toggleAttribute("data-collapsed", yes); navBtn.setAttribute("aria-expanded", !yes); };
+    setNav(compact.matches);
+    const panel = $(".decision-panel");
+    if (panel) panel.open = !compact.matches;
+    on("change", () => setNav(compact.matches), compact);
+    on("click", () => setNav(!nav.hasAttribute("data-collapsed")), navBtn);
+    on("click", (e) => { if (compact.matches && e.target.closest("a")) setNav(true); }, nav);
+  }
+
   const links = {};
   let active = null;
-  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  $$(".chapter-link").forEach((a) => { links[at(a, "href").slice(1)] = a; });
   const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
-    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
-  }
+  const track = () => {
+    let current;
+    sections.forEach(({ el }) => { if (!el.hidden && (!current || el.getBoundingClientRect().top < innerHeight * .35)) current = el; });
+    if (current) setActive(current.id);
+  };
+  on("scroll", track, window);
+  on("resize", track, window);
+  on("load", track, window);
+  on("input", () => requestAnimationFrame(track), box);
+  track();
 
   render();
   announce();
 
-  /* embedded: keep the parent's frame as tall as the page */
   if (framed) {
     let lastHeight = -1;
     const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };

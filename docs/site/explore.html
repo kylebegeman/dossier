@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dossier examples</title>
+  <style>
+    :root { color-scheme:light; --bg:#f6f6f6; --paper:#fff; --ink:#222; --muted:#656565; --line:#dedede; --accent:#6545cd; --soft:#ede7ff; }
+    @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { color-scheme:dark; --bg:#121212; --paper:#1b1b1b; --ink:#ededed; --muted:#aaa; --line:#383838; --accent:#bda6ff; --soft:#302744; } }
+    :root[data-theme="dark"] { color-scheme:dark; --bg:#121212; --paper:#1b1b1b; --ink:#ededed; --muted:#aaa; --line:#383838; --accent:#bda6ff; --soft:#302744; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    header { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; padding:12px 24px; border-bottom:1px solid var(--line); background:var(--paper); }
+    .wordmark { font-weight:650; font-size:15px; letter-spacing:-.3px; text-decoration:none; color:var(--ink); white-space:nowrap; }
+    .wordmark span { color:var(--muted); font-size:12px; margin-left:8px; font-weight:400; letter-spacing:0; }
+    nav { display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+    nav a { color:var(--muted); text-decoration:none; padding:7px 10px; border-radius:7px; font-size:12px; font-weight:500; }
+    nav a:hover { color:var(--ink); background:var(--bg); }
+    nav a[aria-current] { color:var(--accent); background:var(--soft); }
+    .tools { display:flex; gap:8px; margin-left:auto; align-items:center; }
+    button,.open { font:inherit; font-size:12px; background:none; color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:7px 10px; border-radius:7px; cursor:pointer; white-space:nowrap; }
+    button[aria-pressed="true"] { color:var(--accent); background:var(--soft); border-color:transparent; }
+    a:focus-visible,button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    main { height:calc(100dvh - var(--header,62px)); display:flex; justify-content:center; overflow:hidden; }
+    iframe { display:block; border:0; width:100%; height:100%; background:var(--bg); }
+    main.mobile { padding:20px 0; background:var(--paper); }
+    main.mobile iframe { box-sizing:content-box; flex:none; width:min(390px,100%); border:1px solid var(--line); border-radius:20px; box-shadow:0 12px 48px #0002; }
+    @media (max-width:850px) { header { padding:10px 16px; gap:8px; } nav { order:3; width:100%; } nav a { flex:1; text-align:center; padding-inline:6px; } .tools { margin-left:auto; } }
+    @media (max-width:450px) { .wordmark span { display:none; } .tools button { display:none; } nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } nav a { font-size:11px; padding-inline:4px; } main.mobile { padding:0; } main.mobile iframe { border:0; border-radius:0; } }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="wordmark" href="index.html">Dossier <span>Examples</span></a>
+    <nav aria-label="Dossier type">
+      <a href="booking-service.html" target="dossier-preview" data-kind="brainstorm">Brainstorm</a>
+      <a href="offline-boarding-passes.html" target="dossier-preview" data-kind="plan">Plan</a>
+      <a href="tide-aware-cancellations.html" target="dossier-preview" data-kind="review">Review</a>
+      <a href="release-3-4-0.html" target="dossier-preview" data-kind="release">Release</a>
+      <a href="car-deck-double-booking.html" target="dossier-preview" data-kind="incident">Incident</a>
+      <a href="checkout-abandonment.html" target="dossier-preview" data-kind="brief">Brief</a>
+    </nav>
+    <div class="tools">
+      <button type="button" aria-pressed="false" id="mobile">Mobile view</button>
+      <a class="open" href="booking-service.html" target="_blank" rel="noopener">Open document ↗</a>
+    </div>
+  </header>
+  <main>
+    <iframe name="dossier-preview" title="Brainstorm example" src="booking-service.html"></iframe>
+  </main>
+  <script>
+    (() => {
+      const frame=document.querySelector('iframe'), links=[...document.querySelectorAll('nav a')], open=document.querySelector('.open');
+      const choose=() => {
+        const link=links.find(a=>a.dataset.kind===location.hash.slice(1)) || links[0];
+        links.forEach(a=>{ if(a===link) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+        frame.title=link.textContent+' example';
+        if(frame.getAttribute('src')!==link.getAttribute('href')) frame.src=link.getAttribute('href');
+        open.href=link.href;
+        document.title=link.textContent+' · Dossier examples';
+      };
+      links.forEach(a=>a.addEventListener('click',e=>{ if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); location.hash=a.dataset.kind; }));
+      addEventListener('hashchange',choose);
+      choose();
+      const mobile=document.querySelector('#mobile');
+      mobile.addEventListener('click',()=>{ const on=document.querySelector('main').classList.toggle('mobile'); mobile.setAttribute('aria-pressed',String(on)); });
+      new ResizeObserver(([entry])=>document.documentElement.style.setProperty('--header',entry.target.getBoundingClientRect().height+'px')).observe(document.querySelector('header'));
+      let observer;
+      frame.addEventListener('load',()=>{
+        if(observer) observer.disconnect();
+        const root=frame.contentDocument.documentElement;
+        const sync=()=>{ const mode=root.getAttribute('data-theme'); if(mode) document.documentElement.dataset.theme=mode; };
+        observer=new MutationObserver(sync);
+        observer.observe(root,{attributes:true,attributeFilter:['data-theme']});
+        sync();
+      });
+    })();
+  </script>
+</body>
+</html>

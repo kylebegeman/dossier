@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
 	"dossier/internal/decisions"
 	"dossier/internal/kinds"
 	"dossier/internal/model"
+	"dossier/internal/theme"
 )
 
 // loadFixture reads a checked model from testdata/fixtures: the winter
@@ -61,7 +63,7 @@ func TestRenderBrainstormFixture(t *testing.T) {
 	}
 	for _, want := range []string{
 		`<title>Ten moves for a calmer winter crossing</title>`,
-		`<h1>Ten moves for a <em>calmer</em> winter crossing</h1>`,
+		`<h1>Ten moves for a calmer winter crossing</h1>`,
 		`id="dossier-model"`,
 		`<li class="group">Minor</li>`,
 		`<li class="group">Major</li>`,
@@ -80,8 +82,8 @@ func TestRenderBrainstormFixture(t *testing.T) {
 		`<b id="pick-question">What should winter build for first?</b>`,
 		`<input type="radio" name="dossier-choice" value="storms" data-choice data-label="Storm days">`,
 		`<button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden>Clear</button>`,
-		`<b data-live="choice">Open</b> <a href="#pick">choice</a>`,
-		`<b data-live="count">0</b> <a href="#pick">picked</a>`,
+		`class="decision-panel" open`,
+		`<b data-live="count">0</b> / 10`,
 		`<code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p>`,
 		`<button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button>`,
 		`data-hide aria-pressed="false">Hide decided</button>`,
@@ -148,8 +150,8 @@ func TestKindsShapeTheBoard(t *testing.T) {
 			{ID: "typo", Title: "Typo", Severity: "nit", Facets: facets("Where", "Why it matters")},
 		}}})
 	for _, want := range []string{
-		`<b>a1b2c3</b> <span>revision</span>`,
-		`<div class="t-risk"><b>high</b> <span>risk</span>`,
+		`<b class="fact-text">a1b2c3</b> <span>revision</span>`,
+		`<div class="t-risk"><b class="fact-text">high</b> <span>risk</span>`,
 		`<div class="t-risk"><b>1</b> <span>blocker</span>`,
 		`<li class="group">Blocker</li>`,
 		`<span class="chip t-risk" title="Severity">blocker</span>`,
@@ -164,7 +166,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`data-noun="finding" data-plural="findings" data-empty>`,
 		`<b id="pick-question">Approve or rework?</b>`,
 		`<code>rework, fix 1.</code></p><p class="words">Choice: Rework. Fix: finding 1.</p>`,
-		`<b data-live="count">0</b> <a href="#pick">decided</a>`,
+		`<b data-live="count">0</b> / 2`,
 	} {
 		if !strings.Contains(review, want) {
 			t.Errorf("review lacks %q", want)
@@ -186,10 +188,10 @@ func TestKindsShapeTheBoard(t *testing.T) {
 		`data-verdict="fix" aria-checked="false" tabindex="-1">Fix</button>`,
 		`<tr data-item="typo" class="" data-tone="violet">`,
 		`<option value="later" selected>Later</option>`,
-		`<li data-item="typo" class="" data-tone="violet"><a href="#typo"><span class="n">2.</span>Typo<span class="sr">, Later</span>`,
+		`<li data-item="typo" class="" data-tone="violet"><a href="#typo"><span class="n">2.</span><span>Typo</span><span class="sr">, Later</span>`,
 		`<input type="radio" name="dossier-choice" value="rework" data-choice data-label="Rework" checked>`,
-		`<b data-live="choice">Rework</b>`,
-		`<b data-live="count">1</b> <a href="#pick">decided</a>`,
+		`value="rework" data-choice data-label="Rework" checked`,
+		`<b data-live="count">1</b> / 2`,
 		`<code data-reply>rework, later 2. Notes: 1: rotate the token.</code></p><p class="words" data-words>Choice: Rework. Later: finding 2. Note on finding 1: rotate the token.</p>`,
 	} {
 		if !strings.Contains(ruled, want) {
@@ -256,7 +258,7 @@ func TestKindsShapeTheBoard(t *testing.T) {
 			{ID: "one", Title: "One", Status: "verified", Facets: facets("Detail")},
 			{ID: "two", Title: "Two", Status: "open", Facets: facets("Detail", "So what")},
 		}}})
-	for _, want := range []string{`<span class="chip t-teal" title="Confidence">Confidence verified</span>`, `<th>Confidence</th>`, `<span class="n">–</span>One`, `Expand all`} {
+	for _, want := range []string{`<span class="chip t-teal" title="Confidence">Confidence verified</span>`, `<th>Confidence</th>`, `<span class="n">–</span><span>One</span>`, `Expand all`} {
 		if !strings.Contains(brief, want) {
 			t.Errorf("brief lacks %q", want)
 		}
@@ -270,13 +272,13 @@ func TestKindsShapeTheBoard(t *testing.T) {
 	plan := render("plan", model.Meta{Title: "Plan", Slug: "p"},
 		model.Section{ID: "phase-one", Title: "Phase one", Board: &model.Board{Items: []model.Item{{ID: "a", Title: "A", Status: "doing", Owner: "Mira", Facets: facets("What changes", "Done when")}}}},
 		model.Section{ID: "phase-two", Title: "Phase two", Board: &model.Board{Items: []model.Item{{ID: "b", Title: "B", Status: "blocked", DependsOn: []string{"a"}, Facets: facets("What changes", "Done when")}}}})
-	for _, want := range []string{`<li class="group"><a href="#phase-one">Phase one</a></li>`, `<li class="group"><a href="#phase-two">Phase two</a></li>`, `data-item="b" data-title="B" data-decides data-num="2"`, `<span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span>`, `<span class="chip t-risk" title="Status">blocked</span>`, `<b>2</b> <span>steps</span>`} {
+	for _, want := range []string{`<a class="chapter-link" href="#phase-one"><span class="n">01</span><span>Phase one</span></a>`, `<a class="chapter-link" href="#phase-two"><span class="n">02</span><span>Phase two</span></a>`, `data-item="b" data-title="B" data-decides data-num="2"`, `<span class="owner" title="Owner"><span class="sr">Owner: </span>Mira</span>`, `<span class="chip t-risk" title="Status">blocked</span>`, `<b>2</b> <span>steps</span>`} {
 		if !strings.Contains(plan, want) {
 			t.Errorf("plan lacks %q", want)
 		}
 	}
-	if nav := plan[strings.Index(plan, `<nav class="toc"`):strings.Index(plan, "</nav>")]; strings.Count(nav, "Phase one") != 1 || strings.Contains(nav, ">Rest<") || strings.Contains(nav, ">Frame<") {
-		t.Errorf("each phase appears once in the rail, as its group's link, with no Frame or Rest around boards: %s", nav)
+	if nav := plan[strings.Index(plan, `<nav class="toc"`):strings.Index(plan, "</nav>")]; strings.Count(nav, `href="#phase-one"`) != 1 || strings.Contains(nav, ">Rest<") || strings.Contains(nav, ">Frame<") {
+		t.Errorf("each phase has one outline link, with no Frame or Rest around boards: %s", nav)
 	}
 }
 
@@ -601,12 +603,12 @@ func TestAccentAddsTheDerivedPalette(t *testing.T) {
 	}
 	out := string(html)
 	style := out[:strings.Index(out, "</style>")]
-	for _, want := range []string{"/* accent from meta.theme.accent */", ":root { --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e9f1ff; }", `:root[data-theme="dark"] { --accent: #73a2ff;`} {
+	for _, want := range []string{"/* accent from meta.theme.accent */", ":root { --accent: #2461e9; --accent-ink: #ffffff; --accent-soft: #e6efff; }", `:root[data-theme="dark"] { --accent: #73a2ff;`} {
 		if !strings.Contains(style, want) {
 			t.Errorf("the stylesheet lacks %q", want)
 		}
 	}
-	if strings.Index(style, "/* accent from meta.theme.accent */") < strings.Index(style, "/* Dossier tokens.") {
+	if strings.Index(style, "/* accent from meta.theme.accent */") < strings.Index(style, ":root {") {
 		t.Error("the palette follows the tokens so it wins")
 	}
 }
@@ -816,5 +818,54 @@ func TestMarkdownWarnsWhenTheChoiceRunsPastAGuard(t *testing.T) {
 	doc.Decisions.Verdicts = map[string]string{"arm": "waive"}
 	if md, _ := Markdown(doc, kind); strings.Contains(string(md), "**Warning:**") {
 		t.Error("a waived gate leaves no warning")
+	}
+}
+
+// The actual CSS tokens must retain readable text on all shared surfaces.
+func TestThemeTokenContrast(t *testing.T) {
+	blocks := regexp.MustCompile(`(?s):root(?:\[data-theme="dark"\])? \{([^}]+)\}`).FindAllStringSubmatch(tokensCSS, -1)
+	themes := 0
+	for _, block := range blocks {
+		tokens := map[string]string{}
+		for _, pair := range regexp.MustCompile(`--([a-z0-9-]+):\s*(#[0-9a-f]{6})`).FindAllStringSubmatch(block[1], -1) {
+			tokens[pair[1]] = pair[2]
+		}
+		if tokens["bg"] == "" {
+			continue
+		}
+		themes++
+		for _, name := range []string{"bg", "paper", "paper-2", "ink", "muted", "line", "line-soft"} {
+			hex := tokens[name]
+			if len(hex) != 7 || hex[1:3] != hex[3:5] || hex[3:5] != hex[5:7] {
+				t.Errorf("%s must be a neutral gray, got %q", name, hex)
+			}
+		}
+		for _, ink := range []string{"ink", "muted", "accent", "teal", "violet", "coral", "blue", "amber"} {
+			for _, bg := range []string{"bg", "paper", "paper-2"} {
+				ratio, err := theme.Contrast(tokens[ink], tokens[bg])
+				if err != nil || ratio < theme.MinContrast {
+					t.Errorf("%s on %s: %.2f, %v", tokens[ink], tokens[bg], ratio, err)
+				}
+			}
+		}
+		for _, pair := range [][2]string{{"accent-ink", "accent"}, {"accent", "accent-soft"}, {"teal", "teal-soft"}, {"violet", "violet-soft"}, {"coral", "risk-soft"}, {"blue", "blue-soft"}, {"amber", "amber-soft"}} {
+			ratio, err := theme.Contrast(tokens[pair[0]], tokens[pair[1]])
+			if err != nil || ratio < theme.MinContrast {
+				t.Errorf("%s on %s: %.2f, %v", pair[0], pair[1], ratio, err)
+			}
+		}
+	}
+	if themes != 2 {
+		t.Fatalf("checked %d palettes, want light and dark", themes)
+	}
+}
+
+func TestMarkdownKeepsLiteralDashes(t *testing.T) {
+	html, err := markdown("Before --- after, and `--flag`.")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(html, "Before --- after") || !strings.Contains(html, "--flag") || strings.Contains(html, "&mdash;") {
+		t.Fatalf("unexpected punctuation: %s", html)
 	}
 }

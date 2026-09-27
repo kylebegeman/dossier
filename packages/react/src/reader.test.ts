@@ -24,6 +24,21 @@ interface ReplyCase {
 type Context = Pick<ReplyCase, "mode" | "verdicts" | "labels" | "options" | "noun" | "plural" | "items">;
 type Say<T> = (context: Context, state: ReplyCase["state"]) => T;
 
+test("theme defaults to the system and keeps an explicit light or dark choice", () => {
+  const source = readFileSync(new URL("internal/render/assets/reader.js", core), "utf8");
+  const sandbox: { module: { exports: { themeMode?: (saved: unknown, dark: boolean) => string } } } = { module: { exports: {} } };
+  runInNewContext(source, sandbox);
+  const { themeMode } = sandbox.module.exports;
+  assert.equal(typeof themeMode, "function");
+  for (const dark of [false, true]) {
+    for (const saved of [undefined, null, "", "auto", "invalid"]) {
+      assert.equal(themeMode?.(saved, dark), dark ? "dark" : "light");
+    }
+    assert.equal(themeMode?.("light", dark), "light");
+    assert.equal(themeMode?.("dark", dark), "dark");
+  }
+});
+
 test("the reader writes the same reply line, in the same words, as Go for every shared case", () => {
   const source = readFileSync(new URL("internal/render/assets/reader.js", core), "utf8");
   const sandbox: { module: { exports: { reply?: Say<string>; words?: Say<string>; empty?: Say<boolean> } } } = { module: { exports: {} } };

@@ -16,7 +16,7 @@
       "parts": [
         {
           "type": "prose",
-          "markdown": "Dossier turns one JSON model into one self-contained HTML page. An agent writes the model, a person reads the page once and decides by number, and the agent reads the decisions back.\n\nEvery page here was built from a model in the repository, and none of them makes a request to anywhere else."
+          "markdown": "Dossier turns one JSON model into one self-contained HTML page. An agent writes the model, a person reads the page once and decides by number, and the agent reads the decisions back.\n\nEvery page here was built from a model in the repository, and none of them makes a request to anywhere else.\n\n[Explore all six dossier types](explore.html) with a switcher and mobile preview, or open a document below."
         },
         {
           "type": "table",

@@ -71,6 +71,10 @@ only through `load.WriteModel`.
   server, and the skill all project from that catalog; never describe a
   command in two places.
 - The artifact ships zero external requests by default. Web fonts are opt-in.
+- Page and reading surfaces use neutral grays in both themes, without a warm
+  or cool tint. Use color for type identity, status, evidence, and actions.
+  Never use decorative accent lines: no colored edge stripes on navigation,
+  cards, callouts, or headings. Use flat fills and typography for selection.
 - Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB,
   and each showcase page at most 120 KB built.
 - The showcase in `examples` is a fixture set. Every document builds with no

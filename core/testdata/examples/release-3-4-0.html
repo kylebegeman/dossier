@@ -1,384 +1,418 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Release 3.4.0</title><style>
-/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+/* Neutral surfaces. State is expressed with fill and type, never accent stripes. */
 :root {
-  --bg: #ffffff;
-  --paper: #f7f5f7;
-  --paper-2: #efecf0;
-  --ink: #201c22;
-  --muted: #6b6270;
-  --line: #e0dae0;
-  --line-soft: #ece7ec;
-  --accent: #c81e4a;
-  --accent-ink: #ffffff;
-  --accent-soft: #fbe8ed;
-  --teal: #08776e;
-  --teal-soft: #e3f3f0;
-  --violet: #6a46d9;
-  --violet-soft: #ede8fb;
-  --coral: #9a5b00;
-  --risk-soft: #f6ecdc;
-  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --gutter: clamp(16px, 4vw, 40px);
-  --frame: 1360px;
-  --rail: 208px;
-  --measure: 76ch;
-  --r-s: 6px;
-  --r: 10px;
-  --r-l: 14px;
-  --dur: 160ms;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  color-scheme: light;
+  --bg:#f6f6f6; --paper:#ffffff; --paper-2:#eeeeee;
+  --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7;
+  --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff;
+  --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff;
+  --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9;
+  --font-body:"Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --frame:1240px; --gutter:clamp(20px, 4vw, 56px); --rail:276px; --measure:70ch;
+  --r-s:6px; --r:12px; --r-l:18px; --dur:140ms; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme:dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
-    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
-    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
-    color-scheme: dark;
+    --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
+    --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
+    --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
+    --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
+    --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
-  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
-  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
-  color-scheme: dark;
+  --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
+  --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
+  --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
+  --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
+  --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
+  color-scheme:dark;
 }
 
-/* base */
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
+body { --kind:var(--violet); --kind-soft:var(--violet-soft) }
+body[data-kind="plan"], body[data-kind="brief"] { --kind:var(--blue); --kind-soft:var(--blue-soft) }
+body[data-kind="review"] { --kind:var(--amber); --kind-soft:var(--amber-soft) }
+body[data-kind="release"] { --kind:var(--teal); --kind-soft:var(--teal-soft) }
+body[data-kind="incident"] { --kind:var(--coral); --kind-soft:var(--risk-soft) }
+.t-teal { --tone:var(--teal); --tone-soft:var(--teal-soft) }
+.t-violet { --tone:var(--violet); --tone-soft:var(--violet-soft) }
+.t-risk { --tone:var(--coral); --tone-soft:var(--risk-soft) }
+
+/* Foundations */
+* { box-sizing:border-box }
+html { scroll-behavior:smooth; scroll-padding-top:96px }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.7 var(--font-body); -webkit-font-smoothing:antialiased; overflow-wrap:anywhere }
+h1, h2, h3, p { margin:0 }
+h1, h2, h3 { font-style:normal; text-wrap:balance }
+p { text-wrap:pretty }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:4px }
+button, input, select, textarea { font:inherit; color:inherit }
+button { cursor:pointer }
+::selection { background:var(--accent-soft); color:var(--ink) }
+:where(a, button, input, select, textarea, summary):focus-visible { outline:2px solid var(--ink); outline-offset:4px; border-radius:4px }
+[hidden] { display:none !important }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+.skip-link { position:fixed; top:8px; left:8px; transform:translateY(-160%); z-index:100; padding:12px 20px; background:var(--ink); color:var(--bg); border-radius:var(--r-s) }
+.skip-link:focus { transform:none }
+code { font-family:var(--font-mono); font-size:.84em; background:var(--paper-2); border-radius:4px; padding:2px 5px; overflow-wrap:anywhere; box-decoration-break:clone; -webkit-box-decoration-break:clone }
+pre { margin:0; padding:22px; border-radius:var(--r); background:var(--paper); overflow-x:auto; font:12px/1.85 var(--font-mono); tab-size:4 }
+pre code { background:none; padding:0; white-space:pre; font-size:inherit }
+summary { cursor:pointer }
+summary::marker { content:"" }
+summary::-webkit-details-marker { display:none }
+.chev { width:16px; height:16px; flex:none; color:var(--muted); transition:transform var(--dur) }
+
+/* The toolbar stays small; document controls belong with the content. */
+.toolbar { position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line-soft) }
+.toolbar-inner { max-width:calc(var(--frame) + 2 * var(--gutter)); min-height:76px; padding:16px var(--gutter); margin:auto; display:flex; align-items:center; gap:16px }
+.brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-size:17px; font-weight:600; text-decoration:none; letter-spacing:-.4px }
+.brand svg { width:36px; height:36px; padding:7px; border-radius:11px; background:var(--accent); color:var(--accent-ink) }
+.document-kind { display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border-radius:7px; background:var(--kind-soft); color:var(--kind); font-size:12px; font-weight:600 }
+.document-kind svg { width:16px; height:16px }
+.tools { display:flex; align-items:center; gap:12px; margin-left:auto }
+.search { position:relative; display:flex; align-items:center }
+.search input { width:200px; height:38px; padding:0 36px 0 14px; background:var(--paper); border:1px solid var(--line-soft); border-radius:8px; font-size:13px }
+.search input::placeholder { color:var(--muted) }
+.search kbd { position:absolute; right:12px; font:12px var(--font-mono); color:var(--muted) }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display:none }
+.hits { font-size:12px; color:var(--muted); white-space:nowrap }
+.hits:empty { display:none }
+::highlight(dossier-hit) { background:var(--accent-soft); color:var(--ink) }
+::highlight(dossier-now) { background:var(--ink); color:var(--bg) }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:36px; padding:0 12px; border:1px solid var(--line); border-radius:7px; background:transparent; color:var(--ink); font-size:12px; font-weight:500; line-height:1.3; white-space:nowrap; transition:background var(--dur) }
+.btn:hover { background:var(--paper-2) }
+.btn[aria-pressed="true"] { background:var(--paper-2); color:var(--ink) }
+.btn svg { width:16px; height:16px }
+.theme-toggle { position:relative; isolation:isolate; gap:18px; width:74px; padding:0; border:0; border-radius:24px; background:var(--paper-2); color:var(--muted) }
+.theme-toggle::before { content:""; position:absolute; z-index:-1; inset:3px auto 3px 3px; width:34px; border-radius:50%; background:var(--paper); box-shadow:0 1px 4px #0002; transition:transform var(--dur) var(--ease) }
+.theme-toggle[data-mode="dark"]::before { transform:translateX(34px) }
+.theme-toggle[data-mode="light"] .th-light { color:var(--amber) }
+.theme-toggle[data-mode="dark"] .th-dark { color:var(--accent) }
+.btn.solid { background:var(--accent); color:var(--accent-ink); border-color:transparent; padding:0 18px; min-height:40px }
+.btn.solid:hover { opacity:.85 }
+.link-btn { padding:4px 0; border:0; background:none; color:var(--muted); font-size:12px; text-decoration:underline; text-underline-offset:4px }
+.link-btn:hover { color:var(--ink) }
+.check { appearance:none; -webkit-appearance:none; width:18px; height:18px; margin:0; border:1px solid var(--muted); border-radius:5px; background:var(--paper); display:inline-grid; place-content:center; cursor:pointer; vertical-align:-4px }
+.check::before { content:""; width:10px; height:10px; transform:scale(0); background:var(--accent-ink); clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%) }
+.check:checked { background:var(--accent); border-color:var(--accent) }
+.check:checked::before { transform:scale(1) }
+
+/* A wide opening, then a reading column and a compact right rail. */
+.page { max-width:calc(var(--frame) + 2 * var(--gutter)); padding:0 var(--gutter); margin:auto; display:grid; grid-template-columns:minmax(0,1fr) var(--rail); gap:0 clamp(40px,6vw,88px) }
+.masthead { grid-column:1 / -1; padding:64px 0 44px; margin-bottom:36px; border-bottom:1px solid var(--line); scroll-margin-top:16px }
+.mast-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:28px }
+.kicker { font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.055em; text-transform:uppercase }
+.updated { color:var(--muted); font-size:12px }
+.masthead h1 { max-width:23ch; font-size:clamp(38px,4.8vw,66px); line-height:1.06; font-weight:550; letter-spacing:-.047em }
+.hero-bottom { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr); gap:48px; margin-top:32px; align-items:start }
+.hero-bottom:not(:has(.lede)) { display:block }
+.hero-bottom:not(:has(.lede)) .stats { justify-content:flex-start }
+.lede { max-width:60ch; font-size:17px; line-height:1.7; color:var(--muted) }
+.stats { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:24px 32px; padding-top:3px }
+.stats > div { display:flex; flex-direction:column; gap:2px; min-width:54px }
+.stats b { color:var(--tone,var(--ink)); font-size:38px; font-weight:550; letter-spacing:-.04em; line-height:1.1; font-variant-numeric:tabular-nums }
+.stats b.fact-text { font-size:23px; line-height:1.8 }
+.stats:has(> div:nth-child(5)) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px }
+.stats span { font-size:12px; color:var(--muted) }
+.main { grid-column:1; grid-row:2; min-width:0; padding-bottom:64px }
+.reading-tools { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding-bottom:12px }
+.reading-label { display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600 }
+.reading-label > span { font-size:12px; color:var(--muted); font-weight:400 }
+.reading-actions { display:flex; gap:6px }
+.reading-actions .btn { min-height:32px; border:0; color:var(--muted); padding:0 8px }
+.reader-rail { grid-column:2; grid-row:2; position:sticky; top:104px; align-self:start; max-height:calc(100vh - 128px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--line) transparent }
+.toc-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13px; font-weight:600; padding:7px 12px 14px }
+.toc ol { list-style:none; padding:0; margin:0 }
+.toc li a { display:flex; align-items:baseline; gap:12px; padding:10px 12px; border-radius:8px; text-decoration:none; color:var(--muted); font-size:13px; line-height:1.45 }
+.toc li a:hover { background:var(--paper-2); color:var(--ink) }
+.toc li a[aria-current="true"] { background:var(--paper-2); color:var(--ink); font-weight:500 }
+.toc .n { min-width:18px; flex:none; font-size:11px; font-variant-numeric:tabular-nums }
+.toc .pip { width:5px; height:5px; margin-left:auto; border-radius:50%; align-self:center; background:var(--ink); opacity:0; flex:none }
+.toc li.picked .pip, .toc li[data-tone] .pip { opacity:1 }
+.toc .group { font-size:11px; font-weight:600; color:var(--muted); margin:16px 12px 4px }
+.item-directory { margin:16px 0 0 }
+.item-directory > summary { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; color:var(--muted); font-size:12px }
+.item-directory[open] > summary .chev { transform:rotate(180deg) }
+.item-directory li a { font-size:12px; padding-block:8px }
+.decision-panel { margin-top:28px; padding:22px; border-radius:var(--r-l); background:var(--paper); box-shadow:0 4px 20px #00000006 }
+.decision-heading { display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:13px; font-weight:600 }
+.decision-heading > .chev { width:12px; height:12px }
+.decision-panel[open] .decision-heading > .chev { transform:rotate(180deg) }
+.decision-count { margin-left:auto; color:var(--muted); font-size:12px; font-weight:400; font-variant-numeric:tabular-nums; white-space:nowrap }
+.decision-count b { display:inline-grid; place-items:center; min-width:24px; min-height:24px; border-radius:7px; background:var(--accent-soft); color:var(--accent); font-weight:600 }
+.decision-help { color:var(--muted); font-size:12px; line-height:1.65; margin-top:18px }
+.reply-link { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; padding:11px 14px; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-size:12px; font-weight:600; text-decoration:none }
+.reply-link:hover { opacity:.85 }
+
+/* Sections, prose, and evidence. */
+.section { padding:32px 0 40px; scroll-margin-top:16px }
+.section + .section { border-top:1px solid var(--line) }
+.section-heading { display:flex; align-items:baseline; gap:16px; margin-bottom:24px }
+.section-number { display:inline-grid; place-items:center; min-width:28px; height:28px; border-radius:8px; background:var(--kind-soft); color:var(--kind); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums }
+.section h2 { font-size:27px; line-height:1.25; letter-spacing:-.025em; font-weight:550 }
+.part + .part { margin-top:24px }
+.prose { max-width:var(--measure); display:grid; gap:16px }
+.prose p, .prose li { font-size:15px }
+.prose ol, .prose ul { padding-left:1.3em; margin:0; display:grid; gap:8px }
+.prose li::marker { color:var(--muted) }
+.prose h3 { font-size:18px; margin-top:12px; font-weight:600 }
+.prose blockquote { margin:0; padding:20px 24px; border-radius:var(--r); background:var(--paper); color:var(--muted) }
+.prose strong { font-weight:600 }
+.spec { padding:6px 24px; background:var(--paper); border-radius:var(--r) }
+.spec > div { display:grid; grid-template-columns:120px minmax(0,1fr); gap:24px; padding:16px 0; border-top:1px solid var(--line-soft) }
+.spec > div:first-child { border-top:0 }
+.spec b { font-size:12px; font-weight:500; color:var(--muted) }
+.spec span { font-size:14px }
+.callout { display:grid; gap:8px; padding:22px 24px; border-radius:var(--r); background:var(--paper); font-size:14px }
+.callout > b { font-size:13px; font-weight:600; color:var(--accent) }
+.callout.risk { background:var(--risk-soft) }
+.callout.risk > b { color:var(--coral) }
+.table-wrap { overflow-x:auto; background:var(--paper); border:1px solid var(--line-soft); border-radius:var(--r); scrollbar-width:thin }
+table { border-collapse:collapse; width:100%; min-width:580px; font-size:13px; overflow-wrap:normal }
+th, td { padding:14px 18px; text-align:left; vertical-align:middle; border-top:1px solid var(--line-soft) }
+thead th { border-top:0; color:var(--muted); font-size:11px; font-weight:500; white-space:nowrap }
+td.num, th.num { font-size:11px; font-variant-numeric:tabular-nums; color:var(--muted) }
+td a { color:var(--ink); text-decoration:none; font-weight:500 }
+td a:hover { text-decoration:underline }
+td .deps a { font-size:12px; color:var(--muted) }
+td.ck, th.ck { width:34px; padding-right:0 }
+tbody tr:hover, tbody tr.picked, tbody tr[data-tone] { background:var(--paper-2) }
+td.vd, th.vd { width:1%; white-space:nowrap }
+td.vd .none { font-size:12px; color:var(--muted) }
+select.verdict { font:inherit; font-size:12px; min-height:34px; padding:0 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); cursor:pointer }
+.legend { margin-top:12px; font-size:11px; color:var(--muted); line-height:1.7 }
+.block { display:grid; gap:10px }
+.block-label { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; font-size:12px; color:var(--muted) }
+.figure { margin:0; display:grid; gap:8px }
+.figure img { display:block; max-width:100%; height:auto; border-radius:var(--r); background:var(--paper) }
+.figure .legend { margin-top:0 }
+.chart { background:var(--paper); border-radius:var(--r); padding:24px }
+.chart svg { display:block; width:100%; height:auto }
+.chart text { font-family:var(--font-body); font-size:11px; fill:var(--muted) }
+.chart text.value { fill:var(--ink); font-variant-numeric:tabular-nums }
+.diagram pre { white-space:pre-wrap }
+figure.diagram { margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+.dg-frame { overflow-x:auto;padding:32px 20px;border-radius:var(--r);background:var(--paper);}
+.dg { display:block;max-width:none;height:auto;margin:0 auto;overflow:visible;}
+.dg text { fill:var(--ink);font-family:Helvetica,Arial,sans-serif;font-size:11px;}
+.dg :is(polygon,polyline,ellipse,path,circle,rect,line) { fill:none;stroke:var(--muted);}
+.dg .node :is(polygon,ellipse,path,circle,rect) { fill:var(--paper-2);stroke:var(--line);}
+.dg .edge :is(polygon,ellipse,circle) { fill:var(--muted);}
+.dg .edge .hollow { fill:var(--bg);}
+.dg .edge text { fill:var(--muted);font-size:10px;}
+.dg .cluster :is(polygon,path) { stroke:var(--line);stroke-dasharray:4 3;}
+.dg .cluster text { fill:var(--muted);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
+.dg .teal { --tone:var(--teal);--tone-soft:var(--teal-soft);}
+.dg .violet { --tone:var(--violet);--tone-soft:var(--violet-soft);}
+.dg .risk { --tone:var(--coral);--tone-soft:var(--risk-soft);}
+.dg .accent { --tone:var(--accent);--tone-soft:var(--accent-soft);}
+.dg .node:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse,path,circle,rect) { fill:var(--tone-soft);stroke:var(--tone);}
+.dg .edge:is(.teal,.violet,.risk,.accent) path,.dg .cluster:is(.teal,.violet,.risk,.accent) :is(polygon,path) { stroke:var(--tone);}
+.dg .edge:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse) { fill:var(--tone);stroke:var(--tone);}
+.dg .cluster:is(.teal,.violet,.risk,.accent) text { fill:var(--tone);}
+figure.diagram figcaption { display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;font-size:13px;color:var(--muted);}
+.dg-source { flex:1 1 100%;min-width:0;}
+.dg-source summary { width:max-content;margin-left:auto;cursor:pointer;font-family:var(--font-body);font-size:11px;}
+.dg-source summary:hover { color:var(--ink);}
+.dg-source[open] summary { margin-bottom:6px;}
+figure.diagram figcaption > span + .dg-source { flex:0 1 auto;}
+figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
+
+
+.timeline { list-style:none; padding:0; margin:0 }
+.timeline li { display:grid; grid-template-columns:84px minmax(0,1fr); gap:24px; padding:18px 0; border-top:1px solid var(--line-soft) }
+.timeline li:first-child { border-top:0; padding-top:0 }
+.timeline .at { align-self:start; font:11px/1.6 var(--font-mono); text-align:center; color:var(--kind); background:var(--kind-soft); border-radius:7px; padding:5px }
+.timeline .ev { display:grid; gap:6px }
+.timeline b { font-size:15px; font-weight:600 }
+.timeline .md { display:grid; gap:6px; font-size:14px; color:var(--muted) }
+
+/* Boards are a reading list, with the full comparison table one click away. */
+.board-overview { margin-bottom:24px; border-radius:var(--r); background:var(--paper) }
+.board-overview > summary { display:flex; align-items:center; gap:14px; padding:16px 20px; font-size:13px; font-weight:500 }
+.board-overview .overview-count { margin-left:auto; font-size:12px; color:var(--muted); font-weight:400 }
+.board-overview[open] > summary .chev { transform:rotate(180deg) }
+.board-overview .table-wrap { border-radius:0 0 var(--r) var(--r); border:0 }
+.board-overview > .legend { padding:0 20px 18px }
+.item { margin-top:14px; padding:26px; border:1px solid var(--line-soft); border-radius:var(--r-l); background:var(--paper); scroll-margin-top:16px; box-shadow:0 4px 18px #00000004; transition:border-color var(--dur),box-shadow var(--dur) }
+.item:hover { border-color:var(--line); box-shadow:0 6px 22px #0000000a }
+.item-head { list-style:none }
+.item-heading { display:flex; align-items:flex-start; gap:18px }
+.item-number { display:inline-grid; place-items:center; min-width:36px; height:36px; border-radius:10px; font:13px var(--font-mono); color:var(--kind); background:var(--kind-soft) }
+.item-copy { flex:1; min-width:0 }
+.item-heading > .chev { margin-top:8px }
+.item[open] .item-heading > .chev { transform:rotate(180deg) }
+.item h3 { font-size:21px; font-weight:550; letter-spacing:-.025em; line-height:1.4 }
+.item .one-line { margin-top:10px; color:var(--muted); font-size:14px; line-height:1.7 }
+.item-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:20px 0 0 54px }
+.item-meta .decide { display:flex; align-items:center; gap:16px; margin-left:auto }
+.decide .note-btn { margin-left:0 }
+.item-body { margin:24px 0 0 54px; padding-top:24px; border-top:1px solid var(--line-soft) }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:6px; font-size:11px; line-height:1.6; font-weight:500; white-space:nowrap; background:var(--tone-soft,var(--paper-2)); color:var(--tone,var(--muted)) }
+.chip.t-outline { background:transparent; padding-inline:4px; font-size:10px }
+.owner { color:var(--muted); font-size:12px }
+.row-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end }
+.meter { display:inline-flex; gap:3px; align-items:center; margin-left:4px }
+.meter i { display:block; width:4px; height:4px; border-radius:50%; background:var(--line) }
+.meter i.on { background:var(--accent) }
+.meter-label { color:var(--muted); font-size:10px }
+.verdicts { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border-radius:7px }
+.verdicts button { min-height:32px; padding:0 14px; font-size:12px; font-weight:500; border:0; border-radius:5px; color:var(--muted); background:none }
+.verdicts button:hover { background:var(--paper-2); color:var(--ink) }
+.verdicts button[aria-checked="true"] { background:var(--tone-soft,var(--accent-soft)); color:var(--tone,var(--accent)); box-shadow:0 1px 3px #0001 }
+.pick-btn { min-height:36px; padding-inline:18px; border-color:transparent; background:var(--accent-soft); color:var(--accent) }
+.pick-btn[aria-pressed="true"] { background:var(--teal-soft); color:var(--teal); border-color:transparent }
+.item.picked .item-number { background:var(--teal-soft); color:var(--teal) }
+.note { display:grid; gap:10px; margin-bottom:24px }
+.note label { font-size:12px; font-weight:500 }
+.note textarea { width:100%; min-height:88px; resize:vertical; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.6 }
+.note textarea::placeholder { color:var(--muted) }
+.facets { display:grid; gap:24px; margin:0 }
+.facet { display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px }
+.facet dt { padding-top:2px; font-size:12px; font-weight:500; color:var(--muted) }
+.facet dd { margin:0; display:grid; gap:10px; font-size:14px }
+.facet dd > :is(ul,ol) { margin:0; padding-left:20px }
+.facet dd pre { background:var(--bg) }
+.facet dd a.dep { display:inline-block; margin-right:6px; padding:1px 8px; border-radius:5px; background:var(--paper-2); color:var(--ink); font-size:12px; text-decoration:none }
+.facet.risk dt { color:var(--coral) }
+.hidden-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px; margin-top:16px; border-radius:var(--r); background:var(--paper); font-size:13px; color:var(--muted) }
+.hidden-row b { color:var(--ink) }
+.no-hits { padding:36px 0; color:var(--muted) }
+.rows { display:grid; gap:10px }
+.rows > div, .rows > .row > summary { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; padding:22px 24px; background:var(--paper); border-radius:var(--r) }
+.rows b { display:block; font-size:16px; font-weight:550; margin-bottom:6px }
+.rows p { font-size:14px; color:var(--muted) }
+.rows > .row > summary { grid-template-columns:minmax(0,1fr) auto auto; list-style:none }
+.rows .chev { align-self:center }
+.rows > .row[open] > summary { border-radius:var(--r) var(--r) 0 0 }
+.rows > .row[open] > summary .chev { transform:rotate(90deg) }
+.rows > .row > .facets { padding:0 24px 24px; background:var(--paper); border-radius:0 0 var(--r) var(--r) }
+
+/* The decision context stays beside the reading; the finished reply closes it. */
+.choice { border:0; margin:24px 0 0; padding:0; min-width:0 }
+.choice-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px }
+.choice-head b { font-weight:500 }
+.options { display:grid; gap:8px; margin-top:14px }
+.options label { display:flex; gap:10px; align-items:flex-start; padding:12px; border:1px solid var(--line-soft); border-radius:8px; cursor:pointer }
+.options label:hover { background:var(--bg) }
+.options label:has(input:checked) { background:var(--accent-soft); border-color:transparent }
+.options label:has(input:checked) .opt { color:var(--accent) }
+.options input { accent-color:var(--accent); margin:4px 0 0; flex:none }
+.opt { display:block; font-size:12px; font-weight:500 }
+.sum { display:block; font-size:11px; line-height:1.6; margin-top:3px; color:var(--muted) }
+.guard { padding:14px; border-radius:8px; margin-top:16px; background:var(--risk-soft); color:var(--ink); font-size:12px }
+.pick { margin-top:28px; padding:32px; border-radius:var(--r-l); background:var(--paper); display:grid; gap:24px; scroll-margin-top:16px }
+.pick h2 { font-size:30px; font-weight:550; letter-spacing:-.035em }
+.pick-lede { margin-top:10px; color:var(--muted); font-size:14px; max-width:48ch }
+.reply { display:grid; gap:20px }
+.said { min-width:0; padding:22px; background:var(--bg); border-radius:var(--r) }
+.said code { background:none; padding:0; font-size:13px; line-height:1.7 }
+.said .words { margin-top:12px; color:var(--muted); font-size:12px }
+.said .tag { display:block; margin-bottom:12px; color:var(--muted); font-size:11px }
+.said.example code { color:var(--muted) }
+.pick[data-empty] :is(.live,.acts), .pick:not([data-empty]) .example { display:none }
+.acts { display:flex; align-items:center; gap:20px }
+.toast { position:fixed; bottom:24px; left:50%; z-index:50; padding:10px 18px; border-radius:8px; background:var(--ink); color:var(--bg); font-size:13px; opacity:0; transform:translate(-50%,8px); transition:opacity var(--dur),transform var(--dur); pointer-events:none }
+.toast.show { opacity:1; transform:translate(-50%,0) }
+.foot { grid-column:1 / -1; display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 24px; border-top:1px solid var(--line); padding:24px 0 48px; color:var(--muted); font-size:11px }
+
+@media (min-width:1000px) { .toc-heading button { display:none } }
+@media (max-width:999px) {
+  .page { max-width:850px; grid-template-columns:minmax(0,1fr) }
+  .masthead { grid-column:1; grid-row:1; padding-top:44px }
+  .reader-rail { position:static; max-height:none; overflow:visible; grid-column:1; grid-row:2; margin-bottom:24px }
+  .main { grid-column:1; grid-row:3 }
+  .toc { border:1px solid var(--line); border-radius:var(--r); padding:4px }
+  .toc-heading { padding:6px 12px }
+  .toc[data-collapsed] #contents-list { display:none }
+  .decision-panel { margin-top:16px }
+  .decision-panel .options { grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr)) }
+  .decision-panel .reply-link { width:max-content; min-width:200px }
+  .hero-bottom { gap:24px }
 }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
-::selection { background: var(--accent-soft); color: var(--ink); }
-a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; tab-size: 4; }
-pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
-h1, h2, h3 { text-wrap: balance; margin: 0; }
-p { margin: 0; text-wrap: pretty; }
-button { font: inherit; color: inherit; }
-[hidden] { display: none !important; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
-/* buttons: one ghost style everywhere */
-.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
-.btn:hover { color: var(--ink); background: var(--paper-2); }
-.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
-.btn svg { width: 14px; height: 14px; flex: none; }
-.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
-.link-btn:hover { color: var(--ink); }
-.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
-.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
-.check:checked { background: var(--accent); border-color: var(--accent); }
-.check:checked::before { transform: scale(1); }
-
-/* shell */
-.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
-@media (min-width: 1100px) {
-  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
-  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+@media (max-width:600px) {
+  html { scroll-padding-top:136px }
+  .toolbar-inner { flex-wrap:wrap; padding:12px 20px; gap:10px; min-height:64px }
+  .brand { font-size:15px }
+  .brand svg { width:28px; height:28px; padding:5px; border-radius:8px }
+  .document-kind { font-size:11px; padding:4px 7px; gap:5px }
+  .tools { flex:1 1 100% }
+  .search { flex:1 }
+  .search input { width:100% }
+  .theme-toggle { position:absolute; right:12px; top:9px }
+  .hits { font-size:11px }
+  .masthead { margin-bottom:24px; padding:34px 0 }
+  .mast-top { flex-wrap:wrap; gap:8px; margin-bottom:24px }
+  .kicker { font-size:10px }
+  .updated { font-size:11px }
+  .masthead h1 { font-size:clamp(34px,9vw,48px); line-height:1.12 }
+  .hero-bottom { display:block; margin-top:24px }
+  .lede { font-size:15px }
+  .stats { margin-top:28px; justify-content:flex-start; gap:20px 28px }
+  .stats b { font-size:32px }
+  .stats span { font-size:11px }
+  .section { padding-block:26px 32px }
+  .section h2 { font-size:24px }
+  .section-heading { gap:12px }
+  .reading-tools { gap:4px 16px }
+  .reading-label { flex-basis:100% }
+  .reading-actions { margin-left:-8px }
+  .item { padding:20px }
+  .item-heading { gap:12px }
+  .item-number { font-size:11px; min-width:30px; height:30px; border-radius:8px }
+  .item h3 { font-size:18px }
+  .item .one-line { font-size:13px }
+  .item-meta, .item-body { margin-left:0 }
+  .item-meta .decide { flex:1 1 100%; gap:10px; flex-wrap:wrap; margin:10px 0 0 }
+  .decide .note-btn { margin-left:auto }
+  .verdicts button { min-height:36px; padding-inline:12px }
+  .facet { grid-template-columns:minmax(0,1fr); gap:8px }
+  .facet dt { font-weight:600; color:var(--ink) }
+  .chart, .spec, .callout { padding:20px }
+  .spec > div { grid-template-columns:minmax(0,1fr); gap:6px }
+  .rows > div, .rows > .row > summary { grid-template-columns:minmax(0,1fr); padding:20px }
+  .row-chips { justify-content:flex-start }
+  .rows .chev { display:none }
+  .timeline li { grid-template-columns:64px minmax(0,1fr); gap:16px }
+  .pick { padding:24px 20px }
+  .pick h2 { font-size:27px }
+  .said { padding:18px }
 }
-
-/* masthead: one band across the frame */
-.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
-.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
-.search { position: relative; display: inline-flex; align-items: center; }
-.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
-.search input::placeholder { color: var(--muted); }
-.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
-.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
-.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hits:empty { display: none; }
-::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
-::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
-.no-hits { padding-block: 36px; color: var(--muted); }
-@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
-.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
-.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
-.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
-.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
-.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
-.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
-.stats .live b { color: var(--accent); }
-.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
-.stats a:hover { color: var(--ink); text-decoration: underline; }
-
-/* contents */
-.toc { font-size: 13.5px; }
-.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
-.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
-.toc li a:hover { color: var(--ink); background: var(--paper); }
-.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
-.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
-.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
-.toc li.picked .pip { opacity: 1; }
-.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
-.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.toc .group:first-child { margin-top: 0; }
-.toc .group a { display: inline; padding: 0; color: inherit; }
-.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
-@media (max-width: 1099px) {
-  .toc { padding-block: 18px 0; }
-  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
-  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
-  .toc .n { text-align: left; min-width: 0; }
-  .toc .group { display: none; }
-  .toc .pip { margin-left: 2px; }
+@media (prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto }
+  *, *::before, *::after { transition-duration:.01ms !important }
 }
-
-/* main column */
-.main { min-width: 0; }
-.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
-.section:not(:has(~ .section)) { border-bottom: 0; }
-.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
-.part + .part { margin-top: 16px; }
-.prose { max-width: var(--measure); display: grid; gap: 12px; }
-.prose p, .prose li { font-size: 15.5px; }
-.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
-.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
-.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
-.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
-.prose strong { font-weight: 600; }
-
-.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
-.spec > div:first-child { border-top: 0; }
-.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
-.spec span { font-size: 14.5px; }
-@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
-
-.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
-.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-.callout.risk b { color: var(--coral); }
-
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
-table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
-th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
-thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
-td a { color: var(--ink); text-decoration: none; font-weight: 500; }
-td a:hover { color: var(--accent); }
-td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
-td.ck, th.ck { width: 34px; padding-right: 0; }
-tbody tr { transition: background var(--dur); }
-tbody tr:hover { background: var(--paper); }
-tbody tr.picked { background: var(--accent-soft); }
-tbody tr[data-tone] { background: var(--tone-soft); }
-tbody tr[data-tone] .chip { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 38%, transparent); }
-td.vd, th.vd { width: 1%; white-space: nowrap; }
-td.vd .none { font-size: 12.5px; color: var(--muted); }
-select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
-.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
-
-/* code, figures, charts, diagram source */
-.block { display: grid; gap: 6px; }
-.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
-.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
-.figure { margin: 0; display: grid; gap: 8px; }
-.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
-.figure .legend { margin-top: 0; }
-.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
-.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
-.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
-.diagram pre { white-space: pre-wrap; }
-
-/* diagrams: Graphviz geometry, colored by the tokens */
-figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
-.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
-.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
-.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
-.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
-.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
-.dg .edge .hollow { fill: var(--bg); }
-.dg .edge text { fill: var(--muted); font-size: 10px; }
-.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
-.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
-.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
-.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
-.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
-.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
-.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
-.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
-.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
-figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
-.dg-source { flex: 1 1 100%; min-width: 0; }
-.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
-.dg-source summary:hover { color: var(--ink); }
-.dg-source[open] summary { margin-bottom: 6px; }
-figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
-figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
-
-/* timeline: times in a column, a hairline rail, a dot per event in its tone */
-.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
-.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
-.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.timeline .ev { position: relative; padding: 0 0 18px 24px; }
-.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
-.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
-.timeline b { display: block; font-size: 15px; font-weight: 600; }
-.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
-@media (max-width: 520px) {
-  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
-  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
-}
-:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
-.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
-.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
-.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
-.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
-.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
-.hl .hl-nt { color: var(--hl-tag); }
-.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
-.hl .hl-o, .hl .hl-p { color: var(--muted); }
-.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
-.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
-.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
-.hl .hl-ge { font-style: italic; }
-.hl .hl-gs { font-weight: 600; }
-.hl .hl-err { text-decoration: underline wavy var(--coral); }
-
-/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
-.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
-.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
-.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
-.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
-
-/* chips and meters */
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
-.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
-.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
-.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
-.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
-.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
-.owner { font-size: 12.5px; color: var(--muted); }
-.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-.stats > div.t-risk b { color: var(--coral); }
-.stats > div.t-teal b { color: var(--teal); }
-.stats > div.t-violet b { color: var(--violet); }
-.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
-.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
-.meter i.on { background: var(--accent); }
-.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
-
-/* items: collapsible details */
-.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
-.item:last-of-type { border-bottom: 0; }
-.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
-.item-head::-webkit-details-marker { display: none; }
-.item-head::marker { content: ""; }
-.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
-.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
-.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
-.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
-.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
-.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
-.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
-.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
-.item[open] h3 .chev { transform: rotate(90deg); }
-.item-head:hover h3 .chev { color: var(--ink); }
-.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
-.item.picked h3 .num { color: var(--accent); }
-.item[data-tone] h3 .num { color: var(--tone); }
-.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
-.item-body { margin-top: 14px; padding-left: 24px; }
-@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
-.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
-.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
-.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
-.note textarea::placeholder { color: var(--muted); }
-.facets { display: grid; margin: 0; }
-.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
-.facet:first-child { border-top: 0; padding-top: 0; }
-.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
-.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
-.facet dd p { max-width: var(--measure); }
-.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
-.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
-.facet.risk dt { color: var(--coral); }
-@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
-
-.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
-.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-.rows { display: grid; gap: 8px; }
-.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
-.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
-.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
-.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
-.rows > .row > summary::-webkit-details-marker { display: none; }
-.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
-.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.rows > .row[open] > summary .chev { transform: rotate(90deg); }
-.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
-.rows > .row > .facets .facet:first-child { padding-top: 8px; }
-@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
-
-/* reply: every decision on the page, as one line to send back */
-.pick { margin-top: 32px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r-l); display: grid; gap: 14px; scroll-margin-top: 12px; }
-.pick h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
-.pick-lede { margin-top: 2px; font-size: 14px; color: var(--muted); max-width: var(--measure); }
-.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
-.pick .choice-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14.5px; }
-.pick .choice-head b { font-weight: 600; }
-.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; transition: background var(--dur), border-color var(--dur); }
-.pick .options label:hover { background: var(--paper); }
-.pick .options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
-.pick .options input { margin: 4px 0 0; accent-color: var(--accent); }
-.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
-.pick .sum { display: block; font-size: 13px; color: var(--muted); }
-.pick .guard { padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--risk-soft); font-size: 13.5px; }
-.pick .reply { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
-.pick .said { flex: 1 1 340px; min-width: 0; display: grid; gap: 3px; }
-.pick .said code { padding: 0; border: 0; background: none; font-size: 13px; line-height: 1.55; }
-.pick .said .words { font-size: 13.5px; color: var(--muted); }
-.pick .said .tag { margin-right: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
-.pick .said.example code { color: var(--muted); }
-.pick[data-empty] :is(.live, .acts), .pick:not([data-empty]) .example { display: none; }
-.pick .acts { display: flex; align-items: center; gap: 14px; }
-.btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-.btn.solid:hover { background: var(--ink); color: var(--bg); opacity: 0.86; }
-
-.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-.main { padding-bottom: 40px; }
-.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
-
 @media print {
-  .toc, .tools, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
-  .verdicts { border: 0; background: none; }
-  body { padding: 0; font-size: 12px; }
-  .page { display: block; }
-  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
-  .dg-source { display: none; }
-  .dg { max-width: 100%; }
-  .item h3 .chev { display: none; }
-  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+  :root, :root[data-theme] { --bg:#ffffff; --paper:#ffffff; --paper-2:#eeeeee; --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7; --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff; --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff; --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9; color-scheme:light }
+  .toolbar, .skip-link, .toc, .reading-tools, .decision-help, .reply-link, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .options label:not(:has(input:checked)) { display:none !important }
+  body { font-size:12px }
+  .page { display:block; padding:0 }
+  .masthead { padding:0 0 24px }
+  .masthead h1 { font-size:32px }
+  .reader-rail { position:static; max-height:none; overflow:visible }
+  .decision-panel { padding:0; margin:16px 0 }
+  .choice { margin:0 }
+  .options { display:flex }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside:avoid }
+  .item { border:1px solid var(--line) }
+  .verdicts { background:none }
+  .verdicts button[aria-checked="true"] { background:none; color:var(--ink); font-weight:600 }
+  .dg-source, .chev { display:none }
+  .dg { max-width:100% }
+  .note textarea { padding:0; border:0; background:transparent; resize:none }
 }
-</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Release <em>3.4.0</em></h1><p class="lede">Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.</p><div class="stats" aria-label="At a glance"><div class=""><b>2291</b> <span>build</span></div><div class=""><b>5 October</b> <span>target</span></div><div class="t-risk"><b>1</b> <span>failed</span></div><div class=""><b>2</b> <span>pending</span></div><div class=""><b>4</b> <span>passed</span></div><div class=""><b>1</b> <span>skipped</span></div><div class="live"><b data-live="choice">Open</b> <a href="#pick">choice</a></div><div class="live"><b data-live="count">0</b> <a href="#pick">decided</a></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#ships"><span class="n">–</span>What ships</a></li><li><a href="#gates"><span class="n">–</span>Gates</a></li><li class="group">Failed</li><li data-item="android-e2e" class=""><a href="#android-e2e"><span class="n">1.</span>Android end-to-end suite<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Pending</li><li data-item="store-review" class=""><a href="#store-review"><span class="n">2.</span>App Store review<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="office-walkthrough" class=""><a href="#office-walkthrough"><span class="n">3.</span>Harbour office walkthrough of tide cancellations<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Passed</li><li data-item="unit-integration" class=""><a href="#unit-integration"><span class="n">4.</span>Unit and integration tests<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="storm-load" class=""><a href="#storm-load"><span class="n">5.</span>Load test at storm-day volume<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="accessibility" class=""><a href="#accessibility"><span class="n">6.</span>Accessibility pass on booking and passes<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="crash-free" class=""><a href="#crash-free"><span class="n">7.</span>Crash-free beta sessions above 99.5%<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Skipped</li><li data-item="wallet-passes" class=""><a href="#wallet-passes"><span class="n">8.</span>Wallet pass validation<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#rollback"><span class="n">–</span>Rollback</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="ships"><h2>What ships</h2><div class="part prose"><p>3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger.</p></div><div class="part table-wrap"><table><thead><tr><th>Change</th><th>What riders see</th><th>Rollout</th></tr></thead> <tbody><tr><td>Offline boarding passes</td><td>Passes scan at the Brisk slipway with no signal.</td><td>Brisk only, behind a flag</td></tr><tr><td>Tide-aware cancellations</td><td>A Brisk sailing too shallow for the ramp cancels early, with a notice.</td><td>The office approves each one for a month</td></tr><tr><td>Capacity check on held places</td><td>Nothing, unless a deck is full, when a second sale is refused.</td><td>Everyone</td></tr><tr><td>Winter timetable</td><td>Fewer Gannet crossings and a later first boat to Keddle.</td><td>Everyone</td></tr></tbody></table></div><div class="part block chart"><div class="block-label"><span>Offline scan time on the oldest handheld, by build (ms)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Offline scan time on the oldest handheld, by build (ms)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="215.7" x2="616" y2="215.7" stroke="var(--line-soft)"/><text x="43" y="219.7" text-anchor="end" class="tick">250</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">500</text><line x1="52" y1="139.0" x2="616" y2="139.0" stroke="var(--line-soft)"/><text x="43" y="143.0" text-anchor="end" class="tick">750</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">1,000</text><line x1="52" y1="62.3" x2="616" y2="62.3" stroke="var(--line-soft)"/><text x="43" y="66.3" text-anchor="end" class="tick">1,250</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">1,500</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><polyline points="108.4,31.7 221.2,82.3 334.0,125.2 446.8,160.5 559.6,171.2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="108.4" cy="31.7" r="3" fill="var(--accent)"><title>2270: 1,450</title></circle><text x="108.4" y="23.7" text-anchor="middle" class="value">1,450</text><text x="108.4" y="275" text-anchor="middle">2270</text><circle cx="221.2" cy="82.3" r="3" fill="var(--accent)"><title>2276: 1,120</title></circle><text x="221.2" y="74.3" text-anchor="middle" class="value">1,120</text><text x="221.2" y="275" text-anchor="middle">2276</text><circle cx="334.0" cy="125.2" r="3" fill="var(--accent)"><title>2283: 840</title></circle><text x="334.0" y="117.2" text-anchor="middle" class="value">840</text><text x="334.0" y="275" text-anchor="middle">2283</text><circle cx="446.8" cy="160.5" r="3" fill="var(--accent)"><title>2288: 610</title></circle><text x="446.8" y="152.5" text-anchor="middle" class="value">610</text><text x="446.8" y="275" text-anchor="middle">2288</text><circle cx="559.6" cy="171.2" r="3" fill="var(--accent)"><title>2291: 540</title></circle><text x="559.6" y="163.2" text-anchor="middle" class="value">540</text><text x="559.6" y="275" text-anchor="middle">2291</text></svg></div></section><section class="section" id="gates"><h2>Gates</h2><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Gate</th><th>Status</th><th>Required</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="android-e2e" class=""><td class="num">1</td><td><a href="#android-e2e">Android end-to-end suite</a></td><td><span class="chip t-risk">failed</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="android-e2e" aria-label="Verdict on 1, Android end-to-end suite"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="store-review" class=""><td class="num">2</td><td><a href="#store-review">App Store review</a></td><td><span class="chip t-violet">pending</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="store-review" aria-label="Verdict on 2, App Store review"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="office-walkthrough" class=""><td class="num">3</td><td><a href="#office-walkthrough">Harbour office walkthrough of tide cancellations</a></td><td><span class="chip t-violet">pending</span></td><td></td><td class="vd"><select class="verdict" data-verdict-row="office-walkthrough" aria-label="Verdict on 3, Harbour office walkthrough of tide cancellations"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="unit-integration" class=""><td class="num">4</td><td><a href="#unit-integration">Unit and integration tests</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="storm-load" class=""><td class="num">5</td><td><a href="#storm-load">Load test at storm-day volume</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="accessibility" class=""><td class="num">6</td><td><a href="#accessibility">Accessibility pass on booking and passes</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="crash-free" class=""><td class="num">7</td><td><a href="#crash-free">Crash-free beta sessions above 99.5%</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="wallet-passes" class=""><td class="num">8</td><td><a href="#wallet-passes">Wallet pass validation</a></td><td><span class="chip t-neutral">skipped</span></td><td></td><td class="vd"><span class="none">No verdict needed</span></td></tr></tbody></table></div><details class="item" id="android-e2e" data-item="android-e2e" data-title="Android end-to-end suite" data-decides data-num="1"><summary class="item-head"><div class="item-meta"><span class="chip t-risk" title="Status">failed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">1</span> Android end-to-end suite</h3><p class="one-line">212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-android-e2e">Your note on 1</label> <textarea id="note-android-e2e" data-note="android-e2e" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>e2e-android</code> on build 2291, across the four handheld models the crews carry.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Job 18834, scenarios <code>offline-scan-signal-drop</code> and <code>offline-scan-airplane-mode</code>, with screen recordings attached.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Two of the Gannet&rsquo;s six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice.</p></dd></div></dl></div></details><details class="item" id="store-review" data-item="store-review" data-title="App Store review" data-decides data-num="2"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 2"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">2</span> App Store review</h3><p class="one-line">Build 2291 went in for review on 29 September, and reviews have taken one to two days.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-store-review">Your note on 2</label> <textarea id="note-store-review" data-note="store-review" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>The build&rsquo;s status in App Store Connect.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Waiting for review since 29 September at 16:20.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>Android does not wait on this, but staging one platform ahead of the other confuses the harbour office.</p></dd></div></dl></div></details><details class="item" id="office-walkthrough" data-item="office-walkthrough" data-title="Harbour office walkthrough of tide cancellations" data-decides data-num="3"><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 3"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">3</span> Harbour office walkthrough of tide cancellations</h3><p class="one-line">The office has to agree to approve each automatic cancellation for the first month.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-office-walkthrough">Your note on 3</label> <textarea id="note-office-walkthrough" data-note="office-walkthrough" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>A walkthrough on the staging site with the harbour office, run by Ines.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Booked for 2 October.</p></dd></div></dl></div></details><details class="item" id="unit-integration" data-item="unit-integration" data-title="Unit and integration tests" data-num="4"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">4</span> Unit and integration tests</h3><p class="one-line">1,904 tests passed on build 2291.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-unit-integration">Your note on 4</label> <textarea id="note-unit-integration" data-note="unit-integration" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>test</code> on build 2291.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable.</p></dd></div></dl></div></details><details class="item" id="storm-load" data-item="storm-load" data-title="Load test at storm-day volume" data-num="5"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">5</span> Load test at storm-day volume</h3><p class="one-line">Six times normal traffic held booking at 420 ms p95, against an 800 ms target.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-storm-load">Your note on 5</label> <textarea id="note-storm-load" data-note="storm-load" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p><code>k6 run load/storm-day.js</code> against staging for 30 minutes, at six times a normal winter Tuesday.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95.</p></dd></div></dl></div></details><details class="item" id="accessibility" data-item="accessibility" data-title="Accessibility pass on booking and passes" data-num="6"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">6</span> Accessibility pass on booking and passes</h3><p class="one-line">Screen reader and keyboard checks passed on every changed screen, the new pass screen included.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-accessibility">Your note on 6</label> <textarea id="note-accessibility" data-note="accessibility" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>VoiceOver and TalkBack walkthroughs by Mira, and <code>axe</code> in CI.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Nothing blocking. The pass screen now reads out the sailing and party before the code.</p></dd></div></dl></div></details><details class="item" id="crash-free" data-item="crash-free" data-title="Crash-free beta sessions above 99.5%" data-num="7"><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">7</span> Crash-free beta sessions above 99.5%</h3><p class="one-line">The beta ran 99.62% crash-free over seven days and 1,840 sessions.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-crash-free">Your note on 7</label> <textarea id="note-crash-free" data-note="crash-free" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Crash reports from the 3.4.0 beta group, 22 to 29 September.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>99.62% of 1,840 sessions were crash-free, above the 99.5% gate.</p></dd></div></dl></div></details><details class="item" id="wallet-passes" data-item="wallet-passes" data-title="Wallet pass validation" data-num="8"><summary class="item-head"><div class="item-meta"><span class="chip t-neutral" title="Status">skipped</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span class="num">8</span> Wallet pass validation</h3><p class="one-line">Not run, because wallet passes are out of scope for 3.4.0.</p></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-wallet-passes">Your note on 8</label> <textarea id="note-wallet-passes" data-note="wallet-passes" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Not run.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Skipped by the offline boarding passes plan. Wallet passes wait for a later release.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="rollback"><h2>Rollback</h2><div class="part prose"><p>Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night.</p></div><div class="part block"><div class="block-label"><span>Rollback steps</span></div><pre class="hl"><code><span class="hl-c1"># Stop the staged rollout where it is</span>
+</style></head><body data-kind="release"><a class="skip-link" href="#main">Skip to content</a><div class="toolbar"><div class="toolbar-inner"><a class="brand" href="#top" aria-label="Dossier, back to top"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span>Dossier</span></a> <span class="document-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V4m-5 5 5-5 5 5M5 16v4h14v-4"></path></svg>Release</span><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span><button class="btn theme-toggle" type="button" role="switch" data-theme-toggle aria-label="Dark mode" aria-checked="false" hidden><svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg></button></div></div></div><div class="page"><header class="masthead" id="top"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><span class="updated">Updated 2026-10-01</span></div><h1>Release 3.4.0</h1><div class="hero-bottom"><p class="lede">Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.</p><div class="stats" aria-label="At a glance"><div class=""><b class="fact-text">2291</b> <span>build</span></div><div class=""><b class="fact-text">5 October</b> <span>target</span></div><div class="t-risk"><b>1</b> <span>failed</span></div><div class="t-violet"><b>2</b> <span>pending</span></div><div class="t-teal"><b>4</b> <span>passed</span></div><div class="t-neutral"><b>1</b> <span>skipped</span></div></div></div></header><aside class="reader-rail" aria-label="Document navigation and decisions"><nav class="toc" aria-label="Contents"><div class="toc-heading"><span>On this page</span><button class="btn" type="button" data-contents-toggle aria-expanded="true" aria-controls="contents-list" hidden>Contents</button></div><div id="contents-list"><ol class="chapters"><li><a class="chapter-link" href="#ships"><span class="n">01</span><span>What ships</span></a></li><li><a class="chapter-link" href="#gates"><span class="n">02</span><span>Gates</span></a></li><li><a class="chapter-link" href="#rollback"><span class="n">03</span><span>Rollback</span></a></li></ol><details class="item-directory"><summary>Browse gates<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><ol><li class="group">Failed</li><li data-item="android-e2e" class=""><a href="#android-e2e"><span class="n">1.</span><span>Android end-to-end suite</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Pending</li><li data-item="store-review" class=""><a href="#store-review"><span class="n">2.</span><span>App Store review</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="office-walkthrough" class=""><a href="#office-walkthrough"><span class="n">3.</span><span>Harbour office walkthrough of tide cancellations</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Passed</li><li data-item="unit-integration" class=""><a href="#unit-integration"><span class="n">4.</span><span>Unit and integration tests</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="storm-load" class=""><a href="#storm-load"><span class="n">5.</span><span>Load test at storm-day volume</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="accessibility" class=""><a href="#accessibility"><span class="n">6.</span><span>Accessibility pass on booking and passes</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="crash-free" class=""><a href="#crash-free"><span class="n">7.</span><span>Crash-free beta sessions above 99.5%</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Skipped</li><li data-item="wallet-passes" class=""><a href="#wallet-passes"><span class="n">8.</span><span>Wallet pass validation</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li></ol></details></div></nav><details class="decision-panel" open><summary class="decision-heading"><span>Your decisions</span><span class="decision-count"><b data-live="count">0</b> / 3</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary> <fieldset class="choice" aria-labelledby="pick-question"><div class="choice-head"><b id="pick-question">Ship or hold?</b> <button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden>Clear</button></div><div class="options"><label><input type="radio" name="dossier-choice" value="ship" data-choice data-label="Ship"> <span><span class="opt">Ship</span> <span class="sum">Release now, with any waivers noted.</span></span></label><label><input type="radio" name="dossier-choice" value="hold" data-choice data-label="Hold"> <span><span class="opt">Hold</span> <span class="sum">Wait until the gates that did not pass are settled.</span></span></label></div></fieldset><p class="guard" role="status" data-guard="ship" data-unless="waive" data-watch="android-e2e" data-one="Ship goes ahead over gate {n}, which is failed and required and has no Waive verdict." data-many="Ship goes ahead over gates {n}, which are failed and required and have no Waive verdict." hidden></p><p class="decision-help">Decide as you read. Your reply brings it all together.</p><a class="reply-link" href="#pick">Review your reply <span aria-hidden="true">↗</span></a></details></aside><main class="main" id="main" tabindex="-1"><div class="reading-tools"><span class="reading-label">The document <span>3 sections</span></span><div class="reading-actions"><button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button></div></div><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="ships"><div class="section-heading"><span class="section-number">01</span><h2>What ships</h2></div><div class="part prose"><p>3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger.</p></div><div class="part table-wrap"><table><thead><tr><th>Change</th><th>What riders see</th><th>Rollout</th></tr></thead> <tbody><tr><td>Offline boarding passes</td><td>Passes scan at the Brisk slipway with no signal.</td><td>Brisk only, behind a flag</td></tr><tr><td>Tide-aware cancellations</td><td>A Brisk sailing too shallow for the ramp cancels early, with a notice.</td><td>The office approves each one for a month</td></tr><tr><td>Capacity check on held places</td><td>Nothing, unless a deck is full, when a second sale is refused.</td><td>Everyone</td></tr><tr><td>Winter timetable</td><td>Fewer Gannet crossings and a later first boat to Keddle.</td><td>Everyone</td></tr></tbody></table></div><div class="part block chart"><div class="block-label"><span>Offline scan time on the oldest handheld, by build (ms)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Offline scan time on the oldest handheld, by build (ms)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="215.7" x2="616" y2="215.7" stroke="var(--line-soft)"/><text x="43" y="219.7" text-anchor="end" class="tick">250</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">500</text><line x1="52" y1="139.0" x2="616" y2="139.0" stroke="var(--line-soft)"/><text x="43" y="143.0" text-anchor="end" class="tick">750</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">1,000</text><line x1="52" y1="62.3" x2="616" y2="62.3" stroke="var(--line-soft)"/><text x="43" y="66.3" text-anchor="end" class="tick">1,250</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">1,500</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><polyline points="108.4,31.7 221.2,82.3 334.0,125.2 446.8,160.5 559.6,171.2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="108.4" cy="31.7" r="3" fill="var(--accent)"><title>2270: 1,450</title></circle><text x="108.4" y="23.7" text-anchor="middle" class="value">1,450</text><text x="108.4" y="275" text-anchor="middle">2270</text><circle cx="221.2" cy="82.3" r="3" fill="var(--accent)"><title>2276: 1,120</title></circle><text x="221.2" y="74.3" text-anchor="middle" class="value">1,120</text><text x="221.2" y="275" text-anchor="middle">2276</text><circle cx="334.0" cy="125.2" r="3" fill="var(--accent)"><title>2283: 840</title></circle><text x="334.0" y="117.2" text-anchor="middle" class="value">840</text><text x="334.0" y="275" text-anchor="middle">2283</text><circle cx="446.8" cy="160.5" r="3" fill="var(--accent)"><title>2288: 610</title></circle><text x="446.8" y="152.5" text-anchor="middle" class="value">610</text><text x="446.8" y="275" text-anchor="middle">2288</text><circle cx="559.6" cy="171.2" r="3" fill="var(--accent)"><title>2291: 540</title></circle><text x="559.6" y="163.2" text-anchor="middle" class="value">540</text><text x="559.6" y="275" text-anchor="middle">2291</text></svg></div></section><section class="section" id="gates"><div class="section-heading"><span class="section-number">02</span><h2>Gates</h2></div><details class="board-overview"><summary><span>At a glance</span><span class="overview-count">8 gates</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><div class="part table-wrap"><table><thead><tr><th class="num">#</th><th>Gate</th><th>Status</th><th>Required</th><th class="vd">Verdict</th></tr></thead> <tbody><tr data-item="android-e2e" class=""><td class="num">1</td><td><a href="#android-e2e">Android end-to-end suite</a></td><td><span class="chip t-risk">failed</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="android-e2e" aria-label="Verdict on 1, Android end-to-end suite"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="store-review" class=""><td class="num">2</td><td><a href="#store-review">App Store review</a></td><td><span class="chip t-violet">pending</span></td><td>Yes</td><td class="vd"><select class="verdict" data-verdict-row="store-review" aria-label="Verdict on 2, App Store review"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="office-walkthrough" class=""><td class="num">3</td><td><a href="#office-walkthrough">Harbour office walkthrough of tide cancellations</a></td><td><span class="chip t-violet">pending</span></td><td></td><td class="vd"><select class="verdict" data-verdict-row="office-walkthrough" aria-label="Verdict on 3, Harbour office walkthrough of tide cancellations"><option value="">Undecided</option> <option value="waive">Waive</option><option value="rerun">Rerun</option></select></td></tr><tr data-item="unit-integration" class=""><td class="num">4</td><td><a href="#unit-integration">Unit and integration tests</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="storm-load" class=""><td class="num">5</td><td><a href="#storm-load">Load test at storm-day volume</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="accessibility" class=""><td class="num">6</td><td><a href="#accessibility">Accessibility pass on booking and passes</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="crash-free" class=""><td class="num">7</td><td><a href="#crash-free">Crash-free beta sessions above 99.5%</a></td><td><span class="chip t-teal">passed</span></td><td>Yes</td><td class="vd"><span class="none">No verdict needed</span></td></tr><tr data-item="wallet-passes" class=""><td class="num">8</td><td><a href="#wallet-passes">Wallet pass validation</a></td><td><span class="chip t-neutral">skipped</span></td><td></td><td class="vd"><span class="none">No verdict needed</span></td></tr></tbody></table></div></details> <details class="item" id="android-e2e" data-item="android-e2e" data-title="Android end-to-end suite" data-decides data-num="1"><summary class="item-head"><div class="item-heading"><span class="item-number">01</span><div class="item-copy"><h3>Android end-to-end suite</h3><p class="one-line">212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-risk" title="Status">failed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 1"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-android-e2e">Your note on 1</label> <textarea id="note-android-e2e" data-note="android-e2e" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>e2e-android</code> on build 2291, across the four handheld models the crews carry.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline.</p></dd></div><div class="facet"><dt>Evidence</dt><dd><p>Job 18834, scenarios <code>offline-scan-signal-drop</code> and <code>offline-scan-airplane-mode</code>, with screen recordings attached.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Two of the Gannet&rsquo;s six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice.</p></dd></div></dl></div></details><details class="item" id="store-review" data-item="store-review" data-title="App Store review" data-decides data-num="2"><summary class="item-head"><div class="item-heading"><span class="item-number">02</span><div class="item-copy"><h3>App Store review</h3><p class="one-line">Build 2291 went in for review on 29 September, and reviews have taken one to two days.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 2"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-store-review">Your note on 2</label> <textarea id="note-store-review" data-note="store-review" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>The build&rsquo;s status in App Store Connect.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Waiting for review since 29 September at 16:20.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>Android does not wait on this, but staging one platform ahead of the other confuses the harbour office.</p></dd></div></dl></div></details><details class="item" id="office-walkthrough" data-item="office-walkthrough" data-title="Harbour office walkthrough of tide cancellations" data-decides data-num="3"><summary class="item-head"><div class="item-heading"><span class="item-number">03</span><div class="item-copy"><h3>Harbour office walkthrough of tide cancellations</h3><p class="one-line">The office has to agree to approve each automatic cancellation for the first month.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-violet" title="Status">pending</span><span class="decide"><span class="verdicts" role="radiogroup" aria-label="Verdict on 3"><button type="button" role="radio" class="t-risk" data-verdict="waive" aria-checked="false" tabindex="0">Waive</button><button type="button" role="radio" class="t-violet" data-verdict="rerun" aria-checked="false" tabindex="-1">Rerun</button></span> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-office-walkthrough">Your note on 3</label> <textarea id="note-office-walkthrough" data-note="office-walkthrough" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>A walkthrough on the staging site with the harbour office, run by Ines.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Booked for 2 October.</p></dd></div></dl></div></details><details class="item" id="unit-integration" data-item="unit-integration" data-title="Unit and integration tests" data-num="4"><summary class="item-head"><div class="item-heading"><span class="item-number">04</span><div class="item-copy"><h3>Unit and integration tests</h3><p class="one-line">1,904 tests passed on build 2291.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-unit-integration">Your note on 4</label> <textarea id="note-unit-integration" data-note="unit-integration" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>CI job <code>test</code> on build 2291.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable.</p></dd></div></dl></div></details><details class="item" id="storm-load" data-item="storm-load" data-title="Load test at storm-day volume" data-num="5"><summary class="item-head"><div class="item-heading"><span class="item-number">05</span><div class="item-copy"><h3>Load test at storm-day volume</h3><p class="one-line">Six times normal traffic held booking at 420 ms p95, against an 800 ms target.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-storm-load">Your note on 5</label> <textarea id="note-storm-load" data-note="storm-load" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p><code>k6 run load/storm-day.js</code> against staging for 30 minutes, at six times a normal winter Tuesday.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95.</p></dd></div></dl></div></details><details class="item" id="accessibility" data-item="accessibility" data-title="Accessibility pass on booking and passes" data-num="6"><summary class="item-head"><div class="item-heading"><span class="item-number">06</span><div class="item-copy"><h3>Accessibility pass on booking and passes</h3><p class="one-line">Screen reader and keyboard checks passed on every changed screen, the new pass screen included.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-accessibility">Your note on 6</label> <textarea id="note-accessibility" data-note="accessibility" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>VoiceOver and TalkBack walkthroughs by Mira, and <code>axe</code> in CI.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Nothing blocking. The pass screen now reads out the sailing and party before the code.</p></dd></div></dl></div></details><details class="item" id="crash-free" data-item="crash-free" data-title="Crash-free beta sessions above 99.5%" data-num="7"><summary class="item-head"><div class="item-heading"><span class="item-number">07</span><div class="item-copy"><h3>Crash-free beta sessions above 99.5%</h3><p class="one-line">The beta ran 99.62% crash-free over seven days and 1,840 sessions.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Status">passed</span><span class="chip t-outline" title="Required">Required</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-crash-free">Your note on 7</label> <textarea id="note-crash-free" data-note="crash-free" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Crash reports from the 3.4.0 beta group, 22 to 29 September.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>99.62% of 1,840 sessions were crash-free, above the 99.5% gate.</p></dd></div></dl></div></details><details class="item" id="wallet-passes" data-item="wallet-passes" data-title="Wallet pass validation" data-num="8"><summary class="item-head"><div class="item-heading"><span class="item-number">08</span><div class="item-copy"><h3>Wallet pass validation</h3><p class="one-line">Not run, because wallet passes are out of scope for 3.4.0.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-neutral" title="Status">skipped</span><span class="decide"><button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-wallet-passes">Your note on 8</label> <textarea id="note-wallet-passes" data-note="wallet-passes" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How checked</dt><dd><p>Not run.</p></dd></div><div class="facet"><dt>Result</dt><dd><p>Skipped by the offline boarding passes plan. Wallet passes wait for a later release.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="rollback"><div class="section-heading"><span class="section-number">03</span><h2>Rollback</h2></div><div class="part prose"><p>Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night.</p></div><div class="part block"><div class="block-label"><span>Rollback steps</span></div><pre class="hl"><code><span class="hl-c1"># Stop the staged rollout where it is</span>
 release halt 3.4.0
 
 <span class="hl-c1"># Turn offline passes off at Brisk; scanners go back to online checks</span>
 flags <span class="hl-nb">set</span> offline-passes --harbour brisk --off
 
 <span class="hl-c1"># Return the booking service to 3.3.2</span>
-deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&#34;</span></code></pre></div></section><section class="pick" id="pick" aria-labelledby="pick-title" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;waive&#34;,&#34;label&#34;:&#34;Waive&#34;,&#34;tone&#34;:&#34;risk&#34;},{&#34;id&#34;:&#34;rerun&#34;,&#34;label&#34;:&#34;Rerun&#34;,&#34;tone&#34;:&#34;violet&#34;}]" data-noun="gate" data-plural="gates" data-empty><div><h2 id="pick-title">Your reply</h2><p class="pick-lede">It fills in as you decide. When you’re done, copy it and paste it back to your agent.</p></div><fieldset class="choice" aria-labelledby="pick-question"><div class="choice-head"><b id="pick-question">Ship or hold?</b> <button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden>Clear</button></div><div class="options"><label><input type="radio" name="dossier-choice" value="ship" data-choice data-label="Ship"> <span><span class="opt">Ship</span> <span class="sum">Release now, with any waivers noted.</span></span></label><label><input type="radio" name="dossier-choice" value="hold" data-choice data-label="Hold"> <span><span class="opt">Hold</span> <span class="sum">Wait until the gates that did not pass are settled.</span></span></label></div></fieldset><p class="guard" role="status" data-guard="ship" data-unless="waive" data-watch="android-e2e" data-one="Ship goes ahead over gate {n}, which is failed and required and has no Waive verdict." data-many="Ship goes ahead over gates {n}, which are failed and required and have no Waive verdict." hidden></p><div class="reply"><div class="said example"><p><span class="tag">Example</span> <code>ship, waive 3. Notes: 3: known arm64 flake.</code></p><p class="words">Choice: Ship. Waive: gate 3. Note on gate 3: known arm64 flake.</p></div><div class="said live"><p><code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p></div><div class="acts"><button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button></div></div></section></main><footer class="foot"><span>Release 3.4.0</span> <span>Generated with Dossier · 2026-10-01</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"release","meta":{"title":"Release 3.4.0","slug":"release-3-4-0","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"3.4.0","lede":"Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.","updated":"2026-10-01","status":"for-decision","facts":[{"label":"build","value":"2291"},{"label":"target","value":"5 October"}]},"sections":[{"id":"ships","title":"What ships","parts":[{"type":"prose","markdown":"3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger."},{"type":"table","title":"Changes","columns":["Change","What riders see","Rollout"],"rows":[["Offline boarding passes","Passes scan at the Brisk slipway with no signal.","Brisk only, behind a flag"],["Tide-aware cancellations","A Brisk sailing too shallow for the ramp cancels early, with a notice.","The office approves each one for a month"],["Capacity check on held places","Nothing, unless a deck is full, when a second sale is refused.","Everyone"],["Winter timetable","Fewer Gannet crossings and a later first boat to Keddle.","Everyone"]]},{"type":"chart","title":"Offline scan time on the oldest handheld, by build (ms)","variant":"line","data":[{"label":"2270","value":1450},{"label":"2276","value":1120},{"label":"2283","value":840},{"label":"2288","value":610},{"label":"2291","value":540}]}]},{"id":"gates","title":"Gates","board":{"summary":true,"items":[{"id":"android-e2e","title":"Android end-to-end suite","summary":"212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.","status":"failed","required":true,"facets":[{"label":"How checked","markdown":"CI job `e2e-android` on build 2291, across the four handheld models the crews carry."},{"label":"Result","markdown":"212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline."},{"label":"Evidence","markdown":"Job 18834, scenarios `offline-scan-signal-drop` and `offline-scan-airplane-mode`, with screen recordings attached."},{"label":"Risk","markdown":"Two of the Gannet's six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice."}]},{"id":"store-review","title":"App Store review","summary":"Build 2291 went in for review on 29 September, and reviews have taken one to two days.","status":"pending","required":true,"facets":[{"label":"How checked","markdown":"The build's status in App Store Connect."},{"label":"Result","markdown":"Waiting for review since 29 September at 16:20."},{"label":"Note","markdown":"Android does not wait on this, but staging one platform ahead of the other confuses the harbour office."}]},{"id":"office-walkthrough","title":"Harbour office walkthrough of tide cancellations","summary":"The office has to agree to approve each automatic cancellation for the first month.","status":"pending","facets":[{"label":"How checked","markdown":"A walkthrough on the staging site with the harbour office, run by Ines."},{"label":"Result","markdown":"Booked for 2 October."}]},{"id":"unit-integration","title":"Unit and integration tests","summary":"1,904 tests passed on build 2291.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"CI job `test` on build 2291."},{"label":"Result","markdown":"1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable."}]},{"id":"storm-load","title":"Load test at storm-day volume","summary":"Six times normal traffic held booking at 420 ms p95, against an 800 ms target.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"`k6 run load/storm-day.js` against staging for 30 minutes, at six times a normal winter Tuesday."},{"label":"Result","markdown":"420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95."}]},{"id":"accessibility","title":"Accessibility pass on booking and passes","summary":"Screen reader and keyboard checks passed on every changed screen, the new pass screen included.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"VoiceOver and TalkBack walkthroughs by Mira, and `axe` in CI."},{"label":"Result","markdown":"Nothing blocking. The pass screen now reads out the sailing and party before the code."}]},{"id":"crash-free","title":"Crash-free beta sessions above 99.5%","summary":"The beta ran 99.62% crash-free over seven days and 1,840 sessions.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"Crash reports from the 3.4.0 beta group, 22 to 29 September."},{"label":"Result","markdown":"99.62% of 1,840 sessions were crash-free, above the 99.5% gate."}]},{"id":"wallet-passes","title":"Wallet pass validation","summary":"Not run, because wallet passes are out of scope for 3.4.0.","status":"skipped","facets":[{"label":"How checked","markdown":"Not run."},{"label":"Result","markdown":"Skipped by the offline boarding passes plan. Wallet passes wait for a later release."}]}]}},{"id":"rollback","title":"Rollback","parts":[{"type":"prose","markdown":"Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night."},{"type":"code","title":"Rollback steps","lang":"sh","code":"# Stop the staged rollout where it is\nrelease halt 3.4.0\n\n# Turn offline passes off at Brisk; scanners go back to online checks\nflags set offline-passes --harbour brisk --off\n\n# Return the booking service to 3.3.2\ndeploy booking --version 3.3.2 --reason \"rollback 3.4.0\""}]}]}</script><script>
+deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&#34;</span></code></pre></div></section><section class="pick" id="pick" aria-labelledby="pick-title" data-mode="verdict" data-verdicts="[{&#34;id&#34;:&#34;waive&#34;,&#34;label&#34;:&#34;Waive&#34;,&#34;tone&#34;:&#34;risk&#34;},{&#34;id&#34;:&#34;rerun&#34;,&#34;label&#34;:&#34;Rerun&#34;,&#34;tone&#34;:&#34;violet&#34;}]" data-noun="gate" data-plural="gates" data-empty><div><h2 id="pick-title">Your reply</h2><p class="pick-lede">Your choices, ready to send. Copy this reply back to your agent when you’re done.</p></div><p class="guard" role="status" data-guard="ship" data-unless="waive" data-watch="android-e2e" data-one="Ship goes ahead over gate {n}, which is failed and required and has no Waive verdict." data-many="Ship goes ahead over gates {n}, which are failed and required and have no Waive verdict." hidden></p><div class="reply"><div class="said example"><p><span class="tag">Example</span> <code>ship, waive 3. Notes: 3: known arm64 flake.</code></p><p class="words">Choice: Ship. Waive: gate 3. Note on gate 3: known arm64 flake.</p></div><div class="said live"><p><code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p></div><div class="acts"><button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button></div></div></section></main><footer class="foot"><span>Release 3.4.0</span> <span>Generated with Dossier · 2026-10-01</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"release","meta":{"title":"Release 3.4.0","slug":"release-3-4-0","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"3.4.0","lede":"Offline boarding passes, tide-aware cancellations, and the capacity fix from the 07:40, ready for the winter timetable. One required gate failed and two gates are pending. Ship or hold, then waive or rerun what did not pass.","updated":"2026-10-01","status":"for-decision","facts":[{"label":"build","value":"2291"},{"label":"target","value":"5 October"}]},"sections":[{"id":"ships","title":"What ships","parts":[{"type":"prose","markdown":"3.4.0 carries what the winter timetable needs before it starts on 26 October. It reaches riders in stages: a tenth of app users on the first day, then everyone after three days without a rollback trigger."},{"type":"table","title":"Changes","columns":["Change","What riders see","Rollout"],"rows":[["Offline boarding passes","Passes scan at the Brisk slipway with no signal.","Brisk only, behind a flag"],["Tide-aware cancellations","A Brisk sailing too shallow for the ramp cancels early, with a notice.","The office approves each one for a month"],["Capacity check on held places","Nothing, unless a deck is full, when a second sale is refused.","Everyone"],["Winter timetable","Fewer Gannet crossings and a later first boat to Keddle.","Everyone"]]},{"type":"chart","title":"Offline scan time on the oldest handheld, by build (ms)","variant":"line","data":[{"label":"2270","value":1450},{"label":"2276","value":1120},{"label":"2283","value":840},{"label":"2288","value":610},{"label":"2291","value":540}]}]},{"id":"gates","title":"Gates","board":{"summary":true,"items":[{"id":"android-e2e","title":"Android end-to-end suite","summary":"212 of 214 scenarios passed, and both failures are offline scans on Android 10 handhelds.","status":"failed","required":true,"facets":[{"label":"How checked","markdown":"CI job `e2e-android` on build 2291, across the four handheld models the crews carry."},{"label":"Result","markdown":"212 of 214 passed. On Android 10, a scan made within 30 seconds of losing signal waits 4 seconds for the network before it checks offline."},{"label":"Evidence","markdown":"Job 18834, scenarios `offline-scan-signal-drop` and `offline-scan-airplane-mode`, with screen recordings attached."},{"label":"Risk","markdown":"Two of the Gannet's six handhelds run Android 10. Some scans at the Brisk ramp would take four seconds, and a queue of cars would notice."}]},{"id":"store-review","title":"App Store review","summary":"Build 2291 went in for review on 29 September, and reviews have taken one to two days.","status":"pending","required":true,"facets":[{"label":"How checked","markdown":"The build's status in App Store Connect."},{"label":"Result","markdown":"Waiting for review since 29 September at 16:20."},{"label":"Note","markdown":"Android does not wait on this, but staging one platform ahead of the other confuses the harbour office."}]},{"id":"office-walkthrough","title":"Harbour office walkthrough of tide cancellations","summary":"The office has to agree to approve each automatic cancellation for the first month.","status":"pending","facets":[{"label":"How checked","markdown":"A walkthrough on the staging site with the harbour office, run by Ines."},{"label":"Result","markdown":"Booked for 2 October."}]},{"id":"unit-integration","title":"Unit and integration tests","summary":"1,904 tests passed on build 2291.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"CI job `test` on build 2291."},{"label":"Result","markdown":"1,904 passed and none failed. Twelve are skipped because they cover the retired summer Petrel timetable."}]},{"id":"storm-load","title":"Load test at storm-day volume","summary":"Six times normal traffic held booking at 420 ms p95, against an 800 ms target.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"`k6 run load/storm-day.js` against staging for 30 minutes, at six times a normal winter Tuesday."},{"label":"Result","markdown":"420 ms at p95 and 910 ms at p99, with no errors. The target is 800 ms at p95."}]},{"id":"accessibility","title":"Accessibility pass on booking and passes","summary":"Screen reader and keyboard checks passed on every changed screen, the new pass screen included.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"VoiceOver and TalkBack walkthroughs by Mira, and `axe` in CI."},{"label":"Result","markdown":"Nothing blocking. The pass screen now reads out the sailing and party before the code."}]},{"id":"crash-free","title":"Crash-free beta sessions above 99.5%","summary":"The beta ran 99.62% crash-free over seven days and 1,840 sessions.","status":"passed","required":true,"facets":[{"label":"How checked","markdown":"Crash reports from the 3.4.0 beta group, 22 to 29 September."},{"label":"Result","markdown":"99.62% of 1,840 sessions were crash-free, above the 99.5% gate."}]},{"id":"wallet-passes","title":"Wallet pass validation","summary":"Not run, because wallet passes are out of scope for 3.4.0.","status":"skipped","facets":[{"label":"How checked","markdown":"Not run."},{"label":"Result","markdown":"Skipped by the offline boarding passes plan. Wallet passes wait for a later release."}]}]}},{"id":"rollback","title":"Rollback","parts":[{"type":"prose","markdown":"Roll back when crash-free sessions fall below 99% for an hour, or when more than 2 in 100 scans at any harbour fall back to the paper list. Joss or Tomas can do it alone, day or night."},{"type":"code","title":"Rollback steps","lang":"sh","code":"# Stop the staged rollout where it is\nrelease halt 3.4.0\n\n# Turn offline passes off at Brisk; scanners go back to online checks\nflags set offline-passes --harbour brisk --off\n\n# Return the booking service to 3.3.2\ndeploy booking --version 3.3.2 --reason \"rollback 3.4.0\""}]}]}</script><script>
 (() => {
   "use strict";
-  /* the reply line, its words, and whether it says anything, exactly as Go has them: testdata/replies.json holds both to the same cases */
   const parts = (c, s) => {
     const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
     let open = 0;
@@ -401,7 +435,8 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
       noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
     return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
   };
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty }; return; }
+  const themeMode = (saved, dark) => ["light", "dark"].includes(saved) ? saved : dark ? "dark" : "light";
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty, themeMode }; return; }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -412,27 +447,27 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
   const keys = Object.keys;
   let model = {};
   try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
-  const slug = (model.meta && model.meta.slug) || "dossier";
-  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
-  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+  const slug = model.meta?.slug || "dossier";
+  const load = (k, shared) => { try { return localStorage.getItem("dossier:" + (shared ? "" : slug + ":") + k); } catch (e) { return null; } };
+  const keep = (k, v, shared) => { try { localStorage.setItem("dossier:" + (shared ? "" : slug + ":") + k, v); } catch (e) {} };
 
-  /* theme: auto, light, dark */
-  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const themeBtn = $("[data-theme-toggle]");
   const applyTheme = (m) => {
-    if (!modes.includes(m)) m = "auto";
-    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    document.documentElement.setAttribute("data-theme", m);
     if (themeBtn) {
+      themeBtn.hidden = false;
       themeBtn.setAttribute("data-mode", m);
-      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
-      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
-      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+      themeBtn.setAttribute("aria-checked", m === "dark");
+      themeBtn.title = "Switch to " + (m === "dark" ? "light" : "dark") + " mode";
     }
-    keep("theme", m);
   };
-  applyTheme(load("theme"));
-  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+  applyTheme(themeMode(load("theme", true) || load("theme"), matchMedia("(prefers-color-scheme: dark)").matches));
+  if (themeBtn) on("click", () => {
+    const m = at(themeBtn, "data-mode") === "dark" ? "light" : "dark";
+    applyTheme(m);
+    keep("theme", m, true);
+  }, themeBtn);
 
-  /* decisions: the embedded model is the baseline, this device may go further */
   const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
   let defs = [];
   try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
@@ -509,7 +544,7 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
   };
   const decisionsJSON = () => {
     const d = detail(), some = (o) => (keys(o).length ? o : undefined);
-    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: model.meta?.title || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
   };
   let noteTimer;
   on("click", (e) => {
@@ -532,8 +567,8 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
   });
   on("keydown", (e) => {
-    const t = e.target, b = t.closest && t.closest("[data-verdict]");
-    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    const t = e.target, b = t.closest?.("[data-verdict]");
+    if (e.key === "/" && box && !t.closest?.("input,textarea,select,[contenteditable]")) { e.preventDefault(); box.focus(); return; }
     if (!b) return;
     const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (dir) {
@@ -550,9 +585,8 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
     else if (t.matches("input[data-choice]")) setPath(t.value);
   });
   on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
-  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches?.("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
 
-  /* collapsing: remembered per item on this device */
   const details = $$("details.item[id]"), opened = {};
   let printing = false, beforePrint = null;
   try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
@@ -566,15 +600,14 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
       renderCollapse();
     }, d);
   });
-  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
-  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  on("beforeprint", () => { printing = true; beforePrint = $$("details:is(.item,.row,.board-overview,.decision-panel)").map((d) => [d, d.open]); beforePrint.forEach(([d]) => { d.open = true; }); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) beforePrint.forEach(([d, open]) => { d.open = open; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
   const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
   openHash();
   on("hashchange", openHash, window);
   renderCollapse();
 
-  /* view: Hide decided and search together decide what shows; printing shows everything */
-  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const box = $("[data-search]"), hl = window.CSS?.highlights;
   const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
   const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
@@ -636,28 +669,44 @@ deploy booking --version 3.3.2 --reason <span class="hl-s2">&#34;rollback 3.4.0&
     }, box);
   }
 
-  /* copy and toast */
   let toastTimer;
   const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
   const copy = (text, msg) => {
     const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
   };
 
-  /* contents: mark the section in view */
+  const nav = $(".toc"), navBtn = $("[data-contents-toggle]");
+  if (nav && navBtn) {
+    navBtn.hidden = false;
+    const compact = matchMedia("(max-width: 999px)");
+    const setNav = (yes) => { nav.toggleAttribute("data-collapsed", yes); navBtn.setAttribute("aria-expanded", !yes); };
+    setNav(compact.matches);
+    const panel = $(".decision-panel");
+    if (panel) panel.open = !compact.matches;
+    on("change", () => setNav(compact.matches), compact);
+    on("click", () => setNav(!nav.hasAttribute("data-collapsed")), navBtn);
+    on("click", (e) => { if (compact.matches && e.target.closest("a")) setNav(true); }, nav);
+  }
+
   const links = {};
   let active = null;
-  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  $$(".chapter-link").forEach((a) => { links[at(a, "href").slice(1)] = a; });
   const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
-    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
-  }
+  const track = () => {
+    let current;
+    sections.forEach(({ el }) => { if (!el.hidden && (!current || el.getBoundingClientRect().top < innerHeight * .35)) current = el; });
+    if (current) setActive(current.id);
+  };
+  on("scroll", track, window);
+  on("resize", track, window);
+  on("load", track, window);
+  on("input", () => requestAnimationFrame(track), box);
+  track();
 
   render();
   announce();
 
-  /* embedded: keep the parent's frame as tall as the page */
   if (framed) {
     let lastHeight = -1;
     const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };

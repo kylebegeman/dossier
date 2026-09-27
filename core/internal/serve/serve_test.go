@@ -432,11 +432,11 @@ func TestFindingsPageKeepsTheStudioLive(t *testing.T) {
 
 func TestSettingsPreviewTheAccent(t *testing.T) {
 	h := start(t, brainstorm)
-	accent := "#2563EB"
+	accent := "#1F5FA8"
 	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &accent}); code != 200 {
 		t.Fatal("put accent")
 	}
-	if page := h.page(); !strings.Contains(page, ":root { --accent: #2563eb;") || !strings.Contains(page, `:root[data-theme="dark"] { --accent: #`) {
+	if page := h.page(); !strings.Contains(page, ":root { --accent: #1f5fa8;") || !strings.Contains(page, `:root[data-theme="dark"] { --accent: #`) {
 		t.Error("the page must carry the previewed accent, derived for both themes")
 	}
 	bad := "red; } body { display:none"
@@ -444,7 +444,7 @@ func TestSettingsPreviewTheAccent(t *testing.T) {
 		t.Errorf("a bad accent must be refused: %d", code)
 	}
 	empty := ""
-	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &empty}); code != 200 || strings.Contains(h.page(), "--accent: #2563eb") {
+	if code, _ := h.api("PUT", "/_/settings", settingsRequest{Accent: &empty}); code != 200 || strings.Contains(h.page(), "--accent: #1f5fa8") {
 		t.Error("reset must clear the accent")
 	}
 }
@@ -691,7 +691,7 @@ func TestAccentPreviewDerivesAndKeepsInTheModel(t *testing.T) {
 	if err := json.Unmarshal([]byte(text), &settings); err != nil || res.StatusCode != 200 {
 		t.Fatalf("settings: %d %s", res.StatusCode, text)
 	}
-	if !strings.Contains(settings.CSS, ":root { --accent: #866e00;") || !strings.Contains(settings.CSS, `:root[data-theme="dark"] { --accent: #f7d65b;`) || len(settings.Warnings) != 1 {
+	if !strings.Contains(settings.CSS, ":root { --accent: #816a00;") || !strings.Contains(settings.CSS, `:root[data-theme="dark"] { --accent: #f7d65b;`) || len(settings.Warnings) != 1 {
 		t.Errorf("the preview carries the derived palette and its warning: %+v", settings)
 	}
 	if code, res := h.api("PUT", "/_/drafts", draftRequest{Target: "/meta/theme/accent", Value: "#2563EB"}); code != 200 {

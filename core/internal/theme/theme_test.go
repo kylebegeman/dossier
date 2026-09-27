@@ -9,16 +9,16 @@ import (
 // backgrounds they must read on.
 func pairs(p Palette) map[string][2]string {
 	return map[string][2]string{
-		"light accent on paper":        {p.Light.Accent, "#f7f5f7"},
+		"light accent on paper":        {p.Light.Accent, "#eeeeee"},
 		"light accent on background":   {p.Light.Accent, "#ffffff"},
 		"light accent on its wash":     {p.Light.Accent, p.Light.Soft},
 		"light ink on accent":          {p.Light.Ink, p.Light.Accent},
-		"dark accent on paper":         {p.Dark.Accent, "#1c191e"},
-		"dark accent on background":    {p.Dark.Accent, "#141216"},
+		"dark accent on paper":         {p.Dark.Accent, "#252525"},
+		"dark accent on background":    {p.Dark.Accent, "#121212"},
 		"dark accent on its wash":      {p.Dark.Accent, p.Dark.Soft},
 		"dark ink on accent":           {p.Dark.Ink, p.Dark.Accent},
-		"light text on the light wash": {"#201c22", p.Light.Soft},
-		"dark text on the dark wash":   {"#f4f1f4", p.Dark.Soft},
+		"light text on the light wash": {"#222222", p.Light.Soft},
+		"dark text on the dark wash":   {"#ededed", p.Dark.Soft},
 	}
 }
 
@@ -73,8 +73,8 @@ func TestDeriveDarkensAColorTooLightForText(t *testing.T) {
 func TestDeriveIsStable(t *testing.T) {
 	for hex, want := range map[string]Palette{
 		"#c81e4a": {Light: Tones{Accent: "#c81e4a", Soft: "#ffe8e9", Ink: "#ffffff"}, Dark: Tones{Accent: "#f87586", Soft: "#3f181d", Ink: "#3c1017"}},
-		"#2563eb": {Light: Tones{Accent: "#2563eb", Soft: "#e9f1ff", Ink: "#ffffff"}, Dark: Tones{Accent: "#73a2ff", Soft: "#162544", Ink: "#0f2043"}},
-		"#ffd400": {Light: Tones{Accent: "#866e00", Soft: "#fdf5db", Ink: "#ffffff"}, Dark: Tones{Accent: "#f7d65b", Soft: "#2f2601", Ink: "#2a2100"}},
+		"#2563eb": {Light: Tones{Accent: "#2461e9", Soft: "#e6efff", Ink: "#ffffff"}, Dark: Tones{Accent: "#73a2ff", Soft: "#162544", Ink: "#0f2043"}},
+		"#ffd400": {Light: Tones{Accent: "#816a00", Soft: "#f6efd5", Ink: "#ffffff"}, Dark: Tones{Accent: "#f7d65b", Soft: "#2f2601", Ink: "#2a2100"}},
 		"#08776e": {Light: Tones{Accent: "#08776e", Soft: "#e1f3f0", Ink: "#ffffff"}, Dark: Tones{Accent: "#6fb3ab", Soft: "#172b28", Ink: "#0e2624"}},
 	} {
 		got, _, err := Derive(hex)
@@ -88,7 +88,7 @@ func TestCSSUsesTheTokenSelectors(t *testing.T) {
 	p, _, _ := Derive("#2563eb")
 	css := p.CSS()
 	for _, want := range []string{
-		":root { --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e9f1ff; }",
+		":root { --accent: #2461e9; --accent-ink: #ffffff; --accent-soft: #e6efff; }",
 		"@media (prefers-color-scheme: dark) { :root:not([data-theme=\"light\"]) { --accent: #73a2ff;",
 		":root[data-theme=\"dark\"] { --accent: #73a2ff;",
 	} {

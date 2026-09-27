@@ -40,6 +40,7 @@ dist-check: dist
 site:
 	rm -rf ../site
 	go run ./cmd/dossier build ../docs/site/index.dossier.json examples/*.dossier.json testdata/fixtures/winter-crossing.dossier.json --out ../site
+	cp ../docs/site/explore.html ../site/explore.html
 	touch ../site/.nojekyll
 
 clean:

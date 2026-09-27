@@ -1,374 +1,409 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Dossier, capabilities showcase</title><style>
-/* Dossier tokens. Light is the base; dark is tuned, not inverted. */
+/* Neutral surfaces. State is expressed with fill and type, never accent stripes. */
 :root {
-  --bg: #ffffff;
-  --paper: #f7f5f7;
-  --paper-2: #efecf0;
-  --ink: #201c22;
-  --muted: #6b6270;
-  --line: #e0dae0;
-  --line-soft: #ece7ec;
-  --accent: #c81e4a;
-  --accent-ink: #ffffff;
-  --accent-soft: #fbe8ed;
-  --teal: #08776e;
-  --teal-soft: #e3f3f0;
-  --violet: #6a46d9;
-  --violet-soft: #ede8fb;
-  --coral: #9a5b00;
-  --risk-soft: #f6ecdc;
-  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --gutter: clamp(16px, 4vw, 40px);
-  --frame: 1360px;
-  --rail: 208px;
-  --measure: 76ch;
-  --r-s: 6px;
-  --r: 10px;
-  --r-l: 14px;
-  --dur: 160ms;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  color-scheme: light;
+  --bg:#f6f6f6; --paper:#ffffff; --paper-2:#eeeeee;
+  --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7;
+  --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff;
+  --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff;
+  --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9;
+  --font-body:"Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --frame:1240px; --gutter:clamp(20px, 4vw, 56px); --rail:276px; --measure:70ch;
+  --r-s:6px; --r:12px; --r-l:18px; --dur:140ms; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme:dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
-    --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
-    --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
-    color-scheme: dark;
+    --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
+    --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
+    --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
+    --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
+    --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141216; --paper: #1c191e; --paper-2: #242026; --ink: #f4f1f4; --muted: #b0a7b1; --line: #3d363f; --line-soft: #2b262d;
-  --accent: #f4789a; --accent-ink: #3a0f1d; --accent-soft: #3a1a25;
-  --teal: #6fdbc9; --teal-soft: #14302c; --violet: #b9aaff; --violet-soft: #28213f; --coral: #e6b566; --risk-soft: #33261a;
-  color-scheme: dark;
+  --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
+  --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
+  --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
+  --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
+  --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
+  color-scheme:dark;
 }
 
-/* base */
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
+body { --kind:var(--violet); --kind-soft:var(--violet-soft) }
+body[data-kind="plan"], body[data-kind="brief"] { --kind:var(--blue); --kind-soft:var(--blue-soft) }
+body[data-kind="review"] { --kind:var(--amber); --kind-soft:var(--amber-soft) }
+body[data-kind="release"] { --kind:var(--teal); --kind-soft:var(--teal-soft) }
+body[data-kind="incident"] { --kind:var(--coral); --kind-soft:var(--risk-soft) }
+.t-teal { --tone:var(--teal); --tone-soft:var(--teal-soft) }
+.t-violet { --tone:var(--violet); --tone-soft:var(--violet-soft) }
+.t-risk { --tone:var(--coral); --tone-soft:var(--risk-soft) }
+
+/* Foundations */
+* { box-sizing:border-box }
+html { scroll-behavior:smooth; scroll-padding-top:96px }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.7 var(--font-body); -webkit-font-smoothing:antialiased; overflow-wrap:anywhere }
+h1, h2, h3, p { margin:0 }
+h1, h2, h3 { font-style:normal; text-wrap:balance }
+p { text-wrap:pretty }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:4px }
+button, input, select, textarea { font:inherit; color:inherit }
+button { cursor:pointer }
+::selection { background:var(--accent-soft); color:var(--ink) }
+:where(a, button, input, select, textarea, summary):focus-visible { outline:2px solid var(--ink); outline-offset:4px; border-radius:4px }
+[hidden] { display:none !important }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+.skip-link { position:fixed; top:8px; left:8px; transform:translateY(-160%); z-index:100; padding:12px 20px; background:var(--ink); color:var(--bg); border-radius:var(--r-s) }
+.skip-link:focus { transform:none }
+code { font-family:var(--font-mono); font-size:.84em; background:var(--paper-2); border-radius:4px; padding:2px 5px; overflow-wrap:anywhere; box-decoration-break:clone; -webkit-box-decoration-break:clone }
+pre { margin:0; padding:22px; border-radius:var(--r); background:var(--paper); overflow-x:auto; font:12px/1.85 var(--font-mono); tab-size:4 }
+pre code { background:none; padding:0; white-space:pre; font-size:inherit }
+summary { cursor:pointer }
+summary::marker { content:"" }
+summary::-webkit-details-marker { display:none }
+.chev { width:16px; height:16px; flex:none; color:var(--muted); transition:transform var(--dur) }
+
+/* The toolbar stays small; document controls belong with the content. */
+.toolbar { position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line-soft) }
+.toolbar-inner { max-width:calc(var(--frame) + 2 * var(--gutter)); min-height:76px; padding:16px var(--gutter); margin:auto; display:flex; align-items:center; gap:16px }
+.brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-size:17px; font-weight:600; text-decoration:none; letter-spacing:-.4px }
+.brand svg { width:36px; height:36px; padding:7px; border-radius:11px; background:var(--accent); color:var(--accent-ink) }
+.document-kind { display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border-radius:7px; background:var(--kind-soft); color:var(--kind); font-size:12px; font-weight:600 }
+.document-kind svg { width:16px; height:16px }
+.tools { display:flex; align-items:center; gap:12px; margin-left:auto }
+.search { position:relative; display:flex; align-items:center }
+.search input { width:200px; height:38px; padding:0 36px 0 14px; background:var(--paper); border:1px solid var(--line-soft); border-radius:8px; font-size:13px }
+.search input::placeholder { color:var(--muted) }
+.search kbd { position:absolute; right:12px; font:12px var(--font-mono); color:var(--muted) }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display:none }
+.hits { font-size:12px; color:var(--muted); white-space:nowrap }
+.hits:empty { display:none }
+::highlight(dossier-hit) { background:var(--accent-soft); color:var(--ink) }
+::highlight(dossier-now) { background:var(--ink); color:var(--bg) }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:36px; padding:0 12px; border:1px solid var(--line); border-radius:7px; background:transparent; color:var(--ink); font-size:12px; font-weight:500; line-height:1.3; white-space:nowrap; transition:background var(--dur) }
+.btn:hover { background:var(--paper-2) }
+.btn[aria-pressed="true"] { background:var(--paper-2); color:var(--ink) }
+.btn svg { width:16px; height:16px }
+.theme-toggle { position:relative; isolation:isolate; gap:18px; width:74px; padding:0; border:0; border-radius:24px; background:var(--paper-2); color:var(--muted) }
+.theme-toggle::before { content:""; position:absolute; z-index:-1; inset:3px auto 3px 3px; width:34px; border-radius:50%; background:var(--paper); box-shadow:0 1px 4px #0002; transition:transform var(--dur) var(--ease) }
+.theme-toggle[data-mode="dark"]::before { transform:translateX(34px) }
+.theme-toggle[data-mode="light"] .th-light { color:var(--amber) }
+.theme-toggle[data-mode="dark"] .th-dark { color:var(--accent) }
+.btn.solid { background:var(--accent); color:var(--accent-ink); border-color:transparent; padding:0 18px; min-height:40px }
+.btn.solid:hover { opacity:.85 }
+.link-btn { padding:4px 0; border:0; background:none; color:var(--muted); font-size:12px; text-decoration:underline; text-underline-offset:4px }
+.link-btn:hover { color:var(--ink) }
+.check { appearance:none; -webkit-appearance:none; width:18px; height:18px; margin:0; border:1px solid var(--muted); border-radius:5px; background:var(--paper); display:inline-grid; place-content:center; cursor:pointer; vertical-align:-4px }
+.check::before { content:""; width:10px; height:10px; transform:scale(0); background:var(--accent-ink); clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%) }
+.check:checked { background:var(--accent); border-color:var(--accent) }
+.check:checked::before { transform:scale(1) }
+
+/* A wide opening, then a reading column and a compact right rail. */
+.page { max-width:calc(var(--frame) + 2 * var(--gutter)); padding:0 var(--gutter); margin:auto; display:grid; grid-template-columns:minmax(0,1fr) var(--rail); gap:0 clamp(40px,6vw,88px) }
+.masthead { grid-column:1 / -1; padding:64px 0 44px; margin-bottom:36px; border-bottom:1px solid var(--line); scroll-margin-top:16px }
+.mast-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:28px }
+.kicker { font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.055em; text-transform:uppercase }
+.updated { color:var(--muted); font-size:12px }
+.masthead h1 { max-width:23ch; font-size:clamp(38px,4.8vw,66px); line-height:1.06; font-weight:550; letter-spacing:-.047em }
+.hero-bottom { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr); gap:48px; margin-top:32px; align-items:start }
+.hero-bottom:not(:has(.lede)) { display:block }
+.hero-bottom:not(:has(.lede)) .stats { justify-content:flex-start }
+.lede { max-width:60ch; font-size:17px; line-height:1.7; color:var(--muted) }
+.stats { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:24px 32px; padding-top:3px }
+.stats > div { display:flex; flex-direction:column; gap:2px; min-width:54px }
+.stats b { color:var(--tone,var(--ink)); font-size:38px; font-weight:550; letter-spacing:-.04em; line-height:1.1; font-variant-numeric:tabular-nums }
+.stats b.fact-text { font-size:23px; line-height:1.8 }
+.stats:has(> div:nth-child(5)) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px }
+.stats span { font-size:12px; color:var(--muted) }
+.main { grid-column:1; grid-row:2; min-width:0; padding-bottom:64px }
+.reading-tools { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding-bottom:12px }
+.reading-label { display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600 }
+.reading-label > span { font-size:12px; color:var(--muted); font-weight:400 }
+.reading-actions { display:flex; gap:6px }
+.reading-actions .btn { min-height:32px; border:0; color:var(--muted); padding:0 8px }
+.reader-rail { grid-column:2; grid-row:2; position:sticky; top:104px; align-self:start; max-height:calc(100vh - 128px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--line) transparent }
+.toc-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13px; font-weight:600; padding:7px 12px 14px }
+.toc ol { list-style:none; padding:0; margin:0 }
+.toc li a { display:flex; align-items:baseline; gap:12px; padding:10px 12px; border-radius:8px; text-decoration:none; color:var(--muted); font-size:13px; line-height:1.45 }
+.toc li a:hover { background:var(--paper-2); color:var(--ink) }
+.toc li a[aria-current="true"] { background:var(--paper-2); color:var(--ink); font-weight:500 }
+.toc .n { min-width:18px; flex:none; font-size:11px; font-variant-numeric:tabular-nums }
+.toc .pip { width:5px; height:5px; margin-left:auto; border-radius:50%; align-self:center; background:var(--ink); opacity:0; flex:none }
+.toc li.picked .pip, .toc li[data-tone] .pip { opacity:1 }
+.toc .group { font-size:11px; font-weight:600; color:var(--muted); margin:16px 12px 4px }
+.item-directory { margin:16px 0 0 }
+.item-directory > summary { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; color:var(--muted); font-size:12px }
+.item-directory[open] > summary .chev { transform:rotate(180deg) }
+.item-directory li a { font-size:12px; padding-block:8px }
+.decision-panel { margin-top:28px; padding:22px; border-radius:var(--r-l); background:var(--paper); box-shadow:0 4px 20px #00000006 }
+.decision-heading { display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:13px; font-weight:600 }
+.decision-heading > .chev { width:12px; height:12px }
+.decision-panel[open] .decision-heading > .chev { transform:rotate(180deg) }
+.decision-count { margin-left:auto; color:var(--muted); font-size:12px; font-weight:400; font-variant-numeric:tabular-nums; white-space:nowrap }
+.decision-count b { display:inline-grid; place-items:center; min-width:24px; min-height:24px; border-radius:7px; background:var(--accent-soft); color:var(--accent); font-weight:600 }
+.decision-help { color:var(--muted); font-size:12px; line-height:1.65; margin-top:18px }
+.reply-link { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; padding:11px 14px; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-size:12px; font-weight:600; text-decoration:none }
+.reply-link:hover { opacity:.85 }
+
+/* Sections, prose, and evidence. */
+.section { padding:32px 0 40px; scroll-margin-top:16px }
+.section + .section { border-top:1px solid var(--line) }
+.section-heading { display:flex; align-items:baseline; gap:16px; margin-bottom:24px }
+.section-number { display:inline-grid; place-items:center; min-width:28px; height:28px; border-radius:8px; background:var(--kind-soft); color:var(--kind); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums }
+.section h2 { font-size:27px; line-height:1.25; letter-spacing:-.025em; font-weight:550 }
+.part + .part { margin-top:24px }
+.prose { max-width:var(--measure); display:grid; gap:16px }
+.prose p, .prose li { font-size:15px }
+.prose ol, .prose ul { padding-left:1.3em; margin:0; display:grid; gap:8px }
+.prose li::marker { color:var(--muted) }
+.prose h3 { font-size:18px; margin-top:12px; font-weight:600 }
+.prose blockquote { margin:0; padding:20px 24px; border-radius:var(--r); background:var(--paper); color:var(--muted) }
+.prose strong { font-weight:600 }
+.spec { padding:6px 24px; background:var(--paper); border-radius:var(--r) }
+.spec > div { display:grid; grid-template-columns:120px minmax(0,1fr); gap:24px; padding:16px 0; border-top:1px solid var(--line-soft) }
+.spec > div:first-child { border-top:0 }
+.spec b { font-size:12px; font-weight:500; color:var(--muted) }
+.spec span { font-size:14px }
+.callout { display:grid; gap:8px; padding:22px 24px; border-radius:var(--r); background:var(--paper); font-size:14px }
+.callout > b { font-size:13px; font-weight:600; color:var(--accent) }
+.callout.risk { background:var(--risk-soft) }
+.callout.risk > b { color:var(--coral) }
+.table-wrap { overflow-x:auto; background:var(--paper); border:1px solid var(--line-soft); border-radius:var(--r); scrollbar-width:thin }
+table { border-collapse:collapse; width:100%; min-width:580px; font-size:13px; overflow-wrap:normal }
+th, td { padding:14px 18px; text-align:left; vertical-align:middle; border-top:1px solid var(--line-soft) }
+thead th { border-top:0; color:var(--muted); font-size:11px; font-weight:500; white-space:nowrap }
+td.num, th.num { font-size:11px; font-variant-numeric:tabular-nums; color:var(--muted) }
+td a { color:var(--ink); text-decoration:none; font-weight:500 }
+td a:hover { text-decoration:underline }
+td .deps a { font-size:12px; color:var(--muted) }
+td.ck, th.ck { width:34px; padding-right:0 }
+tbody tr:hover, tbody tr.picked, tbody tr[data-tone] { background:var(--paper-2) }
+td.vd, th.vd { width:1%; white-space:nowrap }
+td.vd .none { font-size:12px; color:var(--muted) }
+select.verdict { font:inherit; font-size:12px; min-height:34px; padding:0 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); cursor:pointer }
+.legend { margin-top:12px; font-size:11px; color:var(--muted); line-height:1.7 }
+.block { display:grid; gap:10px }
+.block-label { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; font-size:12px; color:var(--muted) }
+.figure { margin:0; display:grid; gap:8px }
+.figure img { display:block; max-width:100%; height:auto; border-radius:var(--r); background:var(--paper) }
+.figure .legend { margin-top:0 }
+.chart { background:var(--paper); border-radius:var(--r); padding:24px }
+.chart svg { display:block; width:100%; height:auto }
+.chart text { font-family:var(--font-body); font-size:11px; fill:var(--muted) }
+.chart text.value { fill:var(--ink); font-variant-numeric:tabular-nums }
+.diagram pre { white-space:pre-wrap }
+figure.diagram { margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+.dg-frame { overflow-x:auto;padding:32px 20px;border-radius:var(--r);background:var(--paper);}
+.dg { display:block;max-width:none;height:auto;margin:0 auto;overflow:visible;}
+.dg text { fill:var(--ink);font-family:Helvetica,Arial,sans-serif;font-size:11px;}
+.dg :is(polygon,polyline,ellipse,path,circle,rect,line) { fill:none;stroke:var(--muted);}
+.dg .node :is(polygon,ellipse,path,circle,rect) { fill:var(--paper-2);stroke:var(--line);}
+.dg .edge :is(polygon,ellipse,circle) { fill:var(--muted);}
+.dg .edge .hollow { fill:var(--bg);}
+.dg .edge text { fill:var(--muted);font-size:10px;}
+.dg .cluster :is(polygon,path) { stroke:var(--line);stroke-dasharray:4 3;}
+.dg .cluster text { fill:var(--muted);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
+.dg .teal { --tone:var(--teal);--tone-soft:var(--teal-soft);}
+.dg .violet { --tone:var(--violet);--tone-soft:var(--violet-soft);}
+.dg .risk { --tone:var(--coral);--tone-soft:var(--risk-soft);}
+.dg .accent { --tone:var(--accent);--tone-soft:var(--accent-soft);}
+.dg .node:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse,path,circle,rect) { fill:var(--tone-soft);stroke:var(--tone);}
+.dg .edge:is(.teal,.violet,.risk,.accent) path,.dg .cluster:is(.teal,.violet,.risk,.accent) :is(polygon,path) { stroke:var(--tone);}
+.dg .edge:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse) { fill:var(--tone);stroke:var(--tone);}
+.dg .cluster:is(.teal,.violet,.risk,.accent) text { fill:var(--tone);}
+figure.diagram figcaption { display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;font-size:13px;color:var(--muted);}
+.dg-source { flex:1 1 100%;min-width:0;}
+.dg-source summary { width:max-content;margin-left:auto;cursor:pointer;font-family:var(--font-body);font-size:11px;}
+.dg-source summary:hover { color:var(--ink);}
+.dg-source[open] summary { margin-bottom:6px;}
+figure.diagram figcaption > span + .dg-source { flex:0 1 auto;}
+figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
+
+
+.timeline { list-style:none; padding:0; margin:0 }
+.timeline li { display:grid; grid-template-columns:84px minmax(0,1fr); gap:24px; padding:18px 0; border-top:1px solid var(--line-soft) }
+.timeline li:first-child { border-top:0; padding-top:0 }
+.timeline .at { align-self:start; font:11px/1.6 var(--font-mono); text-align:center; color:var(--kind); background:var(--kind-soft); border-radius:7px; padding:5px }
+.timeline .ev { display:grid; gap:6px }
+.timeline b { font-size:15px; font-weight:600 }
+.timeline .md { display:grid; gap:6px; font-size:14px; color:var(--muted) }
+
+/* Boards are a reading list, with the full comparison table one click away. */
+.board-overview { margin-bottom:24px; border-radius:var(--r); background:var(--paper) }
+.board-overview > summary { display:flex; align-items:center; gap:14px; padding:16px 20px; font-size:13px; font-weight:500 }
+.board-overview .overview-count { margin-left:auto; font-size:12px; color:var(--muted); font-weight:400 }
+.board-overview[open] > summary .chev { transform:rotate(180deg) }
+.board-overview .table-wrap { border-radius:0 0 var(--r) var(--r); border:0 }
+.board-overview > .legend { padding:0 20px 18px }
+.item { margin-top:14px; padding:26px; border:1px solid var(--line-soft); border-radius:var(--r-l); background:var(--paper); scroll-margin-top:16px; box-shadow:0 4px 18px #00000004; transition:border-color var(--dur),box-shadow var(--dur) }
+.item:hover { border-color:var(--line); box-shadow:0 6px 22px #0000000a }
+.item-head { list-style:none }
+.item-heading { display:flex; align-items:flex-start; gap:18px }
+.item-number { display:inline-grid; place-items:center; min-width:36px; height:36px; border-radius:10px; font:13px var(--font-mono); color:var(--kind); background:var(--kind-soft) }
+.item-copy { flex:1; min-width:0 }
+.item-heading > .chev { margin-top:8px }
+.item[open] .item-heading > .chev { transform:rotate(180deg) }
+.item h3 { font-size:21px; font-weight:550; letter-spacing:-.025em; line-height:1.4 }
+.item .one-line { margin-top:10px; color:var(--muted); font-size:14px; line-height:1.7 }
+.item-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:20px 0 0 54px }
+.item-meta .decide { display:flex; align-items:center; gap:16px; margin-left:auto }
+.decide .note-btn { margin-left:0 }
+.item-body { margin:24px 0 0 54px; padding-top:24px; border-top:1px solid var(--line-soft) }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:6px; font-size:11px; line-height:1.6; font-weight:500; white-space:nowrap; background:var(--tone-soft,var(--paper-2)); color:var(--tone,var(--muted)) }
+.chip.t-outline { background:transparent; padding-inline:4px; font-size:10px }
+.owner { color:var(--muted); font-size:12px }
+.row-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end }
+.meter { display:inline-flex; gap:3px; align-items:center; margin-left:4px }
+.meter i { display:block; width:4px; height:4px; border-radius:50%; background:var(--line) }
+.meter i.on { background:var(--accent) }
+.meter-label { color:var(--muted); font-size:10px }
+.verdicts { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border-radius:7px }
+.verdicts button { min-height:32px; padding:0 14px; font-size:12px; font-weight:500; border:0; border-radius:5px; color:var(--muted); background:none }
+.verdicts button:hover { background:var(--paper-2); color:var(--ink) }
+.verdicts button[aria-checked="true"] { background:var(--tone-soft,var(--accent-soft)); color:var(--tone,var(--accent)); box-shadow:0 1px 3px #0001 }
+.pick-btn { min-height:36px; padding-inline:18px; border-color:transparent; background:var(--accent-soft); color:var(--accent) }
+.pick-btn[aria-pressed="true"] { background:var(--teal-soft); color:var(--teal); border-color:transparent }
+.item.picked .item-number { background:var(--teal-soft); color:var(--teal) }
+.note { display:grid; gap:10px; margin-bottom:24px }
+.note label { font-size:12px; font-weight:500 }
+.note textarea { width:100%; min-height:88px; resize:vertical; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.6 }
+.note textarea::placeholder { color:var(--muted) }
+.facets { display:grid; gap:24px; margin:0 }
+.facet { display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px }
+.facet dt { padding-top:2px; font-size:12px; font-weight:500; color:var(--muted) }
+.facet dd { margin:0; display:grid; gap:10px; font-size:14px }
+.facet dd > :is(ul,ol) { margin:0; padding-left:20px }
+.facet dd pre { background:var(--bg) }
+.facet dd a.dep { display:inline-block; margin-right:6px; padding:1px 8px; border-radius:5px; background:var(--paper-2); color:var(--ink); font-size:12px; text-decoration:none }
+.facet.risk dt { color:var(--coral) }
+.hidden-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px; margin-top:16px; border-radius:var(--r); background:var(--paper); font-size:13px; color:var(--muted) }
+.hidden-row b { color:var(--ink) }
+.no-hits { padding:36px 0; color:var(--muted) }
+.rows { display:grid; gap:10px }
+.rows > div, .rows > .row > summary { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; padding:22px 24px; background:var(--paper); border-radius:var(--r) }
+.rows b { display:block; font-size:16px; font-weight:550; margin-bottom:6px }
+.rows p { font-size:14px; color:var(--muted) }
+.rows > .row > summary { grid-template-columns:minmax(0,1fr) auto auto; list-style:none }
+.rows .chev { align-self:center }
+.rows > .row[open] > summary { border-radius:var(--r) var(--r) 0 0 }
+.rows > .row[open] > summary .chev { transform:rotate(90deg) }
+.rows > .row > .facets { padding:0 24px 24px; background:var(--paper); border-radius:0 0 var(--r) var(--r) }
+
+/* The decision context stays beside the reading; the finished reply closes it. */
+.choice { border:0; margin:24px 0 0; padding:0; min-width:0 }
+.choice-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px }
+.choice-head b { font-weight:500 }
+.options { display:grid; gap:8px; margin-top:14px }
+.options label { display:flex; gap:10px; align-items:flex-start; padding:12px; border:1px solid var(--line-soft); border-radius:8px; cursor:pointer }
+.options label:hover { background:var(--bg) }
+.options label:has(input:checked) { background:var(--accent-soft); border-color:transparent }
+.options label:has(input:checked) .opt { color:var(--accent) }
+.options input { accent-color:var(--accent); margin:4px 0 0; flex:none }
+.opt { display:block; font-size:12px; font-weight:500 }
+.sum { display:block; font-size:11px; line-height:1.6; margin-top:3px; color:var(--muted) }
+.guard { padding:14px; border-radius:8px; margin-top:16px; background:var(--risk-soft); color:var(--ink); font-size:12px }
+.pick { margin-top:28px; padding:32px; border-radius:var(--r-l); background:var(--paper); display:grid; gap:24px; scroll-margin-top:16px }
+.pick h2 { font-size:30px; font-weight:550; letter-spacing:-.035em }
+.pick-lede { margin-top:10px; color:var(--muted); font-size:14px; max-width:48ch }
+.reply { display:grid; gap:20px }
+.said { min-width:0; padding:22px; background:var(--bg); border-radius:var(--r) }
+.said code { background:none; padding:0; font-size:13px; line-height:1.7 }
+.said .words { margin-top:12px; color:var(--muted); font-size:12px }
+.said .tag { display:block; margin-bottom:12px; color:var(--muted); font-size:11px }
+.said.example code { color:var(--muted) }
+.pick[data-empty] :is(.live,.acts), .pick:not([data-empty]) .example { display:none }
+.acts { display:flex; align-items:center; gap:20px }
+.toast { position:fixed; bottom:24px; left:50%; z-index:50; padding:10px 18px; border-radius:8px; background:var(--ink); color:var(--bg); font-size:13px; opacity:0; transform:translate(-50%,8px); transition:opacity var(--dur),transform var(--dur); pointer-events:none }
+.toast.show { opacity:1; transform:translate(-50%,0) }
+.foot { grid-column:1 / -1; display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 24px; border-top:1px solid var(--line); padding:24px 0 48px; color:var(--muted); font-size:11px }
+
+@media (min-width:1000px) { .toc-heading button { display:none } }
+@media (max-width:999px) {
+  .page { max-width:850px; grid-template-columns:minmax(0,1fr) }
+  .masthead { grid-column:1; grid-row:1; padding-top:44px }
+  .reader-rail { position:static; max-height:none; overflow:visible; grid-column:1; grid-row:2; margin-bottom:24px }
+  .main { grid-column:1; grid-row:3 }
+  .toc { border:1px solid var(--line); border-radius:var(--r); padding:4px }
+  .toc-heading { padding:6px 12px }
+  .toc[data-collapsed] #contents-list { display:none }
+  .decision-panel { margin-top:16px }
+  .decision-panel .options { grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr)) }
+  .decision-panel .reply-link { width:max-content; min-width:200px }
+  .hero-bottom { gap:24px }
 }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; padding-inline: var(--gutter); padding-block: 0 72px; -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
-::selection { background: var(--accent-soft); color: var(--ink); }
-a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-pre { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; tab-size: 4; }
-pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
-h1, h2, h3 { text-wrap: balance; margin: 0; }
-p { margin: 0; text-wrap: pretty; }
-button { font: inherit; color: inherit; }
-[hidden] { display: none !important; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
-/* buttons: one ghost style everywhere */
-.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; transition: color var(--dur), background var(--dur), border-color var(--dur); }
-.btn:hover { color: var(--ink); background: var(--paper-2); }
-.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
-.btn svg { width: 14px; height: 14px; flex: none; }
-.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
-.link-btn:hover { color: var(--ink); }
-.check { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--line); border-radius: 4px; background: var(--bg); display: inline-grid; place-content: center; cursor: pointer; vertical-align: -3px; transition: background var(--dur), border-color var(--dur); }
-.check::before { content: ""; width: 9px; height: 9px; transform: scale(0); background: var(--accent-ink); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transition: transform var(--dur) var(--ease); }
-.check:checked { background: var(--accent); border-color: var(--accent); }
-.check:checked::before { transform: scale(1); }
-
-/* shell */
-.page { max-width: var(--frame); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
-@media (min-width: 1100px) {
-  .page { grid-template-columns: var(--rail) minmax(0, 1fr); }
-  .toc { position: sticky; top: 16px; align-self: start; padding-top: 36px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+@media (max-width:600px) {
+  html { scroll-padding-top:136px }
+  .toolbar-inner { flex-wrap:wrap; padding:12px 20px; gap:10px; min-height:64px }
+  .brand { font-size:15px }
+  .brand svg { width:28px; height:28px; padding:5px; border-radius:8px }
+  .document-kind { font-size:11px; padding:4px 7px; gap:5px }
+  .tools { flex:1 1 100% }
+  .search { flex:1 }
+  .search input { width:100% }
+  .theme-toggle { position:absolute; right:12px; top:9px }
+  .hits { font-size:11px }
+  .masthead { margin-bottom:24px; padding:34px 0 }
+  .mast-top { flex-wrap:wrap; gap:8px; margin-bottom:24px }
+  .kicker { font-size:10px }
+  .updated { font-size:11px }
+  .masthead h1 { font-size:clamp(34px,9vw,48px); line-height:1.12 }
+  .hero-bottom { display:block; margin-top:24px }
+  .lede { font-size:15px }
+  .stats { margin-top:28px; justify-content:flex-start; gap:20px 28px }
+  .stats b { font-size:32px }
+  .stats span { font-size:11px }
+  .section { padding-block:26px 32px }
+  .section h2 { font-size:24px }
+  .section-heading { gap:12px }
+  .reading-tools { gap:4px 16px }
+  .reading-label { flex-basis:100% }
+  .reading-actions { margin-left:-8px }
+  .item { padding:20px }
+  .item-heading { gap:12px }
+  .item-number { font-size:11px; min-width:30px; height:30px; border-radius:8px }
+  .item h3 { font-size:18px }
+  .item .one-line { font-size:13px }
+  .item-meta, .item-body { margin-left:0 }
+  .item-meta .decide { flex:1 1 100%; gap:10px; flex-wrap:wrap; margin:10px 0 0 }
+  .decide .note-btn { margin-left:auto }
+  .verdicts button { min-height:36px; padding-inline:12px }
+  .facet { grid-template-columns:minmax(0,1fr); gap:8px }
+  .facet dt { font-weight:600; color:var(--ink) }
+  .chart, .spec, .callout { padding:20px }
+  .spec > div { grid-template-columns:minmax(0,1fr); gap:6px }
+  .rows > div, .rows > .row > summary { grid-template-columns:minmax(0,1fr); padding:20px }
+  .row-chips { justify-content:flex-start }
+  .rows .chev { display:none }
+  .timeline li { grid-template-columns:64px minmax(0,1fr); gap:16px }
+  .pick { padding:24px 20px }
+  .pick h2 { font-size:27px }
+  .said { padding:18px }
 }
-
-/* masthead: one band across the frame */
-.masthead { grid-column: 1 / -1; padding-block: 24px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
-.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.tools { display: flex; gap: 6px; align-items: center; margin-left: auto; }
-.search { position: relative; display: inline-flex; align-items: center; }
-.search input { width: 13rem; height: 30px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
-.search input::placeholder { color: var(--muted); }
-.search kbd { position: absolute; right: 8px; padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); pointer-events: none; }
-.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
-.hits { margin-right: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hits:empty { display: none; }
-::highlight(dossier-hit) { background-color: var(--accent-soft); color: var(--ink); }
-::highlight(dossier-now) { background-color: var(--accent); color: var(--accent-ink); }
-.no-hits { padding-block: 36px; color: var(--muted); }
-@media (max-width: 720px) { .tools { flex-wrap: wrap; } .search { order: -1; flex: 1 1 100%; } .search input { width: 100%; } }
-.masthead h1 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; max-width: 30ch; }
-.masthead h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: 0; }
-.masthead .lede { max-width: 84ch; color: var(--muted); font-size: 15px; }
-.stats { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: 6px; }
-.stats > div { display: inline-flex; align-items: baseline; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line-soft); }
-.stats > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-.stats b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.stats span { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
-.stats .live b { color: var(--accent); }
-.stats a { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
-.stats a:hover { color: var(--ink); text-decoration: underline; }
-
-/* contents */
-.toc { font-size: 13.5px; }
-.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
-.toc li a { display: flex; gap: 8px; align-items: baseline; color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); line-height: 1.35; transition: color var(--dur), background var(--dur); }
-.toc li a:hover { color: var(--ink); background: var(--paper); }
-.toc li a[aria-current="true"] { color: var(--ink); background: var(--paper); }
-.toc .n { font-family: var(--font-mono); font-size: 11.5px; min-width: 2.1em; text-align: right; color: var(--muted); flex: none; opacity: 0.85; }
-.toc .pip { margin-left: auto; align-self: center; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: 0; flex: none; transition: opacity var(--dur); }
-.toc li.picked .pip { opacity: 1; }
-.toc li[data-tone] .pip { opacity: 1; background: var(--tone); border-radius: 50%; }
-.toc .group { margin: 16px 0 6px; padding-left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.toc .group:first-child { margin-top: 0; }
-.toc .group a { display: inline; padding: 0; color: inherit; }
-.toc .group a:hover, .toc .group a[aria-current="true"] { color: var(--ink); background: none; }
-@media (max-width: 1099px) {
-  .toc { padding-block: 18px 0; }
-  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
-  .toc li a { border: 1px solid var(--line); padding: 5px 10px; }
-  .toc .n { text-align: left; min-width: 0; }
-  .toc .group { display: none; }
-  .toc .pip { margin-left: 2px; }
+@media (prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto }
+  *, *::before, *::after { transition-duration:.01ms !important }
 }
-
-/* main column */
-.main { min-width: 0; }
-.section { padding-block: 36px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
-.section:not(:has(~ .section)) { border-bottom: 0; }
-.section > h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
-.part + .part { margin-top: 16px; }
-.prose { max-width: var(--measure); display: grid; gap: 12px; }
-.prose p, .prose li { font-size: 15.5px; }
-.prose ol, .prose ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
-.prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
-.prose h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
-.prose blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); color: var(--muted); }
-.prose strong { font-weight: 600; }
-
-.spec { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.spec > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 11px 14px; border-top: 1px solid var(--line-soft); }
-.spec > div:first-child { border-top: 0; }
-.spec b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); padding-top: 2px; font-variant-numeric: tabular-nums; }
-.spec span { font-size: 14.5px; }
-@media (max-width: 520px) { .spec > div { grid-template-columns: minmax(0, 1fr); gap: 3px; } }
-
-.callout { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; background: var(--paper); font-size: 14.5px; display: grid; gap: 4px; max-width: var(--measure); }
-.callout b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-.callout.risk b { color: var(--coral); }
-
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
-table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; overflow-wrap: normal; }
-th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; }
-thead th { border-top: 0; background: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-td.num, th.num { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
-td a { color: var(--ink); text-decoration: none; font-weight: 500; }
-td a:hover { color: var(--accent); }
-td .deps a { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
-td.ck, th.ck { width: 34px; padding-right: 0; }
-tbody tr { transition: background var(--dur); }
-tbody tr:hover { background: var(--paper); }
-tbody tr.picked { background: var(--accent-soft); }
-tbody tr[data-tone] { background: var(--tone-soft); }
-tbody tr[data-tone] .chip { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 38%, transparent); }
-td.vd, th.vd { width: 1%; white-space: nowrap; }
-td.vd .none { font-size: 12.5px; color: var(--muted); }
-select.verdict { font: inherit; font-size: 13px; height: 28px; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); cursor: pointer; }
-.legend { font-size: 13px; color: var(--muted); margin-top: 8px; }
-
-/* code, figures, charts, diagram source */
-.block { display: grid; gap: 6px; }
-.block-label { display: flex; gap: 10px; align-items: baseline; padding: 0 2px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); }
-.block-label span + span { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--ink); }
-.figure { margin: 0; display: grid; gap: 8px; }
-.figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--paper); }
-.figure .legend { margin-top: 0; }
-.chart svg { display: block; width: 100%; max-width: 760px; height: auto; padding: 8px 6px 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
-.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
-.chart text.value { fill: var(--ink); font-variant-numeric: tabular-nums; }
-.diagram pre { white-space: pre-wrap; }
-
-/* diagrams: Graphviz geometry, colored by the tokens */
-figure.diagram { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.dg-frame { overflow-x: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
-.dg { display: block; max-width: none; height: auto; margin: 0 auto; overflow: visible; }
-.dg text { fill: var(--ink); font-family: Helvetica, Arial, sans-serif; font-size: 11px; }
-.dg :is(polygon, polyline, ellipse, path, circle, rect, line) { fill: none; stroke: var(--muted); }
-.dg .node :is(polygon, ellipse, path, circle, rect) { fill: var(--paper); stroke: var(--line); }
-.dg .edge :is(polygon, ellipse, circle) { fill: var(--muted); }
-.dg .edge .hollow { fill: var(--bg); }
-.dg .edge text { fill: var(--muted); font-size: 10px; }
-.dg .cluster :is(polygon, path) { stroke: var(--line); stroke-dasharray: 4 3; }
-.dg .cluster text { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.dg .teal { --tone: var(--teal); --tone-soft: var(--teal-soft); }
-.dg .violet { --tone: var(--violet); --tone-soft: var(--violet-soft); }
-.dg .risk { --tone: var(--coral); --tone-soft: var(--risk-soft); }
-.dg .accent { --tone: var(--accent); --tone-soft: var(--accent-soft); }
-.dg .node:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse, path, circle, rect) { fill: var(--tone-soft); stroke: var(--tone); }
-.dg .edge:is(.teal, .violet, .risk, .accent) path, .dg .cluster:is(.teal, .violet, .risk, .accent) :is(polygon, path) { stroke: var(--tone); }
-.dg .edge:is(.teal, .violet, .risk, .accent) :is(polygon, ellipse) { fill: var(--tone); stroke: var(--tone); }
-.dg .cluster:is(.teal, .violet, .risk, .accent) text { fill: var(--tone); }
-figure.diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font-size: 13px; color: var(--muted); }
-.dg-source { flex: 1 1 100%; min-width: 0; }
-.dg-source summary { width: max-content; margin-left: auto; cursor: pointer; font-family: var(--font-mono); font-size: 11.5px; }
-.dg-source summary:hover { color: var(--ink); }
-.dg-source[open] summary { margin-bottom: 6px; }
-figure.diagram figcaption > span + .dg-source { flex: 0 1 auto; }
-figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
-
-/* timeline: times in a column, a hairline rail, a dot per event in its tone */
-.timeline { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
-.timeline li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 14px; }
-.timeline .at { padding-top: 2px; text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.timeline .ev { position: relative; padding: 0 0 18px 24px; }
-.timeline .ev::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--muted)); box-shadow: 0 0 0 3px var(--bg); }
-.timeline li:not(:last-child) .ev::after { content: ""; position: absolute; left: 4px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
-.timeline b { display: block; font-size: 15px; font-weight: 600; }
-.timeline .md { margin-top: 2px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
-@media (max-width: 520px) {
-  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .timeline .at { padding: 0 0 2px 24px; text-align: left; }
-  .timeline li:not(:last-child) .ev::after { bottom: -24px; }
-}
-:root { --hl-key: var(--violet); --hl-str: var(--teal); --hl-num: var(--coral); --hl-com: var(--muted); --hl-fn: var(--ink); --hl-tag: var(--teal); --hl-attr: var(--violet); }
-.hl .hl-k, .hl .hl-kd, .hl .hl-kn, .hl .hl-kp, .hl .hl-kr, .hl .hl-kt, .hl .hl-ow { color: var(--hl-key); }
-.hl .hl-s, .hl .hl-sa, .hl .hl-sb, .hl .hl-sc, .hl .hl-dl, .hl .hl-sd, .hl .hl-s2, .hl .hl-se, .hl .hl-sh, .hl .hl-si, .hl .hl-sx, .hl .hl-sr, .hl .hl-s1, .hl .hl-ss { color: var(--hl-str); }
-.hl .hl-m, .hl .hl-mb, .hl .hl-mf, .hl .hl-mh, .hl .hl-mi, .hl .hl-il, .hl .hl-mo, .hl .hl-kc, .hl .hl-no { color: var(--hl-num); }
-.hl .hl-c, .hl .hl-ch, .hl .hl-cm, .hl .hl-cp, .hl .hl-cpf, .hl .hl-c1, .hl .hl-cs { color: var(--hl-com); font-style: italic; }
-.hl .hl-nf, .hl .hl-fm, .hl .hl-nc, .hl .hl-nn { color: var(--hl-fn); font-weight: 600; }
-.hl .hl-nt { color: var(--hl-tag); }
-.hl .hl-na, .hl .hl-nd, .hl .hl-nb, .hl .hl-bp { color: var(--hl-attr); }
-.hl .hl-o, .hl .hl-p { color: var(--muted); }
-.hl .hl-gh, .hl .hl-gu, .hl .hl-gp { color: var(--muted); font-weight: 600; }
-.hl .hl-gd { color: var(--accent); background: var(--accent-soft); }
-.hl .hl-gi { color: var(--teal); background: var(--teal-soft); }
-.hl .hl-ge { font-style: italic; }
-.hl .hl-gs { font-weight: 600; }
-.hl .hl-err { text-decoration: underline wavy var(--coral); }
-
-/* tones: a verdict or field value sets --tone and --tone-soft for what it colors */
-.t-teal, [data-tone="teal"] { --tone: var(--teal); --tone-soft: var(--teal-soft); }
-.t-violet, [data-tone="violet"] { --tone: var(--violet); --tone-soft: var(--violet-soft); }
-.t-risk, [data-tone="risk"] { --tone: var(--coral); --tone-soft: var(--risk-soft); }
-.t-neutral, [data-tone="neutral"] { --tone: var(--muted); --tone-soft: var(--paper-2); }
-
-/* chips and meters */
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; white-space: nowrap; }
-.chip.t-teal { background: var(--teal-soft); color: var(--teal); }
-.chip.t-violet { background: var(--violet-soft); color: var(--violet); }
-.chip.t-risk { background: var(--risk-soft); color: var(--coral); }
-.chip.t-neutral { background: var(--paper-2); color: var(--muted); }
-.chip.t-outline { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-weight: 500; }
-.owner { font-size: 12.5px; color: var(--muted); }
-.row-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-.stats > div.t-risk b { color: var(--coral); }
-.stats > div.t-teal b { color: var(--teal); }
-.stats > div.t-violet b { color: var(--violet); }
-.meter { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
-.meter i { width: 8px; height: 8px; border-radius: 2px; background: var(--line); display: block; }
-.meter i.on { background: var(--accent); }
-.meter-label { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
-
-/* items: collapsible details */
-.item { padding-block: 22px; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 12px; }
-.item:last-of-type { border-bottom: 0; }
-.item-head { list-style: none; cursor: pointer; display: grid; gap: 8px; }
-.item-head::-webkit-details-marker { display: none; }
-.item-head::marker { content: ""; }
-.item-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
-.item-meta .decide { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
-.verdicts { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
-.verdicts button { height: 22px; padding: 0 9px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: color var(--dur), background var(--dur); }
-.verdicts button:hover { color: var(--ink); background: var(--paper-2); }
-.verdicts button[aria-checked="true"] { background: var(--tone-soft); color: var(--tone); font-weight: 600; }
-.item h3 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; display: flex; gap: 10px; align-items: baseline; }
-.item h3 .chev { width: 14px; height: 14px; flex: none; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease), color var(--dur); }
-.item[open] h3 .chev { transform: rotate(90deg); }
-.item-head:hover h3 .chev { color: var(--ink); }
-.item h3 .num { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--muted); }
-.item.picked h3 .num { color: var(--accent); }
-.item[data-tone] h3 .num { color: var(--tone); }
-.item .one-line { color: var(--muted); font-size: 15px; max-width: var(--measure); padding-left: 24px; }
-.item-body { margin-top: 14px; padding-left: 24px; }
-@media (max-width: 720px) { .item .one-line, .item-body { padding-left: 0; } }
-.pick-btn { height: 26px; padding: 0 9px; font-size: 12px; }
-.note { display: grid; gap: 6px; max-width: var(--measure); margin-bottom: 14px; }
-.note label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.note textarea { font: inherit; font-size: 14.5px; line-height: 1.5; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 58px; width: 100%; }
-.note textarea::placeholder { color: var(--muted); }
-.facets { display: grid; margin: 0; }
-.facet { display: grid; grid-template-columns: 136px minmax(0, var(--measure)); gap: 16px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
-.facet:first-child { border-top: 0; padding-top: 0; }
-.facet dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
-.facet dd { margin: 0; font-size: 15px; display: grid; gap: 8px; }
-.facet dd p { max-width: var(--measure); }
-.facet dd a.dep { font-family: var(--font-mono); font-size: 12.5px; text-decoration: none; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); margin-right: 4px; }
-.facet dd a.dep:hover { color: var(--accent); border-color: var(--accent); }
-.facet.risk dt { color: var(--coral); }
-@media (max-width: 720px) { .facet { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
-
-.hidden-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13.5px; color: var(--muted); }
-.hidden-row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-.rows { display: grid; gap: 8px; }
-.rows > div, .rows > .row > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); }
-.rows b { display: block; font-weight: 600; margin-bottom: 2px; font-size: 15px; }
-.rows p { font-size: 14.5px; color: var(--muted); max-width: 76ch; }
-.rows > .row > summary { grid-template-columns: minmax(0, 1fr) auto auto; list-style: none; cursor: pointer; }
-.rows > .row > summary::-webkit-details-marker { display: none; }
-.rows > .row > summary .chev { width: 14px; height: 14px; align-self: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
-.rows > .row[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.rows > .row[open] > summary .chev { transform: rotate(90deg); }
-.rows > .row > .facets { padding: 4px 14px 10px; border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--r) var(--r); }
-.rows > .row > .facets .facet:first-child { padding-top: 8px; }
-@media (max-width: 520px) { .rows > div, .rows > .row > summary { grid-template-columns: minmax(0, 1fr); } }
-
-/* reply: every decision on the page, as one line to send back */
-.pick { margin-top: 32px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r-l); display: grid; gap: 14px; scroll-margin-top: 12px; }
-.pick h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
-.pick-lede { margin-top: 2px; font-size: 14px; color: var(--muted); max-width: var(--measure); }
-.pick .choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
-.pick .choice-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14.5px; }
-.pick .choice-head b { font-weight: 600; }
-.pick .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-.pick .options label { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; transition: background var(--dur), border-color var(--dur); }
-.pick .options label:hover { background: var(--paper); }
-.pick .options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
-.pick .options input { margin: 4px 0 0; accent-color: var(--accent); }
-.pick .opt { display: block; font-size: 14.5px; font-weight: 600; }
-.pick .sum { display: block; font-size: 13px; color: var(--muted); }
-.pick .guard { padding: 8px 12px; border-left: 3px solid var(--coral); border-radius: 8px; background: var(--risk-soft); font-size: 13.5px; }
-.pick .reply { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
-.pick .said { flex: 1 1 340px; min-width: 0; display: grid; gap: 3px; }
-.pick .said code { padding: 0; border: 0; background: none; font-size: 13px; line-height: 1.55; }
-.pick .said .words { font-size: 13.5px; color: var(--muted); }
-.pick .said .tag { margin-right: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
-.pick .said.example code { color: var(--muted); }
-.pick[data-empty] :is(.live, .acts), .pick:not([data-empty]) .example { display: none; }
-.pick .acts { display: flex; align-items: center; gap: 14px; }
-.btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-.btn.solid:hover { background: var(--ink); color: var(--bg); opacity: 0.86; }
-
-.toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity var(--dur), transform var(--dur) var(--ease); z-index: 50; pointer-events: none; }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-.main { padding-bottom: 40px; }
-.foot { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-block: 14px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; }
-
 @media print {
-  .toc, .tools, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .pick .options label:not(:has(input:checked)) { display: none !important; }
-  .verdicts { border: 0; background: none; }
-  body { padding: 0; font-size: 12px; }
-  .page { display: block; }
-  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside: avoid; }
-  .dg-source { display: none; }
-  .dg { max-width: 100%; }
-  .item h3 .chev { display: none; }
-  .note textarea { border: 0; padding: 0; background: transparent; resize: none; }
+  :root, :root[data-theme] { --bg:#ffffff; --paper:#ffffff; --paper-2:#eeeeee; --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7; --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff; --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff; --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9; color-scheme:light }
+  .toolbar, .skip-link, .toc, .reading-tools, .decision-help, .reply-link, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .options label:not(:has(input:checked)) { display:none !important }
+  body { font-size:12px }
+  .page { display:block; padding:0 }
+  .masthead { padding:0 0 24px }
+  .masthead h1 { font-size:32px }
+  .reader-rail { position:static; max-height:none; overflow:visible }
+  .decision-panel { padding:0; margin:16px 0 }
+  .choice { margin:0 }
+  .options { display:flex }
+  .item, .figure, .chart, .diagram, .timeline li, pre { break-inside:avoid }
+  .item { border:1px solid var(--line) }
+  .verdicts { background:none }
+  .verdicts button[aria-checked="true"] { background:none; color:var(--ink); font-weight:600 }
+  .dg-source, .chev { display:none }
+  .dg { max-width:100% }
+  .note textarea { padding:0; border:0; background:transparent; resize:none }
 }
-</style></head><body><div class="page"><header class="masthead"><div class="mast-top"><p class="kicker">Live demo</p><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button><button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system"><svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg> <svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg> <span class="th-label">Auto</span></button></div></div><h1>Dossier, capabilities showcase</h1><p class="lede">Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].</p><div class="stats" aria-label="At a glance"><div class=""><b>one .dossier.json</b> <span>source</span></div><div class=""><b>one .html</b> <span>output</span></div><div class=""><b>0</b> <span>runtime deps</span></div><div class=""><b>1</b> <span>verified</span></div><div class=""><b>1</b> <span>likely</span></div><div class=""><b>2</b> <span>interactive review board, try it</span></div><div class=""><b>1</b> <span>process board, implementation loop</span></div><div class=""><b>1</b> <span>patch set, proposed edits</span></div><div class=""><b>1</b> <span>process closeout blocks</span></div><div class=""><b>1</b> <span>evidence log</span></div><div class=""><b>1</b> <span>trust report, continued</span></div><div class=""><b>1</b> <span>review thread</span></div><div class=""><b>1</b> <span>integration cycles</span></div><div class=""><b>1</b> <span>integration report</span></div><div class=""><b>2</b> <span>integration report, continued</span></div><div class=""><b>1</b> <span>decision log</span></div></div></header><nav class="toc" aria-label="Contents"><ol><li class="group">Frame</li><li><a href="#overview"><span class="n">–</span>Overview</a></li><li><a href="#structure-prose"><span class="n">–</span>Structure &amp; prose</a></li><li><a href="#reference-blocks"><span class="n">–</span>Reference blocks</a></li><li><a href="#media-data"><span class="n">–</span>Media &amp; data</a></li><li><a href="#decisions-trust"><span class="n">–</span>Decisions &amp; trust</a></li><li><a href="#interactive-review-board-try-it"><span class="n">–</span>Interactive review board, try it</a></li><li><a href="#process-board-implementation-loop"><span class="n">–</span>Process board, implementation loop</a></li><li><a href="#patch-set-proposed-edits"><span class="n">–</span>Patch set, proposed edits</a></li><li><a href="#code-editor-editable-snippet"><span class="n">–</span>Code editor, editable snippet</a></li><li><a href="#diff-view-file-first-review"><span class="n">–</span>Diff view, file-first review</a></li><li><a href="#process-closeout-blocks"><span class="n">–</span>Process closeout blocks</a></li><li><a href="#evidence-log"><span class="n">–</span>Evidence log</a></li><li><a href="#trust-report"><span class="n">–</span>Trust report</a></li><li class="group">Verified</li><li data-item="tests-pass" class=""><a href="#tests-pass"><span class="n">–</span>Automated tests pass for the process block family.<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Likely</li><li data-item="manual-qa-ready" class=""><a href="#manual-qa-ready"><span class="n">–</span>The feature set is ready for public manual QA.<span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Rest</li><li><a href="#trust-report-continued"><span class="n">–</span>Trust report, continued</a></li><li><a href="#review-thread"><span class="n">–</span>Review thread</a></li><li><a href="#integration-cycles"><span class="n">–</span>Integration cycles</a></li><li><a href="#integration-report"><span class="n">–</span>Integration report</a></li><li><a href="#integration-report-continued"><span class="n">–</span>Integration report, continued</a></li><li><a href="#decision-log"><span class="n">–</span>Decision log</a></li><li><a href="#decision-log-continued"><span class="n">–</span>Decision log, continued</a></li><li><a href="#glossary"><span class="n">–</span>Glossary</a></li><li><a href="#notes"><span class="n">–</span>Notes</a></li><li><a href="#citations"><span class="n">–</span>Citations</a></li></ol></nav><main class="main" id="main"><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="overview"><h2>Overview</h2><div class="part prose"><p><strong>One JSON file becomes this</strong></p></div><div class="part spec"><div><b>Highlights</b><span>43 block types · Self-contained · Agent-readable · Light + dark</span></div></div><div class="part spec"><div><b>Owner</b><span>Kyle</span></div><div><b>Tags</b><span>demo, blocks</span></div></div><div class="part callout"><b>Use the full-page toolbar.</b><div><p>In the full HTML artifact, <strong>Edit</strong> changes text in place, the color swatch restyles live in the <strong>Theme Studio</strong>, and <strong>Export</strong> gives you Markdown, JSON, or the agent digest. From the CLI, <code>dossier export</code> also writes <strong>Word</strong> (charts and diagrams embedded as images) or <strong>PDF</strong>.</p></div></div><div class="part spec"><div><b>Block types</b><span>43 (+1 citation block)</span></div><div><b>Runtime deps</b><span>0 (view-time network free)</span></div><div><b>Renderers (Node + React)</b><span>2 (same model)</span></div><div><b>Self-contained</b><span>100% (HTML + source)</span></div></div><div class="part spec"><div><b>For humans</b><span>A navigable, searchable, themeable page, not a wall of Markdown.</span></div><div><b>For agents</b><span>The full model is embedded as <code>#dossier-model</code>; read one block, no scraping.</span></div><div><b>For your wiki</b><span>One portable file, link it, email it, or <code>&lt;iframe&gt;</code> it anywhere.</span></div></div></section><section class="section" id="structure-prose"><h2>Structure &amp; prose</h2><div class="part prose"><p>Sections nest other blocks; text fields take inline markdown.</p></div><div class="part prose"><p>This is a <strong>prose</strong> block with <code>inline code</code>, a <a href="https://github.com/kylebegeman/dossier">link</a>, and a footnote.[^island]</p>
+</style></head><body data-kind="brief"><a class="skip-link" href="#main">Skip to content</a><div class="toolbar"><div class="toolbar-inner"><a class="brand" href="#top" aria-label="Dossier, back to top"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span>Dossier</span></a> <span class="document-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h5"></path></svg>Brief</span><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span><button class="btn theme-toggle" type="button" role="switch" data-theme-toggle aria-label="Dark mode" aria-checked="false" hidden><svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg></button></div></div></div><div class="page"><header class="masthead" id="top"><div class="mast-top"><p class="kicker">Live demo</p><span class="updated">Updated 2026-06-29</span></div><h1>Dossier, capabilities showcase</h1><div class="hero-bottom"><p class="lede">Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].</p><div class="stats" aria-label="At a glance"><div class=""><b class="fact-text">one .dossier.json</b> <span>source</span></div><div class=""><b class="fact-text">one .html</b> <span>output</span></div><div class=""><b>0</b> <span>runtime deps</span></div><div class="t-teal"><b>1</b> <span>verified</span></div><div class="t-violet"><b>1</b> <span>likely</span></div><div class=""><b>2</b> <span>interactive review board, try it</span></div><div class=""><b>1</b> <span>process board, implementation loop</span></div><div class=""><b>1</b> <span>patch set, proposed edits</span></div><div class=""><b>1</b> <span>process closeout blocks</span></div><div class=""><b>1</b> <span>evidence log</span></div><div class=""><b>1</b> <span>trust report, continued</span></div><div class=""><b>1</b> <span>review thread</span></div><div class=""><b>1</b> <span>integration cycles</span></div><div class=""><b>1</b> <span>integration report</span></div><div class=""><b>2</b> <span>integration report, continued</span></div><div class=""><b>1</b> <span>decision log</span></div></div></div></header><aside class="reader-rail" aria-label="Document navigation and decisions"><nav class="toc" aria-label="Contents"><div class="toc-heading"><span>On this page</span><button class="btn" type="button" data-contents-toggle aria-expanded="true" aria-controls="contents-list" hidden>Contents</button></div><div id="contents-list"><ol class="chapters"><li><a class="chapter-link" href="#overview"><span class="n">01</span><span>Overview</span></a></li><li><a class="chapter-link" href="#structure-prose"><span class="n">02</span><span>Structure &amp; prose</span></a></li><li><a class="chapter-link" href="#reference-blocks"><span class="n">03</span><span>Reference blocks</span></a></li><li><a class="chapter-link" href="#media-data"><span class="n">04</span><span>Media &amp; data</span></a></li><li><a class="chapter-link" href="#decisions-trust"><span class="n">05</span><span>Decisions &amp; trust</span></a></li><li><a class="chapter-link" href="#interactive-review-board-try-it"><span class="n">06</span><span>Interactive review board, try it</span></a></li><li><a class="chapter-link" href="#process-board-implementation-loop"><span class="n">07</span><span>Process board, implementation loop</span></a></li><li><a class="chapter-link" href="#patch-set-proposed-edits"><span class="n">08</span><span>Patch set, proposed edits</span></a></li><li><a class="chapter-link" href="#code-editor-editable-snippet"><span class="n">09</span><span>Code editor, editable snippet</span></a></li><li><a class="chapter-link" href="#diff-view-file-first-review"><span class="n">10</span><span>Diff view, file-first review</span></a></li><li><a class="chapter-link" href="#process-closeout-blocks"><span class="n">11</span><span>Process closeout blocks</span></a></li><li><a class="chapter-link" href="#evidence-log"><span class="n">12</span><span>Evidence log</span></a></li><li><a class="chapter-link" href="#trust-report"><span class="n">13</span><span>Trust report</span></a></li><li><a class="chapter-link" href="#trust-report-continued"><span class="n">14</span><span>Trust report, continued</span></a></li><li><a class="chapter-link" href="#review-thread"><span class="n">15</span><span>Review thread</span></a></li><li><a class="chapter-link" href="#integration-cycles"><span class="n">16</span><span>Integration cycles</span></a></li><li><a class="chapter-link" href="#integration-report"><span class="n">17</span><span>Integration report</span></a></li><li><a class="chapter-link" href="#integration-report-continued"><span class="n">18</span><span>Integration report, continued</span></a></li><li><a class="chapter-link" href="#decision-log"><span class="n">19</span><span>Decision log</span></a></li><li><a class="chapter-link" href="#decision-log-continued"><span class="n">20</span><span>Decision log, continued</span></a></li><li><a class="chapter-link" href="#glossary"><span class="n">21</span><span>Glossary</span></a></li><li><a class="chapter-link" href="#notes"><span class="n">22</span><span>Notes</span></a></li><li><a class="chapter-link" href="#citations"><span class="n">23</span><span>Citations</span></a></li></ol><details class="item-directory"><summary>Browse findings<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><ol><li class="group">Verified</li><li data-item="tests-pass" class=""><a href="#tests-pass"><span class="n">–</span><span>Automated tests pass for the process block family.</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li class="group">Likely</li><li data-item="manual-qa-ready" class=""><a href="#manual-qa-ready"><span class="n">–</span><span>The feature set is ready for public manual QA.</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li></ol></details></div></nav></aside><main class="main" id="main" tabindex="-1"><div class="reading-tools"><span class="reading-label">The document <span>23 sections</span></span><div class="reading-actions"><button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button></div></div><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="overview"><div class="section-heading"><span class="section-number">01</span><h2>Overview</h2></div><div class="part prose"><p><strong>One JSON file becomes this</strong></p></div><div class="part spec"><div><b>Highlights</b> <span>43 block types · Self-contained · Agent-readable · Light + dark</span></div></div><div class="part spec"><div><b>Owner</b> <span>Kyle</span></div><div><b>Tags</b> <span>demo, blocks</span></div></div><div class="part callout"><b>Use the full-page toolbar.</b><div><p>In the full HTML artifact, <strong>Edit</strong> changes text in place, the color swatch restyles live in the <strong>Theme Studio</strong>, and <strong>Export</strong> gives you Markdown, JSON, or the agent digest. From the CLI, <code>dossier export</code> also writes <strong>Word</strong> (charts and diagrams embedded as images) or <strong>PDF</strong>.</p></div></div><div class="part spec"><div><b>Block types</b> <span>43 (+1 citation block)</span></div><div><b>Runtime deps</b> <span>0 (view-time network free)</span></div><div><b>Renderers (Node + React)</b> <span>2 (same model)</span></div><div><b>Self-contained</b> <span>100% (HTML + source)</span></div></div><div class="part spec"><div><b>For humans</b> <span>A navigable, searchable, themeable page, not a wall of Markdown.</span></div><div><b>For agents</b> <span>The full model is embedded as <code>#dossier-model</code>; read one block, no scraping.</span></div><div><b>For your wiki</b> <span>One portable file, link it, email it, or <code>&lt;iframe&gt;</code> it anywhere.</span></div></div></section><section class="section" id="structure-prose"><div class="section-heading"><span class="section-number">02</span><h2>Structure &amp; prose</h2></div><div class="part prose"><p>Sections nest other blocks; text fields take inline markdown.</p></div><div class="part prose"><p>This is a <strong>prose</strong> block with <code>inline code</code>, a <a href="https://github.com/kylebegeman/dossier">link</a>, and a footnote.[^island]</p>
 <ul>
 <li>Bullet lists render as real lists.</li>
 <li>Inline markdown still works inside list items.</li>
@@ -382,7 +417,7 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis: 100%; }
 <li><strong>Validate</strong> <code>dossier build</code> validates and lints.</li>
 <li><strong>Render</strong> JSON becomes HTML + the data island + Markdown.</li>
 <li><strong>Use</strong> Read, decide, export, embed.</li>
-</ol></div><div class="part prose"><h3>Roadmap</h3></div><ol class="part timeline"><li data-tone="teal"><span class="at">0.1</span><div class="ev"><b>Generator, catalog, features</b> </div></li><li data-tone="teal"><span class="at">0.2</span><div class="ev"><b>MCP, plugins, new blocks</b> </div></li><li data-tone="teal"><span class="at">0.5</span><div class="ev"><b>Process workflows, publishing, embed output, and live editor hooks</b> </div></li><li data-tone="teal"><span class="at">0.6</span><div class="ev"><b>Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution</b> </div></li><li data-tone="violet"><span class="at">0.7</span><div class="ev"><b>Leaner reader shell, one export contract, fewer block families, and a new default theme</b> </div></li></ol><div class="part callout"><b>Composable.</b><div><p>Sections, two-col, and tabs nest other blocks.</p></div></div><div class="part callout risk"><b>Self-contained.</b><div><p>No external fonts, scripts, or images. Works offline.</p></div></div></section><section class="section" id="reference-blocks"><h2>Reference blocks</h2><div class="part prose"><h3>Code</h3></div><div class="part block"><div class="block-label"><span>render.ts</span></div><pre class="hl"><code><span class="hl-kr">import</span> <span class="hl-p">{</span> <span class="hl-nx">renderDossier</span> <span class="hl-p">}</span> <span class="hl-kr">from</span> <span class="hl-s2">&#34;@kylebegeman/dossier-react&#34;</span><span class="hl-p">;</span>
+</ol></div><div class="part prose"><h3>Roadmap</h3></div><ol class="part timeline"><li data-tone="teal"><span class="at">0.1</span><div class="ev"><b>Generator, catalog, features</b> </div></li><li data-tone="teal"><span class="at">0.2</span><div class="ev"><b>MCP, plugins, new blocks</b> </div></li><li data-tone="teal"><span class="at">0.5</span><div class="ev"><b>Process workflows, publishing, embed output, and live editor hooks</b> </div></li><li data-tone="teal"><span class="at">0.6</span><div class="ev"><b>Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution</b> </div></li><li data-tone="violet"><span class="at">0.7</span><div class="ev"><b>Leaner reader shell, one export contract, fewer block families, and a new default theme</b> </div></li></ol><div class="part callout"><b>Composable.</b><div><p>Sections, two-col, and tabs nest other blocks.</p></div></div><div class="part callout risk"><b>Self-contained.</b><div><p>No external fonts, scripts, or images. Works offline.</p></div></div></section><section class="section" id="reference-blocks"><div class="section-heading"><span class="section-number">03</span><h2>Reference blocks</h2></div><div class="part prose"><h3>Code</h3></div><div class="part block"><div class="block-label"><span>render.ts</span></div><pre class="hl"><code><span class="hl-kr">import</span> <span class="hl-p">{</span> <span class="hl-nx">renderDossier</span> <span class="hl-p">}</span> <span class="hl-kr">from</span> <span class="hl-s2">&#34;@kylebegeman/dossier-react&#34;</span><span class="hl-p">;</span>
 <span class="hl-kr">const</span> <span class="hl-p">{</span> <span class="hl-nx">html</span><span class="hl-p">,</span> <span class="hl-nx">md</span> <span class="hl-p">}</span> <span class="hl-o">=</span> <span class="hl-k">await</span> <span class="hl-nx">renderDossier</span><span class="hl-p">(</span><span class="hl-nx">model</span><span class="hl-p">);</span> <span class="hl-c1">// one self-contained file
 </span></code></pre></div><div class="part prose"><h3>Shell</h3></div><div class="part block"><pre class="hl"><code>dossier init my-doc
 dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-doc.html</code></pre></div><div class="part block diagram" data-format="dot"><div class="block-label"><span>dot</span> <span>Pipeline</span></div><pre><code>digraph { rankdir=LR; bgcolor=&#34;transparent&#34;; node [shape=box style=rounded fontname=&#34;Inter&#34; fontsize=12 color=&#34;#c81e4a&#34; fontcolor=&#34;#1a1822&#34;]; edge [color=&#34;#8b8698&#34;]; &#34;doc.json&#34; -&gt; &#34;build&#34; -&gt; &#34;doc.html&#34;; &#34;build&#34; -&gt; &#34;doc.md&#34;; }</code></pre></div><div class="part block diagram" data-format="mermaid"><div class="block-label"><span>mermaid</span> <span>The loop (Mermaid)</span></div><pre><code>flowchart LR
@@ -391,11 +426,11 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
   C --&gt; D[Self-contained HTML]
   C --&gt; E[Word / PDF]
   D --&gt; F([You triage]) --&gt; G([Agent implements])</code></pre></div><div class="part prose"><h3>Exports</h3></div><div class="part table-wrap"><table><thead><tr><th>Format</th><th>Use</th></tr></thead> <tbody><tr><td>HTML</td><td>The page humans open</td></tr><tr><td>Markdown</td><td>Plain-text copy</td></tr><tr><td>JSON / digest</td><td>What agents read</td></tr></tbody></table></div><div class="part prose"><h3>References</h3></div><div class="part table-wrap"><table><thead><tr><th>Source</th><th>Signal</th><th>Use</th></tr></thead> <tbody><tr><td><a href="https://github.com/kylebegeman/dossier">Repository</a></td><td>Source + docs</td><td>Clone, star, contribute</td></tr></tbody></table></div><div class="part prose"><h3>FAQ</h3></div><div class="part prose"><p><strong>Does it replace my docs site?</strong></p>
-<p>No, it&rsquo;s a companion: linkable, embeddable, exportable artifacts.</p></div></section><section class="section" id="media-data"><h2>Media &amp; data</h2><div class="part block chart"><div class="block-label"><span>Adoption (bar)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Adoption (bar)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="208.0" x2="616" y2="208.0" stroke="var(--line-soft)"/><text x="43" y="212.0" text-anchor="end" class="tick">10</text><line x1="52" y1="162.0" x2="616" y2="162.0" stroke="var(--line-soft)"/><text x="43" y="166.0" text-anchor="end" class="tick">20</text><line x1="52" y1="116.0" x2="616" y2="116.0" stroke="var(--line-soft)"/><text x="43" y="120.0" text-anchor="end" class="tick">30</text><line x1="52" y1="70.0" x2="616" y2="70.0" stroke="var(--line-soft)"/><text x="43" y="74.0" text-anchor="end" class="tick">40</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">50</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><rect x="94.5" y="198.8" width="56.0" height="55.2" rx="3" fill="var(--accent)"><title>Q1: 12</title></rect><text x="122.5" y="191.8" text-anchor="middle" class="value">12</text><text x="122.5" y="275" text-anchor="middle">Q1</text><rect x="235.5" y="166.6" width="56.0" height="87.4" rx="3" fill="var(--accent)"><title>Q2: 19</title></rect><text x="263.5" y="159.6" text-anchor="middle" class="value">19</text><text x="263.5" y="275" text-anchor="middle">Q2</text><rect x="376.5" y="116.0" width="56.0" height="138.0" rx="3" fill="var(--accent)"><title>Q3: 30</title></rect><text x="404.5" y="109.0" text-anchor="middle" class="value">30</text><text x="404.5" y="275" text-anchor="middle">Q3</text><rect x="517.5" y="60.8" width="56.0" height="193.2" rx="3" fill="var(--accent)"><title>Q4: 42</title></rect><text x="545.5" y="53.8" text-anchor="middle" class="value">42</text><text x="545.5" y="275" text-anchor="middle">Q4</text></svg></div><div class="part block chart"><div class="block-label"><span>Trend (area)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Trend (area)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">5</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">10</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">15</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><polygon points="122.5,254.0 122.5,192.7 263.5,116.0 404.5,146.7 545.5,24.0 545.5,254.0" fill="var(--accent)" fill-opacity="0.12"/><polyline points="122.5,192.7 263.5,116.0 404.5,146.7 545.5,24.0" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="122.5" cy="192.7" r="3" fill="var(--accent)"><title>Jan: 4</title></circle><text x="122.5" y="184.7" text-anchor="middle" class="value">4</text><text x="122.5" y="275" text-anchor="middle">Jan</text><circle cx="263.5" cy="116.0" r="3" fill="var(--accent)"><title>Feb: 9</title></circle><text x="263.5" y="108.0" text-anchor="middle" class="value">9</text><text x="263.5" y="275" text-anchor="middle">Feb</text><circle cx="404.5" cy="146.7" r="3" fill="var(--accent)"><title>Mar: 7</title></circle><text x="404.5" y="138.7" text-anchor="middle" class="value">7</text><text x="404.5" y="275" text-anchor="middle">Mar</text><circle cx="545.5" cy="24.0" r="3" fill="var(--accent)"><title>Apr: 15</title></circle><text x="545.5" y="16.0" text-anchor="middle" class="value">15</text><text x="545.5" y="275" text-anchor="middle">Apr</text></svg></div><div class="part block"><pre class="hl"><code>E = mc<span class="hl-nb">^</span>2 <span class="hl-k">\quad\text</span><span class="hl-nb">{</span>and<span class="hl-nb">}</span><span class="hl-k">\quad</span> <span class="hl-k">\int</span><span class="hl-nb">_</span>0<span class="hl-nb">^</span><span class="hl-k">\infty</span> e<span class="hl-nb">^{</span>-x<span class="hl-nb">^</span>2<span class="hl-nb">}</span><span class="hl-k">\,</span>dx = <span class="hl-k">\frac</span><span class="hl-nb">{</span><span class="hl-k">\sqrt</span><span class="hl-nb">{</span><span class="hl-k">\pi</span><span class="hl-nb">}}{</span>2<span class="hl-nb">}</span></code></pre></div><figure class="part figure"><img src="data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; width=&#39;320&#39; height=&#39;90&#39;%3E%3Crect width=&#39;320&#39; height=&#39;90&#39; rx=&#39;10&#39; fill=&#39;%23c81e4a&#39;/%3E%3Ctext x=&#39;160&#39; y=&#39;54&#39; font-family=&#39;Inter,sans-serif&#39; font-size=&#39;22&#39; fill=&#39;white&#39; text-anchor=&#39;middle&#39;%3EFigure block%3C/text%3E%3C/svg%3E" alt="" loading="lazy"> <figcaption class="legend">Images are inlined as data URIs at build time.</figcaption></figure></section><section class="section" id="decisions-trust"><h2>Decisions &amp; trust</h2><div class="part prose"><h3>Where it lives</h3></div><div class="part table-wrap"><table><thead><tr><th>Option</th><th>Cross-project</th><th>Public later</th></tr></thead> <tbody><tr><td>Standalone repo (recommended)</td><td>Yes</td><td>One-line flip</td></tr><tr><td>Inside a monorepo</td><td>No</td><td>Hard</td></tr></tbody></table></div><div class="part prose"><h3>Risks</h3></div><div class="part table-wrap"><table><thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead> <tbody><tr><td>Scope creep</td><td>medium</td><td>medium</td><td>Freeze the schema, then build.</td></tr></tbody></table></div><div class="part prose"><h3>Try it</h3></div><div class="part table-wrap"><table><thead><tr><th>Item</th><th>Owner</th><th>Status</th><th>Note</th></tr></thead> <tbody><tr><td>Install: npm i -g github:kylebegeman/dossier</td><td></td><td>todo</td><td></td></tr><tr><td>Run: dossier init demo &amp;&amp; dossier build demo.dossier.json</td><td></td><td>todo</td><td></td></tr></tbody></table></div><div class="part prose"><h3>Assumptions and open questions</h3></div><div class="part table-wrap"><table><thead><tr><th>Statement</th><th>Kind</th><th>Status</th></tr></thead> <tbody><tr><td>One file beats a folder of assets for sharing.</td><td>assumption</td><td>verified</td></tr></tbody></table></div><div class="part prose"><h3>Provenance</h3></div><div class="part spec"><div><b>Generated by</b><span>Dossier</span></div><div><b>Model</b><span>n/a</span></div><div><b>Date</b><span>2026-06-26</span></div><div><b>Confidence</b><span>high</span></div><div><b>Tools</b><span>shiki, graphviz, katex</span></div><div><b>Notes</b><span>Rendered entirely at build time; nothing loads at view time.</span></div></div></section><section class="section" id="interactive-review-board-try-it"><h2>Interactive review board, try it</h2><div class="part rows"><details class="row" id="navigation"><summary><div><b>Navigation</b> <p>Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> shipped</p>
+<p>No, it&rsquo;s a companion: linkable, embeddable, exportable artifacts.</p></div></section><section class="section" id="media-data"><div class="section-heading"><span class="section-number">04</span><h2>Media &amp; data</h2></div><div class="part block chart"><div class="block-label"><span>Adoption (bar)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Adoption (bar)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="208.0" x2="616" y2="208.0" stroke="var(--line-soft)"/><text x="43" y="212.0" text-anchor="end" class="tick">10</text><line x1="52" y1="162.0" x2="616" y2="162.0" stroke="var(--line-soft)"/><text x="43" y="166.0" text-anchor="end" class="tick">20</text><line x1="52" y1="116.0" x2="616" y2="116.0" stroke="var(--line-soft)"/><text x="43" y="120.0" text-anchor="end" class="tick">30</text><line x1="52" y1="70.0" x2="616" y2="70.0" stroke="var(--line-soft)"/><text x="43" y="74.0" text-anchor="end" class="tick">40</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">50</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><rect x="94.5" y="198.8" width="56.0" height="55.2" rx="3" fill="var(--accent)"><title>Q1: 12</title></rect><text x="122.5" y="191.8" text-anchor="middle" class="value">12</text><text x="122.5" y="275" text-anchor="middle">Q1</text><rect x="235.5" y="166.6" width="56.0" height="87.4" rx="3" fill="var(--accent)"><title>Q2: 19</title></rect><text x="263.5" y="159.6" text-anchor="middle" class="value">19</text><text x="263.5" y="275" text-anchor="middle">Q2</text><rect x="376.5" y="116.0" width="56.0" height="138.0" rx="3" fill="var(--accent)"><title>Q3: 30</title></rect><text x="404.5" y="109.0" text-anchor="middle" class="value">30</text><text x="404.5" y="275" text-anchor="middle">Q3</text><rect x="517.5" y="60.8" width="56.0" height="193.2" rx="3" fill="var(--accent)"><title>Q4: 42</title></rect><text x="545.5" y="53.8" text-anchor="middle" class="value">42</text><text x="545.5" y="275" text-anchor="middle">Q4</text></svg></div><div class="part block chart"><div class="block-label"><span>Trend (area)</span></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Trend (area)"><line x1="52" y1="24" x2="52" y2="254" stroke="var(--line)"/><line x1="52" y1="254" x2="616" y2="254" stroke="var(--line)"/><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--line-soft)"/><text x="43" y="258.0" text-anchor="end" class="tick">0</text><line x1="52" y1="177.3" x2="616" y2="177.3" stroke="var(--line-soft)"/><text x="43" y="181.3" text-anchor="end" class="tick">5</text><line x1="52" y1="100.7" x2="616" y2="100.7" stroke="var(--line-soft)"/><text x="43" y="104.7" text-anchor="end" class="tick">10</text><line x1="52" y1="24.0" x2="616" y2="24.0" stroke="var(--line-soft)"/><text x="43" y="28.0" text-anchor="end" class="tick">15</text><line x1="52" y1="254.0" x2="616" y2="254.0" stroke="var(--muted)"/><polygon points="122.5,254.0 122.5,192.7 263.5,116.0 404.5,146.7 545.5,24.0 545.5,254.0" fill="var(--accent)" fill-opacity="0.12"/><polyline points="122.5,192.7 263.5,116.0 404.5,146.7 545.5,24.0" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="122.5" cy="192.7" r="3" fill="var(--accent)"><title>Jan: 4</title></circle><text x="122.5" y="184.7" text-anchor="middle" class="value">4</text><text x="122.5" y="275" text-anchor="middle">Jan</text><circle cx="263.5" cy="116.0" r="3" fill="var(--accent)"><title>Feb: 9</title></circle><text x="263.5" y="108.0" text-anchor="middle" class="value">9</text><text x="263.5" y="275" text-anchor="middle">Feb</text><circle cx="404.5" cy="146.7" r="3" fill="var(--accent)"><title>Mar: 7</title></circle><text x="404.5" y="138.7" text-anchor="middle" class="value">7</text><text x="404.5" y="275" text-anchor="middle">Mar</text><circle cx="545.5" cy="24.0" r="3" fill="var(--accent)"><title>Apr: 15</title></circle><text x="545.5" y="16.0" text-anchor="middle" class="value">15</text><text x="545.5" y="275" text-anchor="middle">Apr</text></svg></div><div class="part block"><pre class="hl"><code>E = mc<span class="hl-nb">^</span>2 <span class="hl-k">\quad\text</span><span class="hl-nb">{</span>and<span class="hl-nb">}</span><span class="hl-k">\quad</span> <span class="hl-k">\int</span><span class="hl-nb">_</span>0<span class="hl-nb">^</span><span class="hl-k">\infty</span> e<span class="hl-nb">^{</span>-x<span class="hl-nb">^</span>2<span class="hl-nb">}</span><span class="hl-k">\,</span>dx = <span class="hl-k">\frac</span><span class="hl-nb">{</span><span class="hl-k">\sqrt</span><span class="hl-nb">{</span><span class="hl-k">\pi</span><span class="hl-nb">}}{</span>2<span class="hl-nb">}</span></code></pre></div><figure class="part figure"><img src="data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; width=&#39;320&#39; height=&#39;90&#39;%3E%3Crect width=&#39;320&#39; height=&#39;90&#39; rx=&#39;10&#39; fill=&#39;%23c81e4a&#39;/%3E%3Ctext x=&#39;160&#39; y=&#39;54&#39; font-family=&#39;Inter,sans-serif&#39; font-size=&#39;22&#39; fill=&#39;white&#39; text-anchor=&#39;middle&#39;%3EFigure block%3C/text%3E%3C/svg%3E" alt="" loading="lazy"> <figcaption class="legend">Images are inlined as data URIs at build time.</figcaption></figure></section><section class="section" id="decisions-trust"><div class="section-heading"><span class="section-number">05</span><h2>Decisions &amp; trust</h2></div><div class="part prose"><h3>Where it lives</h3></div><div class="part table-wrap"><table><thead><tr><th>Option</th><th>Cross-project</th><th>Public later</th></tr></thead> <tbody><tr><td>Standalone repo (recommended)</td><td>Yes</td><td>One-line flip</td></tr><tr><td>Inside a monorepo</td><td>No</td><td>Hard</td></tr></tbody></table></div><div class="part prose"><h3>Risks</h3></div><div class="part table-wrap"><table><thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead> <tbody><tr><td>Scope creep</td><td>medium</td><td>medium</td><td>Freeze the schema, then build.</td></tr></tbody></table></div><div class="part prose"><h3>Try it</h3></div><div class="part table-wrap"><table><thead><tr><th>Item</th><th>Owner</th><th>Status</th><th>Note</th></tr></thead> <tbody><tr><td>Install: npm i -g github:kylebegeman/dossier</td><td></td><td>todo</td><td></td></tr><tr><td>Run: dossier init demo &amp;&amp; dossier build demo.dossier.json</td><td></td><td>todo</td><td></td></tr></tbody></table></div><div class="part prose"><h3>Assumptions and open questions</h3></div><div class="part table-wrap"><table><thead><tr><th>Statement</th><th>Kind</th><th>Status</th></tr></thead> <tbody><tr><td>One file beats a folder of assets for sharing.</td><td>assumption</td><td>verified</td></tr></tbody></table></div><div class="part prose"><h3>Provenance</h3></div><div class="part spec"><div><b>Generated by</b> <span>Dossier</span></div><div><b>Model</b> <span>n/a</span></div><div><b>Date</b> <span>2026-06-26</span></div><div><b>Confidence</b> <span>high</span></div><div><b>Tools</b> <span>shiki, graphviz, katex</span></div><div><b>Notes</b> <span>Rendered entirely at build time; nothing loads at view time.</span></div></div></section><section class="section" id="interactive-review-board-try-it"><div class="section-heading"><span class="section-number">06</span><h2>Interactive review board, try it</h2></div><div class="part rows"><details class="row" id="navigation"><summary><div><b>Navigation</b> <p>Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> shipped</p>
 <p><strong>Category</strong> Reader</p>
 <p><strong>Impact</strong> High</p></dd></div><div class="facet"><dt>Notes</dt><dd><p>Expand a row, tick the checkbox, leave a note, then <strong>Export JSON</strong>, that decisions packet is what an agent reads back.</p></dd></div><div class="facet"><dt>Details</dt><dd><p><strong>Shortcut</strong> Cmd/Ctrl-K</p></dd></div></dl></details><details class="row" id="themeable"><summary><div><b>Themeable</b> <p>Light + dark, per-project token overrides, fully responsive to mobile.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> shipped</p>
 <p><strong>Category</strong> Design</p>
-<p><strong>Impact</strong> High</p></dd></div><div class="facet"><dt>Notes</dt><dd><p>The whole design is a small token system; one accent, near-monochrome neutrals.</p></dd></div></dl></details></div></section><section class="section" id="process-board-implementation-loop"><h2>Process board, implementation loop</h2><div class="part rows"><details class="row" id="extract-work-item"><summary><div><b>Extract a work item</b> <p>Use verdicts and notes to steer actual implementation work.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> proposed</p>
+<p><strong>Impact</strong> High</p></dd></div><div class="facet"><dt>Notes</dt><dd><p>The whole design is a small token system; one accent, near-monochrome neutrals.</p></dd></div></dl></details></div></section><section class="section" id="process-board-implementation-loop"><div class="section-heading"><span class="section-number">07</span><h2>Process board, implementation loop</h2></div><div class="part rows"><details class="row" id="extract-work-item"><summary><div><b>Extract a work item</b> <p>Use verdicts and notes to steer actual implementation work.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> proposed</p>
 <p><strong>Category</strong> Implementation</p>
 <p><strong>Owner</strong> agent</p>
 <p><strong>Priority</strong> P1</p>
@@ -410,7 +445,7 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
 <li><code>src/runtime/runtime.mjs</code></li>
 </ul></dd></div><div class="facet"><dt>Verification</dt><dd><ul>
 <li>npm test</li>
-</ul></dd></div></dl></details></div></section><section class="section" id="patch-set-proposed-edits"><h2>Patch set, proposed edits</h2><div class="part prose"><p>Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification.</p></div><div class="part rows"><details class="row" id="patch-process-aware-surface"><summary><div><b>Patch process-aware surface</b> <p>Move the artifact from a plan-only surface to a process-aware one.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> proposed</p>
+</ul></dd></div></dl></details></div></section><section class="section" id="patch-set-proposed-edits"><div class="section-heading"><span class="section-number">08</span><h2>Patch set, proposed edits</h2></div><div class="part prose"><p>Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification.</p></div><div class="part rows"><details class="row" id="patch-process-aware-surface"><summary><div><b>Patch process-aware surface</b> <p>Move the artifact from a plan-only surface to a process-aware one.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> proposed</p>
 <p><strong>Operation</strong> modify</p>
 <p><strong>Risk</strong> low</p></dd></div><div class="facet"><dt>Files</dt><dd><ul>
 <li><code>src/generate.mjs</code></li>
@@ -424,11 +459,11 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
 </span><span class="hl-gu">@@ -1,2 +1,2 @@
 </span><span class="hl-gd">-// plan-only surface
 </span><span class="hl-gi">+// process-aware surface
-</span></code></pre></dd></div></dl></details></div></section><section class="section" id="code-editor-editable-snippet"><h2>Code editor, editable snippet</h2><div class="part callout"><b>Editor</b><div><p>Small edits can round-trip as <code>dossier.edits/v1</code> without turning the artifact into a full IDE.</p>
+</span></code></pre></dd></div></dl></details></div></section><section class="section" id="code-editor-editable-snippet"><div class="section-heading"><span class="section-number">09</span><h2>Code editor, editable snippet</h2></div><div class="part callout"><b>Editor</b><div><p>Small edits can round-trip as <code>dossier.edits/v1</code> without turning the artifact into a full IDE.</p>
 <p>Target: <code>src/runtime/runtime.mjs</code></p>
 <p>Work items: extract-work-item</p></div></div><div class="part block"><div class="block-label"><span>runtime.mjs</span></div><pre class="hl"><code><span class="hl-kd">function</span> <span class="hl-nx">exportEdits</span><span class="hl-p">(</span><span class="hl-nx">state</span><span class="hl-p">)</span> <span class="hl-p">{</span>
   <span class="hl-k">return</span> <span class="hl-p">{</span> <span class="hl-nx">schema</span><span class="hl-o">:</span> <span class="hl-s2">&#34;dossier.edits/v1&#34;</span><span class="hl-p">,</span> <span class="hl-nx">edits</span><span class="hl-o">:</span> <span class="hl-nx">state</span><span class="hl-p">.</span><span class="hl-nx">editors</span> <span class="hl-o">||</span> <span class="hl-p">{}</span> <span class="hl-p">};</span>
-<span class="hl-p">}</span></code></pre></div></section><section class="section" id="diff-view-file-first-review"><h2>Diff view, file-first review</h2><div class="part prose"><p>A standalone unified diff renders with file summaries, hunks, additions, and deletions.</p></div><div class="part block"><pre class="hl"><code><span class="hl-gh">diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs
+<span class="hl-p">}</span></code></pre></div></section><section class="section" id="diff-view-file-first-review"><div class="section-heading"><span class="section-number">10</span><h2>Diff view, file-first review</h2></div><div class="part prose"><p>A standalone unified diff renders with file summaries, hunks, additions, and deletions.</p></div><div class="part block"><pre class="hl"><code><span class="hl-gh">diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs
 </span><span class="hl-gd">--- a/src/runtime/runtime.mjs
 </span><span class="hl-gi">+++ b/src/runtime/runtime.mjs
 </span><span class="hl-gu">@@ -1,3 +1,4 @@
@@ -436,34 +471,33 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
 <span class="hl-gi">+state.process = state.process || {};
 </span> 
  exportProcess(state);
-</code></pre></div></section><section class="section" id="process-closeout-blocks"><h2>Process closeout blocks</h2><div class="part prose"><p>The same artifact now covers implementation, review, integration, release, and incident loops.</p></div><div class="part prose"><h3>Verification run</h3></div><div class="part rows"><details class="row" id="test-suite"><summary><div><b>Test suite</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> passed</p>
+</code></pre></div></section><section class="section" id="process-closeout-blocks"><div class="section-heading"><span class="section-number">11</span><h2>Process closeout blocks</h2></div><div class="part prose"><p>The same artifact now covers implementation, review, integration, release, and incident loops.</p></div><div class="part prose"><h3>Verification run</h3></div><div class="part rows"><details class="row" id="test-suite"><summary><div><b>Test suite</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> passed</p>
 <p><strong>Command</strong> <code>npm test</code></p>
 <p><strong>Expected</strong> All tests pass.</p>
-<p><strong>Actual</strong> 17 passing.</p></dd></div></dl></details></div></section><section class="section" id="evidence-log"><h2>Evidence log</h2><div class="part rows"><details class="row" id="build-log"><summary><div><b>Build log</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Kind</strong> command</p>
+<p><strong>Actual</strong> 17 passing.</p></dd></div></dl></details></div></section><section class="section" id="evidence-log"><div class="section-heading"><span class="section-number">12</span><h2>Evidence log</h2></div><div class="part rows"><details class="row" id="build-log"><summary><div><b>Build log</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Kind</strong> command</p>
 <p><strong>Trust</strong> high</p>
-<p><strong>Source</strong> <code>local</code></p></dd></div><div class="facet"><dt>Notes</dt><dd><p><code>npm test</code> completed successfully.</p></dd></div></dl></details></div></section><section class="section" id="trust-report"><h2>Trust report</h2><div class="part prose"><p>A provenance layer ties claims to source ids and verification evidence for agent readback.</p></div><div class="part prose"><h3>Sources</h3></div><div class="part table-wrap"><table><thead><tr><th>Source</th><th>Kind</th><th>Trust</th><th>Summary</th></tr></thead> <tbody><tr><td>npm test</td><td>command</td><td>high</td><td>Local test command recorded in the verification run.</td></tr><tr><td><a href="../docs/product/public-manual-qa.md">Public manual QA guide</a></td><td>doc</td><td>medium</td><td>Manual browser, live serve, MCP, export, and release gate checklist.</td></tr></tbody></table></div><div class="part table-wrap"><table><thead><tr><th>Finding</th><th>Confidence</th></tr></thead> <tbody><tr data-item="tests-pass" class=""><td><a href="#tests-pass">Automated tests pass for the process block family.</a></td><td><span class="chip t-teal">verified</span></td></tr><tr data-item="manual-qa-ready" class=""><td><a href="#manual-qa-ready">The feature set is ready for public manual QA.</a></td><td><span class="chip t-violet">likely</span></td></tr></tbody></table></div><details class="item" id="tests-pass" data-item="tests-pass" data-title="Automated tests pass for the process block family."><summary class="item-head"><div class="item-meta"><span class="chip t-teal" title="Confidence">Confidence verified</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> Automated tests pass for the process block family.</h3></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Evidence</dt><dd><ul>
+<p><strong>Source</strong> <code>local</code></p></dd></div><div class="facet"><dt>Notes</dt><dd><p><code>npm test</code> completed successfully.</p></dd></div></dl></details></div></section><section class="section" id="trust-report"><div class="section-heading"><span class="section-number">13</span><h2>Trust report</h2></div><div class="part prose"><p>A provenance layer ties claims to source ids and verification evidence for agent readback.</p></div><div class="part prose"><h3>Sources</h3></div><div class="part table-wrap"><table><thead><tr><th>Source</th><th>Kind</th><th>Trust</th><th>Summary</th></tr></thead> <tbody><tr><td>npm test</td><td>command</td><td>high</td><td>Local test command recorded in the verification run.</td></tr><tr><td><a href="../docs/product/public-manual-qa.md">Public manual QA guide</a></td><td>doc</td><td>medium</td><td>Manual browser, live serve, MCP, export, and release gate checklist.</td></tr></tbody></table></div><details class="board-overview"><summary><span>At a glance</span><span class="overview-count">2 findings</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><div class="part table-wrap"><table><thead><tr><th>Finding</th><th>Confidence</th></tr></thead> <tbody><tr data-item="tests-pass" class=""><td><a href="#tests-pass">Automated tests pass for the process block family.</a></td><td><span class="chip t-teal">verified</span></td></tr><tr data-item="manual-qa-ready" class=""><td><a href="#manual-qa-ready">The feature set is ready for public manual QA.</a></td><td><span class="chip t-violet">likely</span></td></tr></tbody></table></div></details> <details class="item" id="tests-pass" data-item="tests-pass" data-title="Automated tests pass for the process block family."><summary class="item-head"><div class="item-heading"><div class="item-copy"><h3>Automated tests pass for the process block family.</h3></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Confidence">Confidence verified</span></div></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Evidence</dt><dd><ul>
 <li>test-suite</li>
 <li>Sources: npm-test</li>
 </ul></dd></div><div class="facet"><dt>Note</dt><dd><p><strong>0.6 confidence</strong> high</p>
-<p>Agents can read this with <code>dossier_read_trust</code>.</p></dd></div></dl></div></details><details class="item" id="manual-qa-ready" data-item="manual-qa-ready" data-title="The feature set is ready for public manual QA."><summary class="item-head"><div class="item-meta"><span class="chip t-violet" title="Confidence">Confidence likely</span></div><h3><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> The feature set is ready for public manual QA.</h3></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Evidence</dt><dd><ul>
+<p>Agents can read this with <code>dossier_read_trust</code>.</p></dd></div></dl></div></details><details class="item" id="manual-qa-ready" data-item="manual-qa-ready" data-title="The feature set is ready for public manual QA."><summary class="item-head"><div class="item-heading"><div class="item-copy"><h3>The feature set is ready for public manual QA.</h3></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-violet" title="Confidence">Confidence likely</span></div></summary><div class="item-body"><dl class="facets"><div class="facet"><dt>Evidence</dt><dd><ul>
 <li>build-log</li>
 <li>Sources: manual-qa</li>
 </ul></dd></div><div class="facet"><dt>Note</dt><dd><p><strong>0.6 confidence</strong> medium</p>
-<p>Manual QA still needs a human browser pass before broad announcement.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="trust-report-continued"><h2>Trust report, continued</h2><div class="part prose"><h3>Apply gate</h3></div><div class="part callout"><b>Apply gate</b><div><p>Approve, revise, skip, defer, split, retry, or block this process packet.</p></div></div><div class="part prose"><h3>Review findings</h3></div><div class="part rows"><details class="row" id="missing-evidence"><summary><div><b>Missing evidence link</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Severity</strong> medium</p></dd></div><div class="facet"><dt>Notes</dt><dd><p>Attach the verification run to the work item before closeout.</p></dd></div><div class="facet"><dt>Recommendation</dt><dd><p>Link the finding to a <code>verification-run</code> id.</p></dd></div><div class="facet"><dt>Files</dt><dd><ul>
+<p>Manual QA still needs a human browser pass before broad announcement.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="section" id="trust-report-continued"><div class="section-heading"><span class="section-number">14</span><h2>Trust report, continued</h2></div><div class="part prose"><h3>Apply gate</h3></div><div class="part callout"><b>Apply gate</b><div><p>Approve, revise, skip, defer, split, retry, or block this process packet.</p></div></div><div class="part prose"><h3>Review findings</h3></div><div class="part rows"><details class="row" id="missing-evidence"><summary><div><b>Missing evidence link</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Severity</strong> medium</p></dd></div><div class="facet"><dt>Notes</dt><dd><p>Attach the verification run to the work item before closeout.</p></dd></div><div class="facet"><dt>Recommendation</dt><dd><p>Link the finding to a <code>verification-run</code> id.</p></dd></div><div class="facet"><dt>Files</dt><dd><ul>
 <li><code>src/starters/review.dossier.json</code></li>
-</ul></dd></div></dl></details></div></section><section class="section" id="review-thread"><h2>Review thread</h2><div class="part rows"><details class="row" id="thread-agent-access"><summary><div><b>Agent access</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Notes</dt><dd><p><strong>Kyle</strong> Make the packet readable without DOM scraping.</p>
-<p><strong>Agent</strong> Use MCP readback and versioned export packets.</p></dd></div></dl></details></div></section><section class="section" id="integration-cycles"><h2>Integration cycles</h2><div class="part rows"><details class="row" id="producer-consumer"><summary><div><b>Producer to consumer</b> <p>Consumer project accepted the packet shape.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> done</p></dd></div></dl></details></div></section><section class="section" id="integration-report"><h2>Integration report</h2><div class="part spec"><div><b>Producer</b><span>dossier</span></div><div><b>Consumer</b><span>lumen</span></div><div><b>Status</b><span>accepted</span></div><div><b>Version</b><span>0.5.5</span></div><div><b>Next step</b><span>Dogfood against a live dependency change.</span></div></div><div class="part rows"><div id="process-packets"><div><b>Process packets</b> <p>Verdicts, releases, edits, and process state all export as structured packets.</p></div><span class="row-chips"></span></div></div></section><section class="section" id="integration-report-continued"><h2>Integration report, continued</h2><div class="part prose"><h3>Upstream response</h3></div><div class="part spec"><div><b>Upstream</b><span>CodeMirror host adapter</span></div><div><b>Status</b><span>accepted</span></div><div><b>Request</b><span>Enhance `data-code-editor` hooks in the local serve runtime.</span></div><div><b>Response</b><span>`dossier serve` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact.</span></div><div><b>Next step</b><span>Keep Monaco reserved for hosted Studio or Lumen integrations.</span></div></div><div class="part prose"><h3>Release checklist</h3></div><div class="part rows"><details class="row" id="tests"><summary><div><b>Tests pass</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> passed</p>
+</ul></dd></div></dl></details></div></section><section class="section" id="review-thread"><div class="section-heading"><span class="section-number">15</span><h2>Review thread</h2></div><div class="part rows"><details class="row" id="thread-agent-access"><summary><div><b>Agent access</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Notes</dt><dd><p><strong>Kyle</strong> Make the packet readable without DOM scraping.</p>
+<p><strong>Agent</strong> Use MCP readback and versioned export packets.</p></dd></div></dl></details></div></section><section class="section" id="integration-cycles"><div class="section-heading"><span class="section-number">16</span><h2>Integration cycles</h2></div><div class="part rows"><details class="row" id="producer-consumer"><summary><div><b>Producer to consumer</b> <p>Consumer project accepted the packet shape.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> done</p></dd></div></dl></details></div></section><section class="section" id="integration-report"><div class="section-heading"><span class="section-number">17</span><h2>Integration report</h2></div><div class="part spec"><div><b>Producer</b> <span>dossier</span></div><div><b>Consumer</b> <span>lumen</span></div><div><b>Status</b> <span>accepted</span></div><div><b>Version</b> <span>0.5.5</span></div><div><b>Next step</b> <span>Dogfood against a live dependency change.</span></div></div><div class="part rows"><div id="process-packets"><div><b>Process packets</b> <p>Verdicts, releases, edits, and process state all export as structured packets.</p></div><span class="row-chips"></span></div></div></section><section class="section" id="integration-report-continued"><div class="section-heading"><span class="section-number">18</span><h2>Integration report, continued</h2></div><div class="part prose"><h3>Upstream response</h3></div><div class="part spec"><div><b>Upstream</b> <span>CodeMirror host adapter</span></div><div><b>Status</b> <span>accepted</span></div><div><b>Request</b> <span>Enhance `data-code-editor` hooks in the local serve runtime.</span></div><div><b>Response</b> <span>`dossier serve` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact.</span></div><div><b>Next step</b> <span>Keep Monaco reserved for hosted Studio or Lumen integrations.</span></div></div><div class="part prose"><h3>Release checklist</h3></div><div class="part rows"><details class="row" id="tests"><summary><div><b>Tests pass</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> passed</p>
 <p><strong>Required</strong> yes</p></dd></div><div class="facet"><dt>Evidence</dt><dd><ul>
 <li>npm test</li>
 </ul></dd></div></dl></details><details class="row" id="docs"><summary><div><b>Docs regenerated</b> </div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Status</strong> passed</p>
 <p><strong>Required</strong> yes</p></dd></div><div class="facet"><dt>Evidence</dt><dd><ul>
 <li>README and public manual QA guide refreshed.</li>
-</ul></dd></div></dl></details></div></section><section class="section" id="decision-log"><h2>Decision log</h2><div class="part rows"><details class="row" id="host-runtime"><summary><div><b>Keep execution in host tools</b> <p>Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Owner</strong> Kyle + Codex</p></dd></div></dl></details></div></section><section class="section" id="decision-log-continued"><h2>Decision log, continued</h2><div class="part prose"><h3>Process receipt</h3></div><div class="part spec"><div><b>Outcome</b><span>functionality closeout ready for public manual QA</span></div><div><b>Owner</b><span>Codex</span></div><div><b>Date</b><span>2026-06-29</span></div><div><b>Changed files</b><span><code>src/generate.mjs</code>, <code>src/runtime/runtime.mjs</code>, <code>schema/packets/trust.schema.json</code>, <code>mcp/server.mjs</code></span></div><div><b>Commands</b><span><code>npm test</code></span></div><div><b>Follow-ups</b><span>Run the public manual QA guide before broad announcement.</span></div></div></section><section class="section" id="glossary"><h2>Glossary</h2><div class="part spec"><div><b>island</b><span>The embedded <code>#dossier-model</code> JSON that is the source of truth for the page.</span></div></div></section><section class="section" id="notes"><h2>Notes</h2><div class="part prose"><ol>
+</ul></dd></div></dl></details></div></section><section class="section" id="decision-log"><div class="section-heading"><span class="section-number">19</span><h2>Decision log</h2></div><div class="part rows"><details class="row" id="host-runtime"><summary><div><b>Keep execution in host tools</b> <p>Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.</p></div><span class="row-chips"></span> <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><dl class="facets"><div class="facet"><dt>Status</dt><dd><p><strong>Owner</strong> Kyle + Codex</p></dd></div></dl></details></div></section><section class="section" id="decision-log-continued"><div class="section-heading"><span class="section-number">20</span><h2>Decision log, continued</h2></div><div class="part prose"><h3>Process receipt</h3></div><div class="part spec"><div><b>Outcome</b> <span>functionality closeout ready for public manual QA</span></div><div><b>Owner</b> <span>Codex</span></div><div><b>Date</b> <span>2026-06-29</span></div><div><b>Changed files</b> <span><code>src/generate.mjs</code>, <code>src/runtime/runtime.mjs</code>, <code>schema/packets/trust.schema.json</code>, <code>mcp/server.mjs</code></span></div><div><b>Commands</b> <span><code>npm test</code></span></div><div><b>Follow-ups</b> <span>Run the public manual QA guide before broad announcement.</span></div></div></section><section class="section" id="glossary"><div class="section-heading"><span class="section-number">21</span><h2>Glossary</h2></div><div class="part spec"><div><b>island</b> <span>The embedded <code>#dossier-model</code> JSON that is the source of truth for the page.</span></div></div></section><section class="section" id="notes"><div class="section-heading"><span class="section-number">22</span><h2>Notes</h2></div><div class="part prose"><ol>
 <li>Reference a note inline with a bracketed caret id; it links here and back.</li>
-</ol></div></section><section class="section" id="citations"><h2>Citations</h2><div class="part table-wrap"><table><thead><tr><th>Citation</th><th>Authors</th><th>Source</th><th>Year</th><th>Note</th></tr></thead> <tbody><tr><td><a href="https://github.com/kylebegeman/dossier">Dossier README</a></td><td>Kyle Begeman</td><td>GitHub</td><td>2026</td><td>Canonical feature and workflow overview for the Dossier project.</td></tr></tbody></table></div></section></main><footer class="foot"><span>Dossier, capabilities showcase</span> <span>Generated with Dossier · 2026-06-29</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brief","meta":{"title":"Dossier, capabilities showcase","slug":"showcase","kicker":"Live demo","lede":"Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].","updated":"2026-06-29","status":"durable","facts":[{"label":"source","value":"one .dossier.json"},{"label":"output","value":"one .html"},{"label":"runtime deps","value":"0"}]},"sections":[{"id":"overview","title":"Overview","parts":[{"type":"prose","markdown":"**One JSON file becomes this**"},{"type":"spec","spec":[{"label":"Highlights","text":"43 block types · Self-contained · Agent-readable · Light + dark"}]},{"type":"spec","spec":[{"label":"Owner","text":"Kyle"},{"label":"Tags","text":"demo, blocks"}]},{"type":"callout","title":"Use the full-page toolbar.","tone":"note","markdown":"In the full HTML artifact, **Edit** changes text in place, the color swatch restyles live in the **Theme Studio**, and **Export** gives you Markdown, JSON, or the agent digest. From the CLI, `dossier export` also writes **Word** (charts and diagrams embedded as images) or **PDF**."},{"type":"spec","spec":[{"label":"Block types","text":"43 (+1 citation block)"},{"label":"Runtime deps","text":"0 (view-time network free)"},{"label":"Renderers (Node + React)","text":"2 (same model)"},{"label":"Self-contained","text":"100% (HTML + source)"}]},{"type":"spec","spec":[{"label":"For humans","text":"A navigable, searchable, themeable page, not a wall of Markdown."},{"label":"For agents","text":"The full model is embedded as `#dossier-model`; read one block, no scraping."},{"label":"For your wiki","text":"One portable file, link it, email it, or `\u003ciframe\u003e` it anywhere."}]}]},{"id":"structure-prose","title":"Structure \u0026 prose","parts":[{"type":"prose","markdown":"Sections nest other blocks; text fields take inline markdown."},{"type":"prose","markdown":"This is a **prose** block with `inline code`, a [link](https://github.com/kylebegeman/dossier), and a footnote.[^island]\n\n- Bullet lists render as real lists.\n- Inline markdown still works inside list items.\n\n1. Numbered lists work too.\n2. Paragraph rhythm stays intact.\n\nA second paragraph to show vertical rhythm."},{"type":"prose","markdown":"### How it's built"},{"type":"prose","markdown":"1. **Author** An agent writes a `*.dossier.json`.\n2. **Validate** `dossier build` validates and lints.\n3. **Render** JSON becomes HTML + the data island + Markdown.\n4. **Use** Read, decide, export, embed."},{"type":"prose","markdown":"### Roadmap"},{"type":"timeline","events":[{"at":"0.1","title":"Generator, catalog, features","tone":"teal"},{"at":"0.2","title":"MCP, plugins, new blocks","tone":"teal"},{"at":"0.5","title":"Process workflows, publishing, embed output, and live editor hooks","tone":"teal"},{"at":"0.6","title":"Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution","tone":"teal"},{"at":"0.7","title":"Leaner reader shell, one export contract, fewer block families, and a new default theme","tone":"violet"}]},{"type":"callout","title":"Composable.","tone":"note","markdown":"Sections, two-col, and tabs nest other blocks."},{"type":"callout","title":"Self-contained.","tone":"risk","markdown":"No external fonts, scripts, or images. Works offline."}]},{"id":"reference-blocks","title":"Reference blocks","parts":[{"type":"prose","markdown":"### Code"},{"type":"code","title":"render.ts","lang":"ts","code":"import { renderDossier } from \"@kylebegeman/dossier-react\";\nconst { html, md } = await renderDossier(model); // one self-contained file"},{"type":"prose","markdown":"### Shell"},{"type":"code","lang":"bash","code":"dossier init my-doc\ndossier build my-doc.dossier.json \u0026\u0026 open my-doc.html"},{"type":"diagram","title":"Pipeline","source":"digraph { rankdir=LR; bgcolor=\"transparent\"; node [shape=box style=rounded fontname=\"Inter\" fontsize=12 color=\"#c81e4a\" fontcolor=\"#1a1822\"]; edge [color=\"#8b8698\"]; \"doc.json\" -\u003e \"build\" -\u003e \"doc.html\"; \"build\" -\u003e \"doc.md\"; }","format":"dot"},{"type":"diagram","title":"The loop (Mermaid)","source":"flowchart LR\n  A([Ask your AI]) --\u003e B[Dossier JSON]\n  B --\u003e C{Render}\n  C --\u003e D[Self-contained HTML]\n  C --\u003e E[Word / PDF]\n  D --\u003e F([You triage]) --\u003e G([Agent implements])","format":"mermaid"},{"type":"prose","markdown":"### Exports"},{"type":"table","columns":["Format","Use"],"rows":[["HTML","The page humans open"],["Markdown","Plain-text copy"],["JSON / digest","What agents read"]]},{"type":"prose","markdown":"### References"},{"type":"table","columns":["Source","Signal","Use"],"rows":[["[Repository](https://github.com/kylebegeman/dossier)","Source + docs","Clone, star, contribute"]]},{"type":"prose","markdown":"### FAQ"},{"type":"prose","markdown":"**Does it replace my docs site?**\n\nNo, it's a companion: linkable, embeddable, exportable artifacts."}]},{"id":"media-data","title":"Media \u0026 data","parts":[{"type":"chart","title":"Adoption (bar)","variant":"bar","data":[{"label":"Q1","value":12},{"label":"Q2","value":19},{"label":"Q3","value":30},{"label":"Q4","value":42}]},{"type":"chart","title":"Trend (area)","variant":"area","data":[{"label":"Jan","value":4},{"label":"Feb","value":9},{"label":"Mar","value":7},{"label":"Apr","value":15}]},{"type":"code","lang":"latex","code":"E = mc^2 \\quad\\text{and}\\quad \\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}"},{"type":"figure","src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='90'%3E%3Crect width='320' height='90' rx='10' fill='%23c81e4a'/%3E%3Ctext x='160' y='54' font-family='Inter,sans-serif' font-size='22' fill='white' text-anchor='middle'%3EFigure block%3C/text%3E%3C/svg%3E","caption":"Images are inlined as data URIs at build time."}]},{"id":"decisions-trust","title":"Decisions \u0026 trust","parts":[{"type":"prose","markdown":"### Where it lives"},{"type":"table","columns":["Option","Cross-project","Public later"],"rows":[["Standalone repo (recommended)","Yes","One-line flip"],["Inside a monorepo","No","Hard"]]},{"type":"prose","markdown":"### Risks"},{"type":"table","columns":["Risk","Likelihood","Impact","Mitigation"],"rows":[["Scope creep","medium","medium","Freeze the schema, then build."]]},{"type":"prose","markdown":"### Try it"},{"type":"table","columns":["Item","Owner","Status","Note"],"rows":[["Install: npm i -g github:kylebegeman/dossier","","todo",""],["Run: dossier init demo \u0026\u0026 dossier build demo.dossier.json","","todo",""]]},{"type":"prose","markdown":"### Assumptions and open questions"},{"type":"table","columns":["Statement","Kind","Status"],"rows":[["One file beats a folder of assets for sharing.","assumption","verified"]]},{"type":"prose","markdown":"### Provenance"},{"type":"spec","spec":[{"label":"Generated by","text":"Dossier"},{"label":"Model","text":"n/a"},{"label":"Date","text":"2026-06-26"},{"label":"Confidence","text":"high"},{"label":"Tools","text":"shiki, graphviz, katex"},{"label":"Notes","text":"Rendered entirely at build time; nothing loads at view time."}]}]},{"id":"interactive-review-board-try-it","title":"Interactive review board, try it","board":{"layout":"rows","items":[{"id":"navigation","title":"Navigation","summary":"Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Reader\n\n**Impact** High"},{"label":"Notes","markdown":"Expand a row, tick the checkbox, leave a note, then **Export JSON**, that decisions packet is what an agent reads back."},{"label":"Details","markdown":"**Shortcut** Cmd/Ctrl-K"}]},{"id":"themeable","title":"Themeable","summary":"Light + dark, per-project token overrides, fully responsive to mobile.","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Design\n\n**Impact** High"},{"label":"Notes","markdown":"The whole design is a small token system; one accent, near-monochrome neutrals."}]}]}},{"id":"process-board-implementation-loop","title":"Process board, implementation loop","board":{"layout":"rows","items":[{"id":"extract-work-item","title":"Extract a work item","summary":"Use verdicts and notes to steer actual implementation work.","effort":"S","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Category** Implementation\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"},{"label":"Notes","markdown":"Pick a verdict, leave notes, then export process JSON. An agent reads that packet with `dossier_read_process` and acts on the accepted work.\n\n```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n@@ -1 +1 @@\n-// plan-only surface\n+// process-aware surface\n```"},{"label":"Details","markdown":"**Packet** `dossier.process/v1`\n\n**Verdicts** approve, revise, skip, defer, split, retry, block"},{"label":"Files","markdown":"- `src/generate.mjs`\n- `src/runtime/runtime.mjs`"},{"label":"Verification","markdown":"- npm test"}]}]}},{"id":"patch-set-proposed-edits","title":"Patch set, proposed edits","parts":[{"type":"prose","markdown":"Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification."}],"board":{"layout":"rows","items":[{"id":"patch-process-aware-surface","title":"Patch process-aware surface","summary":"Move the artifact from a plan-only surface to a process-aware one.","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Operation** modify\n\n**Risk** low"},{"label":"Files","markdown":"- `src/generate.mjs`"},{"label":"Verification","markdown":"- npm test"},{"label":"Work items","markdown":"- `extract-work-item`"},{"label":"Diff","markdown":"```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n--- a/src/generate.mjs\n+++ b/src/generate.mjs\n@@ -1,2 +1,2 @@\n-// plan-only surface\n+// process-aware surface\n```"}]}]}},{"id":"code-editor-editable-snippet","title":"Code editor, editable snippet","parts":[{"type":"callout","title":"Editor","markdown":"Small edits can round-trip as `dossier.edits/v1` without turning the artifact into a full IDE.\n\nTarget: `src/runtime/runtime.mjs`\n\nWork items: extract-work-item"},{"type":"code","title":"runtime.mjs","lang":"js","code":"function exportEdits(state) {\n  return { schema: \"dossier.edits/v1\", edits: state.editors || {} };\n}"}]},{"id":"diff-view-file-first-review","title":"Diff view, file-first review","parts":[{"type":"prose","markdown":"A standalone unified diff renders with file summaries, hunks, additions, and deletions."},{"type":"code","lang":"diff","code":"diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs\n--- a/src/runtime/runtime.mjs\n+++ b/src/runtime/runtime.mjs\n@@ -1,3 +1,4 @@\n const state = loadState();\n+state.process = state.process || {};\n \n exportProcess(state);"}]},{"id":"process-closeout-blocks","title":"Process closeout blocks","parts":[{"type":"prose","markdown":"The same artifact now covers implementation, review, integration, release, and incident loops."},{"type":"prose","markdown":"### Verification run"}],"board":{"layout":"rows","items":[{"id":"test-suite","title":"Test suite","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Command** `npm test`\n\n**Expected** All tests pass.\n\n**Actual** 17 passing."}]}]}},{"id":"evidence-log","title":"Evidence log","board":{"layout":"rows","items":[{"id":"build-log","title":"Build log","facets":[{"label":"Status","markdown":"**Kind** command\n\n**Trust** high\n\n**Source** `local`"},{"label":"Notes","markdown":"`npm test` completed successfully."}]}]}},{"id":"trust-report","title":"Trust report","parts":[{"type":"prose","markdown":"A provenance layer ties claims to source ids and verification evidence for agent readback."},{"type":"prose","markdown":"### Sources"},{"type":"table","columns":["Source","Kind","Trust","Summary"],"rows":[["npm test","command","high","Local test command recorded in the verification run."],["[Public manual QA guide](../docs/product/public-manual-qa.md)","doc","medium","Manual browser, live serve, MCP, export, and release gate checklist."]]}],"board":{"summary":true,"items":[{"id":"tests-pass","title":"Automated tests pass for the process block family.","status":"verified","facets":[{"label":"Evidence","markdown":"- test-suite\n- Sources: npm-test"},{"label":"Note","markdown":"**0.6 confidence** high\n\nAgents can read this with `dossier_read_trust`."}]},{"id":"manual-qa-ready","title":"The feature set is ready for public manual QA.","status":"likely","facets":[{"label":"Evidence","markdown":"- build-log\n- Sources: manual-qa"},{"label":"Note","markdown":"**0.6 confidence** medium\n\nManual QA still needs a human browser pass before broad announcement."}]}]}},{"id":"trust-report-continued","title":"Trust report, continued","parts":[{"type":"prose","markdown":"### Apply gate"},{"type":"callout","title":"Apply gate","markdown":"Approve, revise, skip, defer, split, retry, or block this process packet."},{"type":"prose","markdown":"### Review findings"}],"board":{"layout":"rows","items":[{"id":"missing-evidence","title":"Missing evidence link","facets":[{"label":"Status","markdown":"**Severity** medium"},{"label":"Notes","markdown":"Attach the verification run to the work item before closeout."},{"label":"Recommendation","markdown":"Link the finding to a `verification-run` id."},{"label":"Files","markdown":"- `src/starters/review.dossier.json`"}]}]}},{"id":"review-thread","title":"Review thread","board":{"layout":"rows","items":[{"id":"thread-agent-access","title":"Agent access","facets":[{"label":"Notes","markdown":"**Kyle** Make the packet readable without DOM scraping.\n\n**Agent** Use MCP readback and versioned export packets."}]}]}},{"id":"integration-cycles","title":"Integration cycles","board":{"layout":"rows","items":[{"id":"producer-consumer","title":"Producer to consumer","summary":"Consumer project accepted the packet shape.","facets":[{"label":"Status","markdown":"**Status** done"}]}]}},{"id":"integration-report","title":"Integration report","parts":[{"type":"spec","spec":[{"label":"Producer","text":"dossier"},{"label":"Consumer","text":"lumen"},{"label":"Status","text":"accepted"},{"label":"Version","text":"0.5.5"},{"label":"Next step","text":"Dogfood against a live dependency change."}]}],"board":{"layout":"rows","items":[{"id":"process-packets","title":"Process packets","summary":"Verdicts, releases, edits, and process state all export as structured packets."}]}},{"id":"integration-report-continued","title":"Integration report, continued","parts":[{"type":"prose","markdown":"### Upstream response"},{"type":"spec","spec":[{"label":"Upstream","text":"CodeMirror host adapter"},{"label":"Status","text":"accepted"},{"label":"Request","text":"Enhance \\`data-code-editor\\` hooks in the local serve runtime."},{"label":"Response","text":"\\`dossier serve\\` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact."},{"label":"Next step","text":"Keep Monaco reserved for hosted Studio or Lumen integrations."}]},{"type":"prose","markdown":"### Release checklist"}],"board":{"layout":"rows","items":[{"id":"tests","title":"Tests pass","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- npm test"}]},{"id":"docs","title":"Docs regenerated","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- README and public manual QA guide refreshed."}]}]}},{"id":"decision-log","title":"Decision log","board":{"layout":"rows","items":[{"id":"host-runtime","title":"Keep execution in host tools","summary":"Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.","facets":[{"label":"Status","markdown":"**Owner** Kyle + Codex"}]}]}},{"id":"decision-log-continued","title":"Decision log, continued","parts":[{"type":"prose","markdown":"### Process receipt"},{"type":"spec","spec":[{"label":"Outcome","text":"functionality closeout ready for public manual QA"},{"label":"Owner","text":"Codex"},{"label":"Date","text":"2026-06-29"},{"label":"Changed files","text":"`src/generate.mjs`, `src/runtime/runtime.mjs`, `schema/packets/trust.schema.json`, `mcp/server.mjs`"},{"label":"Commands","text":"`npm test`"},{"label":"Follow-ups","text":"Run the public manual QA guide before broad announcement."}]}]},{"id":"glossary","title":"Glossary","parts":[{"type":"spec","spec":[{"label":"island","text":"The embedded `#dossier-model` JSON that is the source of truth for the page."}]}]},{"id":"notes","title":"Notes","parts":[{"type":"prose","markdown":"1. Reference a note inline with a bracketed caret id; it links here and back."}]},{"id":"citations","title":"Citations","parts":[{"type":"table","columns":["Citation","Authors","Source","Year","Note"],"rows":[["[Dossier README](https://github.com/kylebegeman/dossier)","Kyle Begeman","GitHub","2026","Canonical feature and workflow overview for the Dossier project."]]}]}]}</script><script>
+</ol></div></section><section class="section" id="citations"><div class="section-heading"><span class="section-number">23</span><h2>Citations</h2></div><div class="part table-wrap"><table><thead><tr><th>Citation</th><th>Authors</th><th>Source</th><th>Year</th><th>Note</th></tr></thead> <tbody><tr><td><a href="https://github.com/kylebegeman/dossier">Dossier README</a></td><td>Kyle Begeman</td><td>GitHub</td><td>2026</td><td>Canonical feature and workflow overview for the Dossier project.</td></tr></tbody></table></div></section></main><footer class="foot"><span>Dossier, capabilities showcase</span> <span>Generated with Dossier · 2026-06-29</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brief","meta":{"title":"Dossier, capabilities showcase","slug":"showcase","kicker":"Live demo","lede":"Everything below, navigation, search, theme, code, diagrams, charts, math, citations, and an interactive review board, lives in one self-contained HTML file with no external assets. The page is a projection of the JSON your AI wrote [@dossier-readme].","updated":"2026-06-29","status":"durable","facts":[{"label":"source","value":"one .dossier.json"},{"label":"output","value":"one .html"},{"label":"runtime deps","value":"0"}]},"sections":[{"id":"overview","title":"Overview","parts":[{"type":"prose","markdown":"**One JSON file becomes this**"},{"type":"spec","spec":[{"label":"Highlights","text":"43 block types · Self-contained · Agent-readable · Light + dark"}]},{"type":"spec","spec":[{"label":"Owner","text":"Kyle"},{"label":"Tags","text":"demo, blocks"}]},{"type":"callout","title":"Use the full-page toolbar.","tone":"note","markdown":"In the full HTML artifact, **Edit** changes text in place, the color swatch restyles live in the **Theme Studio**, and **Export** gives you Markdown, JSON, or the agent digest. From the CLI, `dossier export` also writes **Word** (charts and diagrams embedded as images) or **PDF**."},{"type":"spec","spec":[{"label":"Block types","text":"43 (+1 citation block)"},{"label":"Runtime deps","text":"0 (view-time network free)"},{"label":"Renderers (Node + React)","text":"2 (same model)"},{"label":"Self-contained","text":"100% (HTML + source)"}]},{"type":"spec","spec":[{"label":"For humans","text":"A navigable, searchable, themeable page, not a wall of Markdown."},{"label":"For agents","text":"The full model is embedded as `#dossier-model`; read one block, no scraping."},{"label":"For your wiki","text":"One portable file, link it, email it, or `\u003ciframe\u003e` it anywhere."}]}]},{"id":"structure-prose","title":"Structure \u0026 prose","parts":[{"type":"prose","markdown":"Sections nest other blocks; text fields take inline markdown."},{"type":"prose","markdown":"This is a **prose** block with `inline code`, a [link](https://github.com/kylebegeman/dossier), and a footnote.[^island]\n\n- Bullet lists render as real lists.\n- Inline markdown still works inside list items.\n\n1. Numbered lists work too.\n2. Paragraph rhythm stays intact.\n\nA second paragraph to show vertical rhythm."},{"type":"prose","markdown":"### How it's built"},{"type":"prose","markdown":"1. **Author** An agent writes a `*.dossier.json`.\n2. **Validate** `dossier build` validates and lints.\n3. **Render** JSON becomes HTML + the data island + Markdown.\n4. **Use** Read, decide, export, embed."},{"type":"prose","markdown":"### Roadmap"},{"type":"timeline","events":[{"at":"0.1","title":"Generator, catalog, features","tone":"teal"},{"at":"0.2","title":"MCP, plugins, new blocks","tone":"teal"},{"at":"0.5","title":"Process workflows, publishing, embed output, and live editor hooks","tone":"teal"},{"at":"0.6","title":"Repo packs, workspaces, release evidence, state packets, citations, and package-manager distribution","tone":"teal"},{"at":"0.7","title":"Leaner reader shell, one export contract, fewer block families, and a new default theme","tone":"violet"}]},{"type":"callout","title":"Composable.","tone":"note","markdown":"Sections, two-col, and tabs nest other blocks."},{"type":"callout","title":"Self-contained.","tone":"risk","markdown":"No external fonts, scripts, or images. Works offline."}]},{"id":"reference-blocks","title":"Reference blocks","parts":[{"type":"prose","markdown":"### Code"},{"type":"code","title":"render.ts","lang":"ts","code":"import { renderDossier } from \"@kylebegeman/dossier-react\";\nconst { html, md } = await renderDossier(model); // one self-contained file"},{"type":"prose","markdown":"### Shell"},{"type":"code","lang":"bash","code":"dossier init my-doc\ndossier build my-doc.dossier.json \u0026\u0026 open my-doc.html"},{"type":"diagram","title":"Pipeline","source":"digraph { rankdir=LR; bgcolor=\"transparent\"; node [shape=box style=rounded fontname=\"Inter\" fontsize=12 color=\"#c81e4a\" fontcolor=\"#1a1822\"]; edge [color=\"#8b8698\"]; \"doc.json\" -\u003e \"build\" -\u003e \"doc.html\"; \"build\" -\u003e \"doc.md\"; }","format":"dot"},{"type":"diagram","title":"The loop (Mermaid)","source":"flowchart LR\n  A([Ask your AI]) --\u003e B[Dossier JSON]\n  B --\u003e C{Render}\n  C --\u003e D[Self-contained HTML]\n  C --\u003e E[Word / PDF]\n  D --\u003e F([You triage]) --\u003e G([Agent implements])","format":"mermaid"},{"type":"prose","markdown":"### Exports"},{"type":"table","columns":["Format","Use"],"rows":[["HTML","The page humans open"],["Markdown","Plain-text copy"],["JSON / digest","What agents read"]]},{"type":"prose","markdown":"### References"},{"type":"table","columns":["Source","Signal","Use"],"rows":[["[Repository](https://github.com/kylebegeman/dossier)","Source + docs","Clone, star, contribute"]]},{"type":"prose","markdown":"### FAQ"},{"type":"prose","markdown":"**Does it replace my docs site?**\n\nNo, it's a companion: linkable, embeddable, exportable artifacts."}]},{"id":"media-data","title":"Media \u0026 data","parts":[{"type":"chart","title":"Adoption (bar)","variant":"bar","data":[{"label":"Q1","value":12},{"label":"Q2","value":19},{"label":"Q3","value":30},{"label":"Q4","value":42}]},{"type":"chart","title":"Trend (area)","variant":"area","data":[{"label":"Jan","value":4},{"label":"Feb","value":9},{"label":"Mar","value":7},{"label":"Apr","value":15}]},{"type":"code","lang":"latex","code":"E = mc^2 \\quad\\text{and}\\quad \\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}"},{"type":"figure","src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='90'%3E%3Crect width='320' height='90' rx='10' fill='%23c81e4a'/%3E%3Ctext x='160' y='54' font-family='Inter,sans-serif' font-size='22' fill='white' text-anchor='middle'%3EFigure block%3C/text%3E%3C/svg%3E","caption":"Images are inlined as data URIs at build time."}]},{"id":"decisions-trust","title":"Decisions \u0026 trust","parts":[{"type":"prose","markdown":"### Where it lives"},{"type":"table","columns":["Option","Cross-project","Public later"],"rows":[["Standalone repo (recommended)","Yes","One-line flip"],["Inside a monorepo","No","Hard"]]},{"type":"prose","markdown":"### Risks"},{"type":"table","columns":["Risk","Likelihood","Impact","Mitigation"],"rows":[["Scope creep","medium","medium","Freeze the schema, then build."]]},{"type":"prose","markdown":"### Try it"},{"type":"table","columns":["Item","Owner","Status","Note"],"rows":[["Install: npm i -g github:kylebegeman/dossier","","todo",""],["Run: dossier init demo \u0026\u0026 dossier build demo.dossier.json","","todo",""]]},{"type":"prose","markdown":"### Assumptions and open questions"},{"type":"table","columns":["Statement","Kind","Status"],"rows":[["One file beats a folder of assets for sharing.","assumption","verified"]]},{"type":"prose","markdown":"### Provenance"},{"type":"spec","spec":[{"label":"Generated by","text":"Dossier"},{"label":"Model","text":"n/a"},{"label":"Date","text":"2026-06-26"},{"label":"Confidence","text":"high"},{"label":"Tools","text":"shiki, graphviz, katex"},{"label":"Notes","text":"Rendered entirely at build time; nothing loads at view time."}]}]},{"id":"interactive-review-board-try-it","title":"Interactive review board, try it","board":{"layout":"rows","items":[{"id":"navigation","title":"Navigation","summary":"Sticky TOC + scroll-spy, search, and a command palette (Cmd/Ctrl-K).","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Reader\n\n**Impact** High"},{"label":"Notes","markdown":"Expand a row, tick the checkbox, leave a note, then **Export JSON**, that decisions packet is what an agent reads back."},{"label":"Details","markdown":"**Shortcut** Cmd/Ctrl-K"}]},{"id":"themeable","title":"Themeable","summary":"Light + dark, per-project token overrides, fully responsive to mobile.","facets":[{"label":"Status","markdown":"**Status** shipped\n\n**Category** Design\n\n**Impact** High"},{"label":"Notes","markdown":"The whole design is a small token system; one accent, near-monochrome neutrals."}]}]}},{"id":"process-board-implementation-loop","title":"Process board, implementation loop","board":{"layout":"rows","items":[{"id":"extract-work-item","title":"Extract a work item","summary":"Use verdicts and notes to steer actual implementation work.","effort":"S","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Category** Implementation\n\n**Owner** agent\n\n**Priority** P1\n\n**Impact** Medium"},{"label":"Notes","markdown":"Pick a verdict, leave notes, then export process JSON. An agent reads that packet with `dossier_read_process` and acts on the accepted work.\n\n```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n@@ -1 +1 @@\n-// plan-only surface\n+// process-aware surface\n```"},{"label":"Details","markdown":"**Packet** `dossier.process/v1`\n\n**Verdicts** approve, revise, skip, defer, split, retry, block"},{"label":"Files","markdown":"- `src/generate.mjs`\n- `src/runtime/runtime.mjs`"},{"label":"Verification","markdown":"- npm test"}]}]}},{"id":"patch-set-proposed-edits","title":"Patch set, proposed edits","parts":[{"type":"prose","markdown":"Implementation dossiers can carry proposed patches grouped by intent, files, work items, risk, and verification."}],"board":{"layout":"rows","items":[{"id":"patch-process-aware-surface","title":"Patch process-aware surface","summary":"Move the artifact from a plan-only surface to a process-aware one.","facets":[{"label":"Status","markdown":"**Status** proposed\n\n**Operation** modify\n\n**Risk** low"},{"label":"Files","markdown":"- `src/generate.mjs`"},{"label":"Verification","markdown":"- npm test"},{"label":"Work items","markdown":"- `extract-work-item`"},{"label":"Diff","markdown":"```diff\ndiff --git a/src/generate.mjs b/src/generate.mjs\n--- a/src/generate.mjs\n+++ b/src/generate.mjs\n@@ -1,2 +1,2 @@\n-// plan-only surface\n+// process-aware surface\n```"}]}]}},{"id":"code-editor-editable-snippet","title":"Code editor, editable snippet","parts":[{"type":"callout","title":"Editor","markdown":"Small edits can round-trip as `dossier.edits/v1` without turning the artifact into a full IDE.\n\nTarget: `src/runtime/runtime.mjs`\n\nWork items: extract-work-item"},{"type":"code","title":"runtime.mjs","lang":"js","code":"function exportEdits(state) {\n  return { schema: \"dossier.edits/v1\", edits: state.editors || {} };\n}"}]},{"id":"diff-view-file-first-review","title":"Diff view, file-first review","parts":[{"type":"prose","markdown":"A standalone unified diff renders with file summaries, hunks, additions, and deletions."},{"type":"code","lang":"diff","code":"diff --git a/src/runtime/runtime.mjs b/src/runtime/runtime.mjs\n--- a/src/runtime/runtime.mjs\n+++ b/src/runtime/runtime.mjs\n@@ -1,3 +1,4 @@\n const state = loadState();\n+state.process = state.process || {};\n \n exportProcess(state);"}]},{"id":"process-closeout-blocks","title":"Process closeout blocks","parts":[{"type":"prose","markdown":"The same artifact now covers implementation, review, integration, release, and incident loops."},{"type":"prose","markdown":"### Verification run"}],"board":{"layout":"rows","items":[{"id":"test-suite","title":"Test suite","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Command** `npm test`\n\n**Expected** All tests pass.\n\n**Actual** 17 passing."}]}]}},{"id":"evidence-log","title":"Evidence log","board":{"layout":"rows","items":[{"id":"build-log","title":"Build log","facets":[{"label":"Status","markdown":"**Kind** command\n\n**Trust** high\n\n**Source** `local`"},{"label":"Notes","markdown":"`npm test` completed successfully."}]}]}},{"id":"trust-report","title":"Trust report","parts":[{"type":"prose","markdown":"A provenance layer ties claims to source ids and verification evidence for agent readback."},{"type":"prose","markdown":"### Sources"},{"type":"table","columns":["Source","Kind","Trust","Summary"],"rows":[["npm test","command","high","Local test command recorded in the verification run."],["[Public manual QA guide](../docs/product/public-manual-qa.md)","doc","medium","Manual browser, live serve, MCP, export, and release gate checklist."]]}],"board":{"summary":true,"items":[{"id":"tests-pass","title":"Automated tests pass for the process block family.","status":"verified","facets":[{"label":"Evidence","markdown":"- test-suite\n- Sources: npm-test"},{"label":"Note","markdown":"**0.6 confidence** high\n\nAgents can read this with `dossier_read_trust`."}]},{"id":"manual-qa-ready","title":"The feature set is ready for public manual QA.","status":"likely","facets":[{"label":"Evidence","markdown":"- build-log\n- Sources: manual-qa"},{"label":"Note","markdown":"**0.6 confidence** medium\n\nManual QA still needs a human browser pass before broad announcement."}]}]}},{"id":"trust-report-continued","title":"Trust report, continued","parts":[{"type":"prose","markdown":"### Apply gate"},{"type":"callout","title":"Apply gate","markdown":"Approve, revise, skip, defer, split, retry, or block this process packet."},{"type":"prose","markdown":"### Review findings"}],"board":{"layout":"rows","items":[{"id":"missing-evidence","title":"Missing evidence link","facets":[{"label":"Status","markdown":"**Severity** medium"},{"label":"Notes","markdown":"Attach the verification run to the work item before closeout."},{"label":"Recommendation","markdown":"Link the finding to a `verification-run` id."},{"label":"Files","markdown":"- `src/starters/review.dossier.json`"}]}]}},{"id":"review-thread","title":"Review thread","board":{"layout":"rows","items":[{"id":"thread-agent-access","title":"Agent access","facets":[{"label":"Notes","markdown":"**Kyle** Make the packet readable without DOM scraping.\n\n**Agent** Use MCP readback and versioned export packets."}]}]}},{"id":"integration-cycles","title":"Integration cycles","board":{"layout":"rows","items":[{"id":"producer-consumer","title":"Producer to consumer","summary":"Consumer project accepted the packet shape.","facets":[{"label":"Status","markdown":"**Status** done"}]}]}},{"id":"integration-report","title":"Integration report","parts":[{"type":"spec","spec":[{"label":"Producer","text":"dossier"},{"label":"Consumer","text":"lumen"},{"label":"Status","text":"accepted"},{"label":"Version","text":"0.5.5"},{"label":"Next step","text":"Dogfood against a live dependency change."}]}],"board":{"layout":"rows","items":[{"id":"process-packets","title":"Process packets","summary":"Verdicts, releases, edits, and process state all export as structured packets."}]}},{"id":"integration-report-continued","title":"Integration report, continued","parts":[{"type":"prose","markdown":"### Upstream response"},{"type":"spec","spec":[{"label":"Upstream","text":"CodeMirror host adapter"},{"label":"Status","text":"accepted"},{"label":"Request","text":"Enhance \\`data-code-editor\\` hooks in the local serve runtime."},{"label":"Response","text":"\\`dossier serve\\` now loads CodeMirror 6 locally and keeps textarea-backed packet export/save-back intact."},{"label":"Next step","text":"Keep Monaco reserved for hosted Studio or Lumen integrations."}]},{"type":"prose","markdown":"### Release checklist"}],"board":{"layout":"rows","items":[{"id":"tests","title":"Tests pass","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- npm test"}]},{"id":"docs","title":"Docs regenerated","facets":[{"label":"Status","markdown":"**Status** passed\n\n**Required** yes"},{"label":"Evidence","markdown":"- README and public manual QA guide refreshed."}]}]}},{"id":"decision-log","title":"Decision log","board":{"layout":"rows","items":[{"id":"host-runtime","title":"Keep execution in host tools","summary":"Dossier records state and evidence while CLI, MCP, Lumen, or another host performs filesystem and Git work.","facets":[{"label":"Status","markdown":"**Owner** Kyle + Codex"}]}]}},{"id":"decision-log-continued","title":"Decision log, continued","parts":[{"type":"prose","markdown":"### Process receipt"},{"type":"spec","spec":[{"label":"Outcome","text":"functionality closeout ready for public manual QA"},{"label":"Owner","text":"Codex"},{"label":"Date","text":"2026-06-29"},{"label":"Changed files","text":"`src/generate.mjs`, `src/runtime/runtime.mjs`, `schema/packets/trust.schema.json`, `mcp/server.mjs`"},{"label":"Commands","text":"`npm test`"},{"label":"Follow-ups","text":"Run the public manual QA guide before broad announcement."}]}]},{"id":"glossary","title":"Glossary","parts":[{"type":"spec","spec":[{"label":"island","text":"The embedded `#dossier-model` JSON that is the source of truth for the page."}]}]},{"id":"notes","title":"Notes","parts":[{"type":"prose","markdown":"1. Reference a note inline with a bracketed caret id; it links here and back."}]},{"id":"citations","title":"Citations","parts":[{"type":"table","columns":["Citation","Authors","Source","Year","Note"],"rows":[["[Dossier README](https://github.com/kylebegeman/dossier)","Kyle Begeman","GitHub","2026","Canonical feature and workflow overview for the Dossier project."]]}]}]}</script><script>
 (() => {
   "use strict";
-  /* the reply line, its words, and whether it says anything, exactly as Go has them: testdata/replies.json holds both to the same cases */
   const parts = (c, s) => {
     const num = {}, can = {}, v = s.verdicts || {}, notes = s.notes || {}, groups = [];
     let open = 0;
@@ -486,7 +520,8 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
       noted.map(([n, t]) => "Note on " + c.noun + " " + n + ": " + t));
     return said.map((x) => (/[.!?]$/.test(x) ? x : x + ".")).join(" ") || "Nothing decided yet.";
   };
-  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty }; return; }
+  const themeMode = (saved, dark) => ["light", "dark"].includes(saved) ? saved : dark ? "dark" : "light";
+  if (typeof document === "undefined") { if (typeof module === "object") module.exports = { reply, words, empty, themeMode }; return; }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -497,27 +532,27 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
   const keys = Object.keys;
   let model = {};
   try { model = JSON.parse($("#dossier-model").textContent); } catch (e) {}
-  const slug = (model.meta && model.meta.slug) || "dossier";
-  const load = (k) => { try { return localStorage.getItem("dossier:" + slug + ":" + k); } catch (e) { return null; } };
-  const keep = (k, v) => { try { localStorage.setItem("dossier:" + slug + ":" + k, v); } catch (e) {} };
+  const slug = model.meta?.slug || "dossier";
+  const load = (k, shared) => { try { return localStorage.getItem("dossier:" + (shared ? "" : slug + ":") + k); } catch (e) { return null; } };
+  const keep = (k, v, shared) => { try { localStorage.setItem("dossier:" + (shared ? "" : slug + ":") + k, v); } catch (e) {} };
 
-  /* theme: auto, light, dark */
-  const themeBtn = $("[data-theme-toggle]"), modes = ["auto", "light", "dark"];
+  const themeBtn = $("[data-theme-toggle]");
   const applyTheme = (m) => {
-    if (!modes.includes(m)) m = "auto";
-    if (m === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", m);
+    document.documentElement.setAttribute("data-theme", m);
     if (themeBtn) {
+      themeBtn.hidden = false;
       themeBtn.setAttribute("data-mode", m);
-      themeBtn.setAttribute("aria-label", "Theme: " + m + (m === "auto" ? ", follows your system" : ""));
-      $(".th-label", themeBtn).textContent = m[0].toUpperCase() + m.slice(1);
-      $$("svg", themeBtn).forEach((svg) => { svg.hidden = !svg.classList.contains("th-" + m); });
+      themeBtn.setAttribute("aria-checked", m === "dark");
+      themeBtn.title = "Switch to " + (m === "dark" ? "light" : "dark") + " mode";
     }
-    keep("theme", m);
   };
-  applyTheme(load("theme"));
-  if (themeBtn) on("click", () => applyTheme(modes[(modes.indexOf(at(themeBtn, "data-mode")) + 1) % 3]), themeBtn);
+  applyTheme(themeMode(load("theme", true) || load("theme"), matchMedia("(prefers-color-scheme: dark)").matches));
+  if (themeBtn) on("click", () => {
+    const m = at(themeBtn, "data-mode") === "dark" ? "light" : "dark";
+    applyTheme(m);
+    keep("theme", m, true);
+  }, themeBtn);
 
-  /* decisions: the embedded model is the baseline, this device may go further */
   const pickBlock = $("#pick"), mode = pickBlock ? at(pickBlock, "data-mode") : "none", tone = {}, label = {}, num = {}, can = {};
   let defs = [];
   try { defs = JSON.parse(at(pickBlock, "data-verdicts")) || []; } catch (e) {}
@@ -594,7 +629,7 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
   };
   const decisionsJSON = () => {
     const d = detail(), some = (o) => (keys(o).length ? o : undefined);
-    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: (model.meta && model.meta.title) || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
+    return JSON.stringify({ schema: "dossier.decisions/v1", slug, title: model.meta?.title || "", kind: model.kind, path: d.path || undefined, picked: d.picked, verdicts: some(d.verdicts), notes: some(d.notes), reply: d.reply }, null, 2);
   };
   let noteTimer;
   on("click", (e) => {
@@ -617,8 +652,8 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
   });
   on("keydown", (e) => {
-    const t = e.target, b = t.closest && t.closest("[data-verdict]");
-    if (e.key === "/" && box && !(t.closest && t.closest("input,textarea,select,[contenteditable]"))) { e.preventDefault(); box.focus(); return; }
+    const t = e.target, b = t.closest?.("[data-verdict]");
+    if (e.key === "/" && box && !t.closest?.("input,textarea,select,[contenteditable]")) { e.preventDefault(); box.focus(); return; }
     if (!b) return;
     const group = $$("[data-verdict]", b.parentNode), dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (dir) {
@@ -635,9 +670,8 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
     else if (t.matches("input[data-choice]")) setPath(t.value);
   });
   on("input", (e) => { const t = e.target; if (t.matches("textarea[data-note]")) { clearTimeout(noteTimer); noteTimer = setTimeout(() => setNote(at(t, "data-note"), t.value), 300); } });
-  on("focusout", (e) => { const t = e.target; if (t.matches && t.matches("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
+  on("focusout", (e) => { const t = e.target; if (t.matches?.("textarea[data-note]")) { clearTimeout(noteTimer); setNote(at(t, "data-note"), t.value); } });
 
-  /* collapsing: remembered per item on this device */
   const details = $$("details.item[id]"), opened = {};
   let printing = false, beforePrint = null;
   try { JSON.parse(load("open") || "[]").forEach((id) => { opened[id] = true; }); } catch (e) {}
@@ -651,15 +685,14 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
       renderCollapse();
     }, d);
   });
-  on("beforeprint", () => { printing = true; beforePrint = details.map((d) => d.open); setAllOpen(true); applyView(); }, window);
-  on("afterprint", () => { if (beforePrint) details.forEach((d, i) => { d.open = beforePrint[i]; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
+  on("beforeprint", () => { printing = true; beforePrint = $$("details:is(.item,.row,.board-overview,.decision-panel)").map((d) => [d, d.open]); beforePrint.forEach(([d]) => { d.open = true; }); applyView(); }, window);
+  on("afterprint", () => { if (beforePrint) beforePrint.forEach(([d, open]) => { d.open = open; }); beforePrint = null; setTimeout(() => { printing = false; applyView(); }, 0); }, window);
   const openHash = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); if (t && t.tagName === "DETAILS") t.open = true; };
   openHash();
   on("hashchange", openHash, window);
   renderCollapse();
 
-  /* view: Hide decided and search together decide what shows; printing shows everything */
-  const box = $("[data-search]"), hl = window.CSS && CSS.highlights;
+  const box = $("[data-search]"), hl = window.CSS?.highlights;
   const fold = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const units = $$("details.item, .rows > *").map((el) => { const body = $(".item-body, .facets", el); return { el, text: fold(el.textContent), body: body ? fold(body.textContent) : "", n: +at(el, "data-num") }; });
   const sections = $$(".section").map((el) => ({ el, text: fold($$(":scope > :not(details.item, .rows, .hidden-row)", el).map((c) => c.textContent).join(" ")) }));
@@ -721,28 +754,44 @@ dossier build my-doc.dossier.json <span class="hl-o">&amp;&amp;</span> open my-d
     }, box);
   }
 
-  /* copy and toast */
   let toastTimer;
   const toast = (msg) => { const t = $("[data-toast]"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800); };
   const copy = (text, msg) => {
     const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); toast(msg); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), fallback); else fallback();
   };
 
-  /* contents: mark the section in view */
+  const nav = $(".toc"), navBtn = $("[data-contents-toggle]");
+  if (nav && navBtn) {
+    navBtn.hidden = false;
+    const compact = matchMedia("(max-width: 999px)");
+    const setNav = (yes) => { nav.toggleAttribute("data-collapsed", yes); navBtn.setAttribute("aria-expanded", !yes); };
+    setNav(compact.matches);
+    const panel = $(".decision-panel");
+    if (panel) panel.open = !compact.matches;
+    on("change", () => setNav(compact.matches), compact);
+    on("click", () => setNav(!nav.hasAttribute("data-collapsed")), navBtn);
+    on("click", (e) => { if (compact.matches && e.target.closest("a")) setNav(true); }, nav);
+  }
+
   const links = {};
   let active = null;
-  $$(".toc a[href^='#']").forEach((a) => { links[at(a, "href").slice(1)] = a; });
+  $$(".chapter-link").forEach((a) => { links[at(a, "href").slice(1)] = a; });
   const setActive = (id) => { if (id === active) return; if (links[active]) links[active].removeAttribute("aria-current"); active = id; if (links[id]) links[id].setAttribute("aria-current", "true"); };
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); }), { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
-    $$(".section[id], .item[id]").forEach((t) => io.observe(t));
-  }
+  const track = () => {
+    let current;
+    sections.forEach(({ el }) => { if (!el.hidden && (!current || el.getBoundingClientRect().top < innerHeight * .35)) current = el; });
+    if (current) setActive(current.id);
+  };
+  on("scroll", track, window);
+  on("resize", track, window);
+  on("load", track, window);
+  on("input", () => requestAnimationFrame(track), box);
+  track();
 
   render();
   announce();
 
-  /* embedded: keep the parent's frame as tall as the page */
   if (framed) {
     let lastHeight = -1;
     const postHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastHeight) { lastHeight = h; tell({ type: "dossier:height", height: h }); } };

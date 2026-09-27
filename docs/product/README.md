@@ -2,6 +2,7 @@
 
 Direction, plans, and QA for Dossier.
 
+- [Reader design](./reader-design.md): shared layout, themes, components, and verification.
 - [Dossier 0.7 rebuild plan](./rebuild/dossier-0-7-rebuild-plan.md): the decisions, milestones, and status.
 - [Rebuild handoff](./rebuild/handoff-2026-09-16.md): the state of the work and what was learned along the way.
 - [Manual QA](./rebuild/manual-qa-0-7.md): the checks a person runs before a release.

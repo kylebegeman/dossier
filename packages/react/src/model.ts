@@ -15,7 +15,7 @@ export interface Meta {
   title: string;
   slug: string;
   kicker?: string;
-  /** One word of the title set in the italic serif accent. */
+  /** Legacy title emphasis, accepted for compatibility. Titles now render without decorative emphasis. */
   emphasis?: string;
   lede?: string;
   updated?: string;

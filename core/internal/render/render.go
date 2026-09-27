@@ -44,7 +44,10 @@ const (
 func AssetSizes() (css, js int) { return len(tokensCSS), len(readerJS) }
 
 var md = goldmark.New(
-	goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.Typographer),
+	goldmark.WithExtensions(extension.Table, extension.Strikethrough,
+		extension.NewTypographer(extension.WithTypographicSubstitutions(extension.TypographicSubstitutions{
+			extension.EmDash: nil, extension.EnDash: nil,
+		}))),
 	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(codeRenderer{}, 100))),
 )
 
@@ -75,7 +78,6 @@ func Stylesheet() string { return tokensCSS }
 type Page struct {
 	Doc       *model.Document
 	Kind      kinds.Kind
-	TitleHTML string
 	Sections  []SectionView
 	Contents  []TocGroup
 	Facts     []Fact
@@ -118,6 +120,7 @@ type Page struct {
 
 // SectionView is one section with its parts rendered.
 type SectionView struct {
+	Number    int
 	ID        string
 	Title     string
 	Parts     []PartView
@@ -331,7 +334,6 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 	page.StyleHTML = "<style>\n" + style + "</style>"
 	page.ModelScriptHTML = "<script type=\"application/json\" id=\"dossier-model\">" + modelJSON + "</script>"
 	page.ReaderScriptHTML = "<script>\n" + readerJS + "</script>"
-	page.TitleHTML = titleHTML(doc.Meta.Title, doc.Meta.Emphasis)
 	studio := opts.Studio != nil
 	if studio {
 		page.StudioHTML = opts.Studio.Inject
@@ -372,8 +374,8 @@ func build(doc *model.Document, kind kinds.Kind, opts Options) (*Page, error) {
 		verdicts = doc.Decisions.Verdicts
 	}
 	var rows []rowCount
-	for _, s := range doc.Sections {
-		sv := SectionView{ID: s.ID, Title: s.Title}
+	for i, s := range doc.Sections {
+		sv := SectionView{Number: i + 1, ID: s.ID, Title: s.Title}
 		if studio {
 			sv.EditTitle = "/sections/" + s.ID + "/title"
 		}
@@ -867,20 +869,6 @@ func inline(src string) (string, error) {
 	return h, nil
 }
 
-// titleHTML wraps the emphasis word of the title in the italic accent.
-func titleHTML(title, emphasis string) string {
-	escaped := escape(title)
-	if emphasis == "" {
-		return escaped
-	}
-	word := escape(emphasis)
-	i := strings.Index(escaped, word)
-	if i < 0 {
-		return escaped
-	}
-	return escaped[:i] + "<em>" + word + "</em>" + escaped[i+len(word):]
-}
-
 func escape(s string) string {
 	r := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", `"`, "&quot;")
 	return r.Replace(s)
@@ -985,10 +973,7 @@ func facts(doc *model.Document, page *Page, kind kinds.Kind, rows []rowCount) []
 				}
 			}
 			if c > 0 {
-				tone := ""
-				if kind.Tone(kind.Group, value) == "risk" {
-					tone = "risk"
-				}
+				tone := kind.Tone(kind.Group, value)
 				out = append(out, Fact{Value: fmt.Sprint(c), Label: value, Tone: tone})
 			}
 		}

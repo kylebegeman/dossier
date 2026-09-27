@@ -12,15 +12,18 @@ templ document(p *Page) {
 			<title>{ p.Doc.Meta.Title }</title>
 			if p.Fonts {
 				<link rel="preconnect" href="https://fonts.googleapis.com"/>
-				<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap"/>
+				<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
 			}
 			@templ.Raw(p.StyleHTML)
 		</head>
-		<body>
+		<body data-kind={ p.Kind.ID }>
+			<a class="skip-link" href="#main">Skip to content</a>
+			@toolbar(p)
 			<div class="page">
 				@masthead(p)
-				@contentsNav(p)
-				<main class="main" id="main">
+				@readerRail(p)
+				<main class="main" id="main" tabindex="-1">
+					@readingTools(p)
 					<p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p>
 					for _, s := range p.Sections {
 						@section(p, s)
@@ -110,14 +113,17 @@ func updatedSuffix(p *Page) string {
 	return " · " + p.Doc.Meta.Updated
 }
 
-templ masthead(p *Page) {
-	<header class="masthead">
-		<div class="mast-top">
-			if p.Doc.Meta.Kicker != "" {
-				<p class="kicker" { edit(p.EditKicker)... }>{ p.Doc.Meta.Kicker }</p>
-			} else {
-				<span></span>
-			}
+templ toolbar(p *Page) {
+	<div class="toolbar">
+		<div class="toolbar-inner">
+			<a class="brand" href="#top" aria-label="Dossier, back to top">
+				<svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+				<span>Dossier</span>
+			</a>
+			<span class="document-kind">
+				@kindIcon(p.Kind.ID)
+				{ p.Kind.Title }
+			</span>
 			<div class="tools">
 				<label class="search">
 					<span class="sr">Search this document</span>
@@ -125,73 +131,181 @@ templ masthead(p *Page) {
 					<kbd aria-hidden="true">/</kbd>
 				</label>
 				<span class="hits" data-hits aria-live="polite"></span>
-				if p.Decides {
-					<button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button>
-				}
-				if p.HasArticles {
-					<button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button>
-				}
 				@themeToggle()
 			</div>
 		</div>
-		<h1 { edit(p.EditTitle)... }>@templ.Raw(p.TitleHTML)</h1>
-		if p.Doc.Meta.Lede != "" {
-			<p class="lede" { edit(p.EditLede)... }>{ p.Doc.Meta.Lede }</p>
-		}
-		if len(p.Facts) > 0 {
-			<div class="stats" aria-label="At a glance">
-				for _, f := range p.Facts {
-					<div class={ templ.KV("live", f.Live != ""), templ.KV("t-"+f.Tone, f.Tone != "") }>
-						if f.Live != "" {
-							<b data-live={ f.Live }>{ f.Value }</b>
-						} else {
-							<b>{ f.Value }</b>
+	</div>
+}
+
+templ readingTools(p *Page) {
+	<div class="reading-tools">
+		<span class="reading-label">The document <span>{ strconv.Itoa(len(p.Sections)) } sections</span></span>
+		<div class="reading-actions">
+			if p.Decides {
+				<button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button>
+			}
+			if p.HasArticles {
+				<button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button>
+			}
+		</div>
+	</div>
+}
+
+templ masthead(p *Page) {
+	<header class="masthead" id="top">
+		<div class="mast-top">
+			if p.Doc.Meta.Kicker != "" {
+				<p class="kicker" { edit(p.EditKicker)... }>{ p.Doc.Meta.Kicker }</p>
+			} else {
+				<p class="kicker">{ p.Kind.Title }</p>
+			}
+			if p.Doc.Meta.Updated != "" {
+				<span class="updated">Updated { p.Doc.Meta.Updated }</span>
+			}
+		</div>
+		<h1 { edit(p.EditTitle)... }>{ p.Doc.Meta.Title }</h1>
+		<div class="hero-bottom">
+			if p.Doc.Meta.Lede != "" {
+				<p class="lede" { edit(p.EditLede)... }>{ p.Doc.Meta.Lede }</p>
+			}
+			if len(p.Facts) > 0 {
+				<div class="stats" aria-label="At a glance">
+					for _, f := range p.Facts {
+						if f.Live == "" {
+							<div class={ templ.KV("t-"+f.Tone, f.Tone != "") }>
+								if len([]rune(f.Value)) > 3 {
+									<b class="fact-text">{ f.Value }</b>
+								} else {
+									<b>{ f.Value }</b>
+								}
+								<span>{ f.Label }</span>
+							</div>
 						}
-						if f.Live != "" {
-							<a href="#pick">{ f.Label }</a>
-						} else {
-							<span>{ f.Label }</span>
-						}
-					</div>
-				}
-			</div>
-		}
+					}
+				</div>
+			}
+		</div>
 	</header>
 }
 
 templ themeToggle() {
-	<button class="btn theme-toggle" type="button" data-theme-toggle data-mode="auto" aria-label="Theme: auto, follows your system">
-		<svg class="th-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5Z" fill="currentColor" stroke="none"></path></svg>
-		<svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg>
-		<svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg>
-		<span class="th-label">Auto</span>
+	<button class="btn theme-toggle" type="button" role="switch" data-theme-toggle aria-label="Dark mode" aria-checked="false" hidden>
+		<svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg>
+		<svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg>
 	</button>
 }
 
-templ contentsNav(p *Page) {
-	<nav class="toc" aria-label="Contents">
-		<ol>
-			for _, g := range p.Contents {
-				if g.ID != "" {
-					<li class="group"><a href={ templ.URL("#" + g.ID) }>{ g.Label }</a></li>
-				} else {
-					<li class="group">{ g.Label }</li>
-				}
-				for _, e := range g.Entries {
-					if e.Item {
-						<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) } { toneAttr(e.Tone)... }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span>{ e.Label }<span class="sr">{ e.Decided }</span><span class="pip" aria-hidden="true"></span></a></li>
-					} else {
-						<li><a href={ templ.URL("#" + e.ID) }><span class="n">–</span>{ e.Label }</a></li>
+templ kindIcon(kind string) {
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		switch kind {
+			case "brainstorm":
+				<path d="M9 18h6M10 21h4M8.5 15.5a6 6 0 1 1 7 0V18h-7v-2.5ZM12 3V1M4 5 2.5 3.5M20 5l1.5-1.5"></path>
+			case "plan":
+				<path d="M4 4h6v5H4zM8 10h7v5H8zM13 16h7v5h-7z"></path>
+			case "review":
+				<path d="M20 20l-4.5-4.5M7 9l2 2 4-4"></path><circle cx="10" cy="10" r="7"></circle>
+			case "release":
+				<path d="M12 18V4m-5 5 5-5 5 5M5 16v4h14v-4"></path>
+			case "incident":
+				<path d="M2 12h5l3-8 4 16 3-8h5"></path>
+			default:
+				<path d="M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h5"></path>
+		}
+	</svg>
+}
+
+func numberedLabel(n int) string {
+	if n < 10 {
+		return "0" + strconv.Itoa(n)
+	}
+	return strconv.Itoa(n)
+}
+
+func groupHasItems(g TocGroup) bool {
+	for _, e := range g.Entries {
+		if e.Item {
+			return true
+		}
+	}
+	return false
+}
+
+func decisionTotal(p *Page) int {
+	n := 0
+	for _, it := range p.Numbered {
+		if it.Decides {
+			n++
+		}
+	}
+	return n
+}
+
+func decisionCount(p *Page) int {
+	n := 0
+	for _, it := range p.Numbered {
+		if it.Picked || it.Verdict != "" {
+			n++
+		}
+	}
+	return n
+}
+
+templ readerRail(p *Page) {
+	<aside class="reader-rail" aria-label="Document navigation and decisions">
+		<nav class="toc" aria-label="Contents">
+			<div class="toc-heading"><span>On this page</span><button class="btn" type="button" data-contents-toggle aria-expanded="true" aria-controls="contents-list" hidden>Contents</button></div>
+			<div id="contents-list">
+				<ol class="chapters">
+					for i, s := range p.Sections {
+						<li><a class="chapter-link" href={ templ.URL("#" + s.ID) }><span class="n">{ numberedLabel(i + 1) }</span><span>{ s.Title }</span></a></li>
 					}
+				</ol>
+				if p.HasArticles {
+					<details class="item-directory">
+						<summary>
+							Browse { p.Kind.Item.Plural }
+							@chevron()
+						</summary>
+						<ol>
+							for _, g := range p.Contents {
+								if groupHasItems(g) {
+									<li class="group">{ g.Label }</li>
+									for _, e := range g.Entries {
+										if e.Item {
+											<li data-item={ e.ID } class={ templ.KV("picked", e.Picked) } { toneAttr(e.Tone)... }><a href={ templ.URL("#" + e.ID) }><span class="n">{ entryNumber(e) }</span><span>{ e.Label }</span><span class="sr">{ e.Decided }</span><span class="pip" aria-hidden="true"></span></a></li>
+										}
+									}
+								}
+							}
+						</ol>
+					</details>
 				}
-			}
-		</ol>
-	</nav>
+			</div>
+		</nav>
+		if p.Decides {
+			<details class="decision-panel" open>
+				<summary class="decision-heading">
+					<span>Your decisions</span><span class="decision-count"><b data-live="count">{ strconv.Itoa(decisionCount(p)) }</b> / { strconv.Itoa(decisionTotal(p)) }</span>
+					@chevron()
+				</summary>
+				if p.Choice != nil {
+					@documentChoice(p)
+				}
+				@decisionGuard(p)
+				<p class="decision-help">Decide as you read. Your reply brings it all together.</p>
+				<a class="reply-link" href="#pick">Review your reply <span aria-hidden="true">↗</span></a>
+			</details>
+		}
+	</aside>
+}
+
+templ chevron() {
+	<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 }
 
 templ section(p *Page, s SectionView) {
 	<section class="section" id={ s.ID }>
-		<h2 { edit(s.EditTitle)... }>{ s.Title }</h2>
+		<div class="section-heading"><span class="section-number">{ numberedLabel(s.Number) }</span><h2 { edit(s.EditTitle)... }>{ s.Title }</h2></div>
 		for _, part := range s.Parts {
 			@partView(part)
 		}
@@ -200,7 +314,13 @@ templ section(p *Page, s SectionView) {
 				@rowsBoard(s.Board)
 			} else {
 				if s.Board.Summary {
-					@summaryTable(p, s.Board)
+					<details class="board-overview">
+						<summary>
+							<span>At a glance</span><span class="overview-count">{ strconv.Itoa(len(s.Board.Items)) } { p.Kind.Item.Plural }</span>
+							@chevron()
+						</summary>
+						@summaryTable(p, s.Board)
+					</details>
 				}
 				for _, it := range s.Board.Items {
 					@itemArticle(it)
@@ -232,7 +352,12 @@ templ partView(part PartView) {
 		case "spec":
 			<div class="part spec">
 				for _, r := range part.Spec {
-					<div><b>{ r.Label }</b><span>@templ.Raw(r.Text)</span></div>
+					<div>
+						<b>{ r.Label }</b>
+						<span>
+							@templ.Raw(r.Text)
+						</span>
+					</div>
 				}
 			</div>
 		case "table":
@@ -249,7 +374,9 @@ templ partView(part PartView) {
 						for _, row := range part.Rows {
 							<tr>
 								for _, cell := range row {
-									<td>@templ.Raw(cell)</td>
+									<td>
+										@templ.Raw(cell)
+									</td>
 								}
 							</tr>
 						}
@@ -264,13 +391,19 @@ templ partView(part PartView) {
 				if part.Title != "" {
 					<div class="block-label"><span>{ part.Title }</span></div>
 				}
-				<pre class="hl"><code>@templ.Raw(part.HTML)</code></pre>
+				<pre class="hl">
+					<code>
+						@templ.Raw(part.HTML)
+					</code>
+				</pre>
 			</div>
 		case "figure":
 			<figure class="part figure">
 				<img src={ part.Src } alt={ part.Alt } loading="lazy"/>
 				if part.Caption != "" {
-					<figcaption class="legend">@templ.Raw(part.Caption)</figcaption>
+					<figcaption class="legend">
+						@templ.Raw(part.Caption)
+					</figcaption>
 				}
 			</figure>
 		case "diagram":
@@ -434,6 +567,18 @@ templ meter(value int, max int) {
 templ itemArticle(it ItemView) {
 	<details class={ "item", templ.KV("picked", it.Picked) } id={ it.ID } data-item={ it.ID } data-title={ it.Title } { itemAttrs(it)... }>
 		<summary class="item-head">
+			<div class="item-heading">
+				if it.Numbered {
+					<span class="item-number">{ numberedLabel(it.Number) }</span>
+				}
+				<div class="item-copy">
+					<h3 { edit(it.EditTitle)... }>{ it.Title }</h3>
+					if it.Summary != "" {
+						<p class="one-line" { edit(it.EditSummary)... }>{ it.Summary }</p>
+					}
+				</div>
+				@chevron()
+			</div>
 			<div class="item-meta">
 				for _, c := range it.Chips {
 					@chip(c)
@@ -470,16 +615,6 @@ templ itemArticle(it ItemView) {
 					</span>
 				}
 			</div>
-			<h3 { edit(it.EditTitle)... }>
-				<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-				if it.Numbered {
-					<span class="num">{ strconv.Itoa(it.Number) }</span>
-				}
-				{ it.Title }
-			</h3>
-			if it.Summary != "" {
-				<p class="one-line" { edit(it.EditSummary)... }>{ it.Summary }</p>
-			}
 		</summary>
 		<div class="item-body">
 			if it.Notes {
@@ -575,31 +710,9 @@ templ pick(p *Page) {
 	<section class="pick" id="pick" aria-labelledby="pick-title" data-mode={ p.Mode } data-verdicts={ p.VerdictsJSON } data-noun={ p.Kind.Item.Noun } data-plural={ p.Kind.Item.Plural } data-empty?={ p.Undecided }>
 		<div>
 			<h2 id="pick-title">Your reply</h2>
-			<p class="pick-lede">It fills in as you decide. When you’re done, copy it and paste it back to your agent.</p>
+			<p class="pick-lede">Your choices, ready to send. Copy this reply back to your agent when you’re done.</p>
 		</div>
-		if p.Choice != nil {
-			<fieldset class="choice" aria-labelledby="pick-question">
-				<div class="choice-head">
-					<b id="pick-question">{ p.Choice.Question }</b>
-					<button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear</button>
-				</div>
-				<div class="options">
-					for _, o := range p.Choice.Options {
-						<label>
-							<input type="radio" name="dossier-choice" value={ o.ID } data-choice data-label={ o.Label } checked?={ o.Checked }/>
-							<span><span class="opt">{ o.Label }</span>
-								if o.Summary != "" {
-									<span class="sum">{ o.Summary }</span>
-								}
-							</span>
-						</label>
-					}
-				</div>
-			</fieldset>
-		}
-		if p.Guard != nil {
-			<p class="guard" role="status" data-guard={ p.Guard.Choice } data-unless={ p.Guard.Unless } data-watch={ p.Guard.Watch } data-one={ p.Guard.One } data-many={ p.Guard.Many } hidden?={ p.Guard.Text == "" }>{ p.Guard.Text }</p>
-		}
+		@decisionGuard(p)
 		<div class="reply">
 			<div class="said example">
 				if p.ReplyExample != "" {
@@ -621,4 +734,34 @@ templ pick(p *Page) {
 			</div>
 		</div>
 	</section>
+}
+
+templ documentChoice(p *Page) {
+	if p.Choice != nil {
+		<fieldset class="choice" aria-labelledby="pick-question">
+			<div class="choice-head">
+				<b id="pick-question">{ p.Choice.Question }</b>
+				<button type="button" class="link-btn" aria-label="Clear the choice" data-choice-clear hidden?={ !p.Choice.Chosen }>Clear</button>
+			</div>
+			<div class="options">
+				for _, o := range p.Choice.Options {
+					<label>
+						<input type="radio" name="dossier-choice" value={ o.ID } data-choice data-label={ o.Label } checked?={ o.Checked }/>
+						<span>
+							<span class="opt">{ o.Label }</span>
+							if o.Summary != "" {
+								<span class="sum">{ o.Summary }</span>
+							}
+						</span>
+					</label>
+				}
+			</div>
+		</fieldset>
+	}
+}
+
+templ decisionGuard(p *Page) {
+	if p.Guard != nil {
+		<p class="guard" role="status" data-guard={ p.Guard.Choice } data-unless={ p.Guard.Unless } data-watch={ p.Guard.Watch } data-one={ p.Guard.One } data-many={ p.Guard.Many } hidden?={ p.Guard.Text == "" }>{ p.Guard.Text }</p>
+	}
 }

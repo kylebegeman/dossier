@@ -1,5 +1,5 @@
 /* Dossier studio. Injected by dossier serve; never part of an artifact. */
-.studio-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 70; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; width: max-content; max-width: calc(100vw - 32px); padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); box-shadow: 0 10px 30px rgba(20, 16, 24, 0.14); font-size: 12.5px; }
+.studio-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 70; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; width: max-content; max-width: calc(100vw - 32px); padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14); font-size: 12.5px; }
 .studio-bar .sep { width: 1px; height: 18px; background: var(--line); }
 .studio-bar .btn[disabled] { opacity: 0.45; cursor: default; }
 .studio-status { display: inline-flex; align-items: center; gap: 7px; padding: 0 8px; color: var(--muted); white-space: nowrap; }
@@ -23,7 +23,7 @@ html.studio-editing [data-edit]:hover { outline: 1px dashed var(--accent); }
 .studio-dialog.studio-small > div { grid-template-rows: auto auto auto; }
 .studio-pad { padding: 12px; }
 .studio-dialog.studio-small textarea.studio-input { height: auto; min-height: 96px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; }
-.section.studio-reordered > h2::after { content: "reordered"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; background: var(--violet-soft); color: var(--violet); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
+.section.studio-reordered h2::after { content: "reordered"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; background: var(--violet-soft); color: var(--violet); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
 .studio-editor { display: grid; gap: 8px; margin: 10px 0 14px; padding: 10px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--paper); max-width: var(--measure); }
 .studio-input { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14.5px; line-height: 1.5; }
 textarea.studio-input { min-height: 132px; resize: vertical; font-family: var(--font-mono); font-size: 13px; tab-size: 2; }
@@ -35,7 +35,7 @@ textarea.studio-input { min-height: 132px; resize: vertical; font-family: var(--
 .studio-move .btn { height: 26px; padding: 0 8px; }
 .rows > .row > summary .studio-move, .rows > div > .studio-move { align-self: center; }
 .studio-dialog { width: min(960px, calc(100vw - 32px)); height: min(88vh, 920px); padding: 0; border: 1px solid var(--line); border-radius: var(--r-l); background: var(--bg); color: var(--ink); }
-.studio-dialog::backdrop { background: rgba(20, 16, 24, 0.4); }
+.studio-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
 .studio-dialog > div { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
 .studio-dialog header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .studio-dialog header b { margin-right: auto; font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; }
