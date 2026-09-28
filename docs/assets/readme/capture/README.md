@@ -10,8 +10,8 @@ node docs/assets/readme/capture/capture.mjs
 It runs `make site` in `core`, captures each page in headless Chrome in light
 and dark, frames the captures, and writes lossless WebP and the deciding GIF
 back into `docs/assets/readme`, replacing nothing there until every capture
-has succeeded. Name sets to refresh only some of them: `hero`, `kinds`,
-`loop`, `decide`, `phones`, and `studio`. `--site DIR` uses a site already
+has succeeded. Name sets to refresh only some of them: `hero`, `explore`,
+`kinds`, `loop`, `decide`, `phones`, and `studio`. `--site DIR` uses a site already
 built, `--bin PATH` a binary already built for the studio set, and `--keep`
 leaves the raw captures in the printed work directory.
 

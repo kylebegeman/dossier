@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Dossier">
+  <rect width="64" height="64" rx="16" fill="#6545cd"/>
+  <g fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M25 13h19l10 10v29H25V13Z"/>
+    <path d="M44 13v12h10M16 21v32a6 6 0 0 0 6 6"/>
+  </g>
+</svg>

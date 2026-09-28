@@ -6,8 +6,8 @@
 // captures the pages in headless Chrome in light and dark, frames them, and
 // writes lossless WebP (cwebp) and GIF (ffmpeg) into --out, which is
 // docs/assets/readme unless given, replacing nothing there until every
-// capture has succeeded. Sets pick a subset: hero, kinds, loop, decide,
-// phones, studio. With --out anywhere else, it ends by comparing each image
+// capture has succeeded. Sets pick a subset: hero, explore, kinds, loop,
+// decide, phones, studio. With --out anywhere else, it ends by comparing each image
 // with the committed one: dimensions, and how many pixels differ.
 // The studio set builds the binary (or uses --bin) and serves a copy of the
 // review on a free port for the length of the capture. --keep leaves the
@@ -28,7 +28,7 @@ const repo = resolve(here, "../../../..");
 const core = join(repo, "core");
 const committed = resolve(here, "..");
 const schemes = ["light", "dark"];
-const sets = ["hero", "kinds", "loop", "decide", "phones", "studio"];
+const sets = ["hero", "explore", "kinds", "loop", "decide", "phones", "studio"];
 
 const args = process.argv.slice(2);
 const option = (name) => { const i = args.indexOf(name); return i < 0 ? undefined : args.splice(i, 2)[1]; };
@@ -63,20 +63,36 @@ const webp = (png, name) => {
 const views = {
   hero: [{ name: "hero", file: "booking-service.html", width: 1440, height: 900 }],
   kinds: [
-    { name: "kind-brainstorm", file: "booking-service.html", target: "#ideas", offset: 18 },
-    { name: "kind-plan", file: "offline-boarding-passes.html", target: "#sign", offset: 18 },
-    { name: "kind-review", file: "tide-aware-cancellations.html", target: "#findings", offset: 18 },
-    { name: "kind-release", file: "release-3-4-0.html", target: "#gates", offset: 18 },
+    { name: "kind-brainstorm", file: "booking-service.html", target: "#ideas", offset: 18, act: `[0, 2].forEach((i) => document.querySelectorAll('#ideas .item [data-pick]')[i].click())` },
+    { name: "kind-plan", file: "offline-boarding-passes.html", target: "#sign", offset: 18, act: `document.querySelector('#sign .item [data-verdict="go"]').click()` },
+    { name: "kind-review", file: "tide-aware-cancellations.html", target: "#findings", offset: 18, act: `const f = document.querySelectorAll('#findings .item'); f[0].querySelector('[data-verdict="fix"]').click(); f[1].querySelector('[data-verdict="later"]').click()` },
+    { name: "kind-release", file: "release-3-4-0.html", target: "#gates", offset: 18, act: `document.querySelector('#gates .item [data-verdict="waive"]').click()` },
     { name: "kind-incident", file: "car-deck-double-booking.html", target: "#timeline", offset: 18 },
     { name: "kind-brief", file: "checkout-abandonment.html", target: ".chart", offset: 40 },
   ],
 };
+
+// The example browser, on the review at tablet width, so the device frame
+// and the kind tabs both show.
+async function captureExplore(browser) {
+  for (const scheme of schemes) {
+    const tab = await browser.newPage({ width: 1440, height: 900, scheme });
+    await tab.fresh(page("explore.html") + "#review");
+    await tab.eval(`document.querySelector('[data-view="tablet"]').click()`);
+    // The frame's document is another file:// origin, so wait rather than watch it.
+    await sleep(1500);
+    const raw = await tab.shot(join(work, `raw-explore-${scheme}.png`));
+    await tab.close();
+    webp(await render(browser, work, `explore-${scheme}`, windowHTML({ image: raw, url: "kylebegeman.github.io/dossier/explore.html", width: 1040, scheme })), `explore-${scheme}.webp`);
+  }
+}
 
 async function capturePages(browser, list) {
   for (const scheme of schemes) {
     for (const v of list) {
       const tab = await browser.newPage({ width: v.width ?? 1280, height: v.height ?? 470, scheme });
       await tab.fresh(page(v.file));
+      if (v.act) { await tab.eval(v.act); await sleep(300); }
       if (v.target) {
         await tab.eval(`window.scrollTo(0, document.querySelector(${JSON.stringify(v.target)}).getBoundingClientRect().top + scrollY - ${v.offset})`);
         await sleep(500);
@@ -91,8 +107,8 @@ async function capturePages(browser, list) {
 
 // The loop graphic is drawn, not captured: model, build, decide, apply.
 const loopColors = {
-  light: { ink: "#201c22", muted: "#6b6270", card: "#ffffff", edge: "rgba(32,28,34,0.12)", chip: "#f5f2f6", chipInk: "#3b3440", accent: "#c81e4a", teal: "#08776e", violet: "#6a46d9", line: "#d9d2dc", shadow: "rgba(24,18,30,0.10)" },
-  dark: { ink: "#f3eff5", muted: "#a59dab", card: "#18151b", edge: "rgba(255,255,255,0.12)", chip: "#232027", chipInk: "#ddd6e2", accent: "#f47a9a", teal: "#5fd3c4", violet: "#b39cff", line: "#3a3540", shadow: "rgba(0,0,0,0.4)" },
+  light: { ink: "#222222", muted: "#626262", card: "#ffffff", edge: "rgba(0,0,0,0.1)", chip: "#f0f0f0", chipInk: "#333333", blue: "#2863aa", teal: "#08745a", violet: "#6545cd", coral: "#b03b44", line: "#d6d6d6", shadow: "rgba(0,0,0,0.1)" },
+  dark: { ink: "#f0f0f0", muted: "#a6a6a6", card: "#1b1b1b", edge: "rgba(255,255,255,0.1)", chip: "#262626", chipInk: "#e0e0e0", blue: "#8bbcff", teal: "#61dfb1", violet: "#bda6ff", coral: "#ff9595", line: "#3a3a3a", shadow: "rgba(0,0,0,0.45)" },
 };
 const icons = {
   model: (c) => `<svg viewBox="0 0 48 48" width="52" height="52"><rect x="9" y="5" width="30" height="38" rx="5" fill="none" stroke="${c}" stroke-width="3"/><path d="M19 17l-4 7 4 7M29 17l4 7-4 7" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
@@ -123,10 +139,10 @@ function loopHTML(scheme) {
     .back i { flex: 1; height: 0; border-top: 2px dashed ${c.line}; }
     .back span { white-space: nowrap; }
   </style><div id="frame"><div class="wrap"><div class="row">
-    ${station(1, "model", c.accent, "Write a model", "An agent fills in one JSON file.", "review.dossier.json")}${arrow}
+    ${station(1, "model", c.blue, "Write a model", "An agent fills in one JSON file.", "review.dossier.json")}${arrow}
     ${station(2, "build", c.teal, "Build the page", "One command renders one page.", "dossier build")}${arrow}
     ${station(3, "decide", c.violet, "Decide by number", "A person reads, then copies one reply.", "rework, fix 1, 2; later 4.")}${arrow}
-    ${station(4, "apply", c.accent, "Apply the reply", "The decisions go back into the model.", "dossier decisions apply")}
+    ${station(4, "apply", c.coral, "Apply the reply", "The decisions go back into the model.", "dossier decisions apply")}
   </div><div class="back"><i></i><span>then the agent does the work and builds the next page</span><i></i></div></div></div>`;
 }
 
@@ -134,55 +150,63 @@ async function captureLoop(browser) {
   for (const scheme of schemes) webp(await render(browser, work, `loop-${scheme}`, loopHTML(scheme), { width: 1500 }), `loop-${scheme}.webp`);
 }
 
-// Deciding a release, step by step: the gates table above Your reply, with
-// a cursor on the control that changed and a caption naming the step.
+// Deciding a release, step by step: the decisions card, the first two gates,
+// and Your reply stacked in one column, with a cursor on the control that
+// changed and a caption naming the step. The tablet layout puts all three at
+// one width; the card starts closed there, so the capture opens it.
 const decideSteps = [
   { label: "", act: null, target: null },
   { label: "Choose Ship", act: `document.querySelector('input[data-choice][value="ship"]').click()`, target: 'input[data-choice][value="ship"]' },
-  { label: "Waive gate 1", act: verdict("android-e2e", "waive"), target: 'select[data-verdict-row="android-e2e"]' },
-  { label: "Rerun gate 2", act: verdict("store-review", "rerun"), target: 'select[data-verdict-row="store-review"]' },
+  { label: "Waive gate 1", act: `document.querySelector('#android-e2e [data-verdict="waive"]').click()`, target: '#android-e2e [data-verdict="waive"]' },
+  { label: "Rerun gate 2", act: `document.querySelector('#store-review [data-verdict="rerun"]').click()`, target: '#store-review [data-verdict="rerun"]' },
 ];
 const holds = [1.8, 2.0, 2.0, 3.2];
-function verdict(id, value) {
-  return `(() => { const s = document.querySelector('select[data-verdict-row="${id}"]'); s.value = '${value}'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`;
-}
-const tableClip = `(() => { const t = document.querySelector('#gates table'); const r = t.querySelectorAll('tbody tr')[3]; const a = t.getBoundingClientRect(), b = r.getBoundingClientRect(); return { x: a.left + scrollX - 1, y: a.top + scrollY - 1, width: a.width + 2, height: b.bottom - a.top + 2 }; })()`;
+const decideClips = [
+  { name: "card", box: rect(".decision-panel", 1) },
+  { name: "gates", fade: true, box: `(() => { const a = document.getElementById('android-e2e').getBoundingClientRect(), b = document.getElementById('store-review').getBoundingClientRect(); return { x: a.left + scrollX - 1, y: a.top + scrollY - 1, width: a.width + 2, height: b.bottom - a.top + 2 }; })()` },
+  { name: "reply", box: rect("#pick", 1) },
+];
 const center = (selector) => `(() => { const e = document.querySelector(${JSON.stringify(selector)}); const b = e.getBoundingClientRect(); return { x: b.left + scrollX + b.width / 2, y: b.top + scrollY + b.height / 2 }; })()`;
 const decideTheme = {
-  light: { page: "#ffffff", bar: "#f5f3f6", edge: "rgba(32,28,34,0.14)", dot: "#dcd6df", muted: "#766e7c", pill: "#ebe7ed", body: "#ffffff", cap: "#201c22", capText: "#ffffff", shadow: "rgba(24,18,30,0.14)" },
-  dark: { page: "#0d1117", bar: "#1c1920", edge: "rgba(255,255,255,0.12)", dot: "#3b3641", muted: "#a59dab", pill: "#27232c", body: "#141216", cap: "#f3eff5", capText: "#141216", shadow: "rgba(0,0,0,0.5)" },
+  light: { page: "#ffffff", bar: "#f5f5f5", edge: "rgba(0,0,0,0.13)", dot: "#d6d6d6", muted: "#626262", pill: "#e8e8e8", body: "#f5f5f5", cap: "#222222", capText: "#ffffff", shadow: "rgba(0,0,0,0.14)" },
+  dark: { page: "#0d1117", bar: "#1b1b1b", edge: "rgba(255,255,255,0.11)", dot: "#3a3a3a", muted: "#a6a6a6", pill: "#262626", body: "#121212", cap: "#f0f0f0", capText: "#121212", shadow: "rgba(0,0,0,0.5)" },
 };
 const cursor = `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg"><path d="M2 2 L2 24 L8 18.5 L12 27.5 L16 25.8 L12 17 L20 17 Z" fill="#111" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
 
 async function captureDecide(browser) {
   const W = 800, pad = 22, gap = 18, bar = 34;
   for (const scheme of schemes) {
-    const tab = await browser.newPage({ width: 1120, height: 900, scheme });
+    const tab = await browser.newPage({ width: 900, height: 900, scheme });
     await tab.fresh(page("release-3-4-0.html"));
+    await tab.eval(`document.querySelector('.decision-panel').open = true`);
+    await sleep(300);
     const steps = [];
     for (const [i, step] of decideSteps.entries()) {
       if (step.act) { await tab.eval(step.act); await sleep(400); }
-      const table = await tab.eval(tableClip), pick = await tab.eval(rect("#pick", 1));
-      await tab.shot(join(work, `decide-table-${scheme}-${i}.png`), { clip: table });
-      await tab.shot(join(work, `decide-pick-${scheme}-${i}.png`), { clip: pick });
-      steps.push({ ...step, table, pick, at: step.target ? await tab.eval(center(step.target)) : null });
+      const clips = [];
+      for (const c of decideClips) {
+        const box = await tab.eval(c.box);
+        clips.push({ ...c, box, file: await tab.shot(join(work, `decide-${c.name}-${scheme}-${i}.png`), { clip: box }) });
+      }
+      steps.push({ ...step, clips, at: step.target ? await tab.eval(center(step.target)) : null });
     }
     await tab.close();
-    const t = decideTheme[scheme], s = (W - 2 * pad) / steps[0].table.width;
-    const tableH = Math.max(...steps.map((x) => x.table.height)) * s;
-    const pickH = Math.max(...steps.map((x) => x.pick.height)) * s;
-    const H = bar + pad + tableH + gap + pickH + pad;
+    const t = decideTheme[scheme], s = (W - 2 * pad) / steps[0].clips[0].box.width;
+    // Each region keeps the tallest height it reaches, so nothing jumps between frames.
+    const heights = decideClips.map((_, j) => Math.max(...steps.map((x) => x.clips[j].box.height)) * s);
+    const tops = heights.map((_, j) => bar + pad + heights.slice(0, j).reduce((sum, h) => sum + h + gap, 0));
+    const H = tops[tops.length - 1] + heights[heights.length - 1] + pad;
     const frames = [];
     for (const [i, step] of steps.entries()) {
       let pointer = "";
-      if (step.at) {
-        const inTable = step.at.y <= step.table.y + step.table.height;
-        const x = pad + (step.at.x - (inTable ? step.table.x : step.pick.x)) * s;
-        const y = bar + pad + (inTable ? (step.at.y - step.table.y) * s : tableH + gap + (step.at.y - step.pick.y) * s);
+      const j = step.at ? step.clips.findIndex((c) => step.at.y >= c.box.y && step.at.y <= c.box.y + c.box.height) : -1;
+      if (j >= 0) {
+        const x = pad + (step.at.x - step.clips[j].box.x) * s, y = tops[j] + (step.at.y - step.clips[j].box.y) * s;
         pointer = `<div style="position:absolute;left:${x - 2}px;top:${y - 3}px">${cursor}</div>`;
       }
       const caption = step.label ? `<div class="cap">${i}. ${step.label}</div>` : `<div class="cap idle">Decide by number</div>`;
       const fade = "-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent)";
+      const shots = step.clips.map((c, k) => `<img class="shot" style="top:${tops[k]}px;width:${c.box.width * s}px;${c.fade ? fade : ""}" src="file://${c.file}">`).join("\n        ");
       const html = `<!doctype html><meta charset="utf-8"><style>
         html, body { margin: 0; background: ${t.page}; }
         #frame { display: inline-block; padding: 26px 34px 34px; background: ${t.page}; }
@@ -190,12 +214,11 @@ async function captureDecide(browser) {
         .bar { position: relative; height: ${bar}px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: ${t.bar}; border-bottom: 1px solid ${t.edge}; box-sizing: border-box; }
         .dot { width: 11px; height: 11px; border-radius: 50%; background: ${t.dot}; }
         .url { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 5px 14px; border-radius: 6px; background: ${t.pill}; color: ${t.muted}; font: 500 11.5px/1 -apple-system, "SF Pro Text", system-ui, sans-serif; }
-        .shot { position: absolute; left: ${pad}px; width: ${W - 2 * pad}px; display: block; }
+        .shot { position: absolute; left: ${pad}px; display: block; }
         .cap { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); padding: 5px 11px; border-radius: 999px; background: ${t.cap}; color: ${t.capText}; font: 600 11.5px/1 -apple-system, "SF Pro Text", system-ui, sans-serif; }
         .cap.idle { background: transparent; color: ${t.muted}; font-weight: 500; }
       </style><div id="frame"><div class="win"><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="url">release-3-4-0.html</span>${caption}</div>
-        <img class="shot" style="top:${bar + pad}px;${fade}" src="file://${join(work, `decide-table-${scheme}-${i}.png`)}">
-        <img class="shot" style="top:${bar + pad + tableH + gap}px" src="file://${join(work, `decide-pick-${scheme}-${i}.png`)}">
+        ${shots}
         ${pointer}</div></div>`;
       const file = join(work, `decide-${scheme}-${i}.html`);
       writeFileSync(file, html);
@@ -233,7 +256,7 @@ async function capturePhones(browser) {
     await tab.shot(join(work, `${s.name}.png`));
     await tab.close();
   }
-  const ink = (name) => (name.endsWith("dark") ? "#f3eff5" : "#201c22");
+  const ink = (name) => (name.endsWith("dark") ? "#f0f0f0" : "#222222");
   const phone = (img) => `<div class="phone"><div class="status" style="background:${bg[img]};color:${ink(img)}"><span>9:41</span><i class="island"></i><span class="dots">&#9679;&#9679;&#9679;</span></div><img src="file://${join(work, img + ".png")}"></div>`;
   const html = `<!doctype html><meta charset="utf-8"><style>
     html, body { margin: 0; background: transparent; }
@@ -341,6 +364,7 @@ let browser;
 try {
   browser = await launch();
   if (chosen.includes("hero")) await capturePages(browser, views.hero);
+  if (chosen.includes("explore")) await captureExplore(browser);
   if (chosen.includes("kinds")) await capturePages(browser, views.kinds);
   if (chosen.includes("loop")) await captureLoop(browser);
   if (chosen.includes("decide")) await captureDecide(browser);

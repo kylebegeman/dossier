@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/readme/mark.svg" width="64" height="64" alt="">
+</p>
+
 <h1 align="center">Dossier</h1>
 
 <p align="center">
@@ -7,30 +11,42 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/kylebegeman/dossier/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kylebegeman/dossier?color=c81e4a&label=release"></a>
-  <a href="https://www.npmjs.com/package/@kylebegeman/dossier"><img alt="npm" src="https://img.shields.io/npm/v/%40kylebegeman%2Fdossier?color=c81e4a"></a>
+  <a href="https://github.com/kylebegeman/dossier/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kylebegeman/dossier?color=6545cd&label=release"></a>
+  <a href="https://www.npmjs.com/package/@kylebegeman/dossier"><img alt="npm" src="https://img.shields.io/npm/v/%40kylebegeman%2Fdossier?color=6545cd"></a>
   <a href="https://github.com/kylebegeman/dossier/actions/workflows/core.yml"><img alt="CI" src="https://github.com/kylebegeman/dossier/actions/workflows/core.yml/badge.svg"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-c81e4a"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-6545cd"></a>
 </p>
 
 <p align="center">
-  <a href="https://kylebegeman.github.io/dossier/"><b>Open the live examples</b></a>
+  <a href="https://kylebegeman.github.io/dossier/explore.html"><b>Browse the live examples</b></a>
   &nbsp;·&nbsp; <a href="#install">Install</a>
   &nbsp;·&nbsp; <a href="#how-it-works">How it works</a>
   &nbsp;·&nbsp; <a href="#hand-it-to-your-agent">For agents</a>
+  &nbsp;·&nbsp; <a href="#the-studio">Studio</a>
 </p>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.webp">
-  <img alt="A Dossier page titled Ten changes for a steadier booking service, with a contents rail grouped as minor and major, counts and an open choice in the masthead, and a diagram of the path from search to a paid booking." src="docs/assets/readme/hero-light.webp">
+  <img alt="A Dossier page titled Ten changes for a steadier booking service: the kind badge in the toolbar, the title and introduction, counts of minor and major ideas, the first section on a numbered axis, and a rail with the outline and the decisions panel." src="docs/assets/readme/hero-light.webp">
 </picture>
 
 ## Why Dossier
 
-- **A page people actually read.** Detail sits behind a fold, a contents rail follows along, and search, summary tables, and dark mode come built in.
-- **Decisions, not comment threads.** Readers pick ideas or rule on findings by number, and the page writes one reply line as they go.
-- **Made for agents.** The model travels inside the page as JSON, and one binary gives agents a CLI, an MCP server, and a skill.
+- **A page people actually read.** A masthead with the facts, sections on a numbered axis, detail behind a fold, and a rail that follows along. Search, summary tables, highlighted code, and dark mode come built in.
+- **Decisions, not comment threads.** Readers pick ideas or rule on findings by number. The page writes one reply line as they go and says it back in plain words.
+- **Made for agents.** The model travels inside the page as JSON, and one binary gives agents a CLI, an MCP server, and a skill that always agree.
 - **Nothing to host.** Every page is one file that makes no external requests, so it works as an attachment, a CI artifact, or a static site.
+
+## See it live
+
+Six kinds of document from one invented team, and every page is a real build. Switch kinds with the tabs or the number keys, preview at tablet and phone widths, and open any document on its own.
+
+<a href="https://kylebegeman.github.io/dossier/explore.html">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/explore-dark.webp">
+  <img alt="The example browser: tabs for the six kinds across the top, the review chosen, and the review page shown inside a tablet frame." src="docs/assets/readme/explore-light.webp">
+</picture>
+</a>
 
 ## How it works
 
@@ -101,10 +117,10 @@ That model builds as it stands. The full document is [core/examples/tide-aware-c
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/decide-dark.gif">
-  <img alt="Deciding a release: choosing Ship raises a warning about the failed Android gate, waiving that gate clears it, and Your reply fills in as ship, waive 1; rerun 2, with the same said in plain words." src="docs/assets/readme/decide-light.gif">
+  <img alt="Deciding a release: choosing Ship raises a warning about the failed Android gate, waiving that gate clears it and colors its dot, rerunning gate 2 colors the next, and Your reply fills in as ship, waive 1; rerun 2, with the same said in plain words." src="docs/assets/readme/decide-light.gif">
 </picture>
 
-Each kind decides its own way. As the reader decides, the page writes one reply line an agent can apply and says it back in plain words, so the reader knows what they are sending.
+Each kind decides its own way. As the reader decides, the page writes one reply line an agent can apply and says it back in plain words, so the reader knows what they are sending. Every numbered decision has a dot in the rail that takes its color once made, and kinds with verdicts get a Next undecided button that jumps to whatever is still open.
 
 | Kind | Items | The reader decides | A reply |
 | --- | --- | --- | --- |
@@ -117,7 +133,7 @@ Each kind decides its own way. As the reader decides, the page writes one reply 
 
 ## Six kinds, one team
 
-The showcase follows Tidewright, an invented four-person team running ferry tickets for the Wenlow Islands, starting where most agent work starts: in the code. Every page opens live.
+The showcase follows Tidewright, an invented four-person team running ferry tickets for the Wenlow Islands, starting where most agent work starts: in the code. Each kind has its own color, and every page below opens live.
 
 ### Brainstorm: [Ten changes for a steadier booking service](https://kylebegeman.github.io/dossier/booking-service.html)
 
@@ -126,18 +142,18 @@ Changes an agent found by reading the code, grouped by size and picked by number
 <a href="https://kylebegeman.github.io/dossier/booking-service.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-brainstorm-dark.webp">
-  <img alt="The brainstorm's ideas table: picks, sizes, effort, impact, and dependencies." src="docs/assets/readme/kind-brainstorm-light.webp">
+  <img alt="The brainstorm's ideas as a numbered list, each with its size, effort, and impact, a Pick button, and a note. Ideas 1 and 3 are picked, so their numbers and their dots in the rail have turned green." src="docs/assets/readme/kind-brainstorm-light.webp">
 </picture>
 </a>
 
 ### Plan: [Offline boarding passes](https://kylebegeman.github.io/dossier/offline-boarding-passes.html)
 
-Steps in phase boards with statuses and owners, a Mermaid diagram, and go, revise, or skip.
+Steps in phase boards with statuses and owners, a Mermaid diagram, and go, revise, or skip on each step.
 
 <a href="https://kylebegeman.github.io/dossier/offline-boarding-passes.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-plan-dark.webp">
-  <img alt="The plan's first phase: a table of steps with effort, status, owner, and dependencies, and the first step with go, revise, and skip." src="docs/assets/readme/kind-plan-light.webp">
+  <img alt="The plan's first phase: numbered steps with status, effort, and owner, and go, revise, and skip on each step, with go chosen on the first." src="docs/assets/readme/kind-plan-light.webp">
 </picture>
 </a>
 
@@ -148,7 +164,7 @@ Findings by severity, verdicts from the keyboard, and approve or rework.
 <a href="https://kylebegeman.github.io/dossier/tide-aware-cancellations.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-review-dark.webp">
-  <img alt="The review's findings table by severity, with a verdict menu on every finding." src="docs/assets/readme/kind-review-light.webp">
+  <img alt="The review's findings as a numbered list, each with its severity, area, and effort, and fix, later, and skip on every finding. The first is marked fix and the second later." src="docs/assets/readme/kind-review-light.webp">
 </picture>
 </a>
 
@@ -159,7 +175,7 @@ Gates to waive or rerun, and a warning when shipping over a failed one.
 <a href="https://kylebegeman.github.io/dossier/release-3-4-0.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-release-dark.webp">
-  <img alt="The release's gates table with failed, pending, passed, and skipped gates." src="docs/assets/readme/kind-release-light.webp">
+  <img alt="The release's gates as a numbered list with failed and pending status, and waive and rerun on each gate, with the failed gate waived." src="docs/assets/readme/kind-release-light.webp">
 </picture>
 </a>
 
@@ -170,7 +186,7 @@ Severity facts, a timeline, contributing factors, and follow-ups to commit to.
 <a href="https://kylebegeman.github.io/dossier/car-deck-double-booking.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/kind-incident-dark.webp">
-  <img alt="The incident's timeline of the night a car deck was sold twice, each event with its time and a colored dot." src="docs/assets/readme/kind-incident-light.webp">
+  <img alt="The incident's timeline of the night a car deck was sold twice, each event with its time in coral and a colored dot." src="docs/assets/readme/kind-incident-light.webp">
 </picture>
 </a>
 
@@ -187,14 +203,14 @@ Findings by confidence, a chart, and a figure, in a custom blue, with nothing to
 
 ## Everything on the page
 
-<img align="right" width="380" alt="Two phones: the incident page in light and a review finding in dark." src="docs/assets/readme/phones.webp">
+<img align="right" width="380" alt="Two phones: the incident page in light and an open review finding in dark." src="docs/assets/readme/phones.webp">
 
 - **Search.** Press `/`, and every hit is highlighted. Enter steps through them.
 - **Keyboard verdicts.** Arrow keys move and select, and Delete clears.
 - **Hide decided.** Narrow the page to what is still open.
 - **Parts that carry weight.** Tables, specs, callouts, highlighted code, figures, charts, timelines, and diagrams from DOT or Mermaid, laid out as SVG at build time.
 - **One brand color.** Set `meta.theme.accent`, and the light and dark variants stay readable.
-- **Phones, dark mode, and print.** The same file works everywhere.
+- **Phones, dark mode, and print.** The same file works everywhere. The theme follows the system until the reader chooses, and print keeps the decisions.
 - **The model inside.** Agents read the embedded JSON instead of scraping the page.
 - **Markdown too.** `dossier build --md` writes a copy for pull requests and wikis.
 
@@ -249,6 +265,7 @@ The skill and the MCP server come from one command catalog, so they always match
 | `dossier init KIND` | Write a starter model with the kind's sections and facets |
 | `dossier validate FILES...` | Check models against the schema, the structure rules, and their kind |
 | `dossier build FILES... [--md]` | Render pages, with Markdown when asked |
+| `dossier render MODEL` | Print one page, or its Markdown, instead of writing a file |
 | `dossier decisions apply MODEL --reply "..."` | Write a reader's reply into the model |
 | `dossier decisions read MODEL` | Print the decisions for the next step |
 | `dossier serve MODEL` | Run the studio |
@@ -271,10 +288,10 @@ The skill and the MCP server come from one command catalog, so they always match
 cd core
 make check       # generated-code drift, gofmt, vet, staticcheck, errcheck, race tests, a CGO-free build
 make dist-check  # cross-compile every target and dry-run the archives, npm packages, and Homebrew formula
-make site        # build the showcase into ../site
+make site        # build the showcase and the example browser into ../site
 ```
 
-Agents start at [core/AGENTS.md](core/AGENTS.md). Pushing a version tag runs [the release workflow](.github/workflows/release.yml).
+The README images come from [`docs/assets/readme/capture`](docs/assets/readme/capture), which captures the built showcase in headless Chrome. Agents start at [core/AGENTS.md](core/AGENTS.md). Pushing a version tag runs [the release workflow](.github/workflows/release.yml).
 
 ## License
 

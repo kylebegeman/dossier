@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { images, rect } from "./cdp.mjs";
 
 const palette = {
-  light: { bar: "#f5f3f6", edge: "rgba(32,28,34,0.13)", dot: "#dcd6df", muted: "#766e7c", pill: "#ebe7ed", shadow: "rgba(24,18,30,0.16)" },
-  dark: { bar: "#1c1920", edge: "rgba(255,255,255,0.11)", dot: "#3b3641", muted: "#a59dab", pill: "#27232c", shadow: "rgba(0,0,0,0.45)" },
+  light: { bar: "#f5f5f5", edge: "rgba(0,0,0,0.12)", dot: "#d6d6d6", muted: "#626262", pill: "#e8e8e8", shadow: "rgba(0,0,0,0.16)" },
+  dark: { bar: "#1b1b1b", edge: "rgba(255,255,255,0.11)", dot: "#3a3a3a", muted: "#a6a6a6", pill: "#262626", shadow: "rgba(0,0,0,0.5)" },
 };
 
 // windowHTML draws one capture inside a window whose address pill shows url.
