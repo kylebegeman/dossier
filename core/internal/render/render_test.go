@@ -822,41 +822,41 @@ func TestMarkdownWarnsWhenTheChoiceRunsPastAGuard(t *testing.T) {
 }
 
 // The actual CSS tokens must retain readable text on all shared surfaces.
+// Every color token is one light-dark() pair, so both palettes are checked.
 func TestThemeTokenContrast(t *testing.T) {
-	blocks := regexp.MustCompile(`(?s):root(?:\[data-theme="dark"\])? \{([^}]+)\}`).FindAllStringSubmatch(tokensCSS, -1)
-	themes := 0
-	for _, block := range blocks {
-		tokens := map[string]string{}
-		for _, pair := range regexp.MustCompile(`--([a-z0-9-]+):\s*(#[0-9a-f]{6})`).FindAllStringSubmatch(block[1], -1) {
-			tokens[pair[1]] = pair[2]
+	light, dark := map[string]string{}, map[string]string{}
+	for _, m := range regexp.MustCompile(`--([a-z0-9-]+):\s*light-dark\((#[0-9a-f]{6}),\s*(#[0-9a-f]{6})\)`).FindAllStringSubmatch(tokensCSS, -1) {
+		light[m[1]], dark[m[1]] = m[2], m[3]
+	}
+	if light["bg"] == "" || dark["bg"] == "" {
+		t.Fatal("tokens must declare the surfaces as light-dark() pairs")
+	}
+	for _, want := range []string{"color-scheme:light dark", `:root[data-theme="light"] { color-scheme:light }`, `:root[data-theme="dark"] { color-scheme:dark }`} {
+		if !strings.Contains(tokensCSS, want) {
+			t.Errorf("tokens lack %q", want)
 		}
-		if tokens["bg"] == "" {
-			continue
-		}
-		themes++
-		for _, name := range []string{"bg", "paper", "paper-2", "ink", "muted", "line", "line-soft"} {
-			hex := tokens[name]
+	}
+	for name, tokens := range map[string]map[string]string{"light": light, "dark": dark} {
+		for _, n := range []string{"bg", "paper", "paper-2", "ink", "muted", "line", "line-soft"} {
+			hex := tokens[n]
 			if len(hex) != 7 || hex[1:3] != hex[3:5] || hex[3:5] != hex[5:7] {
-				t.Errorf("%s must be a neutral gray, got %q", name, hex)
+				t.Errorf("%s %s must be a neutral gray, got %q", name, n, hex)
 			}
 		}
 		for _, ink := range []string{"ink", "muted", "accent", "teal", "violet", "coral", "blue", "amber"} {
 			for _, bg := range []string{"bg", "paper", "paper-2"} {
 				ratio, err := theme.Contrast(tokens[ink], tokens[bg])
 				if err != nil || ratio < theme.MinContrast {
-					t.Errorf("%s on %s: %.2f, %v", tokens[ink], tokens[bg], ratio, err)
+					t.Errorf("%s %s on %s: %.2f, %v", name, tokens[ink], tokens[bg], ratio, err)
 				}
 			}
 		}
 		for _, pair := range [][2]string{{"accent-ink", "accent"}, {"accent", "accent-soft"}, {"teal", "teal-soft"}, {"violet", "violet-soft"}, {"coral", "risk-soft"}, {"blue", "blue-soft"}, {"amber", "amber-soft"}} {
 			ratio, err := theme.Contrast(tokens[pair[0]], tokens[pair[1]])
 			if err != nil || ratio < theme.MinContrast {
-				t.Errorf("%s on %s: %.2f, %v", pair[0], pair[1], ratio, err)
+				t.Errorf("%s %s on %s: %.2f, %v", name, pair[0], pair[1], ratio, err)
 			}
 		}
-	}
-	if themes != 2 {
-		t.Fatalf("checked %d palettes, want light and dark", themes)
 	}
 }
 

@@ -1,410 +1,394 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="dossier"><title>Small fixes before the spring timetable</title><style>
-/* Neutral surfaces. State is expressed with fill and type, never accent stripes. */
+/* Dossier reader: neutral surfaces carry the reading; color names the kind, the state, and the action. */
 :root {
-  --bg:#f6f6f6; --paper:#ffffff; --paper-2:#eeeeee;
-  --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7;
-  --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff;
-  --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff;
-  --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9;
-  --font-body:"Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --frame:1240px; --gutter:clamp(20px, 4vw, 56px); --rail:276px; --measure:70ch;
-  --r-s:6px; --r:12px; --r-l:18px; --dur:140ms; --ease:cubic-bezier(.2,.7,.2,1);
-  color-scheme:light;
+  color-scheme:light dark;
+  --bg:light-dark(#f5f5f5,#121212); --paper:light-dark(#ffffff,#1b1b1b); --paper-2:light-dark(#eeeeee,#252525);
+  --ink:light-dark(#222222,#f0f0f0); --muted:light-dark(#626262,#a6a6a6); --line:light-dark(#dadada,#363636); --line-soft:light-dark(#e8e8e8,#2c2c2c);
+  --glass:light-dark(rgba(245,245,245,.84),rgba(18,18,18,.82)); --hover:light-dark(#f4f4f4,#262626); --shade:light-dark(rgba(0,0,0,.08),rgba(0,0,0,.6));
+  --accent:light-dark(#6545cd,#bda6ff); --accent-ink:light-dark(#ffffff,#241442); --accent-soft:light-dark(#ede7ff,#302744);
+  --teal:light-dark(#08745a,#61dfb1); --teal-soft:light-dark(#e4f5ed,#18342b); --violet:light-dark(#6947bd,#bda4ff); --violet-soft:light-dark(#f0ebff,#2f2647);
+  --coral:light-dark(#b03b44,#ff9595); --risk-soft:light-dark(#ffeded,#362527); --blue:light-dark(#2863aa,#8bbcff); --blue-soft:light-dark(#e7f0ff,#243146);
+  --amber:light-dark(#8c6112,#edc46b); --amber-soft:light-dark(#faf0d9,#362f20);
+  --font-body:"Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --frame:1240px; --gutter:clamp(20px,4vw,56px); --rail:272px; --measure:68ch; --num:48px; --axis:22px; --inset:12px;
+  --r-s:6px; --r:12px; --r-l:16px; --dur:140ms; --ease:cubic-bezier(.2,.7,.2,1);
 }
-@media (prefers-color-scheme:dark) {
-  :root:not([data-theme="light"]) {
-    --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
-    --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
-    --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
-    --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
-    --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg:#121212; --paper:#1b1b1b; --paper-2:#252525;
-  --ink:#ededed; --muted:#aaaaaa; --line:#3a3a3a; --line-soft:#303030;
-  --accent:#bda6ff; --accent-ink:#241442; --accent-soft:#302744;
-  --teal:#61dfb1; --teal-soft:#18342b; --violet:#bda4ff; --violet-soft:#2f2647;
-  --coral:#ff9595; --risk-soft:#362527; --blue:#8bbcff; --blue-soft:#243146; --amber:#edc46b; --amber-soft:#362f20;
-  color-scheme:dark;
-}
+:root[data-theme="light"] { color-scheme:light }
+:root[data-theme="dark"] { color-scheme:dark }
 
 body { --kind:var(--violet); --kind-soft:var(--violet-soft) }
 body[data-kind="plan"], body[data-kind="brief"] { --kind:var(--blue); --kind-soft:var(--blue-soft) }
 body[data-kind="review"] { --kind:var(--amber); --kind-soft:var(--amber-soft) }
 body[data-kind="release"] { --kind:var(--teal); --kind-soft:var(--teal-soft) }
 body[data-kind="incident"] { --kind:var(--coral); --kind-soft:var(--risk-soft) }
-.t-teal { --tone:var(--teal); --tone-soft:var(--teal-soft) }
-.t-violet { --tone:var(--violet); --tone-soft:var(--violet-soft) }
-.t-risk { --tone:var(--coral); --tone-soft:var(--risk-soft) }
+.t-teal, .dg .teal { --tone:var(--teal); --tone-soft:var(--teal-soft) }
+.t-violet, .dg .violet { --tone:var(--violet); --tone-soft:var(--violet-soft) }
+.t-risk, .dg .risk { --tone:var(--coral); --tone-soft:var(--risk-soft) }
+.dg .accent { --tone:var(--accent); --tone-soft:var(--accent-soft) }
+.picked, [data-tone="teal"] { --state:var(--teal); --state-soft:var(--teal-soft) }
+[data-tone="violet"] { --state:var(--violet); --state-soft:var(--violet-soft) }
+[data-tone="risk"] { --state:var(--coral); --state-soft:var(--risk-soft) }
+[data-tone="neutral"] { --state:var(--muted); --state-soft:var(--paper-2) }
 
-/* Foundations */
 * { box-sizing:border-box }
-html { scroll-behavior:smooth; scroll-padding-top:96px }
-body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.7 var(--font-body); -webkit-font-smoothing:antialiased; overflow-wrap:anywhere }
+html { scroll-behavior:smooth; scroll-padding-top:76px }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 var(--font-body); -webkit-font-smoothing:antialiased; overflow-wrap:anywhere }
 h1, h2, h3, p { margin:0 }
 h1, h2, h3 { font-style:normal; text-wrap:balance }
 p { text-wrap:pretty }
-a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:4px }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px }
 button, input, select, textarea { font:inherit; color:inherit }
 button { cursor:pointer }
 ::selection { background:var(--accent-soft); color:var(--ink) }
-:where(a, button, input, select, textarea, summary):focus-visible { outline:2px solid var(--ink); outline-offset:4px; border-radius:4px }
+:where(a, button, input, select, textarea, summary):focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:4px }
 [hidden] { display:none !important }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
 .skip-link { position:fixed; top:8px; left:8px; transform:translateY(-160%); z-index:100; padding:12px 20px; background:var(--ink); color:var(--bg); border-radius:var(--r-s) }
 .skip-link:focus { transform:none }
-code { font-family:var(--font-mono); font-size:.84em; background:var(--paper-2); border-radius:4px; padding:2px 5px; overflow-wrap:anywhere; box-decoration-break:clone; -webkit-box-decoration-break:clone }
-pre { margin:0; padding:22px; border-radius:var(--r); background:var(--paper); overflow-x:auto; font:12px/1.85 var(--font-mono); tab-size:4 }
+code { font-family:var(--font-mono); font-size:.86em; background:var(--paper-2); border-radius:4px; padding:1px 5px; overflow-wrap:anywhere; box-decoration-break:clone; -webkit-box-decoration-break:clone }
+pre { margin:0; padding:20px 22px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--paper); overflow-x:auto; font:12.5px/1.75 var(--font-mono); tab-size:4 }
 pre code { background:none; padding:0; white-space:pre; font-size:inherit }
-summary { cursor:pointer }
-summary::marker { content:"" }
+.hl-k, .hl-kd, .hl-kn, .hl-kp, .hl-kr, .hl-kt, .hl-ow { color:var(--violet) }
+.hl-s, .hl-s1, .hl-s2, .hl-sa, .hl-sb, .hl-sc, .hl-sd, .hl-se, .hl-sh, .hl-si, .hl-sx, .hl-sr, .hl-ss, .hl-dl { color:var(--teal) }
+.hl-m, .hl-mb, .hl-mf, .hl-mh, .hl-mi, .hl-mo, .hl-il, .hl-kc, .hl-no { color:var(--amber) }
+.hl-c, .hl-c1, .hl-ch, .hl-cm, .hl-cp, .hl-cpf, .hl-cs { color:var(--muted); font-style:italic }
+.hl-nf, .hl-fm, .hl-nc, .hl-nn, .hl-nt, .hl-na, .hl-nd, .hl-nb, .hl-bp { color:var(--blue) }
+.hl-o, .hl-p, .hl-gh, .hl-gu, .hl-gp { color:var(--muted) }
+.hl-gh, .hl-gu, .hl-gp, .hl-gs { font-weight:600 }
+.hl-gd { color:var(--coral); background:var(--risk-soft) }
+.hl-gi { color:var(--teal); background:var(--teal-soft) }
+.hl-ge { font-style:italic }
+.hl-err { text-decoration:underline wavy var(--coral) }
+summary { cursor:pointer; list-style:none }
 summary::-webkit-details-marker { display:none }
-.chev { width:16px; height:16px; flex:none; color:var(--muted); transition:transform var(--dur) }
+.chev { width:16px; height:16px; flex:none; color:var(--muted); transition:transform var(--dur) var(--ease) }
+.n, .num, .stats b, .item-number, .section-number, .dots, .timeline .at, .decision-count, .meter-label { font-variant-numeric:tabular-nums }
+.label { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted) }
 
-/* The toolbar stays small; document controls belong with the content. */
-.toolbar { position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line-soft) }
-.toolbar-inner { max-width:calc(var(--frame) + 2 * var(--gutter)); min-height:76px; padding:16px var(--gutter); margin:auto; display:flex; align-items:center; gap:16px }
-.brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-size:17px; font-weight:600; text-decoration:none; letter-spacing:-.4px }
-.brand svg { width:36px; height:36px; padding:7px; border-radius:11px; background:var(--accent); color:var(--accent-ink) }
-.document-kind { display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border-radius:7px; background:var(--kind-soft); color:var(--kind); font-size:12px; font-weight:600 }
-.document-kind svg { width:16px; height:16px }
-.tools { display:flex; align-items:center; gap:12px; margin-left:auto }
+.toolbar { position:sticky; top:0; z-index:20; background:var(--glass); -webkit-backdrop-filter:saturate(1.6) blur(14px); backdrop-filter:saturate(1.6) blur(14px); border-bottom:1px solid var(--line-soft) }
+.toolbar-inner { position:relative; max-width:calc(var(--frame) + 2 * var(--gutter)); min-height:56px; padding:8px var(--gutter); margin:auto; display:flex; align-items:center; gap:14px }
+.brand { display:inline-flex; align-items:center; gap:9px; color:var(--ink); font-size:15px; font-weight:650; text-decoration:none; letter-spacing:-.02em }
+.brand svg { width:28px; height:28px; padding:5px; border-radius:8px; background:var(--accent); color:var(--accent-ink) }
+.document-kind { display:inline-flex; align-items:center; gap:6px; padding:4px 9px 4px 7px; border-radius:6px; background:var(--kind-soft); color:var(--kind); font-size:12px; font-weight:600 }
+.document-kind svg { width:15px; height:15px }
+.tools { display:flex; align-items:center; gap:10px; margin-left:auto }
 .search { position:relative; display:flex; align-items:center }
-.search input { width:200px; height:38px; padding:0 36px 0 14px; background:var(--paper); border:1px solid var(--line-soft); border-radius:8px; font-size:13px }
+.search input { width:220px; height:34px; padding:0 34px 0 12px; background:var(--paper); border:1px solid var(--line); border-radius:8px; font-size:13px }
 .search input::placeholder { color:var(--muted) }
-.search kbd { position:absolute; right:12px; font:12px var(--font-mono); color:var(--muted) }
+.search kbd { position:absolute; right:8px; padding:1px 6px; border:1px solid var(--line); border-radius:4px; font:11px var(--font-mono); color:var(--muted) }
 .search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display:none }
 .hits { font-size:12px; color:var(--muted); white-space:nowrap }
 .hits:empty { display:none }
 ::highlight(dossier-hit) { background:var(--accent-soft); color:var(--ink) }
-::highlight(dossier-now) { background:var(--ink); color:var(--bg) }
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:36px; padding:0 12px; border:1px solid var(--line); border-radius:7px; background:transparent; color:var(--ink); font-size:12px; font-weight:500; line-height:1.3; white-space:nowrap; transition:background var(--dur) }
-.btn:hover { background:var(--paper-2) }
-.btn[aria-pressed="true"] { background:var(--paper-2); color:var(--ink) }
+::highlight(dossier-now) { background:var(--accent); color:var(--accent-ink) }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:34px; padding:0 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--ink); font-size:12.5px; font-weight:500; line-height:1.3; white-space:nowrap; transition:background var(--dur),color var(--dur) }
+.btn:hover, .btn[aria-pressed="true"] { background:var(--paper-2) }
 .btn svg { width:16px; height:16px }
-.theme-toggle { position:relative; isolation:isolate; gap:18px; width:74px; padding:0; border:0; border-radius:24px; background:var(--paper-2); color:var(--muted) }
-.theme-toggle::before { content:""; position:absolute; z-index:-1; inset:3px auto 3px 3px; width:34px; border-radius:50%; background:var(--paper); box-shadow:0 1px 4px #0002; transition:transform var(--dur) var(--ease) }
-.theme-toggle[data-mode="dark"]::before { transform:translateX(34px) }
+.btn.solid { background:var(--accent); color:var(--accent-ink); border-color:transparent; padding:0 16px; min-height:38px; font-weight:600 }
+.btn.solid:hover { opacity:.88; background:var(--accent) }
+.link-btn { padding:4px 0; border:0; background:none; color:var(--muted); font-size:12.5px; text-decoration:underline; text-underline-offset:3px }
+.link-btn:hover { color:var(--ink) }
+.theme-toggle { position:relative; isolation:isolate; gap:14px; width:66px; padding:0; border:0; border-radius:20px; background:var(--paper-2); color:var(--muted) }
+.theme-toggle::before { content:""; position:absolute; z-index:-1; inset:3px auto 3px 3px; width:28px; border-radius:50%; background:var(--paper); box-shadow:0 1px 3px var(--shade); transition:transform var(--dur) var(--ease) }
+.theme-toggle[data-mode="dark"]::before { transform:translateX(32px) }
 .theme-toggle[data-mode="light"] .th-light { color:var(--amber) }
 .theme-toggle[data-mode="dark"] .th-dark { color:var(--accent) }
-.btn.solid { background:var(--accent); color:var(--accent-ink); border-color:transparent; padding:0 18px; min-height:40px }
-.btn.solid:hover { opacity:.85 }
-.link-btn { padding:4px 0; border:0; background:none; color:var(--muted); font-size:12px; text-decoration:underline; text-underline-offset:4px }
-.link-btn:hover { color:var(--ink) }
-.check { appearance:none; -webkit-appearance:none; width:18px; height:18px; margin:0; border:1px solid var(--muted); border-radius:5px; background:var(--paper); display:inline-grid; place-content:center; cursor:pointer; vertical-align:-4px }
-.check::before { content:""; width:10px; height:10px; transform:scale(0); background:var(--accent-ink); clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%) }
-.check:checked { background:var(--accent); border-color:var(--accent) }
-.check:checked::before { transform:scale(1) }
+.check { width:18px; height:18px; margin:0; accent-color:var(--accent); cursor:pointer; vertical-align:-4px }
 
-/* A wide opening, then a reading column and a compact right rail. */
-.page { max-width:calc(var(--frame) + 2 * var(--gutter)); padding:0 var(--gutter); margin:auto; display:grid; grid-template-columns:minmax(0,1fr) var(--rail); gap:0 clamp(40px,6vw,88px) }
-.masthead { grid-column:1 / -1; padding:64px 0 44px; margin-bottom:36px; border-bottom:1px solid var(--line); scroll-margin-top:16px }
-.mast-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:28px }
-.kicker { font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.055em; text-transform:uppercase }
+.page { max-width:calc(var(--frame) + 2 * var(--gutter)); padding:0 var(--gutter); margin:auto; display:grid; grid-template-columns:minmax(0,1fr) var(--rail); column-gap:clamp(48px,6vw,96px) }
+.masthead { grid-column:1 / -1; padding:56px 0 40px; border-bottom:1px solid var(--line); scroll-margin-top:16px }
+.mast-top { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 16px; margin-bottom:26px }
+.kicker { font-size:12px; font-weight:600; color:var(--kind); letter-spacing:.06em; text-transform:uppercase }
 .updated { color:var(--muted); font-size:12px }
-.masthead h1 { max-width:23ch; font-size:clamp(38px,4.8vw,66px); line-height:1.06; font-weight:550; letter-spacing:-.047em }
-.hero-bottom { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr); gap:48px; margin-top:32px; align-items:start }
-.hero-bottom:not(:has(.lede)) { display:block }
-.hero-bottom:not(:has(.lede)) .stats { justify-content:flex-start }
-.lede { max-width:60ch; font-size:17px; line-height:1.7; color:var(--muted) }
-.stats { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:24px 32px; padding-top:3px }
-.stats > div { display:flex; flex-direction:column; gap:2px; min-width:54px }
-.stats b { color:var(--tone,var(--ink)); font-size:38px; font-weight:550; letter-spacing:-.04em; line-height:1.1; font-variant-numeric:tabular-nums }
-.stats b.fact-text { font-size:23px; line-height:1.8 }
-.stats:has(> div:nth-child(5)) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px }
+.masthead h1 { max-width:22ch; font-size:clamp(38px,5.2vw,72px); line-height:1.02; font-weight:600; letter-spacing:-.04em }
+.lede { max-width:64ch; margin-top:26px; font-size:18px; line-height:1.6; color:var(--muted) }
+.stats { display:flex; flex-wrap:wrap; gap:16px 0; margin-top:40px }
+.stats > div { display:flex; flex-direction:column; gap:5px }
+.stats > div + div { padding-left:28px; margin-left:28px; border-left:1px solid var(--line) }
+.stats b { color:var(--tone,var(--ink)); font-size:36px; font-weight:600; letter-spacing:-.035em; line-height:1 }
+.stats b.fact-text { font-size:22px; line-height:36px }
 .stats span { font-size:12px; color:var(--muted) }
 .main { grid-column:1; grid-row:2; min-width:0; padding-bottom:64px }
-.reading-tools { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding-bottom:12px }
-.reading-label { display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600 }
-.reading-label > span { font-size:12px; color:var(--muted); font-weight:400 }
-.reading-actions { display:flex; gap:6px }
-.reading-actions .btn { min-height:32px; border:0; color:var(--muted); padding:0 8px }
-.reader-rail { grid-column:2; grid-row:2; position:sticky; top:104px; align-self:start; max-height:calc(100vh - 128px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--line) transparent }
-.toc-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13px; font-weight:600; padding:7px 12px 14px }
+.reading-tools { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; padding:18px 0 4px }
+.reading-label { font-size:12.5px; color:var(--muted) }
+.reading-actions { display:flex; gap:2px }
+.reading-actions .btn { min-height:30px; border:0; color:var(--muted); padding:0 8px }
+.reading-actions .btn:hover { color:var(--ink) }
+.reader-rail { grid-column:2; grid-row:2; position:sticky; top:72px; align-self:start; max-height:calc(100vh - 88px); overflow-y:auto; padding-top:18px; scrollbar-width:thin; scrollbar-color:var(--line) transparent }
+.toc-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:6px 10px 10px }
 .toc ol { list-style:none; padding:0; margin:0 }
-.toc li a { display:flex; align-items:baseline; gap:12px; padding:10px 12px; border-radius:8px; text-decoration:none; color:var(--muted); font-size:13px; line-height:1.45 }
-.toc li a:hover { background:var(--paper-2); color:var(--ink) }
-.toc li a[aria-current="true"] { background:var(--paper-2); color:var(--ink); font-weight:500 }
-.toc .n { min-width:18px; flex:none; font-size:11px; font-variant-numeric:tabular-nums }
-.toc .pip { width:5px; height:5px; margin-left:auto; border-radius:50%; align-self:center; background:var(--ink); opacity:0; flex:none }
-.toc li.picked .pip, .toc li[data-tone] .pip { opacity:1 }
-.toc .group { font-size:11px; font-weight:600; color:var(--muted); margin:16px 12px 4px }
-.item-directory { margin:16px 0 0 }
-.item-directory > summary { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; color:var(--muted); font-size:12px }
+.toc li a { display:flex; align-items:baseline; gap:12px; padding:8px 10px; border-radius:7px; text-decoration:none; color:var(--muted); font-size:13px; line-height:1.45; transition:background var(--dur) }
+.toc li a:hover, .item-directory > summary:hover { background:var(--paper-2); color:var(--ink) }
+.toc li a[aria-current="true"] { color:var(--ink); font-weight:600 }
+.toc li a[aria-current="true"] .n { color:var(--kind) }
+.toc .n { min-width:18px; flex:none; font-size:11px; font-weight:600 }
+.toc .pip { width:6px; height:6px; margin-left:auto; border-radius:50%; align-self:center; background:var(--state,transparent); flex:none }
+.toc .group { margin:14px 10px 4px }
+.item-directory { margin-top:12px }
+.item-directory > summary { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:7px; color:var(--muted); font-size:12.5px }
 .item-directory[open] > summary .chev { transform:rotate(180deg) }
-.item-directory li a { font-size:12px; padding-block:8px }
-.decision-panel { margin-top:28px; padding:22px; border-radius:var(--r-l); background:var(--paper); box-shadow:0 4px 20px #00000006 }
-.decision-heading { display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:13px; font-weight:600 }
-.decision-heading > .chev { width:12px; height:12px }
+.item-directory li a { font-size:12.5px; padding-block:6px }
+.item-directory .n { font-weight:500 }
+.decision-panel { margin-top:22px; padding:18px 18px 20px; border:1px solid var(--line-soft); border-radius:var(--r-l); background:var(--paper) }
+.decision-heading { display:flex; gap:10px; align-items:center; font-size:13.5px; font-weight:600 }
 .decision-panel[open] .decision-heading > .chev { transform:rotate(180deg) }
-.decision-count { margin-left:auto; color:var(--muted); font-size:12px; font-weight:400; font-variant-numeric:tabular-nums; white-space:nowrap }
-.decision-count b { display:inline-grid; place-items:center; min-width:24px; min-height:24px; border-radius:7px; background:var(--accent-soft); color:var(--accent); font-weight:600 }
-.decision-help { color:var(--muted); font-size:12px; line-height:1.65; margin-top:18px }
-.reply-link { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; padding:11px 14px; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-size:12px; font-weight:600; text-decoration:none }
-.reply-link:hover { opacity:.85 }
+.decision-count { margin-left:auto; color:var(--muted); font-size:12px; font-weight:400; white-space:nowrap }
+.decision-count b { color:var(--ink); font-weight:700 }
+.dots { list-style:none; display:flex; flex-wrap:wrap; gap:5px; margin:14px 0 0; padding:0 }
+.dots a { display:grid; place-items:center; min-width:28px; height:28px; padding:0 6px; border-radius:6px; background:var(--state-soft,var(--paper-2)); color:var(--state,var(--muted)); font-size:12px; font-weight:600; text-decoration:none; transition:background var(--dur) }
+.dots a:hover { color:var(--ink) }
+.decision-help { margin-top:16px; color:var(--muted); font-size:12.5px; line-height:1.6 }
+.decision-acts { display:grid; gap:8px; margin-top:16px }
+.page:has(.pick[data-empty]) .rail-copy { display:none }
 
-/* Sections, prose, and evidence. */
-.section { padding:32px 0 40px; scroll-margin-top:16px }
+.section { display:grid; grid-template-columns:var(--num) minmax(0,1fr); column-gap:var(--axis); padding:40px 0 48px; scroll-margin-top:16px }
 .section + .section { border-top:1px solid var(--line) }
-.section-heading { display:flex; align-items:baseline; gap:16px; margin-bottom:24px }
-.section-number { display:inline-grid; place-items:center; min-width:28px; height:28px; border-radius:8px; background:var(--kind-soft); color:var(--kind); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums }
-.section h2 { font-size:27px; line-height:1.25; letter-spacing:-.025em; font-weight:550 }
-.part + .part { margin-top:24px }
+.section-heading { display:contents }
+.section > * { grid-column:2 }
+.section-number { grid-column:1; align-self:baseline; padding-left:var(--inset); color:var(--kind); font-size:13px; font-weight:700; letter-spacing:.04em }
+.section h2 { grid-column:2; align-self:baseline; margin-bottom:28px; font-size:30px; line-height:1.2; letter-spacing:-.03em; font-weight:600 }
+.section > :is(.item, .board-overview) { grid-column:1 / -1 }
+.part + .part { margin-top:22px }
 .prose { max-width:var(--measure); display:grid; gap:16px }
-.prose p, .prose li { font-size:15px }
-.prose ol, .prose ul { padding-left:1.3em; margin:0; display:grid; gap:8px }
+.prose p, .prose li { font-size:16px; line-height:1.65 }
+.prose ol, .prose ul { padding-left:1.25em; margin:0; display:grid; gap:8px }
 .prose li::marker { color:var(--muted) }
-.prose h3 { font-size:18px; margin-top:12px; font-weight:600 }
-.prose blockquote { margin:0; padding:20px 24px; border-radius:var(--r); background:var(--paper); color:var(--muted) }
-.prose strong { font-weight:600 }
-.spec { padding:6px 24px; background:var(--paper); border-radius:var(--r) }
-.spec > div { display:grid; grid-template-columns:120px minmax(0,1fr); gap:24px; padding:16px 0; border-top:1px solid var(--line-soft) }
-.spec > div:first-child { border-top:0 }
-.spec b { font-size:12px; font-weight:500; color:var(--muted) }
-.spec span { font-size:14px }
-.callout { display:grid; gap:8px; padding:22px 24px; border-radius:var(--r); background:var(--paper); font-size:14px }
-.callout > b { font-size:13px; font-weight:600; color:var(--accent) }
-.callout.risk { background:var(--risk-soft) }
+.prose h3 { font-size:19px; margin-top:8px; font-weight:600 }
+.prose blockquote { margin:0; padding:16px 22px; border-radius:var(--r); background:var(--paper); color:var(--muted) }
+.spec > div { display:grid; grid-template-columns:150px minmax(0,1fr); gap:20px; padding:14px 0; border-top:1px solid var(--line-soft) }
+.spec > div:last-child { border-bottom:1px solid var(--line-soft) }
+.spec b { font-size:15px; font-weight:600 }
+.spec span { font-size:15px; color:var(--muted) }
+.callout { display:grid; gap:8px; padding:20px 22px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--paper); font-size:15px }
+.callout > b { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent) }
+.callout.risk { background:var(--risk-soft); border-color:transparent }
 .callout.risk > b { color:var(--coral) }
 .table-wrap { overflow-x:auto; background:var(--paper); border:1px solid var(--line-soft); border-radius:var(--r); scrollbar-width:thin }
-table { border-collapse:collapse; width:100%; min-width:580px; font-size:13px; overflow-wrap:normal }
-th, td { padding:14px 18px; text-align:left; vertical-align:middle; border-top:1px solid var(--line-soft) }
-thead th { border-top:0; color:var(--muted); font-size:11px; font-weight:500; white-space:nowrap }
-td.num, th.num { font-size:11px; font-variant-numeric:tabular-nums; color:var(--muted) }
+table { border-collapse:collapse; width:100%; min-width:560px; font-size:13.5px; overflow-wrap:normal }
+th, td { padding:12px 16px; text-align:left; vertical-align:middle; border-top:1px solid var(--line-soft) }
+thead th { border-top:0; color:var(--muted); font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap }
+td.num, th.num { font-size:12px; font-weight:600; color:var(--state,var(--muted)) }
 td a { color:var(--ink); text-decoration:none; font-weight:500 }
 td a:hover { text-decoration:underline }
 td .deps a { font-size:12px; color:var(--muted) }
 td.ck, th.ck { width:34px; padding-right:0 }
-tbody tr:hover, tbody tr.picked, tbody tr[data-tone] { background:var(--paper-2) }
+tbody tr:hover { background:var(--hover) }
+tbody tr.picked, tbody tr[data-tone] { background:var(--state-soft) }
 td.vd, th.vd { width:1%; white-space:nowrap }
 td.vd .none { font-size:12px; color:var(--muted) }
-select.verdict { font:inherit; font-size:12px; min-height:34px; padding:0 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); cursor:pointer }
-.legend { margin-top:12px; font-size:11px; color:var(--muted); line-height:1.7 }
-.block { display:grid; gap:10px }
-.block-label { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; font-size:12px; color:var(--muted) }
+select.verdict { appearance:none; font-size:12.5px; min-height:32px; padding:0 30px 0 10px; border:1px solid var(--line); border-radius:6px; background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 9px center/14px no-repeat; color:var(--ink); cursor:pointer }
+.legend { margin-top:10px; font-size:12px; color:var(--muted); line-height:1.6 }
+.block { display:grid; gap:8px }
+.block-label { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; font-size:12.5px; font-weight:500; color:var(--muted) }
 .figure { margin:0; display:grid; gap:8px }
 .figure img { display:block; max-width:100%; height:auto; border-radius:var(--r); background:var(--paper) }
 .figure .legend { margin-top:0 }
-.chart { background:var(--paper); border-radius:var(--r); padding:24px }
+.chart { padding:22px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--paper) }
 .chart svg { display:block; width:100%; height:auto }
 .chart text { font-family:var(--font-body); font-size:11px; fill:var(--muted) }
-.chart text.value { fill:var(--ink); font-variant-numeric:tabular-nums }
+.chart text.value { fill:var(--ink); font-weight:600 }
 .diagram pre { white-space:pre-wrap }
-figure.diagram { margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
-.dg-frame { overflow-x:auto;padding:32px 20px;border-radius:var(--r);background:var(--paper);}
-.dg { display:block;max-width:none;height:auto;margin:0 auto;overflow:visible;}
-.dg text { fill:var(--ink);font-family:Helvetica,Arial,sans-serif;font-size:11px;}
-.dg :is(polygon,polyline,ellipse,path,circle,rect,line) { fill:none;stroke:var(--muted);}
-.dg .node :is(polygon,ellipse,path,circle,rect) { fill:var(--paper-2);stroke:var(--line);}
-.dg .edge :is(polygon,ellipse,circle) { fill:var(--muted);}
-.dg .edge .hollow { fill:var(--bg);}
-.dg .edge text { fill:var(--muted);font-size:10px;}
-.dg .cluster :is(polygon,path) { stroke:var(--line);stroke-dasharray:4 3;}
-.dg .cluster text { fill:var(--muted);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
-.dg .teal { --tone:var(--teal);--tone-soft:var(--teal-soft);}
-.dg .violet { --tone:var(--violet);--tone-soft:var(--violet-soft);}
-.dg .risk { --tone:var(--coral);--tone-soft:var(--risk-soft);}
-.dg .accent { --tone:var(--accent);--tone-soft:var(--accent-soft);}
-.dg .node:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse,path,circle,rect) { fill:var(--tone-soft);stroke:var(--tone);}
-.dg .edge:is(.teal,.violet,.risk,.accent) path,.dg .cluster:is(.teal,.violet,.risk,.accent) :is(polygon,path) { stroke:var(--tone);}
-.dg .edge:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse) { fill:var(--tone);stroke:var(--tone);}
-.dg .cluster:is(.teal,.violet,.risk,.accent) text { fill:var(--tone);}
-figure.diagram figcaption { display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;font-size:13px;color:var(--muted);}
-.dg-source { flex:1 1 100%;min-width:0;}
-.dg-source summary { width:max-content;margin-left:auto;cursor:pointer;font-family:var(--font-body);font-size:11px;}
-.dg-source summary:hover { color:var(--ink);}
-.dg-source[open] summary { margin-bottom:6px;}
-figure.diagram figcaption > span + .dg-source { flex:0 1 auto;}
-figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
-
-
+figure.diagram { margin:0; display:grid; gap:8px }
+.dg-frame { overflow-x:auto; padding:28px 20px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--paper) }
+.dg { display:block; max-width:none; height:auto; margin:0 auto; overflow:visible }
+.dg text { fill:var(--ink); font-family:Helvetica,Arial,sans-serif; font-size:11px }
+.dg :is(polygon,polyline,ellipse,path,circle,rect,line) { fill:none; stroke:var(--muted) }
+.dg .node :is(polygon,ellipse,path,circle,rect) { fill:var(--paper-2); stroke:var(--line) }
+.dg .edge :is(polygon,ellipse,circle) { fill:var(--muted) }
+.dg .edge .hollow { fill:var(--bg) }
+.dg .edge text { fill:var(--muted); font-size:10px }
+.dg .cluster :is(polygon,path) { stroke:var(--line); stroke-dasharray:4 3 }
+.dg .cluster text { fill:var(--muted); font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase }
+.dg .node:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse,path,circle,rect) { fill:var(--tone-soft); stroke:var(--tone) }
+.dg .edge:is(.teal,.violet,.risk,.accent) path, .dg .cluster:is(.teal,.violet,.risk,.accent) :is(polygon,path) { stroke:var(--tone) }
+.dg .edge:is(.teal,.violet,.risk,.accent) :is(polygon,ellipse) { fill:var(--tone); stroke:var(--tone) }
+.dg .cluster:is(.teal,.violet,.risk,.accent) text { fill:var(--tone) }
+figure.diagram figcaption { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 16px; font-size:13px; color:var(--muted) }
+.dg-source { margin-left:auto; min-width:0 }
+.dg-source[open] { flex-basis:100% }
+.dg-source summary { font-size:11.5px; text-align:right }
+.dg-source summary:hover { color:var(--ink) }
+.dg-source[open] summary { margin-bottom:6px }
 .timeline { list-style:none; padding:0; margin:0 }
-.timeline li { display:grid; grid-template-columns:84px minmax(0,1fr); gap:24px; padding:18px 0; border-top:1px solid var(--line-soft) }
+.timeline li { display:grid; grid-template-columns:76px minmax(0,1fr); gap:20px; padding:16px 0; border-top:1px solid var(--line-soft) }
 .timeline li:first-child { border-top:0; padding-top:0 }
-.timeline .at { align-self:start; font:11px/1.6 var(--font-mono); text-align:center; color:var(--kind); background:var(--kind-soft); border-radius:7px; padding:5px }
+.timeline .at { align-self:start; padding-top:2px; font-size:12.5px; font-weight:600; color:var(--kind) }
 .timeline .ev { display:grid; gap:6px }
-.timeline b { font-size:15px; font-weight:600 }
-.timeline .md { display:grid; gap:6px; font-size:14px; color:var(--muted) }
+.timeline b { display:flex; align-items:baseline; gap:10px; font-size:15.5px; font-weight:600 }
+.timeline li[data-tone] b::before { content:""; flex:none; width:8px; height:8px; border-radius:50%; background:var(--state) }
+.timeline .md { display:grid; gap:6px; font-size:14.5px; color:var(--muted) }
 
-/* Boards are a reading list, with the full comparison table one click away. */
-.board-overview { margin-bottom:24px; border-radius:var(--r); background:var(--paper) }
-.board-overview > summary { display:flex; align-items:center; gap:14px; padding:16px 20px; font-size:13px; font-weight:500 }
+.board-overview { margin-bottom:20px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--paper) }
+.board-overview > summary { display:flex; align-items:center; gap:12px; padding:14px 18px; font-size:13px; font-weight:600 }
 .board-overview .overview-count { margin-left:auto; font-size:12px; color:var(--muted); font-weight:400 }
 .board-overview[open] > summary .chev { transform:rotate(180deg) }
-.board-overview .table-wrap { border-radius:0 0 var(--r) var(--r); border:0 }
-.board-overview > .legend { padding:0 20px 18px }
-.item { margin-top:14px; padding:26px; border:1px solid var(--line-soft); border-radius:var(--r-l); background:var(--paper); scroll-margin-top:16px; box-shadow:0 4px 18px #00000004; transition:border-color var(--dur),box-shadow var(--dur) }
-.item:hover { border-color:var(--line); box-shadow:0 6px 22px #0000000a }
-.item-head { list-style:none }
-.item-heading { display:flex; align-items:flex-start; gap:18px }
-.item-number { display:inline-grid; place-items:center; min-width:36px; height:36px; border-radius:10px; font:13px var(--font-mono); color:var(--kind); background:var(--kind-soft) }
-.item-copy { flex:1; min-width:0 }
-.item-heading > .chev { margin-top:8px }
+.board-overview .table-wrap { border:0; border-top:1px solid var(--line-soft); border-radius:0 0 var(--r) var(--r) }
+.board-overview > .legend { padding:0 18px 16px }
+.item { border-top:1px solid var(--line-soft); scroll-margin-top:16px }
+.board-overview + .item, .section-heading + .item, .part + .item, .item[open] + .item { border-top-color:transparent }
+.item[open] { border-top-color:transparent; border-radius:var(--r); background:var(--paper); box-shadow:0 0 0 1px var(--line-soft), 0 12px 32px -18px var(--shade) }
+.item-head { padding:12px 0 20px }
+.item-heading { display:grid; grid-template-columns:calc(var(--num) - var(--inset)) minmax(0,1fr) auto; column-gap:var(--axis); align-items:start; padding:8px var(--inset); border-radius:10px; transition:background var(--dur) }
+.item:not([open]) .item-heading:hover { background:var(--paper) }
+.item-number { display:inline-grid; place-items:center; justify-self:start; min-width:36px; height:36px; padding:0 6px; margin-top:-5px; border-radius:9px; color:var(--state,var(--kind)); background:var(--state-soft,transparent); font-size:18px; font-weight:700; letter-spacing:-.02em; transition:background var(--dur),color var(--dur) }
+.item-copy { min-width:0 }
+.item-copy:first-child { grid-column:2 }
+.item-heading > .chev { margin-top:6px }
 .item[open] .item-heading > .chev { transform:rotate(180deg) }
-.item h3 { font-size:21px; font-weight:550; letter-spacing:-.025em; line-height:1.4 }
-.item .one-line { margin-top:10px; color:var(--muted); font-size:14px; line-height:1.7 }
-.item-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:20px 0 0 54px }
-.item-meta .decide { display:flex; align-items:center; gap:16px; margin-left:auto }
-.decide .note-btn { margin-left:0 }
-.item-body { margin:24px 0 0 54px; padding-top:24px; border-top:1px solid var(--line-soft) }
-.chip { display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:6px; font-size:11px; line-height:1.6; font-weight:500; white-space:nowrap; background:var(--tone-soft,var(--paper-2)); color:var(--tone,var(--muted)) }
-.chip.t-outline { background:transparent; padding-inline:4px; font-size:10px }
+.item h3 { font-size:20px; font-weight:600; letter-spacing:-.02em; line-height:1.35 }
+.item .one-line { margin-top:8px; color:var(--muted); font-size:15px; line-height:1.6 }
+.item-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:16px var(--inset) 0 calc(var(--num) + var(--axis)) }
+.item-meta .decide { display:flex; align-items:center; gap:14px; margin-left:auto }
+.item-body { margin:0 var(--inset) 0 calc(var(--num) + var(--axis)); padding:22px 0 26px; border-top:1px solid var(--line-soft) }
+.chip { display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; line-height:1.5; font-weight:600; white-space:nowrap; background:var(--tone-soft,var(--paper-2)); color:var(--tone,var(--muted)) }
+.chip.t-outline { background:transparent; padding-inline:4px; font-weight:500 }
 .owner { color:var(--muted); font-size:12px }
 .row-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end }
 .meter { display:inline-flex; gap:3px; align-items:center; margin-left:4px }
-.meter i { display:block; width:4px; height:4px; border-radius:50%; background:var(--line) }
+.meter i { display:block; width:5px; height:5px; border-radius:50%; background:var(--line) }
 .meter i.on { background:var(--accent) }
-.meter-label { color:var(--muted); font-size:10px }
-.verdicts { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border-radius:7px }
-.verdicts button { min-height:32px; padding:0 14px; font-size:12px; font-weight:500; border:0; border-radius:5px; color:var(--muted); background:none }
-.verdicts button:hover { background:var(--paper-2); color:var(--ink) }
-.verdicts button[aria-checked="true"] { background:var(--tone-soft,var(--accent-soft)); color:var(--tone,var(--accent)); box-shadow:0 1px 3px #0001 }
-.pick-btn { min-height:36px; padding-inline:18px; border-color:transparent; background:var(--accent-soft); color:var(--accent) }
-.pick-btn[aria-pressed="true"] { background:var(--teal-soft); color:var(--teal); border-color:transparent }
-.item.picked .item-number { background:var(--teal-soft); color:var(--teal) }
-.note { display:grid; gap:10px; margin-bottom:24px }
-.note label { font-size:12px; font-weight:500 }
-.note textarea { width:100%; min-height:88px; resize:vertical; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.6 }
+.meter-label { color:var(--muted); font-size:11px }
+.verdicts { display:inline-flex; gap:2px; padding:3px; background:var(--paper-2); border-radius:8px }
+.verdicts button { min-height:30px; padding:0 13px; font-size:12.5px; font-weight:500; border:0; border-radius:6px; color:var(--muted); background:none; transition:background var(--dur),color var(--dur) }
+.verdicts button:hover { color:var(--ink) }
+.verdicts button[aria-checked="true"] { background:var(--paper); color:var(--tone,var(--accent)); font-weight:600; box-shadow:0 1px 2px var(--shade) }
+.pick-btn { min-height:32px; padding-inline:16px; border-color:transparent; background:var(--accent-soft); color:var(--accent); font-weight:600 }
+.pick-btn:hover { background:var(--accent-soft) }
+.pick-btn[aria-pressed="true"] { background:var(--teal-soft); color:var(--teal) }
+.note { display:grid; gap:8px; margin-bottom:22px }
+.note label { font-size:12.5px; font-weight:600 }
+.note textarea { width:100%; min-height:84px; resize:vertical; padding:12px 14px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.55 }
 .note textarea::placeholder { color:var(--muted) }
-.facets { display:grid; gap:24px; margin:0 }
-.facet { display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px }
-.facet dt { padding-top:2px; font-size:12px; font-weight:500; color:var(--muted) }
-.facet dd { margin:0; display:grid; gap:10px; font-size:14px }
+.facets { display:grid; gap:20px; margin:0 }
+.facet { display:grid; grid-template-columns:104px minmax(0,1fr); gap:20px }
+.facet dt { padding-top:2px; font-size:12.5px; font-weight:600; color:var(--muted) }
+.facet dd { margin:0; display:grid; gap:10px; font-size:14.5px; line-height:1.6 }
 .facet dd > :is(ul,ol) { margin:0; padding-left:20px }
 .facet dd pre { background:var(--bg) }
 .facet dd a.dep { display:inline-block; margin-right:6px; padding:1px 8px; border-radius:5px; background:var(--paper-2); color:var(--ink); font-size:12px; text-decoration:none }
 .facet.risk dt { color:var(--coral) }
-.hidden-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px; margin-top:16px; border-radius:var(--r); background:var(--paper); font-size:13px; color:var(--muted) }
+.hidden-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px var(--inset); margin-top:8px; border-top:1px solid var(--line-soft); font-size:13px; color:var(--muted) }
 .hidden-row b { color:var(--ink) }
 .no-hits { padding:36px 0; color:var(--muted) }
-.rows { display:grid; gap:10px }
-.rows > div, .rows > .row > summary { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; padding:22px 24px; background:var(--paper); border-radius:var(--r) }
-.rows b { display:block; font-size:16px; font-weight:550; margin-bottom:6px }
-.rows p { font-size:14px; color:var(--muted) }
-.rows > .row > summary { grid-template-columns:minmax(0,1fr) auto auto; list-style:none }
+.rows > * + * { border-top:1px solid var(--line-soft) }
+.rows > div, .rows > .row > summary { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 20px; padding:16px 0 }
+.rows b { display:block; font-size:16px; font-weight:600; letter-spacing:-.01em; margin-bottom:4px }
+.rows p { font-size:14.5px; color:var(--muted) }
+.rows > .row > summary { grid-template-columns:minmax(0,1fr) auto auto }
 .rows .chev { align-self:center }
-.rows > .row[open] > summary { border-radius:var(--r) var(--r) 0 0 }
 .rows > .row[open] > summary .chev { transform:rotate(90deg) }
-.rows > .row > .facets { padding:0 24px 24px; background:var(--paper); border-radius:0 0 var(--r) var(--r) }
+.rows > .row > .facets { padding:4px 0 20px }
 
-/* The decision context stays beside the reading; the finished reply closes it. */
-.choice { border:0; margin:24px 0 0; padding:0; min-width:0 }
-.choice-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px }
-.choice-head b { font-weight:500 }
-.options { display:grid; gap:8px; margin-top:14px }
-.options label { display:flex; gap:10px; align-items:flex-start; padding:12px; border:1px solid var(--line-soft); border-radius:8px; cursor:pointer }
-.options label:hover { background:var(--bg) }
+.choice { border:0; margin:18px 0 0; padding:0; min-width:0 }
+.choice-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13.5px }
+.choice-head b { font-weight:600 } .choice-head .link-btn { flex:none }
+.options { display:grid; gap:6px; margin-top:12px }
+.options label { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--line-soft); border-radius:8px; cursor:pointer; transition:background var(--dur) }
+.options label:hover { background:var(--hover) }
 .options label:has(input:checked) { background:var(--accent-soft); border-color:transparent }
 .options label:has(input:checked) .opt { color:var(--accent) }
-.options input { accent-color:var(--accent); margin:4px 0 0; flex:none }
-.opt { display:block; font-size:12px; font-weight:500 }
-.sum { display:block; font-size:11px; line-height:1.6; margin-top:3px; color:var(--muted) }
-.guard { padding:14px; border-radius:8px; margin-top:16px; background:var(--risk-soft); color:var(--ink); font-size:12px }
-.pick { margin-top:28px; padding:32px; border-radius:var(--r-l); background:var(--paper); display:grid; gap:24px; scroll-margin-top:16px }
-.pick h2 { font-size:30px; font-weight:550; letter-spacing:-.035em }
-.pick-lede { margin-top:10px; color:var(--muted); font-size:14px; max-width:48ch }
-.reply { display:grid; gap:20px }
-.said { min-width:0; padding:22px; background:var(--bg); border-radius:var(--r) }
-.said code { background:none; padding:0; font-size:13px; line-height:1.7 }
-.said .words { margin-top:12px; color:var(--muted); font-size:12px }
-.said .tag { display:block; margin-bottom:12px; color:var(--muted); font-size:11px }
+.options input { accent-color:var(--accent); margin:3px 0 0; flex:none }
+.opt { display:block; font-size:12.5px; font-weight:600 }
+.sum { display:block; font-size:11.5px; line-height:1.55; margin-top:2px; color:var(--muted) }
+.guard { padding:12px 14px; border-radius:8px; margin-top:14px; background:var(--risk-soft); color:var(--ink); font-size:12.5px; line-height:1.55 }
+.pick { margin-top:32px; padding:32px; border:1px solid var(--line-soft); border-radius:var(--r-l); background:var(--paper); display:grid; gap:22px; scroll-margin-top:16px }
+.pick h2 { font-size:28px; font-weight:600; letter-spacing:-.03em }
+.pick-lede { margin-top:8px; color:var(--muted); font-size:14.5px; max-width:52ch }
+.reply { display:grid; gap:16px }
+.said { min-width:0; padding:18px 20px; background:var(--bg); border-radius:var(--r) }
+.said code { background:none; padding:0; font-size:14px; line-height:1.7 }
+.said .words { margin-top:10px; color:var(--muted); font-size:13px }
+.said .tag { display:block; margin-bottom:10px }
 .said.example code { color:var(--muted) }
 .pick[data-empty] :is(.live,.acts), .pick:not([data-empty]) .example { display:none }
-.acts { display:flex; align-items:center; gap:20px }
-.toast { position:fixed; bottom:24px; left:50%; z-index:50; padding:10px 18px; border-radius:8px; background:var(--ink); color:var(--bg); font-size:13px; opacity:0; transform:translate(-50%,8px); transition:opacity var(--dur),transform var(--dur); pointer-events:none }
+.acts { display:flex; align-items:center; gap:18px }
+.toast { position:fixed; bottom:24px; left:50%; z-index:50; padding:10px 16px; border-radius:8px; background:var(--ink); color:var(--bg); font-size:13px; opacity:0; transform:translate(-50%,8px); transition:opacity var(--dur),transform var(--dur); pointer-events:none }
 .toast.show { opacity:1; transform:translate(-50%,0) }
-.foot { grid-column:1 / -1; display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 24px; border-top:1px solid var(--line); padding:24px 0 48px; color:var(--muted); font-size:11px }
+.foot { grid-column:1 / -1; display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 24px; border-top:1px solid var(--line); padding:22px 0 48px; color:var(--muted); font-size:12px }
 
 @media (min-width:1000px) { .toc-heading button { display:none } }
 @media (max-width:999px) {
-  .page { max-width:850px; grid-template-columns:minmax(0,1fr) }
-  .masthead { grid-column:1; grid-row:1; padding-top:44px }
-  .reader-rail { position:static; max-height:none; overflow:visible; grid-column:1; grid-row:2; margin-bottom:24px }
+  :root { --num:40px; --axis:18px }
+  .page { max-width:860px; grid-template-columns:minmax(0,1fr) }
+  .masthead { grid-column:1; padding-top:40px }
+  .reader-rail { position:static; max-height:none; overflow:visible; grid-column:1; grid-row:2; padding-top:20px; margin-bottom:8px }
   .main { grid-column:1; grid-row:3 }
-  .toc { border:1px solid var(--line); border-radius:var(--r); padding:4px }
-  .toc-heading { padding:6px 12px }
+  .toc { border:1px solid var(--line-soft); border-radius:var(--r); padding:4px; background:var(--paper) }
+  .toc-heading { padding:6px 10px }
   .toc[data-collapsed] #contents-list { display:none }
-  .decision-panel { margin-top:16px }
-  .decision-panel .options { grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr)) }
-  .decision-panel .reply-link { width:max-content; min-width:200px }
-  .hero-bottom { gap:24px }
+  .decision-panel { margin-top:12px }
+  .decision-panel .options { grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)) }
+  .decision-acts { grid-template-columns:repeat(auto-fit,minmax(180px,max-content)); align-items:center }
 }
 @media (max-width:600px) {
-  html { scroll-padding-top:136px }
-  .toolbar-inner { flex-wrap:wrap; padding:12px 20px; gap:10px; min-height:64px }
-  .brand { font-size:15px }
-  .brand svg { width:28px; height:28px; padding:5px; border-radius:8px }
-  .document-kind { font-size:11px; padding:4px 7px; gap:5px }
+  :root { --inset:10px }
+  html { scroll-padding-top:120px }
+  .toolbar-inner { flex-wrap:wrap; padding:10px 20px; gap:8px }
   .tools { flex:1 1 100% }
   .search { flex:1 }
   .search input { width:100% }
-  .theme-toggle { position:absolute; right:12px; top:9px }
-  .hits { font-size:11px }
-  .masthead { margin-bottom:24px; padding:34px 0 }
-  .mast-top { flex-wrap:wrap; gap:8px; margin-bottom:24px }
-  .kicker { font-size:10px }
-  .updated { font-size:11px }
-  .masthead h1 { font-size:clamp(34px,9vw,48px); line-height:1.12 }
-  .hero-bottom { display:block; margin-top:24px }
-  .lede { font-size:15px }
-  .stats { margin-top:28px; justify-content:flex-start; gap:20px 28px }
-  .stats b { font-size:32px }
-  .stats span { font-size:11px }
-  .section { padding-block:26px 32px }
-  .section h2 { font-size:24px }
-  .section-heading { gap:12px }
-  .reading-tools { gap:4px 16px }
-  .reading-label { flex-basis:100% }
-  .reading-actions { margin-left:-8px }
-  .item { padding:20px }
-  .item-heading { gap:12px }
-  .item-number { font-size:11px; min-width:30px; height:30px; border-radius:8px }
+  .theme-toggle { position:absolute; right:14px; top:8px }
+  .masthead { padding:32px 0 28px }
+  .mast-top { margin-bottom:20px }
+  .masthead h1 { font-size:clamp(32px,9vw,46px); line-height:1.1 }
+  .lede { margin-top:18px; font-size:16px }
+  .stats { margin-top:28px; gap:14px 0 }
+  .stats > div + div { padding-left:18px; margin-left:18px }
+  .stats b { font-size:30px }
+  .stats b.fact-text { font-size:19px; line-height:30px }
+  .section { grid-template-columns:minmax(0,1fr); padding:28px 0 34px }
+  .section > *, .section > :is(.item, .board-overview), .section h2 { grid-column:1 }
+  .section-heading { display:flex; align-items:baseline; gap:12px; margin-bottom:20px } .section-number { flex:none }
+  .section h2 { margin-bottom:0; font-size:24px }
+  .item-heading { padding:6px var(--inset) }
+  .item-heading { grid-template-columns:auto minmax(0,1fr) auto; column-gap:12px }
+  .item-number { min-width:30px; height:30px; margin-top:-3px; border-radius:8px; font-size:15px }
   .item h3 { font-size:18px }
-  .item .one-line { font-size:13px }
-  .item-meta, .item-body { margin-left:0 }
-  .item-meta .decide { flex:1 1 100%; gap:10px; flex-wrap:wrap; margin:10px 0 0 }
+  .item .one-line { font-size:14px }
+  .item-meta, .item-body { margin-left:var(--inset) }
+  .item-copy:first-child { grid-column:1 / 3 }
+  .item-meta .decide { flex:1 1 100%; gap:10px; flex-wrap:wrap; margin:8px 0 0 }
   .decide .note-btn { margin-left:auto }
-  .verdicts button { min-height:36px; padding-inline:12px }
-  .facet { grid-template-columns:minmax(0,1fr); gap:8px }
-  .facet dt { font-weight:600; color:var(--ink) }
-  .chart, .spec, .callout { padding:20px }
-  .spec > div { grid-template-columns:minmax(0,1fr); gap:6px }
-  .rows > div, .rows > .row > summary { grid-template-columns:minmax(0,1fr); padding:20px }
+  .verdicts button { min-height:34px; padding-inline:12px }
+  .facet { grid-template-columns:minmax(0,1fr); gap:6px }
+  .facet dt { color:var(--ink) }
+  .chart, .callout { padding:18px }
+  .spec > div { grid-template-columns:minmax(0,1fr); gap:4px }
+  .rows > div, .rows > .row > summary { grid-template-columns:minmax(0,1fr) }
   .row-chips { justify-content:flex-start }
   .rows .chev { display:none }
-  .timeline li { grid-template-columns:64px minmax(0,1fr); gap:16px }
+  .timeline li { grid-template-columns:60px minmax(0,1fr); gap:14px }
   .pick { padding:24px 20px }
-  .pick h2 { font-size:27px }
-  .said { padding:18px }
+  .pick h2 { font-size:26px }
+  .said { padding:16px }
 }
 @media (prefers-reduced-motion:reduce) {
   html { scroll-behavior:auto }
   *, *::before, *::after { transition-duration:.01ms !important }
 }
 @media print {
-  :root, :root[data-theme] { --bg:#ffffff; --paper:#ffffff; --paper-2:#eeeeee; --ink:#222222; --muted:#656565; --line:#dcdcdc; --line-soft:#e7e7e7; --accent:#6545cd; --accent-ink:#ffffff; --accent-soft:#ede7ff; --teal:#08745a; --teal-soft:#e4f5ed; --violet:#6947bd; --violet-soft:#f0ebff; --coral:#b03b44; --risk-soft:#ffeded; --blue:#2863aa; --blue-soft:#e7f0ff; --amber:#8c6112; --amber-soft:#faf0d9; color-scheme:light }
-  .toolbar, .skip-link, .toc, .reading-tools, .decision-help, .reply-link, .pick-btn, .note-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .options label:not(:has(input:checked)) { display:none !important }
-  body { font-size:12px }
+  :root, :root[data-theme] { color-scheme:light; --inset:0px }
+  .toolbar, .skip-link, .toc, .reading-tools, .decision-help, .decision-acts, .dots, .pick-btn, .link-btn, .pick button, .pick-lede, .toast, .note[hidden], .verdicts button[aria-checked="false"], .options label:not(:has(input:checked)) { display:none !important }
+  body { font-size:12px; background:#fff }
   .page { display:block; padding:0 }
   .masthead { padding:0 0 24px }
   .masthead h1 { font-size:32px }
   .reader-rail { position:static; max-height:none; overflow:visible }
-  .decision-panel { padding:0; margin:16px 0 }
+  .decision-panel { padding:0; margin:16px 0; border:0 }
   .choice { margin:0 }
   .options { display:flex }
   .item, .figure, .chart, .diagram, .timeline li, pre { break-inside:avoid }
-  .item { border:1px solid var(--line) }
+  pre { white-space:pre-wrap }
+  .item, .item[open] { background:none; box-shadow:none; border-top:1px solid var(--line) }
   .verdicts { background:none }
-  .verdicts button[aria-checked="true"] { background:none; color:var(--ink); font-weight:600 }
+  .verdicts button[aria-checked="true"] { background:none; color:var(--ink); font-weight:600; box-shadow:none }
   .dg-source, .chev { display:none }
   .dg { max-width:100% }
   .note textarea { padding:0; border:0; background:transparent; resize:none }
 }
-</style></head><body data-kind="brainstorm"><a class="skip-link" href="#main">Skip to content</a><div class="toolbar"><div class="toolbar-inner"><a class="brand" href="#top" aria-label="Dossier, back to top"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span>Dossier</span></a> <span class="document-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8.5 15.5a6 6 0 1 1 7 0V18h-7v-2.5ZM12 3V1M4 5 2.5 3.5M20 5l1.5-1.5"></path></svg>Brainstorm</span><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span><button class="btn theme-toggle" type="button" role="switch" data-theme-toggle aria-label="Dark mode" aria-checked="false" hidden><svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg></button></div></div></div><div class="page"><header class="masthead" id="top"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><span class="updated">Updated 2026-03-09</span></div><h1>Small fixes before the spring timetable</h1><div class="hero-bottom"><p class="lede">Six small fixes that can land before the spring timetable starts on 30 March. Each one answers something riders asked the harbour office this winter. Pick by number.</p><div class="stats" aria-label="At a glance"><div class="t-teal"><b>6</b> <span>minor</span></div></div></div></header><aside class="reader-rail" aria-label="Document navigation and decisions"><nav class="toc" aria-label="Contents"><div class="toc-heading"><span>On this page</span><button class="btn" type="button" data-contents-toggle aria-expanded="true" aria-controls="contents-list" hidden>Contents</button></div><div id="contents-list"><ol class="chapters"><li><a class="chapter-link" href="#thesis"><span class="n">01</span><span>Three weeks, six small fixes</span></a></li><li><a class="chapter-link" href="#ideas"><span class="n">02</span><span>Fixes</span></a></li></ol><details class="item-directory"><summary>Browse ideas<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><ol><li class="group">Minor</li><li data-item="clock-change" class=""><a href="#clock-change"><span class="n">1.</span><span>Calendar files that survive the clock change</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="spaces-left" class=""><a href="#spaces-left"><span class="n">2.</span><span>Say when a car deck is nearly full</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="usual-route" class=""><a href="#usual-route"><span class="n">3.</span><span>Start search on the rider&#39;s usual route</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="step-free" class=""><a href="#step-free"><span class="n">4.</span><span>Step-free boarding notes on every ticket</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="bike-spaces" class=""><a href="#bike-spaces"><span class="n">5.</span><span>Book a bike space with the ticket</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="vat-receipts" class=""><a href="#vat-receipts"><span class="n">6.</span><span>Receipts with VAT for business riders</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li></ol></details></div></nav><details class="decision-panel" open><summary class="decision-heading"><span>Your decisions</span><span class="decision-count"><b data-live="count">0</b> / 6</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary> <p class="decision-help">Decide as you read. Your reply brings it all together.</p><a class="reply-link" href="#pick">Review your reply <span aria-hidden="true">↗</span></a></details></aside><main class="main" id="main" tabindex="-1"><div class="reading-tools"><span class="reading-label">The document <span>2 sections</span></span><div class="reading-actions"><button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button></div></div><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="thesis"><div class="section-heading"><span class="section-number">01</span><h2>Three weeks, six small fixes</h2></div><div class="part prose"><p>The spring timetable starts on Monday 30 March, the day after the clocks go forward. It adds an evening sailing to Holm and doubles weekend crossings to Keddle, and busier boats find the rough edges winter hid.</p>
-<p>Every fix here came from the harbour office&rsquo;s winter contact log and fits in the three weeks left. Pick the ones worth doing now, and the rest wait for summer.</p></div></section><section class="section" id="ideas"><div class="section-heading"><span class="section-number">02</span><h2>Fixes</h2></div><details class="board-overview"><summary><span>At a glance</span><span class="overview-count">6 ideas</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><div class="part table-wrap"><table><thead><tr><th class="ck"><span class="sr">Pick</span></th><th class="num">#</th><th>Idea</th><th>Size</th><th>Effort</th><th>Impact</th><th>Depends on</th></tr></thead> <tbody><tr data-item="clock-change" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="clock-change" aria-label="Pick 1, Calendar files that survive the clock change"></td><td class="num">1</td><td><a href="#clock-change">Calendar files that survive the clock change</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="spaces-left" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="spaces-left" aria-label="Pick 2, Say when a car deck is nearly full"></td><td class="num">2</td><td><a href="#spaces-left">Say when a car deck is nearly full</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="usual-route" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="usual-route" aria-label="Pick 3, Start search on the rider&#39;s usual route"></td><td class="num">3</td><td><a href="#usual-route">Start search on the rider&#39;s usual route</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="step-free" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="step-free" aria-label="Pick 4, Step-free boarding notes on every ticket"></td><td class="num">4</td><td><a href="#step-free">Step-free boarding notes on every ticket</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="bike-spaces" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="bike-spaces" aria-label="Pick 5, Book a bike space with the ticket"></td><td class="num">5</td><td><a href="#bike-spaces">Book a bike space with the ticket</a></td><td><span class="chip t-teal">minor</span></td><td>M</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps"> <a href="#spaces-left" title="Say when a car deck is nearly full">2</a></span></td></tr><tr data-item="vat-receipts" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="vat-receipts" aria-label="Pick 6, Receipts with VAT for business riders"></td><td class="num">6</td><td><a href="#vat-receipts">Receipts with VAT for business riders</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 2 of 5"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p></details> <details class="item" id="clock-change" data-item="clock-change" data-title="Calendar files that survive the clock change" data-decides data-num="1"><summary class="item-head"><div class="item-heading"><span class="item-number">01</span><div class="item-copy"><h3>Calendar files that survive the clock change</h3><p class="one-line">Calendar exports carry the harbour&#39;s time zone, so sailings after 29 March stop showing an hour early.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-clock-change">Your note on 1</label> <textarea id="note-clock-change" data-note="clock-change" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Calendar files name the Europe/London time zone instead of a fixed offset. Riders who already exported a sailing after 29 March get a corrected file with their reminder.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Last spring 23 riders turned up an hour out in the first week of summer time, and three missed the boat. The fix is one line and a resend.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Some calendar apps duplicate an event when a corrected file arrives. The resend keeps the event id, so the new file replaces the old one.</p></dd></div></dl></div></details><details class="item" id="spaces-left" data-item="spaces-left" data-title="Say when a car deck is nearly full" data-decides data-num="2"><summary class="item-head"><div class="item-heading"><span class="item-number">02</span><div class="item-copy"><h3>Say when a car deck is nearly full</h3><p class="one-line">Search results show the car spaces left once a sailing drops below ten, so drivers choose before it sells out.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-spaces-left">Your note on 2</label> <textarea id="note-spaces-left" data-note="spaces-left" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>When fewer than ten car spaces remain, the search result shows the number left beside the fare. The count comes from the inventory the booking check already reads.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Drivers who meet a full deck at checkout phone the office to ask when spaces free up. Seeing the number early moves them to another sailing first.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>The same counter shows bike spaces in 5.</p></dd></div></dl></div></details><details class="item" id="usual-route" data-item="usual-route" data-title="Start search on the rider&#39;s usual route" data-decides data-num="3"><summary class="item-head"><div class="item-heading"><span class="item-number">03</span><div class="item-copy"><h3>Start search on the rider&#39;s usual route</h3><p class="one-line">The search form opens on the route, party, and vehicle the rider booked last, with one tap to change them.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-usual-route">Your note on 3</label> <textarea id="note-usual-route" data-note="usual-route" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Signed-in riders find their last route, passengers, and vehicle already filled in. Anything they change becomes the new starting point.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Most bookings are residents repeating the same crossing. Four fewer taps on each one adds up across 2,400 bookings a week.</p></dd></div></dl></div></details><details class="item" id="step-free" data-item="step-free" data-title="Step-free boarding notes on every ticket" data-decides data-num="4"><summary class="item-head"><div class="item-heading"><span class="item-number">04</span><div class="item-copy"><h3>Step-free boarding notes on every ticket</h3><p class="one-line">Tickets say how to board without steps at each harbour, and checkout asks once whether a rider needs it.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-step-free">Your note on 4</label> <textarea id="note-step-free" data-note="step-free" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Each harbour gets a short note on where the ramp is and when crew help foot passengers aboard. Riders who ask for step-free boarding see it on the ticket, and crew see a flag on the loading list.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Brisk has no foot passenger ramp at low water, and riders find out at the slipway. A note turns a surprise into a plan.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>The harbour authority wrote the notes. We only show them.</p></dd></div></dl></div></details><details class="item" id="bike-spaces" data-item="bike-spaces" data-title="Book a bike space with the ticket" data-decides data-num="5"><summary class="item-head"><div class="item-heading"><span class="item-number">05</span><div class="item-copy"><h3>Book a bike space with the ticket</h3><p class="one-line">Bikes become a bookable extra on the Petrel, which carries eight, instead of first come at the slipway.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort M</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-bike-spaces">Your note on 5</label> <textarea id="note-bike-spaces" data-note="bike-spaces" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Checkout offers a bike space while any remain, counted like car spaces. Riders without a booked space can still board when the crew have room.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Spring weekends bring cyclists to Keddle, and the Petrel turned away 41 bikes last April. A booked space means nobody rides to the harbour for nothing.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>No-shows can leave booked spaces empty while crew turn bikes away. Release unclaimed spaces ten minutes before departure.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#spaces-left">2</a></p></dd></div></dl></div></details><details class="item" id="vat-receipts" data-item="vat-receipts" data-title="Receipts with VAT for business riders" data-decides data-num="6"><summary class="item-head"><div class="item-heading"><span class="item-number">06</span><div class="item-copy"><h3>Receipts with VAT for business riders</h3><p class="one-line">Receipts show VAT and an optional company name, so contractors stop asking the office for a copy.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 2 of 5"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 2/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-vat-receipts">Your note on 6</label> <textarea id="note-vat-receipts" data-note="vat-receipts" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>The receipt page adds the VAT amount, our VAT number, and a company name the rider can fill in before downloading.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Contractors working on the islands asked for 180 VAT receipts this winter, and the office wrote each one by hand.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="pick" id="pick" aria-labelledby="pick-title" data-mode="pick" data-verdicts="null" data-noun="idea" data-plural="ideas" data-empty><div><h2 id="pick-title">Your reply</h2><p class="pick-lede">Your choices, ready to send. Copy this reply back to your agent when you’re done.</p></div><div class="reply"><div class="said example"><p><span class="tag">Example</span> <code>2, 5, 6. Notes: 5: smaller first.</code></p><p class="words">Pick: ideas 2, 5, and 6. Note on idea 5: smaller first.</p></div><div class="said live"><p><code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p></div><div class="acts"><button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button></div></div></section></main><footer class="foot"><span>Small fixes before the spring timetable</span> <span>Generated with Dossier · 2026-03-09</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brainstorm","meta":{"title":"Small fixes before the spring timetable","slug":"spring-fixes","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"spring","lede":"Six small fixes that can land before the spring timetable starts on 30 March. Each one answers something riders asked the harbour office this winter. Pick by number.","updated":"2026-03-09","status":"for-decision"},"sections":[{"id":"thesis","title":"Three weeks, six small fixes","parts":[{"type":"prose","markdown":"The spring timetable starts on Monday 30 March, the day after the clocks go forward. It adds an evening sailing to Holm and doubles weekend crossings to Keddle, and busier boats find the rough edges winter hid.\n\nEvery fix here came from the harbour office's winter contact log and fits in the three weeks left. Pick the ones worth doing now, and the rest wait for summer."}]},{"id":"ideas","title":"Fixes","board":{"summary":true,"items":[{"id":"clock-change","title":"Calendar files that survive the clock change","summary":"Calendar exports carry the harbour's time zone, so sailings after 29 March stop showing an hour early.","size":"minor","effort":"S","impact":4,"facets":[{"label":"How it works","markdown":"Calendar files name the Europe/London time zone instead of a fixed offset. Riders who already exported a sailing after 29 March get a corrected file with their reminder."},{"label":"Why","markdown":"Last spring 23 riders turned up an hour out in the first week of summer time, and three missed the boat. The fix is one line and a resend."},{"label":"Risk","markdown":"Some calendar apps duplicate an event when a corrected file arrives. The resend keeps the event id, so the new file replaces the old one."}]},{"id":"spaces-left","title":"Say when a car deck is nearly full","summary":"Search results show the car spaces left once a sailing drops below ten, so drivers choose before it sells out.","size":"minor","effort":"S","impact":4,"facets":[{"label":"How it works","markdown":"When fewer than ten car spaces remain, the search result shows the number left beside the fare. The count comes from the inventory the booking check already reads."},{"label":"Why","markdown":"Drivers who meet a full deck at checkout phone the office to ask when spaces free up. Seeing the number early moves them to another sailing first."},{"label":"Unlocks","markdown":"The same counter shows bike spaces in 5."}]},{"id":"usual-route","title":"Start search on the rider's usual route","summary":"The search form opens on the route, party, and vehicle the rider booked last, with one tap to change them.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Signed-in riders find their last route, passengers, and vehicle already filled in. Anything they change becomes the new starting point."},{"label":"Why","markdown":"Most bookings are residents repeating the same crossing. Four fewer taps on each one adds up across 2,400 bookings a week."}]},{"id":"step-free","title":"Step-free boarding notes on every ticket","summary":"Tickets say how to board without steps at each harbour, and checkout asks once whether a rider needs it.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Each harbour gets a short note on where the ramp is and when crew help foot passengers aboard. Riders who ask for step-free boarding see it on the ticket, and crew see a flag on the loading list."},{"label":"Why","markdown":"Brisk has no foot passenger ramp at low water, and riders find out at the slipway. A note turns a surprise into a plan."},{"label":"Note","markdown":"The harbour authority wrote the notes. We only show them."}]},{"id":"bike-spaces","title":"Book a bike space with the ticket","summary":"Bikes become a bookable extra on the Petrel, which carries eight, instead of first come at the slipway.","size":"minor","effort":"M","impact":3,"dependsOn":["spaces-left"],"facets":[{"label":"How it works","markdown":"Checkout offers a bike space while any remain, counted like car spaces. Riders without a booked space can still board when the crew have room."},{"label":"Why","markdown":"Spring weekends bring cyclists to Keddle, and the Petrel turned away 41 bikes last April. A booked space means nobody rides to the harbour for nothing."},{"label":"Risk","markdown":"No-shows can leave booked spaces empty while crew turn bikes away. Release unclaimed spaces ten minutes before departure."}]},{"id":"vat-receipts","title":"Receipts with VAT for business riders","summary":"Receipts show VAT and an optional company name, so contractors stop asking the office for a copy.","size":"minor","effort":"S","impact":2,"facets":[{"label":"How it works","markdown":"The receipt page adds the VAT amount, our VAT number, and a company name the rider can fill in before downloading."},{"label":"Why","markdown":"Contractors working on the islands asked for 180 VAT receipts this winter, and the office wrote each one by hand."}]}]}}]}</script><script>
+</style></head><body data-kind="brainstorm"><a class="skip-link" href="#main">Skip to content</a><div class="toolbar"><div class="toolbar-inner"><a class="brand" href="#top" aria-label="Dossier, back to top"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg> <span>Dossier</span></a> <span class="document-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8.5 15.5a6 6 0 1 1 7 0V18h-7v-2.5ZM12 3V1M4 5 2.5 3.5M20 5l1.5-1.5"></path></svg>Brainstorm</span><div class="tools"><label class="search"><span class="sr">Search this document</span> <input type="search" placeholder="Search" autocomplete="off" spellcheck="false" data-search> <kbd aria-hidden="true">/</kbd></label> <span class="hits" data-hits aria-live="polite"></span><button class="btn theme-toggle" type="button" role="switch" data-theme-toggle aria-label="Dark mode" aria-checked="false" hidden><svg class="th-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg> <svg class="th-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path></svg></button></div></div></div><div class="page"><header class="masthead" id="top"><div class="mast-top"><p class="kicker">Tidewright · Wenlow Islands ferries</p><span class="updated">Updated 2026-03-09</span></div><h1>Small fixes before the spring timetable</h1><p class="lede">Six small fixes that can land before the spring timetable starts on 30 March. Each one answers something riders asked the harbour office this winter. Pick by number.</p><div class="stats" aria-label="At a glance"><div class="t-teal"><b>6</b> <span>minor</span></div></div></header><aside class="reader-rail" aria-label="Document navigation and decisions"><nav class="toc" aria-label="Contents"><div class="toc-heading"><span>On this page</span><button class="btn" type="button" data-contents-toggle aria-expanded="true" aria-controls="contents-list" hidden>Contents</button></div><div id="contents-list"><ol class="chapters"><li><a class="chapter-link" href="#thesis"><span class="n">01</span><span>Three weeks, six small fixes</span></a></li><li><a class="chapter-link" href="#ideas"><span class="n">02</span><span>Fixes</span></a></li></ol><details class="item-directory"><summary>Browse ideas<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><ol><li class="group">Minor</li><li data-item="clock-change" class=""><a href="#clock-change"><span class="n">1.</span><span>Calendar files that survive the clock change</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="spaces-left" class=""><a href="#spaces-left"><span class="n">2.</span><span>Say when a car deck is nearly full</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="usual-route" class=""><a href="#usual-route"><span class="n">3.</span><span>Start search on the rider&#39;s usual route</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="step-free" class=""><a href="#step-free"><span class="n">4.</span><span>Step-free boarding notes on every ticket</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="bike-spaces" class=""><a href="#bike-spaces"><span class="n">5.</span><span>Book a bike space with the ticket</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li><li data-item="vat-receipts" class=""><a href="#vat-receipts"><span class="n">6.</span><span>Receipts with VAT for business riders</span><span class="sr"></span><span class="pip" aria-hidden="true"></span></a></li></ol></details></div></nav><details class="decision-panel" open><summary class="decision-heading"><span>Your decisions</span><span class="decision-count"><b data-live="count">0</b> / 6</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary> <ol class="dots" aria-label="Decisions by number"><li data-item="clock-change" class=""><a href="#clock-change" title="Calendar files that survive the clock change">1<span class="sr"></span></a></li><li data-item="spaces-left" class=""><a href="#spaces-left" title="Say when a car deck is nearly full">2<span class="sr"></span></a></li><li data-item="usual-route" class=""><a href="#usual-route" title="Start search on the rider&#39;s usual route">3<span class="sr"></span></a></li><li data-item="step-free" class=""><a href="#step-free" title="Step-free boarding notes on every ticket">4<span class="sr"></span></a></li><li data-item="bike-spaces" class=""><a href="#bike-spaces" title="Book a bike space with the ticket">5<span class="sr"></span></a></li><li data-item="vat-receipts" class=""><a href="#vat-receipts" title="Receipts with VAT for business riders">6<span class="sr"></span></a></li></ol><p class="decision-help">Decide as you read. Your reply brings it all together.</p><div class="decision-acts"><button class="btn solid rail-copy" type="button" data-copy-reply>Copy reply</button> <a class="link-btn" href="#pick">Review your reply</a></div></details></aside><main class="main" id="main" tabindex="-1"><div class="reading-tools"><span class="reading-label">2 sections, 6 ideas</span><div class="reading-actions"><button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button> <button class="btn" type="button" data-collapse-toggle aria-expanded="false">Expand all</button></div></div><p class="no-hits" data-no-hits hidden>Nothing in this document matches <b data-no-hits-query></b>. <button class="link-btn" type="button" data-search-clear>Clear the search</button></p><section class="section" id="thesis"><div class="section-heading"><span class="section-number">01</span><h2>Three weeks, six small fixes</h2></div><div class="part prose"><p>The spring timetable starts on Monday 30 March, the day after the clocks go forward. It adds an evening sailing to Holm and doubles weekend crossings to Keddle, and busier boats find the rough edges winter hid.</p>
+<p>Every fix here came from the harbour office&rsquo;s winter contact log and fits in the three weeks left. Pick the ones worth doing now, and the rest wait for summer.</p></div></section><section class="section" id="ideas"><div class="section-heading"><span class="section-number">02</span><h2>Fixes</h2></div><details class="board-overview"><summary><span>At a glance</span><span class="overview-count">6 ideas</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><div class="part table-wrap"><table><thead><tr><th class="ck"><span class="sr">Pick</span></th><th class="num">#</th><th>Idea</th><th>Size</th><th>Effort</th><th>Impact</th><th>Depends on</th></tr></thead> <tbody><tr data-item="clock-change" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="clock-change" aria-label="Pick 1, Calendar files that survive the clock change"></td><td class="num">1</td><td><a href="#clock-change">Calendar files that survive the clock change</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="spaces-left" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="spaces-left" aria-label="Pick 2, Say when a car deck is nearly full"></td><td class="num">2</td><td><a href="#spaces-left">Say when a car deck is nearly full</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="usual-route" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="usual-route" aria-label="Pick 3, Start search on the rider&#39;s usual route"></td><td class="num">3</td><td><a href="#usual-route">Start search on the rider&#39;s usual route</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="step-free" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="step-free" aria-label="Pick 4, Step-free boarding notes on every ticket"></td><td class="num">4</td><td><a href="#step-free">Step-free boarding notes on every ticket</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr><tr data-item="bike-spaces" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="bike-spaces" aria-label="Pick 5, Book a bike space with the ticket"></td><td class="num">5</td><td><a href="#bike-spaces">Book a bike space with the ticket</a></td><td><span class="chip t-teal">minor</span></td><td>M</td><td><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></td><td><span class="deps"> <a href="#spaces-left" title="Say when a car deck is nearly full">2</a></span></td></tr><tr data-item="vat-receipts" class=""><td class="ck"><input class="check" type="checkbox" data-pick-row="vat-receipts" aria-label="Pick 6, Receipts with VAT for business riders"></td><td class="num">6</td><td><a href="#vat-receipts">Receipts with VAT for business riders</a></td><td><span class="chip t-teal">minor</span></td><td>S</td><td><span class="meter" aria-label="Impact 2 of 5"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span></td><td><span class="deps">nothing </span></td></tr></tbody></table></div><p class="legend">Effort is agent time, not calendar time: S is under an hour, M is a few hours with review, L is a day or more across sessions.</p></details> <details class="item" id="clock-change" data-item="clock-change" data-title="Calendar files that survive the clock change" data-decides data-num="1"><summary class="item-head"><div class="item-heading"><span class="item-number">1</span><div class="item-copy"><h3>Calendar files that survive the clock change</h3><p class="one-line">Calendar exports carry the harbour&#39;s time zone, so sailings after 29 March stop showing an hour early.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-clock-change">Your note on 1</label> <textarea id="note-clock-change" data-note="clock-change" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Calendar files name the Europe/London time zone instead of a fixed offset. Riders who already exported a sailing after 29 March get a corrected file with their reminder.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Last spring 23 riders turned up an hour out in the first week of summer time, and three missed the boat. The fix is one line and a resend.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>Some calendar apps duplicate an event when a corrected file arrives. The resend keeps the event id, so the new file replaces the old one.</p></dd></div></dl></div></details><details class="item" id="spaces-left" data-item="spaces-left" data-title="Say when a car deck is nearly full" data-decides data-num="2"><summary class="item-head"><div class="item-heading"><span class="item-number">2</span><div class="item-copy"><h3>Say when a car deck is nearly full</h3><p class="one-line">Search results show the car spaces left once a sailing drops below ten, so drivers choose before it sells out.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span> <span class="meter-label">impact 4/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-spaces-left">Your note on 2</label> <textarea id="note-spaces-left" data-note="spaces-left" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>When fewer than ten car spaces remain, the search result shows the number left beside the fare. The count comes from the inventory the booking check already reads.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Drivers who meet a full deck at checkout phone the office to ask when spaces free up. Seeing the number early moves them to another sailing first.</p></dd></div><div class="facet"><dt>Unlocks</dt><dd><p>The same counter shows bike spaces in 5.</p></dd></div></dl></div></details><details class="item" id="usual-route" data-item="usual-route" data-title="Start search on the rider&#39;s usual route" data-decides data-num="3"><summary class="item-head"><div class="item-heading"><span class="item-number">3</span><div class="item-copy"><h3>Start search on the rider&#39;s usual route</h3><p class="one-line">The search form opens on the route, party, and vehicle the rider booked last, with one tap to change them.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-usual-route">Your note on 3</label> <textarea id="note-usual-route" data-note="usual-route" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Signed-in riders find their last route, passengers, and vehicle already filled in. Anything they change becomes the new starting point.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Most bookings are residents repeating the same crossing. Four fewer taps on each one adds up across 2,400 bookings a week.</p></dd></div></dl></div></details><details class="item" id="step-free" data-item="step-free" data-title="Step-free boarding notes on every ticket" data-decides data-num="4"><summary class="item-head"><div class="item-heading"><span class="item-number">4</span><div class="item-copy"><h3>Step-free boarding notes on every ticket</h3><p class="one-line">Tickets say how to board without steps at each harbour, and checkout asks once whether a rider needs it.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-step-free">Your note on 4</label> <textarea id="note-step-free" data-note="step-free" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Each harbour gets a short note on where the ramp is and when crew help foot passengers aboard. Riders who ask for step-free boarding see it on the ticket, and crew see a flag on the loading list.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Brisk has no foot passenger ramp at low water, and riders find out at the slipway. A note turns a surprise into a plan.</p></dd></div><div class="facet"><dt>Note</dt><dd><p>The harbour authority wrote the notes. We only show them.</p></dd></div></dl></div></details><details class="item" id="bike-spaces" data-item="bike-spaces" data-title="Book a bike space with the ticket" data-decides data-num="5"><summary class="item-head"><div class="item-heading"><span class="item-number">5</span><div class="item-copy"><h3>Book a bike space with the ticket</h3><p class="one-line">Bikes become a bookable extra on the Petrel, which carries eight, instead of first come at the slipway.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort M</span><span class="meter" aria-label="Impact 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 3/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-bike-spaces">Your note on 5</label> <textarea id="note-bike-spaces" data-note="bike-spaces" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>Checkout offers a bike space while any remain, counted like car spaces. Riders without a booked space can still board when the crew have room.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Spring weekends bring cyclists to Keddle, and the Petrel turned away 41 bikes last April. A booked space means nobody rides to the harbour for nothing.</p></dd></div><div class="facet risk"><dt>Risk</dt><dd><p>No-shows can leave booked spaces empty while crew turn bikes away. Release unclaimed spaces ten minutes before departure.</p></dd></div><div class="facet"><dt>Depends on</dt><dd><p><a class="dep" href="#spaces-left">2</a></p></dd></div></dl></div></details><details class="item" id="vat-receipts" data-item="vat-receipts" data-title="Receipts with VAT for business riders" data-decides data-num="6"><summary class="item-head"><div class="item-heading"><span class="item-number">6</span><div class="item-copy"><h3>Receipts with VAT for business riders</h3><p class="one-line">Receipts show VAT and an optional company name, so contractors stop asking the office for a copy.</p></div><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="item-meta"><span class="chip t-teal" title="Size">minor</span><span class="chip t-outline" title="Effort">Effort S</span><span class="meter" aria-label="Impact 2 of 5"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span> <span class="meter-label">impact 2/5</span> <span class="decide"><button class="btn pick-btn" type="button" aria-pressed="false" data-pick>Pick</button> <button class="link-btn note-btn" type="button" data-note-toggle>Add a note</button></span></div></summary><div class="item-body"><div class="note" data-note-wrap hidden><label for="note-vat-receipts">Your note on 6</label> <textarea id="note-vat-receipts" data-note="vat-receipts" rows="2" placeholder="Changes, conditions, or why not"></textarea></div><dl class="facets"><div class="facet"><dt>How it works</dt><dd><p>The receipt page adds the VAT amount, our VAT number, and a company name the rider can fill in before downloading.</p></dd></div><div class="facet"><dt>Why</dt><dd><p>Contractors working on the islands asked for 180 VAT receipts this winter, and the office wrote each one by hand.</p></dd></div></dl></div></details> <div class="hidden-row" data-hidden-row hidden><span><b data-hidden-count>0</b> hidden</span> <button class="btn" type="button" data-show-all>Show all</button></div></section><section class="pick" id="pick" aria-labelledby="pick-title" data-mode="pick" data-verdicts="null" data-noun="idea" data-plural="ideas" data-empty><div><h2 id="pick-title">Your reply</h2><p class="pick-lede">Your choices, ready to send. Copy this reply back to your agent when you’re done.</p></div><div class="reply"><div class="said example"><p><span class="tag">Example</span> <code>2, 5, 6. Notes: 5: smaller first.</code></p><p class="words">Pick: ideas 2, 5, and 6. Note on idea 5: smaller first.</p></div><div class="said live"><p><code data-reply>nothing.</code></p><p class="words" data-words>Nothing decided yet.</p></div><div class="acts"><button type="button" class="btn solid" data-copy-reply>Copy reply</button> <button type="button" class="link-btn" data-copy-decisions>Copy as JSON</button></div></div></section></main><footer class="foot"><span>Small fixes before the spring timetable</span> <span>Generated with Dossier · 2026-03-09</span></footer></div><div class="toast" role="status" aria-live="polite" data-toast></div><script type="application/json" id="dossier-model">{"dossier":"1.0","kind":"brainstorm","meta":{"title":"Small fixes before the spring timetable","slug":"spring-fixes","kicker":"Tidewright · Wenlow Islands ferries","emphasis":"spring","lede":"Six small fixes that can land before the spring timetable starts on 30 March. Each one answers something riders asked the harbour office this winter. Pick by number.","updated":"2026-03-09","status":"for-decision"},"sections":[{"id":"thesis","title":"Three weeks, six small fixes","parts":[{"type":"prose","markdown":"The spring timetable starts on Monday 30 March, the day after the clocks go forward. It adds an evening sailing to Holm and doubles weekend crossings to Keddle, and busier boats find the rough edges winter hid.\n\nEvery fix here came from the harbour office's winter contact log and fits in the three weeks left. Pick the ones worth doing now, and the rest wait for summer."}]},{"id":"ideas","title":"Fixes","board":{"summary":true,"items":[{"id":"clock-change","title":"Calendar files that survive the clock change","summary":"Calendar exports carry the harbour's time zone, so sailings after 29 March stop showing an hour early.","size":"minor","effort":"S","impact":4,"facets":[{"label":"How it works","markdown":"Calendar files name the Europe/London time zone instead of a fixed offset. Riders who already exported a sailing after 29 March get a corrected file with their reminder."},{"label":"Why","markdown":"Last spring 23 riders turned up an hour out in the first week of summer time, and three missed the boat. The fix is one line and a resend."},{"label":"Risk","markdown":"Some calendar apps duplicate an event when a corrected file arrives. The resend keeps the event id, so the new file replaces the old one."}]},{"id":"spaces-left","title":"Say when a car deck is nearly full","summary":"Search results show the car spaces left once a sailing drops below ten, so drivers choose before it sells out.","size":"minor","effort":"S","impact":4,"facets":[{"label":"How it works","markdown":"When fewer than ten car spaces remain, the search result shows the number left beside the fare. The count comes from the inventory the booking check already reads."},{"label":"Why","markdown":"Drivers who meet a full deck at checkout phone the office to ask when spaces free up. Seeing the number early moves them to another sailing first."},{"label":"Unlocks","markdown":"The same counter shows bike spaces in 5."}]},{"id":"usual-route","title":"Start search on the rider's usual route","summary":"The search form opens on the route, party, and vehicle the rider booked last, with one tap to change them.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Signed-in riders find their last route, passengers, and vehicle already filled in. Anything they change becomes the new starting point."},{"label":"Why","markdown":"Most bookings are residents repeating the same crossing. Four fewer taps on each one adds up across 2,400 bookings a week."}]},{"id":"step-free","title":"Step-free boarding notes on every ticket","summary":"Tickets say how to board without steps at each harbour, and checkout asks once whether a rider needs it.","size":"minor","effort":"S","impact":3,"facets":[{"label":"How it works","markdown":"Each harbour gets a short note on where the ramp is and when crew help foot passengers aboard. Riders who ask for step-free boarding see it on the ticket, and crew see a flag on the loading list."},{"label":"Why","markdown":"Brisk has no foot passenger ramp at low water, and riders find out at the slipway. A note turns a surprise into a plan."},{"label":"Note","markdown":"The harbour authority wrote the notes. We only show them."}]},{"id":"bike-spaces","title":"Book a bike space with the ticket","summary":"Bikes become a bookable extra on the Petrel, which carries eight, instead of first come at the slipway.","size":"minor","effort":"M","impact":3,"dependsOn":["spaces-left"],"facets":[{"label":"How it works","markdown":"Checkout offers a bike space while any remain, counted like car spaces. Riders without a booked space can still board when the crew have room."},{"label":"Why","markdown":"Spring weekends bring cyclists to Keddle, and the Petrel turned away 41 bikes last April. A booked space means nobody rides to the harbour for nothing."},{"label":"Risk","markdown":"No-shows can leave booked spaces empty while crew turn bikes away. Release unclaimed spaces ten minutes before departure."}]},{"id":"vat-receipts","title":"Receipts with VAT for business riders","summary":"Receipts show VAT and an optional company name, so contractors stop asking the office for a copy.","size":"minor","effort":"S","impact":2,"facets":[{"label":"How it works","markdown":"The receipt page adds the VAT amount, our VAT number, and a company name the rider can fill in before downloading."},{"label":"Why","markdown":"Contractors working on the islands asked for 180 VAT receipts this winter, and the office wrote each one by hand."}]}]}}]}</script><script>
 (() => {
   "use strict";
   const parts = (c, s) => {
@@ -452,7 +436,6 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
       themeBtn.hidden = false;
       themeBtn.setAttribute("data-mode", m);
       themeBtn.setAttribute("aria-checked", m === "dark");
-      themeBtn.title = "Switch to " + (m === "dark" ? "light" : "dark") + " mode";
     }
   };
   applyTheme(themeMode(load("theme", true) || load("theme"), matchMedia("(prefers-color-scheme: dark)").matches));
@@ -491,7 +474,7 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
   const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
   const announce = () => {
     const d = detail();
-    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d }));
     tell({ type: "dossier:decisions", decisions: d });
   };
   const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
@@ -511,7 +494,7 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
         b.setAttribute("aria-checked", sel);
         b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
       });
-      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), lis = $$('li[data-item="' + id + '"]');
       if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
       if (tr) {
         tr.classList.toggle("picked", picked);
@@ -519,16 +502,14 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
         const ctl = $("input,select", tr);
         if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
       }
-      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      lis.forEach((li) => { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; });
       const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
       if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
       if (note && state.notes[id]) note.hidden = false;
       if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
     });
-    let chosen = "Open";
-    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    choices.forEach((r) => { r.checked = r.value === state.path; });
     $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
-    say('[data-live="choice"]', chosen);
     $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
     say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
     if (pickBlock) pickBlock.toggleAttribute("data-empty", empty(ctx, state));
@@ -559,6 +540,7 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
     else if (t.closest("[data-hide]")) setHide(!hide);
     else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+    else if (t.closest("[data-next]")) { const el = items.find((x) => can[x.id] && !decided(x.id) && !x.hidden); if (el) { el.open = true; $("summary", el).focus(); el.scrollIntoView(); } else toast("Everything is decided"); }
   });
   on("keydown", (e) => {
     const t = e.target, b = t.closest?.("[data-verdict]");
@@ -616,7 +598,7 @@ figure.diagram figcaption > span + .dg-source[open] { flex-basis:100%;}
       const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
       u.el.hidden = h;
       if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
-      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+      $$('tr[data-item="' + id + '"], .toc li[data-item="' + id + '"]').forEach((x) => { x.hidden = h; });
     });
     if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
     sections.forEach((sec) => {

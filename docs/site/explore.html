@@ -4,74 +4,157 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dossier examples</title>
+  <meta name="description" content="Six kinds of Dossier document, each one self-contained HTML page: a brainstorm, a plan, a review, a release, an incident, and a brief. Read, search, and decide by number.">
+  <meta property="og:title" content="Dossier examples">
+  <meta property="og:description" content="Six kinds of Dossier document, each one self-contained HTML page. Read, search, and decide by number.">
+  <meta name="theme-color" content="#6545cd">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%236545cd'/%3E%3Cpath d='M9.5 6.5h7l3.5 3.5V21h-10.5z' fill='none' stroke='%23fff' stroke-width='1.7' stroke-linejoin='round'/%3E%3Cpath d='M16.5 6.5v4h4' fill='none' stroke='%23fff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
-    :root { color-scheme:light; --bg:#f6f6f6; --paper:#fff; --ink:#222; --muted:#656565; --line:#dedede; --accent:#6545cd; --soft:#ede7ff; }
-    @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { color-scheme:dark; --bg:#121212; --paper:#1b1b1b; --ink:#ededed; --muted:#aaa; --line:#383838; --accent:#bda6ff; --soft:#302744; } }
-    :root[data-theme="dark"] { color-scheme:dark; --bg:#121212; --paper:#1b1b1b; --ink:#ededed; --muted:#aaa; --line:#383838; --accent:#bda6ff; --soft:#302744; }
-    * { box-sizing:border-box; }
-    body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    header { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; padding:12px 24px; border-bottom:1px solid var(--line); background:var(--paper); }
-    .wordmark { font-weight:650; font-size:15px; letter-spacing:-.3px; text-decoration:none; color:var(--ink); white-space:nowrap; }
-    .wordmark span { color:var(--muted); font-size:12px; margin-left:8px; font-weight:400; letter-spacing:0; }
-    nav { display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
-    nav a { color:var(--muted); text-decoration:none; padding:7px 10px; border-radius:7px; font-size:12px; font-weight:500; }
-    nav a:hover { color:var(--ink); background:var(--bg); }
-    nav a[aria-current] { color:var(--accent); background:var(--soft); }
-    .tools { display:flex; gap:8px; margin-left:auto; align-items:center; }
-    button,.open { font:inherit; font-size:12px; background:none; color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:7px 10px; border-radius:7px; cursor:pointer; white-space:nowrap; }
-    button[aria-pressed="true"] { color:var(--accent); background:var(--soft); border-color:transparent; }
-    a:focus-visible,button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-    main { height:calc(100dvh - var(--header,62px)); display:flex; justify-content:center; overflow:hidden; }
-    iframe { display:block; border:0; width:100%; height:100%; background:var(--bg); }
-    main.mobile { padding:20px 0; background:var(--paper); }
-    main.mobile iframe { box-sizing:content-box; flex:none; width:min(390px,100%); border:1px solid var(--line); border-radius:20px; box-shadow:0 12px 48px #0002; }
-    @media (max-width:850px) { header { padding:10px 16px; gap:8px; } nav { order:3; width:100%; } nav a { flex:1; text-align:center; padding-inline:6px; } .tools { margin-left:auto; } }
-    @media (max-width:450px) { .wordmark span { display:none; } .tools button { display:none; } nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } nav a { font-size:11px; padding-inline:4px; } main.mobile { padding:0; } main.mobile iframe { border:0; border-radius:0; } }
+    :root {
+      color-scheme:light dark;
+      --bg:light-dark(#f5f5f5,#121212); --paper:light-dark(#ffffff,#1b1b1b); --paper-2:light-dark(#eeeeee,#252525);
+      --ink:light-dark(#222222,#f0f0f0); --muted:light-dark(#626262,#a6a6a6); --line:light-dark(#dadada,#363636); --line-soft:light-dark(#e8e8e8,#2c2c2c);
+      --shade:light-dark(rgba(0,0,0,.1),rgba(0,0,0,.6)); --accent:light-dark(#6545cd,#bda6ff); --accent-ink:light-dark(#ffffff,#241442);
+      --violet:light-dark(#6947bd,#bda4ff); --violet-soft:light-dark(#f0ebff,#2f2647); --blue:light-dark(#2863aa,#8bbcff); --blue-soft:light-dark(#e7f0ff,#243146);
+      --amber:light-dark(#8c6112,#edc46b); --amber-soft:light-dark(#faf0d9,#362f20); --teal:light-dark(#08745a,#61dfb1); --teal-soft:light-dark(#e4f5ed,#18342b);
+      --coral:light-dark(#b03b44,#ff9595); --coral-soft:light-dark(#ffeded,#362527);
+      --font:"Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    }
+    :root[data-theme="light"] { color-scheme:light }
+    :root[data-theme="dark"] { color-scheme:dark }
+    * { box-sizing:border-box }
+    body { margin:0; height:100dvh; display:flex; flex-direction:column; background:var(--bg); color:var(--ink); font:14px/1.5 var(--font); -webkit-font-smoothing:antialiased }
+    a:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:6px }
+    header { display:grid; gap:6px; padding:12px clamp(14px,3vw,32px) 0; background:var(--paper); border-bottom:1px solid var(--line-soft) }
+    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap }
+    .wordmark { display:inline-flex; align-items:center; gap:9px; margin-right:auto; color:var(--ink); text-decoration:none; font-weight:650; font-size:15px; letter-spacing:-.02em; white-space:nowrap }
+    .wordmark svg { width:28px; height:28px; padding:5px; border-radius:8px; background:var(--accent); color:var(--accent-ink) }
+    .wordmark span { color:var(--muted); font-weight:400 }
+    .seg { display:inline-flex; gap:2px; padding:3px; background:var(--paper-2); border-radius:8px }
+    .seg button { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border:0; border-radius:6px; background:none; color:var(--muted); font:inherit; font-size:12.5px; font-weight:500; cursor:pointer }
+    .seg button[aria-pressed="true"] { background:var(--paper); color:var(--ink); box-shadow:0 1px 2px var(--shade) }
+    .seg svg, .btn svg { width:15px; height:15px }
+    @media (max-width:760px) { .btn.github { display:none } }
+    .btn { display:inline-flex; align-items:center; gap:7px; min-height:32px; padding:0 11px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--ink); font:inherit; font-size:12.5px; font-weight:500; text-decoration:none; white-space:nowrap; cursor:pointer }
+    .btn:hover { background:var(--paper-2) }
+    .tabs { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -6px }
+    .tabs a { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; color:var(--muted); text-decoration:none; font-size:13px; font-weight:500; white-space:nowrap }
+    .tabs a svg { width:16px; height:16px }
+    .tabs a kbd { font:11px var(--mono); color:var(--muted); opacity:.75 }
+    .tabs a:hover { color:var(--ink); background:var(--paper-2) }
+    .tabs a[aria-current] { color:var(--kind); background:var(--kind-soft) }
+    .tabs a[aria-current] kbd { color:inherit }
+    [data-kind="brainstorm"] { --kind:var(--violet); --kind-soft:var(--violet-soft) }
+    [data-kind="plan"], [data-kind="brief"] { --kind:var(--blue); --kind-soft:var(--blue-soft) }
+    [data-kind="review"] { --kind:var(--amber); --kind-soft:var(--amber-soft) }
+    [data-kind="release"] { --kind:var(--teal); --kind-soft:var(--teal-soft) }
+    [data-kind="incident"] { --kind:var(--coral); --kind-soft:var(--coral-soft) }
+    .tabs { padding-bottom:8px }
+    .context { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; padding:10px clamp(14px,3vw,32px); font-size:13px; color:var(--muted) }
+    .context b { color:var(--ink); font-weight:600 }
+    .context .try { margin-left:auto }
+    .context .try::before { content:"Try this: "; font-weight:600; color:var(--kind) }
+    main { flex:1; min-height:0; display:flex; justify-content:center; align-items:stretch }
+    .device { flex:none; width:100%; height:100%; overflow:hidden; background:var(--bg) }
+    iframe { display:block; border:0; width:100%; height:100%; background:var(--bg) }
+    main[data-view="tablet"], main[data-view="phone"] { padding:20px 16px 24px; background:var(--paper-2) }
+    main[data-view="tablet"] .device, main[data-view="phone"] .device { border:1px solid var(--line); border-radius:24px; box-shadow:0 24px 64px -32px var(--shade) }
+    main[data-view="tablet"] .device { width:min(768px,100%) }
+    main[data-view="phone"] .device { width:min(390px,100%) }
+    @media (max-width:760px) {
+      .context .try { margin-left:0; flex-basis:100% }
+      .seg .word { display:none }
+      main[data-view="tablet"], main[data-view="phone"] { padding:0 }
+      main[data-view="tablet"] .device, main[data-view="phone"] .device { width:100%; border:0; border-radius:0; box-shadow:none }
+    }
+    @media (prefers-reduced-motion:no-preference) { .device { transition:width .2s ease } }
   </style>
 </head>
 <body>
   <header>
-    <a class="wordmark" href="index.html">Dossier <span>Examples</span></a>
-    <nav aria-label="Dossier type">
-      <a href="booking-service.html" target="dossier-preview" data-kind="brainstorm">Brainstorm</a>
-      <a href="offline-boarding-passes.html" target="dossier-preview" data-kind="plan">Plan</a>
-      <a href="tide-aware-cancellations.html" target="dossier-preview" data-kind="review">Review</a>
-      <a href="release-3-4-0.html" target="dossier-preview" data-kind="release">Release</a>
-      <a href="car-deck-double-booking.html" target="dossier-preview" data-kind="incident">Incident</a>
-      <a href="checkout-abandonment.html" target="dossier-preview" data-kind="brief">Brief</a>
-    </nav>
-    <div class="tools">
-      <button type="button" aria-pressed="false" id="mobile">Mobile view</button>
-      <a class="open" href="booking-service.html" target="_blank" rel="noopener">Open document ↗</a>
+    <div class="row">
+      <a class="wordmark" href="index.html" aria-label="Dossier home">
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M8 4h10l5 5v15H8V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M18 4v6h5M4 8v16a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        Dossier <span>Examples</span>
+      </a>
+      <div class="seg" role="group" aria-label="Viewport">
+        <button type="button" data-view="desktop" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg><span class="word">Desktop</span></button>
+        <button type="button" data-view="tablet" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M11 18h2"></path></svg><span class="word">Tablet</span></button>
+        <button type="button" data-view="phone" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg><span class="word">Phone</span></button>
+      </div>
+      <button class="btn" type="button" id="theme" aria-label="Toggle light and dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"></path></svg>
+        <span id="theme-word">Theme</span>
+      </button>
+      <a class="btn open" href="booking-service.html" target="_blank" rel="noopener">
+        Open document
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg>
+      </a>
+      <a class="btn github" href="https://github.com/kylebegeman/dossier" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.53.1.72-.23.72-.5v-1.9c-2.92.63-3.54-1.24-3.54-1.24-.48-1.2-1.17-1.53-1.17-1.53-.95-.65.07-.64.07-.64 1.06.08 1.61 1.08 1.61 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.67-1.4-2.33-.27-4.79-1.17-4.79-5.2 0-1.14.41-2.08 1.08-2.82-.1-.26-.47-1.33.1-2.78 0 0 .88-.28 2.89 1.08a10 10 0 0 1 5.26 0c2-1.36 2.88-1.08 2.88-1.08.58 1.45.22 2.52.11 2.78.67.74 1.08 1.68 1.08 2.82 0 4.04-2.47 4.93-4.81 5.19.38.33.71.97.71 1.96v2.9c0 .28.19.61.73.5A10.5 10.5 0 0 0 12 1.5Z"></path></svg>
+        GitHub
+      </a>
     </div>
+    <nav class="tabs" aria-label="Dossier type">
+      <a href="booking-service.html" target="dossier-preview" data-kind="brainstorm" data-title="Ten changes for a steadier booking service"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8.5 15.5a6 6 0 1 1 7 0V18h-7v-2.5ZM12 3V1M4 5 2.5 3.5M20 5l1.5-1.5"></path></svg>Brainstorm <kbd>1</kbd></a>
+      <a href="offline-boarding-passes.html" target="dossier-preview" data-kind="plan" data-title="Offline boarding passes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6v5H4zM8 10h7v5H8zM13 16h7v5h-7z"></path></svg>Plan <kbd>2</kbd></a>
+      <a href="tide-aware-cancellations.html" target="dossier-preview" data-kind="review" data-title="Tide-aware cancellations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20l-4.5-4.5M7 9l2 2 4-4"></path><circle cx="10" cy="10" r="7"></circle></svg>Review <kbd>3</kbd></a>
+      <a href="release-3-4-0.html" target="dossier-preview" data-kind="release" data-title="Release 3.4.0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V4m-5 5 5-5 5 5M5 16v4h14v-4"></path></svg>Release <kbd>4</kbd></a>
+      <a href="car-deck-double-booking.html" target="dossier-preview" data-kind="incident" data-title="Double-booked car deck on the 07:40"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h5l3-8 4 16 3-8h5"></path></svg>Incident <kbd>5</kbd></a>
+      <a href="checkout-abandonment.html" target="dossier-preview" data-kind="brief" data-title="Why riders abandon checkout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h5"></path></svg>Brief <kbd>6</kbd></a>
+    </nav>
   </header>
-  <main>
-    <iframe name="dossier-preview" title="Brainstorm example" src="booking-service.html"></iframe>
+  <p class="context" data-kind="brainstorm"><b id="doc-title">Loading</b><span class="try" id="try"></span></p>
+  <main data-view="desktop">
+    <div class="device"><iframe name="dossier-preview" title="Brainstorm example" src="booking-service.html"></iframe></div>
   </main>
   <script>
     (() => {
-      const frame=document.querySelector('iframe'), links=[...document.querySelectorAll('nav a')], open=document.querySelector('.open');
-      const choose=() => {
-        const link=links.find(a=>a.dataset.kind===location.hash.slice(1)) || links[0];
-        links.forEach(a=>{ if(a===link) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-        frame.title=link.textContent+' example';
-        if(frame.getAttribute('src')!==link.getAttribute('href')) frame.src=link.getAttribute('href');
-        open.href=link.href;
-        document.title=link.textContent+' · Dossier examples';
+      const tips = {
+        brainstorm: "Pick the ideas worth building, add a note to one, and watch the reply in the rail write itself.",
+        plan: "Expand a step to read what changes and when it is done, then press / to search the whole plan.",
+        review: "Give each finding a verdict. Arrow keys move between verdicts and Next undecided jumps ahead.",
+        release: "Rule on the gates. Choosing Ship over a failed gate raises the warning until you waive it.",
+        incident: "Read the timeline, then open the follow-ups. Rows expand in place for the detail.",
+        brief: "No decisions here, just findings: this document carries a custom accent color and a chart.",
       };
-      links.forEach(a=>a.addEventListener('click',e=>{ if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); location.hash=a.dataset.kind; }));
-      addEventListener('hashchange',choose);
+      const frame = document.querySelector("iframe"), links = [...document.querySelectorAll(".tabs a")], open = document.querySelector(".open");
+      const context = document.querySelector(".context"), titleEl = document.querySelector("#doc-title"), tryEl = document.querySelector("#try");
+      const main = document.querySelector("main"), root = document.documentElement;
+      const choose = () => {
+        const link = links.find((a) => a.dataset.kind === location.hash.slice(1)) || links[0];
+        links.forEach((a) => { if (a === link) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+        const kind = link.dataset.kind, name = link.textContent.trim().replace(/\s*\d$/, "");
+        frame.title = name + " example";
+        if (frame.getAttribute("src") !== link.getAttribute("href")) frame.src = link.getAttribute("href");
+        titleEl.textContent = link.dataset.title;
+        open.href = link.href;
+        context.dataset.kind = kind;
+        tryEl.textContent = tips[kind];
+        document.title = name + " · Dossier examples";
+      };
+      links.forEach((a) => a.addEventListener("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); location.hash = a.dataset.kind; }));
+      addEventListener("hashchange", choose);
+      addEventListener("keydown", (e) => { const n = +e.key; if (n >= 1 && n <= links.length && !e.metaKey && !e.ctrlKey && !e.altKey) location.hash = links[n - 1].dataset.kind; });
       choose();
-      const mobile=document.querySelector('#mobile');
-      mobile.addEventListener('click',()=>{ const on=document.querySelector('main').classList.toggle('mobile'); mobile.setAttribute('aria-pressed',String(on)); });
-      new ResizeObserver(([entry])=>document.documentElement.style.setProperty('--header',entry.target.getBoundingClientRect().height+'px')).observe(document.querySelector('header'));
+      const views = [...document.querySelectorAll("[data-view]")].filter((b) => b.tagName === "BUTTON");
+      views.forEach((b) => b.addEventListener("click", () => { main.dataset.view = b.dataset.view; views.forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }));
+      const applyTheme = (mode) => { if (!mode) return; root.dataset.theme = mode; document.querySelector("#theme-word").textContent = mode === "dark" ? "Dark" : "Light"; };
+      try { applyTheme(localStorage.getItem("dossier:theme")); } catch (e) {}
+      document.querySelector("#theme").addEventListener("click", () => {
+        const toggle = frame.contentDocument && frame.contentDocument.querySelector("[data-theme-toggle]");
+        if (toggle) toggle.click();
+        else applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
+      });
       let observer;
-      frame.addEventListener('load',()=>{
-        if(observer) observer.disconnect();
-        const root=frame.contentDocument.documentElement;
-        const sync=()=>{ const mode=root.getAttribute('data-theme'); if(mode) document.documentElement.dataset.theme=mode; };
-        observer=new MutationObserver(sync);
-        observer.observe(root,{attributes:true,attributeFilter:['data-theme']});
+      frame.addEventListener("load", () => {
+        if (observer) observer.disconnect();
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        if (doc.title) titleEl.textContent = doc.title;
+        const sync = () => applyTheme(doc.documentElement.getAttribute("data-theme"));
+        observer = new MutationObserver(sync);
+        observer.observe(doc.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
         sync();
       });
     })();

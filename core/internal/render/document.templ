@@ -139,7 +139,7 @@ templ toolbar(p *Page) {
 
 templ readingTools(p *Page) {
 	<div class="reading-tools">
-		<span class="reading-label">The document <span>{ strconv.Itoa(len(p.Sections)) } sections</span></span>
+		<span class="reading-label">{ readingLabel(p) }</span>
 		<div class="reading-actions">
 			if p.Decides {
 				<button class="btn" type="button" data-hide aria-pressed="false">Hide decided</button>
@@ -164,27 +164,25 @@ templ masthead(p *Page) {
 			}
 		</div>
 		<h1 { edit(p.EditTitle)... }>{ p.Doc.Meta.Title }</h1>
-		<div class="hero-bottom">
-			if p.Doc.Meta.Lede != "" {
-				<p class="lede" { edit(p.EditLede)... }>{ p.Doc.Meta.Lede }</p>
-			}
-			if len(p.Facts) > 0 {
-				<div class="stats" aria-label="At a glance">
-					for _, f := range p.Facts {
-						if f.Live == "" {
-							<div class={ templ.KV("t-"+f.Tone, f.Tone != "") }>
-								if len([]rune(f.Value)) > 3 {
-									<b class="fact-text">{ f.Value }</b>
-								} else {
-									<b>{ f.Value }</b>
-								}
-								<span>{ f.Label }</span>
-							</div>
-						}
+		if p.Doc.Meta.Lede != "" {
+			<p class="lede" { edit(p.EditLede)... }>{ p.Doc.Meta.Lede }</p>
+		}
+		if len(p.Facts) > 0 {
+			<div class="stats" aria-label="At a glance">
+				for _, f := range p.Facts {
+					if f.Live == "" {
+						<div class={ templ.KV("t-"+f.Tone, f.Tone != "") }>
+							if len([]rune(f.Value)) > 3 {
+								<b class="fact-text">{ f.Value }</b>
+							} else {
+								<b>{ f.Value }</b>
+							}
+							<span>{ f.Label }</span>
+						</div>
 					}
-				</div>
-			}
-		</div>
+				}
+			</div>
+		}
 	</header>
 }
 
@@ -250,6 +248,35 @@ func decisionCount(p *Page) int {
 	return n
 }
 
+// decidedWords says an item's decision for screen readers, after its number.
+func decidedWords(it ItemView) string {
+	if it.Picked {
+		return ", picked"
+	}
+	for _, v := range it.Verdicts {
+		if v.Checked {
+			return ", " + v.Label
+		}
+	}
+	return ""
+}
+
+// readingLabel counts what the reader is about to read.
+func readingLabel(p *Page) string {
+	label := plural(len(p.Sections), "section", "sections")
+	if n := len(p.Numbered); n > 0 && p.Kind.Item.Noun != "" {
+		label += ", " + plural(n, p.Kind.Item.Noun, p.Kind.Item.Plural)
+	}
+	return label
+}
+
+func plural(n int, one, many string) string {
+	if n == 1 {
+		return "1 " + one
+	}
+	return strconv.Itoa(n) + " " + many
+}
+
 templ readerRail(p *Page) {
 	<aside class="reader-rail" aria-label="Document navigation and decisions">
 		<nav class="toc" aria-label="Contents">
@@ -292,8 +319,21 @@ templ readerRail(p *Page) {
 					@documentChoice(p)
 				}
 				@decisionGuard(p)
+				<ol class="dots" aria-label="Decisions by number">
+					for _, it := range p.Numbered {
+						if it.Decides {
+							<li data-item={ it.ID } class={ templ.KV("picked", it.Picked) } { toneAttr(it.Tone)... }><a href={ templ.URL("#" + it.ID) } title={ it.Title }>{ strconv.Itoa(it.Number) }<span class="sr">{ decidedWords(it) }</span></a></li>
+						}
+					}
+				</ol>
 				<p class="decision-help">Decide as you read. Your reply brings it all together.</p>
-				<a class="reply-link" href="#pick">Review your reply <span aria-hidden="true">↗</span></a>
+				<div class="decision-acts">
+					if p.Mode == "verdict" {
+						<button class="btn" type="button" data-next>Next undecided</button>
+					}
+					<button class="btn solid rail-copy" type="button" data-copy-reply>Copy reply</button>
+					<a class="link-btn" href="#pick">Review your reply</a>
+				</div>
 			</details>
 		}
 	</aside>
@@ -569,7 +609,7 @@ templ itemArticle(it ItemView) {
 		<summary class="item-head">
 			<div class="item-heading">
 				if it.Numbered {
-					<span class="item-number">{ numberedLabel(it.Number) }</span>
+					<span class="item-number">{ strconv.Itoa(it.Number) }</span>
 				}
 				<div class="item-copy">
 					<h3 { edit(it.EditTitle)... }>{ it.Title }</h3>

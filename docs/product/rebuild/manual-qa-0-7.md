@@ -34,31 +34,39 @@ On every page:
 
 - **No requests.** The network panel shows the one HTML document and nothing
   else.
-- **Theme.** The toggle cycles Auto, Light, Dark, and a reload keeps the
-  choice. Charts, diagrams, chips, and the accent read well in both themes.
-- **Contents.** The rail groups items by the kind's field, or by phase in the
-  plan, where each phase heading links to its section. Frame and Rest appear
-  once each.
-- **Items.** Items start collapsed. Expand all and Collapse all work, and an
-  opened item stays open after a reload.
+- **Theme.** The switch has Light and Dark. A first load follows the system,
+  a click is kept across reloads and across pages on the same origin, and
+  the print preview stays light. Charts, diagrams, chips, and the accent read
+  well in both themes.
+- **Contents.** The rail lists the sections by number, and the current one
+  follows the scroll in the kind's color. Browse opens the item index, grouped
+  by the kind's field, or by phase in the plan, and every entry links to its
+  item.
+- **Items.** Items start collapsed in a numbered list. Expand all and
+  Collapse all work, an open item lifts onto its own surface, and it stays
+  open after a reload.
 - **Search.** `/` focuses search. Terms match titles, summaries, facets, rows,
-  and section text, and a number matches its item. Enter and Shift+Enter step
-  through hits, items open for a hit, and Esc clears the search and closes
-  them again.
-- **Print.** Print preview expands every item and hides the controls.
-- **Narrow.** At phone width the rail becomes a row of chips and nothing
-  scrolls sideways except tables, code, and wide diagrams, each in its own
-  frame.
+  and section text, and a number matches its item. The match count sits
+  beside the field, Enter and Shift+Enter step through hits, items open for a
+  hit, and Esc clears the search and closes them again.
+- **Print.** Print preview is light on white, expands every item, keeps only
+  the chosen options, and hides the controls.
+- **Narrow.** At phone width the rail collapses above the content into a
+  Contents button and a Your decisions disclosure, search takes its own line,
+  and nothing scrolls sideways except tables, code, and wide diagrams, each
+  in its own frame.
 
 ## 2. Deciding
 
 - **Picks.** In a brainstorm, Pick works from an item head and from the
-  summary checkbox, and the rail and the masthead count follow.
+  summary checkbox; the item number, the table row, and the rail dot turn
+  teal together, and the count in Your decisions follows.
 - **Verdicts.** In the plan, review, release, and incident pages, click a
   verdict: it selects without opening the item. Arrow keys move and select
-  within the group, and Delete clears it. The summary menu, the rail marker,
-  and the masthead count follow.
-- **Choice.** Choosing an option updates the masthead fact, and Clear
+  within the group, and Delete clears it. The summary menu, the item number,
+  the rail dot, and the count follow. Next undecided opens and focuses the
+  first item still to decide, and says so when none is left.
+- **Choice.** Choosing an option fills it in the rail panel, and Clear
   beside the question returns it to Open.
 - **Guard.** In the release, choose Ship. A warning names gate 1, the failed
   required gate. Waive gate 1 and the warning goes.
@@ -68,9 +76,10 @@ On every page:
 - **Reply.** Your reply, at the bottom of each deciding page, shows an
   example with a plain reading until you decide anything; the example names
   items that page can take. Once you decide, it shows your reply line and
-  says it in words, both updating as you go. Copy reply puts the line on the
-  clipboard, and Copy as JSON copies a `dossier.decisions/v1` document. The
-  block is calm in both themes and never picks up search highlights.
+  says it in words, both updating as you go. Copy reply, in the block and in
+  the rail once anything is decided, puts the line on the clipboard, and
+  Copy as JSON copies a `dossier.decisions/v1` document. The block is calm in
+  both themes and never picks up search highlights.
 
 ## 3. The decisions loop
 

@@ -45,7 +45,6 @@
       themeBtn.hidden = false;
       themeBtn.setAttribute("data-mode", m);
       themeBtn.setAttribute("aria-checked", m === "dark");
-      themeBtn.title = "Switch to " + (m === "dark" ? "light" : "dark") + " mode";
     }
   };
   applyTheme(themeMode(load("theme", true) || load("theme"), matchMedia("(prefers-color-scheme: dark)").matches));
@@ -84,7 +83,7 @@
   const detail = () => ({ path: state.path, picked: state.picked.slice().sort((a, b) => num[a] - num[b]), verdicts: state.verdicts, notes: state.notes, reply: reply(ctx, state) });
   const announce = () => {
     const d = detail();
-    try { document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d })); } catch (e) {}
+    document.dispatchEvent(new CustomEvent("dossier:decisions", { detail: d }));
     tell({ type: "dossier:decisions", decisions: d });
   };
   const save = () => { keep("decisions", JSON.stringify(state)); announce(); render(); };
@@ -104,7 +103,7 @@
         b.setAttribute("aria-checked", sel);
         b.tabIndex = (v ? sel : i === 0) ? 0 : -1;
       });
-      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), li = $('.toc li[data-item="' + id + '"]');
+      const b = $("[data-pick]", el), tr = $('tr[data-item="' + id + '"]'), lis = $$('li[data-item="' + id + '"]');
       if (b) { b.setAttribute("aria-pressed", yes); b.textContent = yes ? "Picked" : "Pick"; }
       if (tr) {
         tr.classList.toggle("picked", picked);
@@ -112,16 +111,14 @@
         const ctl = $("input,select", tr);
         if (ctl && ctl.type === "checkbox") ctl.checked = yes; else if (ctl) ctl.value = v;
       }
-      if (li) { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; }
+      lis.forEach((li) => { li.classList.toggle("picked", picked); toneOf(li, v); $(".sr", li).textContent = yes ? ", " + (label[v] || "picked") : ""; });
       const note = $("[data-note-wrap]", el), ta = note && $("textarea", note), nb = $("[data-note-toggle]", el);
       if (ta && document.activeElement !== ta) ta.value = state.notes[id] || "";
       if (note && state.notes[id]) note.hidden = false;
       if (nb && note) nb.textContent = note.hidden ? (state.notes[id] ? "Edit note" : "Add a note") : "Hide note";
     });
-    let chosen = "Open";
-    choices.forEach((r) => { r.checked = r.value === state.path; if (r.checked) chosen = at(r, "data-label"); });
+    choices.forEach((r) => { r.checked = r.value === state.path; });
     $$("[data-choice-clear]").forEach((b) => { b.hidden = !state.path; });
-    say('[data-live="choice"]', chosen);
     $$("[data-guard]").forEach((g) => { const n = state.path === at(g, "data-guard") ? at(g, "data-watch").split(" ").filter((id) => state.verdicts[id] !== at(g, "data-unless")).map((id) => num[id]) : []; g.hidden = !n.length; g.textContent = n.length ? at(g, n.length > 1 ? "data-many" : "data-one").replace("{n}", n.join(", ")) : ""; });
     say('[data-live="count"]', mode === "pick" ? state.picked.length : keys(state.verdicts).length);
     if (pickBlock) pickBlock.toggleAttribute("data-empty", empty(ctx, state));
@@ -152,6 +149,7 @@
     else if (t.closest("[data-hide]")) setHide(!hide);
     else if (t.closest("[data-show-all]")) { search(""); setHide(false); }
     else if (t.closest("[data-search-clear]")) { search(""); box.focus(); }
+    else if (t.closest("[data-next]")) { const el = items.find((x) => can[x.id] && !decided(x.id) && !x.hidden); if (el) { el.open = true; $("summary", el).focus(); el.scrollIntoView(); } else toast("Everything is decided"); }
   });
   on("keydown", (e) => {
     const t = e.target, b = t.closest?.("[data-verdict]");
@@ -209,7 +207,7 @@
       const id = u.el.id, h = (!printing && hide && u.n > 0 && (decided(id) || !can[id])) || (terms.length > 0 && !matches(u, terms));
       u.el.hidden = h;
       if (!h && terms.length && !u.el.open && terms.some((t) => u.body.includes(t))) { auto[id] = 1; u.el.open = true; }
-      [$('tr[data-item="' + id + '"]'), $('.toc li[data-item="' + id + '"]')].forEach((x) => { if (x) x.hidden = h; });
+      $$('tr[data-item="' + id + '"], .toc li[data-item="' + id + '"]').forEach((x) => { x.hidden = h; });
     });
     if (!terms.length && !printing && keys(auto).length) { keys(auto).forEach((id) => { document.getElementById(id).open = false; }); setTimeout(() => { auto = {}; }, 0); }
     sections.forEach((sec) => {

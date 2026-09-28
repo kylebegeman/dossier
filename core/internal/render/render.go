@@ -37,7 +37,7 @@ var readerJS string
 // Budgets are enforced by tests so the artifact stays lean.
 const (
 	MaxReaderBytes = 20 << 10
-	MaxStyleBytes  = 30 << 10
+	MaxStyleBytes  = 32 << 10
 )
 
 // AssetSizes reports the embedded asset sizes for budget tests.

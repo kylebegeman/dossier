@@ -80,8 +80,9 @@ func Derive(hex string) (Palette, []string, error) {
 	return Palette{Light: light, Dark: dark}, warnings, nil
 }
 
-// CSS renders the palette with the same three selectors tokens.css uses, so
-// appended after the tokens it wins in both themes and under both toggles.
+// CSS renders the palette under explicit theme selectors. tokens.css declares
+// its colors as light-dark() pairs, so these plain values, appended after the
+// tokens, win in both themes and under both toggles.
 func (p Palette) CSS() string {
 	vars := func(t Tones) string {
 		return "--accent: " + t.Accent + "; --accent-ink: " + t.Ink + "; --accent-soft: " + t.Soft + ";"

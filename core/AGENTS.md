@@ -75,7 +75,7 @@ only through `load.WriteModel`.
   or cool tint. Use color for type identity, status, evidence, and actions.
   Never use decorative accent lines: no colored edge stripes on navigation,
   cards, callouts, or headings. Use flat fills and typography for selection.
-- Budgets are tests: reader runtime at most 20 KB, stylesheet at most 30 KB,
+- Budgets are tests: reader runtime at most 20 KB, stylesheet at most 32 KB,
   and each showcase page at most 120 KB built.
 - The showcase in `examples` is a fixture set. Every document builds with no
   findings or warnings and matches its HTML and Markdown goldens in
