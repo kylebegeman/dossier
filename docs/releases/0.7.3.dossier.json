@@ -1,0 +1,206 @@
+{
+  "dossier": "1.0",
+  "kind": "release",
+  "meta": {
+    "title": "Dossier 0.7.3",
+    "slug": "release-0-7-3",
+    "kicker": "Dossier releases",
+    "lede": "The reader redesigned: neutral surfaces in both themes, color with three jobs, numbers on one axis, and an example browser worth sending. Every gate passed, and the call is ship.",
+    "updated": "2026-09-27",
+    "status": "shipped",
+    "facts": [
+      {
+        "label": "platforms",
+        "value": "6"
+      },
+      {
+        "label": "npm packages",
+        "value": "8"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "ships",
+      "title": "What ships",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.3 changes how every page looks and reads, not what a model says or how the commands behave. Models from 0.7.0 on build unchanged, and `meta.emphasis` is accepted with no visual effect."
+        },
+        {
+          "type": "table",
+          "title": "Changes",
+          "columns": [
+            "Area",
+            "What changed"
+          ],
+          "rows": [
+            [
+              "Surfaces",
+              "Neutral gray in both themes from one stylesheet of light-dark() pairs. The theme follows the system until the reader chooses light or dark."
+            ],
+            [
+              "Color",
+              "The kind names the document, tones name status and evidence, and a decision turns its number, table row, and rail dot one color. No decorative stripes, no italic title emphasis."
+            ],
+            [
+              "Layout",
+              "Sections and items share one number axis. Items are a hairline list whose open item lifts onto paper, and hairlines, hover fills, and open cards share one outer edge."
+            ],
+            [
+              "Rail",
+              "Sections, a disclosure for the item index, and Your decisions with a dot map, Next undecided, and Copy reply. It folds above the column at compact widths."
+            ],
+            [
+              "Code",
+              "Highlighted code uses the theme's tokens: violet keywords, teal strings, amber numbers, blue names, muted comments, and diff lines on the teal and risk fills."
+            ],
+            [
+              "Markdown",
+              "Two and three hyphens stay as typed instead of becoming en and em dashes."
+            ],
+            [
+              "Example browser",
+              "Tabs for the six examples with number keys, desktop, tablet, and phone widths, a theme switch that reaches into the page, and a link to the document on its own."
+            ],
+            [
+              "README",
+              "Rewritten around the new interface with a logo, a link to the live examples, and every image recaptured from this build."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "title": "Gates",
+      "board": {
+        "summary": true,
+        "items": [
+          {
+            "id": "go-checks",
+            "title": "Go checks",
+            "summary": "Formatting, vet, staticcheck, errcheck, the race-enabled tests, and a CGO-free build all passed.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make check` in `core`, which also drift-checks generated code and the vendored Graphviz."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every package passed. The reader is 20,472 bytes of its 20,480 byte budget and the stylesheet 31,468 of 32,768, a budget raised from 30,720 for the highlight palette and the aligned rows."
+              }
+            ]
+          },
+          {
+            "id": "showcase",
+            "title": "Showcase fixtures",
+            "summary": "All seven example documents build with no warnings and match their HTML and Markdown goldens.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestExamples` and `TestExampleReplies` build the showcase the way a reader gets it and paste a reply into each decision document."
+              },
+              {
+                "label": "Result",
+                "markdown": "Seven documents, six kinds, no warnings, and the largest page at 115 KB of its 120 KB budget."
+              }
+            ]
+          },
+          {
+            "id": "legacy",
+            "title": "0.6 imports",
+            "summary": "All 17 legacy fixtures upgrade to models that pass the strict 0.7 checks.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`TestLegacyFixtures` upgrades each 0.6 document and compares it with its golden."
+              },
+              {
+                "label": "Result",
+                "markdown": "17 of 17 upgrade strictly onto their kinds' vocabularies."
+              }
+            ]
+          },
+          {
+            "id": "react",
+            "title": "React package tests",
+            "summary": "The wrapper renders through the binary, the reader agrees with Go on every shared reply case, and the theme follows the system until chosen.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`npm test` in `packages/react`, including the 15 reply cases shared with the Go parser and the reader's theme choice."
+              },
+              {
+                "label": "Result",
+                "markdown": "11 of 11 tests passed."
+              }
+            ]
+          },
+          {
+            "id": "visual",
+            "title": "Visual review",
+            "summary": "Every example was read in light and dark at desktop, tablet, and phone widths, and the README images were recaptured from this build.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "Headless Chrome captures of each page at 1280, 820, and 390 pixels in both themes, with items open, decisions made, and the print stylesheet, then the capture toolkit in `docs/assets/readme/capture`."
+              },
+              {
+                "label": "Result",
+                "markdown": "Hairlines, hover fills, and open cards share one edge, selects keep room beside their chevron, and all 25 README images show this release."
+              }
+            ]
+          },
+          {
+            "id": "distribution",
+            "title": "Distribution dry run",
+            "summary": "Six archives, their checksums, the Homebrew formula, and seven npm packages build and install.",
+            "status": "passed",
+            "required": true,
+            "facets": [
+              {
+                "label": "How checked",
+                "markdown": "`make dist-check` cross-compiles every target, runs the formula's test commands on an archive, and installs the npm packages from tarballs."
+              },
+              {
+                "label": "Result",
+                "markdown": "Every check printed ok, and the binary and the launcher both report 0.7.3."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback",
+      "parts": [
+        {
+          "type": "prose",
+          "markdown": "0.7.3 changes only how pages look, so 0.7.2 builds the same models and the same decisions. Pages built by 0.7.2 keep the earlier look."
+        },
+        {
+          "type": "code",
+          "title": "Back to 0.7.2",
+          "lang": "sh",
+          "code": "npm install --save-dev @kylebegeman/dossier@0.7.2"
+        }
+      ]
+    }
+  ],
+  "decisions": {
+    "path": "ship"
+  }
+}
