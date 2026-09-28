@@ -224,6 +224,7 @@ screenshot. Then `src/`, `mcp/server.mjs`, and the old schemas are deleted.
 - 0.7.1 shipped on 2026-09-17 (UTC), once Kyle called it: the reply block became Your reply, calm and compact, with every reply said in plain words by Go and the reader alike, and the showcase now leads with a brainstorm about a codebase while the winter crossing brainstorm became a test fixture. `docs/assets/readme/capture` refreshes the README images.
 - npm publishing moved to trusted publishing for all eight packages after 0.7.1; the token is revoked, its secret deleted, and tokens are disallowed.
 - 0.7.2 shipped on 2026-09-17 (UTC), a maintenance release that proved it: all eight packages published as GitHub Actions.
+- 0.7.3 shipped on 2026-09-28 (UTC): the reader redesigned on neutral surfaces with color for the kind, tones, and state, one number axis, and highlighted code on the theme tokens, with the example browser and the README to match. `docs/product/reader-design.md` holds the design.
 - Next: Ledger.
 
 ## Content rules
